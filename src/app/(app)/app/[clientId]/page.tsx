@@ -5,6 +5,7 @@ import Sidebar from '@/components/Sidebar';
 import AuthGuard from '@/components/AuthGuard';
 import { Plus, Search } from 'lucide-react';
 import { useState } from 'react';
+import Link from 'next/link';
 
 export default function ClientDashboard({ params }: { params: { clientId: string } }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -43,10 +44,13 @@ export default function ClientDashboard({ params }: { params: { clientId: string
               />
             </div>
             
-            <button className="flex items-center justify-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
+            <Link 
+              href={`/app/${client.id}/marketplace`}
+              className="flex items-center justify-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+            >
               <Plus size={20} />
               Create New Bot
-            </button>
+            </Link>
           </div>
           
           <div className="grid gap-4 sm:grid-cols-1 md:grid-cols-2 lg:grid-cols-2">

@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Home, BarChart3, Bot, Settings, HelpCircle, LogOut, Users, MessageSquare, Menu, X } from 'lucide-react';
+import { Home, BarChart3, Bot, Settings, HelpCircle, LogOut, Users, MessageSquare, Menu, X, Store } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 
@@ -15,6 +15,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
   const navItems = [
     { icon: Home, label: 'Dashboard', href: clientId ? `/app/${clientId}` : '/app' },
     { icon: Bot, label: 'Bots', href: clientId ? `/app/${clientId}` : '/app' },
+    { icon: Store, label: 'Marketplace', href: clientId ? `/app/${clientId}/marketplace` : '/app' },
     { icon: MessageSquare, label: 'Conversations', href: clientId ? `/app/${clientId}/conversations` : '/app' },
     { icon: Users, label: 'Users', href: clientId ? `/app/${clientId}/users` : '/app' },
     { icon: BarChart3, label: 'Analytics', href: clientId ? `/app/${clientId}/analytics` : '/app' },

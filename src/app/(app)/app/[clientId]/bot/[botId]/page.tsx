@@ -1,14 +1,42 @@
 'use client';
-import { clients } from '@/lib/data';
+import { getClientById, getBotById, getBotMetrics } from '@/lib/dataService';
+import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import StatusBadge from '@/components/StatusBadge';
 import { UsageLine, IntentBars } from '@/components/Charts';
 import { ArrowLeft, MessageSquare, Clock, TrendingUp, Star } from 'lucide-react';
 import Link from 'next/link';
+import type { Client, Bot } from '@/lib/dataService';
 
 export default function BotAnalyticsPage({ params }: { params: { clientId: string; botId: string } }) {
-  const client = clients.find(c => c.id === params.clientId);
-  const bot = client?.mascots.find(m => m.id === params.botId);
+  const [client, setClient] = useState<Client | undefined>();
+  const [bot, setBot] = useState<Bot | undefined>();
+  const [metrics, setMetrics] = useState<any>();
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const [clientData, botData, metricsData] = await Promise.all([
+          getClientById(params.clientId),
+          getBotById(params.botId),
+          getBotMetrics(params.botId)
+        ]);
+        setClient(clientData);
+        setBot(botData);
+        setMetrics(metricsData);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [params.clientId, params.botId]);
+
+  if (loading) {
+    return <div className="p-6">Loading...</div>;
+  }
   
   if (!client || !bot) {
     return <div className="p-6">Bot not found</div>;
@@ -98,12 +126,12 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           <div className="grid grid-cols-2 gap-6 mb-6">
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h2 className="font-semibold mb-4">Conversation Volume (7 days)</h2>
-              <UsageLine data={bot.metrics.usageByDay} />
+              {metrics && <UsageLine data={metrics.usageByDay} />}
             </div>
             
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h2 className="font-semibold mb-4">Top Intents</h2>
-              <IntentBars data={bot.metrics.topIntents} />
+              {metrics && <IntentBars data={metrics.topIntents} />}
             </div>
           </div>
           

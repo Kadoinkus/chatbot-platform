@@ -3,88 +3,368 @@
     "id": "msg1",
     "conversationId": "conv1",
     "sender": "user",
-    "senderName": "John Smith",
-    "content": "Hi, I'm looking for the new organic products you advertised",
-    "timestamp": "2025-08-27T14:32:00Z"
+    "senderName": "Alex Johnson",
+    "content": "Hi, what are your opening hours for tomorrow?",
+    "timestamp": "2025-08-27T14:30:00Z"
   },
   {
     "id": "msg2",
     "conversationId": "conv1",
     "sender": "bot",
     "senderName": "Liza",
-    "content": "Hello John! I'd be happy to help you find our organic products. Are you looking for fresh produce, dairy, or packaged goods?",
-    "timestamp": "2025-08-27T14:32:02Z"
+    "content": "Hello! Our store is open tomorrow from 8:00 AM to 10:00 PM. We're open 7 days a week with these hours.",
+    "timestamp": "2025-08-27T14:30:15Z"
   },
   {
     "id": "msg3",
     "conversationId": "conv1",
     "sender": "user",
-    "senderName": "John Smith",
-    "content": "Fresh produce please",
-    "timestamp": "2025-08-27T14:32:30Z"
+    "senderName": "Alex Johnson",
+    "content": "Great, what about Sunday hours?",
+    "timestamp": "2025-08-27T14:31:00Z"
   },
   {
     "id": "msg4",
     "conversationId": "conv1",
     "sender": "bot",
     "senderName": "Liza",
-    "content": "Great choice! Our organic fresh produce section includes:\n• Seasonal vegetables (tomatoes, lettuce, carrots, peppers)\n• Fresh fruits (apples, bananas, berries, citrus)\n• Herbs (basil, parsley, cilantro, mint)\n\nAll items are certified organic and locally sourced when possible. You can find them in aisle 3 at all our stores.",
-    "timestamp": "2025-08-27T14:32:35Z"
+    "content": "On Sundays we're open from 9:00 AM to 9:00 PM. All our locations follow the same Sunday schedule.",
+    "timestamp": "2025-08-27T14:31:10Z"
   },
   {
     "id": "msg5",
-    "conversationId": "conv2",
+    "conversationId": "conv1",
     "sender": "user",
-    "senderName": "Emma Wilson",
-    "content": "What time do you close today?",
-    "timestamp": "2025-08-27T15:10:00Z"
+    "senderName": "Alex Johnson",
+    "content": "Perfect, thank you!",
+    "timestamp": "2025-08-27T14:32:00Z"
   },
   {
     "id": "msg6",
-    "conversationId": "conv2",
+    "conversationId": "conv1",
     "sender": "bot",
     "senderName": "Liza",
-    "content": "Hi Emma! Today we're open until 9:00 PM. Is there a specific store location you're planning to visit?",
-    "timestamp": "2025-08-27T15:10:02Z"
+    "content": "You're welcome! Is there anything else I can help you with today?",
+    "timestamp": "2025-08-27T14:32:05Z"
   },
   {
     "id": "msg7",
     "conversationId": "conv2",
     "sender": "user",
-    "senderName": "Emma Wilson",
-    "content": "The one in Amsterdam center",
-    "timestamp": "2025-08-27T15:10:45Z"
+    "senderName": "Maria Santos",
+    "content": "I need to return a product I bought last week",
+    "timestamp": "2025-08-27T15:45:00Z"
   },
   {
     "id": "msg8",
-    "conversationId": "conv3",
-    "sender": "user",
-    "senderName": "Michael Brown",
-    "content": "I'm having trouble with my online order. Order number #JMB-2024-8827",
-    "timestamp": "2025-08-27T13:20:00Z"
+    "conversationId": "conv2",
+    "sender": "bot",
+    "senderName": "Liza",
+    "content": "I'd be happy to help you with your return. Do you have your receipt or the order number?",
+    "timestamp": "2025-08-27T15:45:12Z"
   },
   {
     "id": "msg9",
-    "conversationId": "conv3",
-    "sender": "bot",
-    "senderName": "Remco",
-    "content": "Hi Michael, I see you have an order issue. Let me look up order #JMB-2024-8827 for you.",
-    "timestamp": "2025-08-27T13:20:03Z"
+    "conversationId": "conv2",
+    "sender": "user",
+    "senderName": "Maria Santos",
+    "content": "Yes, I have the receipt. The item is a damaged blender.",
+    "timestamp": "2025-08-27T15:46:00Z"
   },
   {
     "id": "msg10",
     "conversationId": "conv3",
-    "sender": "bot",
-    "senderName": "Remco",
-    "content": "I found your order. It appears there was a payment processing error. This requires manual review. I'm escalating this to our support team who will contact you within 30 minutes.",
-    "timestamp": "2025-08-27T13:20:15Z"
+    "sender": "user",
+    "senderName": "David Chen",
+    "content": "My account is locked and I can't reset my password",
+    "timestamp": "2025-08-27T13:20:00Z"
   },
   {
     "id": "msg11",
     "conversationId": "conv3",
+    "sender": "bot",
+    "senderName": "Remco",
+    "content": "I understand your frustration with the locked account. Let me help you resolve this technical issue.",
+    "timestamp": "2025-08-27T13:20:08Z"
+  },
+  {
+    "id": "msg12",
+    "conversationId": "conv3",
+    "sender": "user",
+    "senderName": "David Chen",
+    "content": "I've tried the password reset link multiple times but it's not working",
+    "timestamp": "2025-08-27T13:21:00Z"
+  },
+  {
+    "id": "msg13",
+    "conversationId": "conv3",
+    "sender": "bot",
+    "senderName": "Remco",
+    "content": "Let me check your account status. Can you provide me with the email address associated with your account?",
+    "timestamp": "2025-08-27T13:21:15Z"
+  },
+  {
+    "id": "msg14",
+    "conversationId": "conv3",
+    "sender": "user",
+    "senderName": "David Chen",
+    "content": "david.chen@email.com",
+    "timestamp": "2025-08-27T13:22:00Z"
+  },
+  {
+    "id": "msg15",
+    "conversationId": "conv3",
+    "sender": "bot",
+    "senderName": "Remco",
+    "content": "I see there are multiple failed login attempts. This requires escalation to our technical team for account unlock.",
+    "timestamp": "2025-08-27T13:22:30Z"
+  },
+  {
+    "id": "msg16",
+    "conversationId": "conv3",
     "sender": "agent",
-    "senderName": "Sarah Johnson",
-    "content": "Hi Michael, this is Sarah from customer support. I'm taking over this conversation to help resolve your payment issue.",
+    "senderName": "Emily Rodriguez",
+    "content": "Hi David, I'm Emily from our technical support team. I can help unlock your account right away.",
     "timestamp": "2025-08-27T13:25:00Z"
+  },
+  {
+    "id": "msg17",
+    "conversationId": "conv3",
+    "sender": "user",
+    "senderName": "David Chen",
+    "content": "Thank you Emily, that would be great!",
+    "timestamp": "2025-08-27T13:25:30Z"
+  },
+  {
+    "id": "msg18",
+    "conversationId": "conv4",
+    "sender": "user",
+    "senderName": "Sophie Miller",
+    "content": "Do you have organic bananas in stock today?",
+    "timestamp": "2025-08-27T11:15:00Z"
+  },
+  {
+    "id": "msg19",
+    "conversationId": "conv4",
+    "sender": "bot",
+    "senderName": "Liza",
+    "content": "Yes! We have fresh organic bananas in stock. They're located in our organic produce section.",
+    "timestamp": "2025-08-27T11:15:08Z"
+  },
+  {
+    "id": "msg20",
+    "conversationId": "conv4",
+    "sender": "user",
+    "senderName": "Sophie Miller",
+    "content": "What's the price per kilogram?",
+    "timestamp": "2025-08-27T11:16:00Z"
+  },
+  {
+    "id": "msg21",
+    "conversationId": "conv4",
+    "sender": "bot",
+    "senderName": "Liza",
+    "content": "Our organic bananas are €2.49 per kilogram today. They're on a small discount from the regular price of €2.79.",
+    "timestamp": "2025-08-27T11:16:10Z"
+  },
+  {
+    "id": "msg22",
+    "conversationId": "conv5",
+    "sender": "user",
+    "senderName": "Robert Kim",
+    "content": "I'm starting work next Monday, what do I need to bring?",
+    "timestamp": "2025-08-27T09:30:00Z"
+  },
+  {
+    "id": "msg23",
+    "conversationId": "conv5",
+    "sender": "bot",
+    "senderName": "Remco",
+    "content": "Congratulations on joining our team! For your first day, please bring a valid ID and your signed contract.",
+    "timestamp": "2025-08-27T09:30:12Z"
+  },
+  {
+    "id": "msg24",
+    "conversationId": "conv5",
+    "sender": "user",
+    "senderName": "Robert Kim",
+    "content": "Do I need to bring any specific documents for HR?",
+    "timestamp": "2025-08-27T09:32:00Z"
+  },
+  {
+    "id": "msg25",
+    "conversationId": "conv5",
+    "sender": "bot",
+    "senderName": "Remco",
+    "content": "Yes, please also bring your bank account details for salary payments and any professional certificates if applicable.",
+    "timestamp": "2025-08-27T09:32:15Z"
+  },
+  {
+    "id": "msg26",
+    "conversationId": "conv5",
+    "sender": "user",
+    "senderName": "Robert Kim",
+    "content": "What time should I arrive and where do I go?",
+    "timestamp": "2025-08-27T09:35:00Z"
+  },
+  {
+    "id": "msg27",
+    "conversationId": "conv5",
+    "sender": "bot",
+    "senderName": "Remco",
+    "content": "Please arrive at 9:00 AM at the main entrance. Ask for Sarah Johnson at reception - she'll guide you through the onboarding process.",
+    "timestamp": "2025-08-27T09:35:20Z"
+  },
+  {
+    "id": "msg28",
+    "conversationId": "conv5",
+    "sender": "user",
+    "senderName": "Robert Kim",
+    "content": "Perfect, thank you so much for the information!",
+    "timestamp": "2025-08-27T09:40:00Z"
+  },
+  {
+    "id": "msg29",
+    "conversationId": "conv8",
+    "sender": "user",
+    "senderName": "Lisa Anderson",
+    "content": "What's your pricing for bulk tape orders?",
+    "timestamp": "2025-08-27T10:45:00Z"
+  },
+  {
+    "id": "msg30",
+    "conversationId": "conv8",
+    "sender": "bot",
+    "senderName": "Vinny",
+    "content": "Hello! Our bulk pricing depends on the quantity and tape format. What type of tapes are you looking to convert?",
+    "timestamp": "2025-08-27T10:45:10Z"
+  },
+  {
+    "id": "msg31",
+    "conversationId": "conv8",
+    "sender": "user",
+    "senderName": "Lisa Anderson",
+    "content": "I have about 50 VHS tapes that need digitizing",
+    "timestamp": "2025-08-27T10:46:00Z"
+  },
+  {
+    "id": "msg32",
+    "conversationId": "conv8",
+    "sender": "bot",
+    "senderName": "Vinny",
+    "content": "Great! For 50 VHS tapes, we offer a bulk discount. The standard rate is €15 per tape, but for 50+ we can do €12 per tape.",
+    "timestamp": "2025-08-27T10:46:15Z"
+  },
+  {
+    "id": "msg33",
+    "conversationId": "conv8",
+    "sender": "user",
+    "senderName": "Lisa Anderson",
+    "content": "That sounds reasonable. How long would the process take?",
+    "timestamp": "2025-08-27T10:47:00Z"
+  },
+  {
+    "id": "msg34",
+    "conversationId": "conv8",
+    "sender": "bot",
+    "senderName": "Vinny",
+    "content": "For a bulk order of 50 tapes, we typically complete the work within 2-3 weeks. We'll provide regular updates on progress.",
+    "timestamp": "2025-08-27T10:47:20Z"
+  },
+  {
+    "id": "msg35",
+    "conversationId": "conv13",
+    "sender": "user",
+    "senderName": "Tom Martinez",
+    "content": "What topics are covered in the leadership workshop?",
+    "timestamp": "2025-08-27T11:30:00Z"
+  },
+  {
+    "id": "msg36",
+    "conversationId": "conv13",
+    "sender": "bot",
+    "senderName": "HappyBot",
+    "content": "Our leadership workshop covers communication skills, team management, conflict resolution, and strategic planning.",
+    "timestamp": "2025-08-27T11:30:12Z"
+  },
+  {
+    "id": "msg37",
+    "conversationId": "conv13",
+    "sender": "user",
+    "senderName": "Tom Martinez",
+    "content": "Is this suitable for new managers?",
+    "timestamp": "2025-08-27T11:32:00Z"
+  },
+  {
+    "id": "msg38",
+    "conversationId": "conv13",
+    "sender": "bot",
+    "senderName": "HappyBot",
+    "content": "Absolutely! The workshop is designed for both new and experienced managers, with modules tailored to different experience levels.",
+    "timestamp": "2025-08-27T11:32:15Z"
+  },
+  {
+    "id": "msg39",
+    "conversationId": "conv13",
+    "sender": "user",
+    "senderName": "Tom Martinez",
+    "content": "How long is the workshop and what's the cost?",
+    "timestamp": "2025-08-27T11:35:00Z"
+  },
+  {
+    "id": "msg40",
+    "conversationId": "conv13",
+    "sender": "bot",
+    "senderName": "HappyBot",
+    "content": "It's a full-day workshop (8 hours) priced at €299 per person. We also offer group discounts for teams of 5 or more.",
+    "timestamp": "2025-08-27T11:35:18Z"
+  },
+  {
+    "id": "msg41",
+    "conversationId": "conv14",
+    "sender": "user",
+    "senderName": "Jennifer White",
+    "content": "I'd like to book a team building session for 15 people",
+    "timestamp": "2025-08-27T13:45:00Z"
+  },
+  {
+    "id": "msg42",
+    "conversationId": "conv14",
+    "sender": "bot",
+    "senderName": "Joy",
+    "content": "Wonderful! I can help you book a team building session. What type of activities are you interested in?",
+    "timestamp": "2025-08-27T13:45:10Z"
+  },
+  {
+    "id": "msg43",
+    "conversationId": "conv14",
+    "sender": "user",
+    "senderName": "Jennifer White",
+    "content": "Something interactive that improves communication and collaboration",
+    "timestamp": "2025-08-27T13:46:00Z"
+  },
+  {
+    "id": "msg44",
+    "conversationId": "conv14",
+    "sender": "bot",
+    "senderName": "Joy",
+    "content": "Perfect! Our 'Collaborative Challenge' program would be ideal. It includes problem-solving exercises and communication workshops.",
+    "timestamp": "2025-08-27T13:46:15Z"
+  },
+  {
+    "id": "msg45",
+    "conversationId": "conv14",
+    "sender": "user",
+    "senderName": "Jennifer White",
+    "content": "What dates are available next month?",
+    "timestamp": "2025-08-27T13:48:00Z"
+  },
+  {
+    "id": "msg46",
+    "conversationId": "conv14",
+    "sender": "bot",
+    "senderName": "Joy",
+    "content": "We have availability on September 5th, 12th, and 19th. Each session runs from 9:00 AM to 4:00 PM. Would any of these work?",
+    "timestamp": "2025-08-27T13:48:20Z"
   }
 ]

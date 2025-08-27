@@ -6,10 +6,16 @@ export function signIn(email: string, password: string): Session {
   const client = clients.find(c => c.login.email === email && c.login.password === password);
   if (!client) return null;
   const session: Session = { clientId: client.id };
-  localStorage.setItem(KEY, JSON.stringify(session));
+  if (typeof window !== 'undefined') {
+    localStorage.setItem(KEY, JSON.stringify(session));
+  }
   return session;
 }
-export function signOut() { localStorage.removeItem(KEY); }
+export function signOut() { 
+  if (typeof window !== 'undefined') {
+    localStorage.removeItem(KEY); 
+  }
+}
 export function getSession(): Session {
   if (typeof window === 'undefined') return null;
   const raw = localStorage.getItem(KEY);

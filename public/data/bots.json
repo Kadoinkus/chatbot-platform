@@ -1,0 +1,86 @@
+[
+  {
+    "id": "m1",
+    "clientId": "c1",
+    "name": "Liza",
+    "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Liza&backgroundColor=FFD700",
+    "status": "Live",
+    "conversations": 482,
+    "description": "Customer service bot for general inquiries",
+    "metrics": {
+      "responseTime": 1.2,
+      "resolutionRate": 82,
+      "csat": 4.5
+    }
+  },
+  {
+    "id": "m2",
+    "clientId": "c1",
+    "name": "Remco",
+    "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Remco&backgroundColor=FFD700",
+    "status": "Live",
+    "conversations": 324,
+    "description": "Technical support specialist bot",
+    "metrics": {
+      "responseTime": 0.8,
+      "resolutionRate": 88,
+      "csat": 4.7
+    }
+  },
+  {
+    "id": "m3",
+    "clientId": "c2",
+    "name": "Vinny",
+    "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Vinny&backgroundColor=0EA5E9",
+    "status": "Live",
+    "conversations": 322,
+    "description": "Sales assistant and product recommendations",
+    "metrics": {
+      "responseTime": 0.9,
+      "resolutionRate": 85,
+      "csat": 4.8
+    }
+  },
+  {
+    "id": "m4",
+    "clientId": "c2",
+    "name": "Max",
+    "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Max&backgroundColor=0EA5E9",
+    "status": "Paused",
+    "conversations": 0,
+    "description": "Onboarding specialist for new customers",
+    "metrics": {
+      "responseTime": 0,
+      "resolutionRate": 0,
+      "csat": 0
+    }
+  },
+  {
+    "id": "m5",
+    "clientId": "c3",
+    "name": "HappyBot",
+    "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=HappyBot&backgroundColor=EF4444",
+    "status": "Needs finalization",
+    "conversations": 0,
+    "description": "Workshop coordinator and event management",
+    "metrics": {
+      "responseTime": 1.5,
+      "resolutionRate": 75,
+      "csat": 4.4
+    }
+  },
+  {
+    "id": "m6",
+    "clientId": "c3",
+    "name": "Joy",
+    "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Joy&backgroundColor=EF4444",
+    "status": "Live",
+    "conversations": 156,
+    "description": "HR assistant for internal queries",
+    "metrics": {
+      "responseTime": 1.0,
+      "resolutionRate": 80,
+      "csat": 4.6
+    }
+  }
+]

@@ -1,7 +1,9 @@
 'use client';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { clients } from '@/lib/data';
+import { getConversationsByClientId, type Conversation as ConversationType } from '@/lib/dataService';
 import Sidebar from '@/components/Sidebar';
+import AuthGuard from '@/components/AuthGuard';
 import { Search, Filter, Download, Calendar, MessageSquare, User, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 

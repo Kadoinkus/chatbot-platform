@@ -1,0 +1,75 @@
+[
+  {
+    "id": "sess1",
+    "userId": "1",
+    "userName": "Sarah Johnson",
+    "clientId": "c1",
+    "startedAt": "2025-08-27T08:00:00Z",
+    "lastActivity": "2025-08-27T15:45:00Z",
+    "device": "Desktop",
+    "browser": "Chrome",
+    "location": "New York, US",
+    "ip": "192.168.1.1",
+    "status": "active",
+    "actions": [
+      { "type": "login", "timestamp": "2025-08-27T08:00:00Z" },
+      { "type": "view_dashboard", "timestamp": "2025-08-27T08:01:00Z" },
+      { "type": "view_bot", "botId": "m1", "timestamp": "2025-08-27T08:05:00Z" },
+      { "type": "reply_conversation", "conversationId": "conv1", "timestamp": "2025-08-27T08:10:00Z" }
+    ]
+  },
+  {
+    "id": "sess2",
+    "userId": "2",
+    "userName": "Mike Chen",
+    "clientId": "c1",
+    "startedAt": "2025-08-27T09:30:00Z",
+    "lastActivity": "2025-08-27T14:20:00Z",
+    "device": "Mobile",
+    "browser": "Safari",
+    "location": "San Francisco, US",
+    "ip": "192.168.1.2",
+    "status": "idle",
+    "actions": [
+      { "type": "login", "timestamp": "2025-08-27T09:30:00Z" },
+      { "type": "view_analytics", "timestamp": "2025-08-27T09:32:00Z" },
+      { "type": "export_report", "timestamp": "2025-08-27T09:45:00Z" }
+    ]
+  },
+  {
+    "id": "sess3",
+    "userId": "3",
+    "userName": "Emily Rodriguez",
+    "clientId": "c1",
+    "startedAt": "2025-08-27T07:15:00Z",
+    "endedAt": "2025-08-27T12:30:00Z",
+    "device": "Desktop",
+    "browser": "Firefox",
+    "location": "Chicago, US",
+    "ip": "192.168.1.3",
+    "status": "ended",
+    "actions": [
+      { "type": "login", "timestamp": "2025-08-27T07:15:00Z" },
+      { "type": "handle_conversations", "count": 15, "timestamp": "2025-08-27T07:20:00Z" },
+      { "type": "logout", "timestamp": "2025-08-27T12:30:00Z" }
+    ]
+  },
+  {
+    "id": "sess4",
+    "userId": "6",
+    "userName": "Alex Thompson",
+    "clientId": "c2",
+    "startedAt": "2025-08-27T10:00:00Z",
+    "lastActivity": "2025-08-27T15:30:00Z",
+    "device": "Tablet",
+    "browser": "Edge",
+    "location": "London, UK",
+    "ip": "192.168.2.1",
+    "status": "active",
+    "actions": [
+      { "type": "login", "timestamp": "2025-08-27T10:00:00Z" },
+      { "type": "configure_bot", "botId": "m3", "timestamp": "2025-08-27T10:15:00Z" },
+      { "type": "view_integrations", "timestamp": "2025-08-27T10:30:00Z" }
+    ]
+  }
+]

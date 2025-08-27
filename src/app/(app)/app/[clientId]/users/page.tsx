@@ -1,8 +1,9 @@
 'use client';
-import { useState } from 'react';
-import { getSession } from '@/lib/auth';
+import { useState, useEffect } from 'react';
 import { clients } from '@/lib/data';
+import { getUsersByClientId, type User } from '@/lib/dataService';
 import Sidebar from '@/components/Sidebar';
+import AuthGuard from '@/components/AuthGuard';
 import { 
   Users, 
   UserPlus, 
@@ -22,93 +23,30 @@ import {
   Clock
 } from 'lucide-react';
 
-interface User {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'manager' | 'agent' | 'viewer';
-  status: 'active' | 'inactive' | 'pending';
-  avatar: string;
-  lastActive: string;
-  conversationsHandled: number;
-  joinedDate: string;
-  phone?: string;
-}
-
-const mockUsers: User[] = [
-  {
-    id: '1',
-    name: 'Sarah Johnson',
-    email: 'sarah@jumbo.com',
-    role: 'admin',
-    status: 'active',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
-    lastActive: '2 minutes ago',
-    conversationsHandled: 1247,
-    joinedDate: '2023-01-15',
-    phone: '+1 (555) 123-4567'
-  },
-  {
-    id: '2',
-    name: 'Mike Chen',
-    email: 'mike@jumbo.com',
-    role: 'manager',
-    status: 'active',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mike',
-    lastActive: '1 hour ago',
-    conversationsHandled: 892,
-    joinedDate: '2023-02-20',
-    phone: '+1 (555) 234-5678'
-  },
-  {
-    id: '3',
-    name: 'Emily Rodriguez',
-    email: 'emily@jumbo.com',
-    role: 'agent',
-    status: 'active',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Emily',
-    lastActive: '15 minutes ago',
-    conversationsHandled: 634,
-    joinedDate: '2023-03-10'
-  },
-  {
-    id: '4',
-    name: 'David Park',
-    email: 'david@jumbo.com',
-    role: 'agent',
-    status: 'inactive',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David',
-    lastActive: '2 days ago',
-    conversationsHandled: 456,
-    joinedDate: '2023-04-05'
-  },
-  {
-    id: '5',
-    name: 'Lisa Wong',
-    email: 'lisa@jumbo.com',
-    role: 'viewer',
-    status: 'pending',
-    avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Lisa',
-    lastActive: 'Never',
-    conversationsHandled: 0,
-    joinedDate: '2024-01-10'
-  }
-];
 
 export default function UsersPage({ params }: { params: { clientId: string } }) {
-  const session = getSession();
-  const client = clients.find(c => c.id === params.clientId);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
-  const [users] = useState<User[]>(mockUsers);
+  const [users, setUsers] = useState<User[]>([]);
+  const [loading, setLoading] = useState(true);
 
-  if (!session) {
-    if (typeof window !== 'undefined') {
-      window.location.replace('/login');
+  const client = clients.find(c => c.id === params.clientId);
+
+  useEffect(() => {
+    async function loadUsers() {
+      try {
+        const clientUsers = await getUsersByClientId(params.clientId);
+        setUsers(clientUsers);
+      } catch (error) {
+        console.error('Failed to load users:', error);
+      } finally {
+        setLoading(false);
+      }
     }
-    return null;
-  }
+    
+    loadUsers();
+  }, [params.clientId]);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -145,9 +83,23 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
     }
   };
 
+  if (loading) {
+    return (
+      <AuthGuard clientId={params.clientId}>
+        <div className="flex min-h-screen bg-gray-50">
+          <Sidebar clientId={params.clientId} />
+          <main className="flex-1 ml-16 flex items-center justify-center">
+            <div className="text-gray-500">Loading users...</div>
+          </main>
+        </div>
+      </AuthGuard>
+    );
+  }
+
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar clientId={params.clientId} />
+    <AuthGuard clientId={params.clientId}>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar clientId={params.clientId} />
       
       <main className="flex-1 ml-16">
         <div className="container max-w-7xl mx-auto p-8">
@@ -359,5 +311,6 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
         </div>
       </main>
     </div>
+    </AuthGuard>
   );
 }

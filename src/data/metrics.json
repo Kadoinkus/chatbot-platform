@@ -1,0 +1,86 @@
+{
+  "usageByDay": {
+    "c1": [
+      { "date": "2025-08-01", "conversations": 120, "resolved": 96 },
+      { "date": "2025-08-02", "conversations": 98, "resolved": 81 },
+      { "date": "2025-08-03", "conversations": 130, "resolved": 109 },
+      { "date": "2025-08-04", "conversations": 90, "resolved": 70 },
+      { "date": "2025-08-05", "conversations": 114, "resolved": 97 },
+      { "date": "2025-08-06", "conversations": 140, "resolved": 121 },
+      { "date": "2025-08-07", "conversations": 128, "resolved": 105 }
+    ],
+    "c2": [
+      { "date": "2025-08-01", "conversations": 60, "resolved": 48 },
+      { "date": "2025-08-02", "conversations": 55, "resolved": 45 },
+      { "date": "2025-08-03", "conversations": 62, "resolved": 50 },
+      { "date": "2025-08-04", "conversations": 70, "resolved": 55 },
+      { "date": "2025-08-05", "conversations": 68, "resolved": 54 },
+      { "date": "2025-08-06", "conversations": 75, "resolved": 63 },
+      { "date": "2025-08-07", "conversations": 80, "resolved": 66 }
+    ],
+    "c3": [
+      { "date": "2025-08-01", "conversations": 20, "resolved": 15 },
+      { "date": "2025-08-02", "conversations": 18, "resolved": 14 },
+      { "date": "2025-08-03", "conversations": 22, "resolved": 16 },
+      { "date": "2025-08-04", "conversations": 25, "resolved": 20 },
+      { "date": "2025-08-05", "conversations": 27, "resolved": 22 },
+      { "date": "2025-08-06", "conversations": 30, "resolved": 24 },
+      { "date": "2025-08-07", "conversations": 28, "resolved": 23 }
+    ]
+  },
+  "botUsageByDay": {
+    "m1": [
+      { "date": "2025-08-01", "conversations": 80, "resolved": 64 },
+      { "date": "2025-08-02", "conversations": 65, "resolved": 52 },
+      { "date": "2025-08-03", "conversations": 90, "resolved": 75 },
+      { "date": "2025-08-04", "conversations": 60, "resolved": 48 },
+      { "date": "2025-08-05", "conversations": 75, "resolved": 63 },
+      { "date": "2025-08-06", "conversations": 95, "resolved": 82 },
+      { "date": "2025-08-07", "conversations": 85, "resolved": 70 }
+    ],
+    "m2": [
+      { "date": "2025-08-01", "conversations": 40, "resolved": 32 },
+      { "date": "2025-08-02", "conversations": 33, "resolved": 29 },
+      { "date": "2025-08-03", "conversations": 40, "resolved": 34 },
+      { "date": "2025-08-04", "conversations": 30, "resolved": 22 },
+      { "date": "2025-08-05", "conversations": 39, "resolved": 34 },
+      { "date": "2025-08-06", "conversations": 45, "resolved": 39 },
+      { "date": "2025-08-07", "conversations": 43, "resolved": 35 }
+    ]
+  },
+  "topIntents": {
+    "c1": [
+      { "intent": "Opening hours", "count": 210 },
+      { "intent": "Returns", "count": 150 },
+      { "intent": "Employee onboarding", "count": 92 },
+      { "intent": "Vacancies", "count": 65 }
+    ],
+    "c2": [
+      { "intent": "Pricing", "count": 77 },
+      { "intent": "Shipping tapes", "count": 65 },
+      { "intent": "Supported formats", "count": 40 }
+    ],
+    "c3": [
+      { "intent": "Workshop info", "count": 18 },
+      { "intent": "Booking", "count": 15 },
+      { "intent": "Case studies", "count": 12 }
+    ]
+  },
+  "botIntents": {
+    "m1": [
+      { "intent": "Opening hours", "count": 150 },
+      { "intent": "Product availability", "count": 120 },
+      { "intent": "Store locations", "count": 95 }
+    ],
+    "m2": [
+      { "intent": "Returns", "count": 60 },
+      { "intent": "Technical issues", "count": 55 },
+      { "intent": "Warranty", "count": 42 }
+    ]
+  },
+  "csat": {
+    "c1": 4.6,
+    "c2": 4.8,
+    "c3": 4.4
+  }
+}

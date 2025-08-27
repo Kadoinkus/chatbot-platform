@@ -1,12 +1,13 @@
 'use client';
 import { useState } from 'react';
-import { getSession } from '@/lib/auth';
 import { clients } from '@/lib/data';
 import Sidebar from '@/components/Sidebar';
+import AuthGuard from '@/components/AuthGuard';
+import { useAuth } from '@/hooks/useAuth';
 import { User, Mail, Phone, Building, MapPin, Key, Bell, Palette, Globe, Shield, Download, Upload, Save, Edit2 } from 'lucide-react';
 
 export default function UserProfilePage() {
-  const session = getSession();
+  const { session } = useAuth();
   const client = clients.find(c => c.id === session?.clientId);
   const [activeTab, setActiveTab] = useState('profile');
   const [hasChanges, setHasChanges] = useState(false);
@@ -42,12 +43,6 @@ export default function UserProfilePage() {
     loginAlerts: true
   });
 
-  if (!session) {
-    if (typeof window !== 'undefined') {
-      window.location.replace('/login');
-    }
-    return null;
-  }
 
   const tabs = [
     { id: 'profile', label: 'Profile', icon: User },
@@ -64,8 +59,9 @@ export default function UserProfilePage() {
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar clientId={client?.id} />
+    <AuthGuard clientId={client?.id} showSidebar={false}>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar clientId={client?.id} />
       
       <main className="flex-1 ml-16">
         <div className="container max-w-7xl mx-auto p-8">
@@ -459,5 +455,6 @@ export default function UserProfilePage() {
         </div>
       </main>
     </div>
+    </AuthGuard>
   );
 }

@@ -1,0 +1,90 @@
+[
+  {
+    "id": "msg1",
+    "conversationId": "conv1",
+    "sender": "user",
+    "senderName": "John Smith",
+    "content": "Hi, I'm looking for the new organic products you advertised",
+    "timestamp": "2025-08-27T14:32:00Z"
+  },
+  {
+    "id": "msg2",
+    "conversationId": "conv1",
+    "sender": "bot",
+    "senderName": "Liza",
+    "content": "Hello John! I'd be happy to help you find our organic products. Are you looking for fresh produce, dairy, or packaged goods?",
+    "timestamp": "2025-08-27T14:32:02Z"
+  },
+  {
+    "id": "msg3",
+    "conversationId": "conv1",
+    "sender": "user",
+    "senderName": "John Smith",
+    "content": "Fresh produce please",
+    "timestamp": "2025-08-27T14:32:30Z"
+  },
+  {
+    "id": "msg4",
+    "conversationId": "conv1",
+    "sender": "bot",
+    "senderName": "Liza",
+    "content": "Great choice! Our organic fresh produce section includes:\n• Seasonal vegetables (tomatoes, lettuce, carrots, peppers)\n• Fresh fruits (apples, bananas, berries, citrus)\n• Herbs (basil, parsley, cilantro, mint)\n\nAll items are certified organic and locally sourced when possible. You can find them in aisle 3 at all our stores.",
+    "timestamp": "2025-08-27T14:32:35Z"
+  },
+  {
+    "id": "msg5",
+    "conversationId": "conv2",
+    "sender": "user",
+    "senderName": "Emma Wilson",
+    "content": "What time do you close today?",
+    "timestamp": "2025-08-27T15:10:00Z"
+  },
+  {
+    "id": "msg6",
+    "conversationId": "conv2",
+    "sender": "bot",
+    "senderName": "Liza",
+    "content": "Hi Emma! Today we're open until 9:00 PM. Is there a specific store location you're planning to visit?",
+    "timestamp": "2025-08-27T15:10:02Z"
+  },
+  {
+    "id": "msg7",
+    "conversationId": "conv2",
+    "sender": "user",
+    "senderName": "Emma Wilson",
+    "content": "The one in Amsterdam center",
+    "timestamp": "2025-08-27T15:10:45Z"
+  },
+  {
+    "id": "msg8",
+    "conversationId": "conv3",
+    "sender": "user",
+    "senderName": "Michael Brown",
+    "content": "I'm having trouble with my online order. Order number #JMB-2024-8827",
+    "timestamp": "2025-08-27T13:20:00Z"
+  },
+  {
+    "id": "msg9",
+    "conversationId": "conv3",
+    "sender": "bot",
+    "senderName": "Remco",
+    "content": "Hi Michael, I see you have an order issue. Let me look up order #JMB-2024-8827 for you.",
+    "timestamp": "2025-08-27T13:20:03Z"
+  },
+  {
+    "id": "msg10",
+    "conversationId": "conv3",
+    "sender": "bot",
+    "senderName": "Remco",
+    "content": "I found your order. It appears there was a payment processing error. This requires manual review. I'm escalating this to our support team who will contact you within 30 minutes.",
+    "timestamp": "2025-08-27T13:20:15Z"
+  },
+  {
+    "id": "msg11",
+    "conversationId": "conv3",
+    "sender": "agent",
+    "senderName": "Sarah Johnson",
+    "content": "Hi Michael, this is Sarah from customer support. I'm taking over this conversation to help resolve your payment issue.",
+    "timestamp": "2025-08-27T13:25:00Z"
+  }
+]

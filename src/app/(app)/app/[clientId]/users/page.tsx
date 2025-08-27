@@ -88,7 +88,7 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
       <AuthGuard clientId={params.clientId}>
         <div className="flex min-h-screen bg-gray-50">
           <Sidebar clientId={params.clientId} />
-          <main className="flex-1 ml-16 flex items-center justify-center">
+          <main className="flex-1 lg:ml-16 flex items-center justify-center">
             <div className="text-gray-500">Loading users...</div>
           </main>
         </div>
@@ -101,12 +101,12 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar clientId={params.clientId} />
       
-      <main className="flex-1 ml-16">
-        <div className="container max-w-7xl mx-auto p-8">
-          <div className="mb-8">
+      <main className="flex-1 lg:ml-16">
+        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
+          <div className="mb-6 lg:mb-8">
             <div className="flex items-center justify-between mb-6">
               <div>
-                <h1 className="text-3xl font-bold mb-2">User Management</h1>
+                <h1 className="text-2xl lg:text-3xl font-bold mb-2">User Management</h1>
                 <p className="text-gray-600">Manage team members and their access levels</p>
               </div>
               <button className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
@@ -116,7 +116,7 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
             </div>
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6 lg:mb-8">
               <div className="bg-white rounded-xl border border-gray-200 p-6">
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">

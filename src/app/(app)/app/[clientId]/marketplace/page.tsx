@@ -195,15 +195,15 @@ export default function MarketplacePage({ params }: { params: { clientId: string
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar clientId={client.id} />
       
-      <main className="flex-1 ml-16">
-        <div className="container max-w-7xl mx-auto p-8">
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Bot Marketplace</h1>
+      <main className="flex-1 lg:ml-16">
+        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
+          <div className="mb-6 lg:mb-8">
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2">Bot Marketplace</h1>
             <p className="text-gray-600">Choose from our collection of pre-built bot templates</p>
           </div>
 
           {/* Search and Filters */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-8">
+          <div className="bg-white rounded-xl border border-gray-200 p-4 lg:p-6 mb-6 lg:mb-8">
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1">
                 <input
@@ -233,7 +233,7 @@ export default function MarketplacePage({ params }: { params: { clientId: string
           </div>
 
           {/* Template Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
             {filteredTemplates.map(template => (
               <div key={template.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:scale-105">
                 {/* Header with badges */}
@@ -252,8 +252,8 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                   </div>
                   
                   {/* Large Avatar */}
-                  <div className="p-8 pt-12">
-                    <div className="w-32 h-32 mx-auto mb-4">
+                  <div className="p-6 lg:p-8 pt-10 lg:pt-12">
+                    <div className="w-24 h-24 lg:w-32 lg:h-32 mx-auto mb-4">
                       <img 
                         src={template.image}
                         alt={template.name}
@@ -264,7 +264,7 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                 </div>
 
                 {/* Content */}
-                <div className="p-6 pt-0">
+                <div className="p-4 lg:p-6 pt-0">
                   <div className="text-center mb-4">
                     <h3 className="font-bold text-lg mb-1">{template.name}</h3>
                     <p className="text-sm text-gray-500 mb-2">{template.category}</p>

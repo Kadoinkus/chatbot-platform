@@ -131,13 +131,13 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
       <div className="flex min-h-screen bg-gray-50">
         <Sidebar clientId={params.clientId} />
         
-        <main className="flex-1 ml-16">
-          <div className="container max-w-7xl mx-auto p-8">
+        <main className="flex-1 lg:ml-16">
+          <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
             {/* Header */}
-            <div className="mb-8">
-              <div className="flex items-center justify-between">
+            <div className="mb-6 lg:mb-8">
+              <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                 <div>
-                  <h1 className="text-3xl font-bold mb-2">Settings</h1>
+                  <h1 className="text-2xl lg:text-3xl font-bold mb-2">Settings</h1>
                   <p className="text-gray-600">Manage your account settings and preferences</p>
                 </div>
                 {hasChanges && (
@@ -170,17 +170,18 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
               </div>
             )}
 
-            <div className="flex gap-6">
+            <div className="flex flex-col lg:flex-row gap-6">
               {/* Sidebar Navigation */}
-              <div className="w-64">
-                <nav className="bg-white rounded-xl border border-gray-200 p-2">
+              <div className="w-full lg:w-64">
+                <nav className="bg-white rounded-xl border border-gray-200 p-2 lg:block">
+                  <div className="flex lg:block overflow-x-auto lg:overflow-x-visible gap-2 lg:gap-0">
                   {tabs.map(tab => {
                     const Icon = tab.icon;
                     return (
                       <button
                         key={tab.id}
                         onClick={() => setActiveTab(tab.id)}
-                        className={`w-full flex items-center justify-between px-4 py-2 rounded-lg text-left transition-colors ${
+                        className={`flex-shrink-0 lg:w-full flex items-center justify-between px-4 py-2 rounded-lg text-left transition-colors ${
                           activeTab === tab.id
                             ? 'bg-black text-white'
                             : 'hover:bg-gray-100 text-gray-700'
@@ -194,6 +195,7 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
                       </button>
                     );
                   })}
+                  </div>
                 </nav>
               </div>
 
@@ -205,7 +207,7 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
                     <h2 className="text-xl font-semibold mb-6">General Settings</h2>
                     
                     <div className="space-y-6">
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Company Name</label>
                           <input
@@ -226,7 +228,7 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Phone Number</label>
                           <input
@@ -521,7 +523,7 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
                         </div>
                       </div>
 
-                      <div className="grid grid-cols-2 gap-6">
+                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                         <div>
                           <label className="block text-sm font-medium text-gray-700 mb-2">Billing Email</label>
                           <input

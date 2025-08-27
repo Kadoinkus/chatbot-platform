@@ -46,8 +46,8 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar clientId={client.id} />
       
-      <main className="flex-1 ml-16">
-        <div className="container max-w-7xl mx-auto p-8">
+      <main className="flex-1 lg:ml-16">
+        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
           <Link 
             href={`/app/${client.id}`}
             className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
@@ -84,7 +84,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </div>
             </div>
             
-            <div className="grid grid-cols-4 gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
               <div className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center gap-2 text-gray-600 mb-2">
                   <MessageSquare size={16} />
@@ -123,7 +123,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
             </div>
           </div>
           
-          <div className="grid grid-cols-2 gap-6 mb-6">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h2 className="font-semibold mb-4">Conversation Volume (7 days)</h2>
               {metrics && <UsageLine data={metrics.usageByDay} />}

@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import StatusBadge from '@/components/StatusBadge';
-import { MessageSquare, Clock, TrendingUp } from 'lucide-react';
+import { MessageSquare, Clock, TrendingUp, BarChart3, Palette, Brain, Headphones } from 'lucide-react';
 import type { Mascot } from '@/lib/data';
 
 interface BotCardProps {
@@ -9,15 +9,21 @@ interface BotCardProps {
 }
 
 export default function BotCard({ bot, clientId }: BotCardProps) {
+  const handleActionClick = (e: React.MouseEvent, path: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    window.location.href = path;
+  };
+
   return (
-    <Link href={`/app/${clientId}/bot/${bot.id}`}>
-      <div className="bg-white rounded-xl border border-gray-200 p-6 hover:shadow-lg transition-all cursor-pointer group">
+    <div className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all group">
+      <Link href={`/app/${clientId}/bot/${bot.id}/analytics`} className="block p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-4">
             <img 
               src={bot.image} 
               alt={bot.name}
-              className="w-16 h-16 rounded-full bg-gray-100 group-hover:scale-110 transition-transform"
+              className="w-16 h-16 rounded-full bg-gray-100 group-hover:scale-105 transition-transform"
             />
             <div>
               <h3 className="font-semibold text-lg">{bot.name}</h3>
@@ -27,7 +33,7 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
           <StatusBadge status={bot.status} />
         </div>
         
-        <div className="grid grid-cols-3 gap-4 mt-6">
+        <div className="grid grid-cols-3 gap-4">
           <div className="text-center">
             <div className="flex items-center justify-center gap-1 text-gray-600 mb-1">
               <MessageSquare size={14} />
@@ -52,7 +58,47 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
             <p className="font-semibold text-xl">{bot.metrics.resolutionRate}%</p>
           </div>
         </div>
+      </Link>
+      
+      <div className="border-t border-gray-100">
+        <div className="grid grid-cols-4 divide-x divide-gray-100">
+          <Link
+            href={`/app/${clientId}/bot/${bot.id}/analytics`}
+            onClick={(e) => handleActionClick(e, `/app/${clientId}/bot/${bot.id}/analytics`)}
+            className="flex flex-col items-center justify-center py-3 px-2 hover:bg-gray-50 transition-colors group/btn"
+          >
+            <BarChart3 size={18} className="text-gray-600 group-hover/btn:text-gray-900 mb-1" />
+            <span className="text-xs text-gray-600 group-hover/btn:text-gray-900 font-medium">Analytics</span>
+          </Link>
+          
+          <Link
+            href={`/app/${clientId}/bot/${bot.id}/mascot`}
+            onClick={(e) => handleActionClick(e, `/app/${clientId}/bot/${bot.id}/mascot`)}
+            className="flex flex-col items-center justify-center py-3 px-2 hover:bg-gray-50 transition-colors group/btn"
+          >
+            <Palette size={18} className="text-gray-600 group-hover/btn:text-gray-900 mb-1" />
+            <span className="text-xs text-gray-600 group-hover/btn:text-gray-900 font-medium">Mascot</span>
+          </Link>
+          
+          <Link
+            href={`/app/${clientId}/bot/${bot.id}/brain`}
+            onClick={(e) => handleActionClick(e, `/app/${clientId}/bot/${bot.id}/brain`)}
+            className="flex flex-col items-center justify-center py-3 px-2 hover:bg-gray-50 transition-colors group/btn"
+          >
+            <Brain size={18} className="text-gray-600 group-hover/btn:text-gray-900 mb-1" />
+            <span className="text-xs text-gray-600 group-hover/btn:text-gray-900 font-medium">Brain</span>
+          </Link>
+          
+          <Link
+            href={`/app/${clientId}/bot/${bot.id}/support`}
+            onClick={(e) => handleActionClick(e, `/app/${clientId}/bot/${bot.id}/support`)}
+            className="flex flex-col items-center justify-center py-3 px-2 hover:bg-gray-50 transition-colors group/btn"
+          >
+            <Headphones size={18} className="text-gray-600 group-hover/btn:text-gray-900 mb-1" />
+            <span className="text-xs text-gray-600 group-hover/btn:text-gray-900 font-medium">Support</span>
+          </Link>
+        </div>
       </div>
-    </Link>
+    </div>
   );
 }

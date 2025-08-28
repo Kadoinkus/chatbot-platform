@@ -17,13 +17,13 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
   const [connections, setConnections] = useState<any[]>([]);
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [integrationMode, setIntegrationMode] = useState<'builtin' | 'external'>('builtin');
-  const [botName, setBotName] = useState('');
+  const [botName, setBotName] = useState('Assistant');
   const [botAgeGroup, setBotAgeGroup] = useState('professional');
   const [botBackstory, setBotBackstory] = useState('I am a helpful AI assistant created to provide support and answer questions.');
   const [selectedPersonality, setSelectedPersonality] = useState('professional');
   const [customPersonalityDesc, setCustomPersonalityDesc] = useState('');
-  const [responseFreedom, setResponseFreedom] = useState(50);
-  const [customPersonalityTypes, setCustomPersonalityTypes] = useState<{[key: string]: {name: string, description: string, values: any}}>({});
+  const [responseFreedom, setResponseFreedom] = useState(25); // Default to professional level
+  const [customPersonalityTypes, setCustomPersonalityTypes] = useState<{[key: string]: {name: string, description: string, values: any, responseFreedom?: number}}>({});
   const [showSaveModal, setShowSaveModal] = useState(false);
   const [savePresetName, setSavePresetName] = useState('');
   const [savePresetDescription, setSavePresetDescription] = useState('');
@@ -40,36 +40,65 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
     professional: {
       name: 'Professional',
       description: 'Formal, helpful, and business-focused',
-      values: { friendly: 50, professional: 90, humorous: 20, empathetic: 70, concise: 80, creative: 40 }
+      values: { communicationStyle: 20, responseApproach: 30, interactionTone: 25, supportStyle: 40 },
+      responseFreedom: 25
     },
     friendly: {
       name: 'Friendly',
       description: 'Warm, approachable, and conversational',
-      values: { friendly: 95, professional: 40, humorous: 70, empathetic: 85, concise: 50, creative: 60 }
+      values: { communicationStyle: 70, responseApproach: 60, interactionTone: 65, supportStyle: 75 },
+      responseFreedom: 55
     },
     creative: {
       name: 'Creative',
       description: 'Innovative, engaging, and inspiring',
-      values: { friendly: 70, professional: 50, humorous: 80, empathetic: 60, concise: 40, creative: 95 }
+      values: { communicationStyle: 75, responseApproach: 80, interactionTone: 85, supportStyle: 60 },
+      responseFreedom: 85
     },
     supportive: {
       name: 'Supportive',
       description: 'Patient, understanding, and helpful',
-      values: { friendly: 80, professional: 60, humorous: 30, empathetic: 95, concise: 60, creative: 50 }
+      values: { communicationStyle: 60, responseApproach: 75, interactionTone: 45, supportStyle: 85 },
+      responseFreedom: 45
     },
     expert: {
       name: 'Expert',
       description: 'Knowledgeable, authoritative, and detailed',
-      values: { friendly: 40, professional: 85, humorous: 15, empathetic: 60, concise: 70, creative: 35 }
+      values: { communicationStyle: 25, responseApproach: 20, interactionTone: 30, supportStyle: 35 },
+      responseFreedom: 20
     },
     casual: {
       name: 'Casual',
       description: 'Relaxed, informal, and easy-going',
-      values: { friendly: 90, professional: 30, humorous: 75, empathetic: 70, concise: 40, creative: 80 }
+      values: { communicationStyle: 80, responseApproach: 65, interactionTone: 75, supportStyle: 70 },
+      responseFreedom: 70
     }
   };
 
   const [personality, setPersonality] = useState(personalityTypes.professional.values);
+
+  const personalitySpectrums = {
+    communicationStyle: {
+      name: 'Communication Style',
+      left: { label: 'Professional', description: 'Formal language, business terminology' },
+      right: { label: 'Casual', description: 'Relaxed tone, conversational' }
+    },
+    responseApproach: {
+      name: 'Response Approach',
+      left: { label: 'Concise', description: 'Brief, to-the-point answers' },
+      right: { label: 'Detailed', description: 'Comprehensive explanations' }
+    },
+    interactionTone: {
+      name: 'Interaction Tone',
+      left: { label: 'Serious', description: 'Focus on facts, straightforward' },
+      right: { label: 'Playful', description: 'Uses humor, engaging personality' }
+    },
+    supportStyle: {
+      name: 'Support Style',
+      left: { label: 'Direct', description: 'Task-focused, efficient solutions' },
+      right: { label: 'Empathetic', description: 'Understanding, supportive' }
+    }
+  };
   
 
   const [knowledge, setKnowledge] = useState([
@@ -88,7 +117,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
         ]);
         setClient(clientData);
         setBot(botData);
-        setBotName(botData.name); // Initialize with actual bot name
+        setBotName(botData.name || 'Assistant'); // Initialize with actual bot name or fallback
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -113,8 +142,21 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
     const currentType = personalityTypes[selectedPersonality as keyof typeof personalityTypes] || customPersonalityTypes[selectedPersonality];
     if (currentType) {
       const newValues = { ...personality, [trait]: value };
-      const hasChanges = Object.keys(newValues).some(key => newValues[key] !== currentType.values[key]);
-      setHasCustomChanges(hasChanges);
+      const hasPersonalityChanges = Object.keys(newValues).some(key => newValues[key] !== currentType.values[key]);
+      const hasResponseFreedomChanges = responseFreedom !== currentType.responseFreedom;
+      setHasCustomChanges(hasPersonalityChanges || hasResponseFreedomChanges);
+    }
+  };
+
+  const handleResponseFreedomChange = (value: number) => {
+    setResponseFreedom(value);
+    
+    // Check if response freedom differs from the selected personality type
+    const currentType = personalityTypes[selectedPersonality as keyof typeof personalityTypes] || customPersonalityTypes[selectedPersonality];
+    if (currentType) {
+      const hasPersonalityChanges = Object.keys(personality).some(key => personality[key as keyof typeof personality] !== currentType.values[key]);
+      const hasResponseFreedomChanges = value !== currentType.responseFreedom;
+      setHasCustomChanges(hasPersonalityChanges || hasResponseFreedomChanges);
     }
   };
 
@@ -123,8 +165,11 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
     setHasCustomChanges(false);
     if (personalityTypes[typeKey as keyof typeof personalityTypes]) {
       setPersonality(personalityTypes[typeKey as keyof typeof personalityTypes].values);
+      setResponseFreedom(personalityTypes[typeKey as keyof typeof personalityTypes].responseFreedom);
     } else if (customPersonalityTypes[typeKey]) {
       setPersonality(customPersonalityTypes[typeKey].values);
+      // For custom personalities, use saved response freedom or default to balanced
+      setResponseFreedom(customPersonalityTypes[typeKey].responseFreedom || 50);
     }
   };
 
@@ -135,7 +180,8 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
     const newCustomType = {
       name: savePresetName,
       description: savePresetDescription || `Custom personality: ${savePresetName}`,
-      values: { ...personality }
+      values: { ...personality },
+      responseFreedom: responseFreedom
     };
     
     setCustomPersonalityTypes(prev => ({ ...prev, [presetKey]: newCustomType }));
@@ -566,29 +612,42 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                           <Sliders size={18} />
                           Fine-tune Personality
                         </h3>
-                        <p className="text-sm text-gray-600 mb-4">Adjust the personality traits to perfectly match your needs.</p>
+                        <p className="text-sm text-gray-600 mb-4">Adjust the personality balance to perfectly match your needs.</p>
                         
-                        <div className="space-y-6">
-                          {Object.entries(personality).map(([trait, value]) => (
-                            <div key={trait}>
-                              <div className="flex justify-between mb-2">
-                                <label className="text-sm font-medium capitalize">{trait}</label>
-                                <span className="text-sm text-gray-600">{value}%</span>
+                        <div className="space-y-8">
+                          {Object.entries(personalitySpectrums).map(([spectrumKey, spectrum]) => (
+                            <div key={spectrumKey} className="space-y-3">
+                              <div className="flex justify-between items-center mb-2">
+                                <label className="text-sm font-medium">{spectrum.name}</label>
+                                <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
+                                  {(personality[spectrumKey as keyof typeof personality] || 50) < 40 ? 'More ' + spectrum.left.label : 
+                                   (personality[spectrumKey as keyof typeof personality] || 50) > 60 ? 'More ' + spectrum.right.label : 'Balanced'}
+                                </div>
                               </div>
-                              <input
-                                type="range"
-                                min="0"
-                                max="100"
-                                value={value}
-                                onChange={(e) => handleSliderChange(trait, Number(e.target.value))}
-                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                                style={{
-                                  background: `linear-gradient(to right, #000 0%, #000 ${value}%, #e5e7eb ${value}%, #e5e7eb 100%)`
-                                }}
-                              />
-                              <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                <span>Less</span>
-                                <span>More</span>
+                              
+                              <div className="relative">
+                                <input
+                                  type="range"
+                                  min="0"
+                                  max="100"
+                                  value={personality[spectrumKey as keyof typeof personality] || 50}
+                                  onChange={(e) => handleSliderChange(spectrumKey, Number(e.target.value))}
+                                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                  style={{
+                                    background: `linear-gradient(to right, #000 0%, #000 ${personality[spectrumKey as keyof typeof personality] || 50}%, #e5e7eb ${personality[spectrumKey as keyof typeof personality] || 50}%, #e5e7eb 100%)`
+                                  }}
+                                />
+                              </div>
+                              
+                              <div className="flex justify-between text-xs text-gray-500 mt-2">
+                                <div className="text-left max-w-[40%]">
+                                  <div className="font-medium text-gray-700">{spectrum.left.label}</div>
+                                  <div className="text-gray-500">{spectrum.left.description}</div>
+                                </div>
+                                <div className="text-right max-w-[40%]">
+                                  <div className="font-medium text-gray-700">{spectrum.right.label}</div>
+                                  <div className="text-gray-500">{spectrum.right.description}</div>
+                                </div>
                               </div>
                             </div>
                           ))}
@@ -621,28 +680,42 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                         <p className="text-sm text-gray-600 mb-4">
                           Control how creative vs conservative your bot should be with its responses.
                         </p>
-                        <div className="space-y-3">
-                          <div className="flex justify-between mb-2">
+                        
+                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                          <div className="flex justify-between items-center mb-3">
                             <span className="text-sm font-medium">Response Style</span>
-                            <span className="text-sm text-gray-600">
-                              {responseFreedom <= 30 ? 'Conservative' : responseFreedom <= 70 ? 'Balanced' : 'Creative'}
+                            <span className="text-sm text-gray-600 px-2 py-1 bg-white rounded">
+                              {(responseFreedom || 50) <= 30 ? 'Conservative' : (responseFreedom || 50) <= 70 ? 'Balanced' : 'Creative'}
                             </span>
                           </div>
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={responseFreedom}
-                            onChange={(e) => setResponseFreedom(Number(e.target.value))}
-                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
-                            style={{
-                              background: `linear-gradient(to right, #000 0%, #000 ${responseFreedom}%, #e5e7eb ${responseFreedom}%, #e5e7eb 100%)`
-                            }}
-                          />
+                          
+                          <div className="mb-4">
+                            <input
+                              type="range"
+                              min="0"
+                              max="100"
+                              value={responseFreedom || 50}
+                              onChange={(e) => handleResponseFreedomChange(Number(e.target.value))}
+                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                              style={{
+                                background: `linear-gradient(to right, #000 0%, #000 ${responseFreedom || 50}%, #e5e7eb ${responseFreedom || 50}%, #e5e7eb 100%)`
+                              }}
+                            />
+                          </div>
+                          
                           <div className="flex justify-between text-xs text-gray-500">
-                            <span>Conservative<br/><span className="text-xs text-gray-400">Sticks to knowledge base</span></span>
-                            <span className="text-center">Balanced<br/><span className="text-xs text-gray-400">Some flexibility</span></span>
-                            <span className="text-right">Creative<br/><span className="text-xs text-gray-400">More spontaneous</span></span>
+                            <div className="text-center">
+                              <div className="font-medium text-gray-700">Conservative</div>
+                              <div className="text-gray-500 mt-1">Sticks to knowledge base</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-medium text-gray-700">Balanced</div>
+                              <div className="text-gray-500 mt-1">Some flexibility</div>
+                            </div>
+                            <div className="text-center">
+                              <div className="font-medium text-gray-700">Creative</div>
+                              <div className="text-gray-500 mt-1">More spontaneous</div>
+                            </div>
                           </div>
                         </div>
                       </div>

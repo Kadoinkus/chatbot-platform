@@ -16,41 +16,60 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
   const [connections, setConnections] = useState<any[]>([]);
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [integrationMode, setIntegrationMode] = useState<'builtin' | 'external'>('builtin');
-  const [selectedPreset, setSelectedPreset] = useState<string>('professional');
-  const [customMode, setCustomMode] = useState(false);
-  const [customPresets, setCustomPresets] = useState<{[key: string]: {name: string, description: string, icon: string, values: any}}>({});
+  const [botName, setBotName] = useState('Assistant');
+  const [botAgeGroup, setBotAgeGroup] = useState('professional');
+  const [botBackstory, setBotBackstory] = useState('I am a helpful AI assistant created to provide support and answer questions.');
+  const [selectedPersonality, setSelectedPersonality] = useState('professional');
+  const [customPersonalityDesc, setCustomPersonalityDesc] = useState('');
+  const [responseFreedom, setResponseFreedom] = useState(50);
+  const [customPersonalityTypes, setCustomPersonalityTypes] = useState<{[key: string]: {name: string, description: string, values: any}}>({});
   const [showSaveModal, setShowSaveModal] = useState(false);
-  const [presetName, setPresetName] = useState('');
-  const [presetDescription, setPresetDescription] = useState('');
+  const [savePresetName, setSavePresetName] = useState('');
+  const [savePresetDescription, setSavePresetDescription] = useState('');
+  const [hasCustomChanges, setHasCustomChanges] = useState(false);
   
-  const personalityPresets = {
+  const ageGroups = {
+    young: { label: 'Young Adult (18-25)', description: 'Energetic, uses modern language, familiar with latest trends' },
+    professional: { label: 'Professional (26-40)', description: 'Mature, business-focused, balanced approach' },
+    experienced: { label: 'Experienced (41-55)', description: 'Wise, authoritative, draws from experience' },
+    senior: { label: 'Senior Expert (55+)', description: 'Highly knowledgeable, patient, mentor-like' }
+  };
+
+  const personalityTypes = {
     professional: {
       name: 'Professional',
       description: 'Formal, helpful, and business-focused',
-      icon: '👔',
       values: { friendly: 50, professional: 90, humorous: 20, empathetic: 70, concise: 80, creative: 40 }
     },
     friendly: {
       name: 'Friendly',
       description: 'Warm, approachable, and conversational',
-      icon: '😊',
       values: { friendly: 95, professional: 40, humorous: 70, empathetic: 85, concise: 50, creative: 60 }
     },
     creative: {
       name: 'Creative',
       description: 'Innovative, engaging, and inspiring',
-      icon: '🎨',
       values: { friendly: 70, professional: 50, humorous: 80, empathetic: 60, concise: 40, creative: 95 }
     },
     supportive: {
       name: 'Supportive',
       description: 'Patient, understanding, and helpful',
-      icon: '🤝',
       values: { friendly: 80, professional: 60, humorous: 30, empathetic: 95, concise: 60, creative: 50 }
+    },
+    expert: {
+      name: 'Expert',
+      description: 'Knowledgeable, authoritative, and detailed',
+      values: { friendly: 40, professional: 85, humorous: 15, empathetic: 60, concise: 70, creative: 35 }
+    },
+    casual: {
+      name: 'Casual',
+      description: 'Relaxed, informal, and easy-going',
+      values: { friendly: 90, professional: 30, humorous: 75, empathetic: 70, concise: 40, creative: 80 }
     }
   };
+
+  const [personality, setPersonality] = useState(personalityTypes.professional.values);
   
-  const [personality, setPersonality] = useState(personalityPresets.professional.values);
 
   const [knowledge, setKnowledge] = useState([
     { id: 1, title: 'Product Documentation', items: 245, status: 'active', lastUpdated: '2 hours ago' },
@@ -87,60 +106,57 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
 
   const handleSliderChange = (trait: string, value: number) => {
     setPersonality(prev => ({ ...prev, [trait]: value }));
-    if (!customMode) {
-      setCustomMode(true);
-      setSelectedPreset('custom');
-    }
-  };
-
-  const handlePresetSelect = (presetKey: string) => {
-    setSelectedPreset(presetKey);
-    if (presetKey === 'custom') {
-      setCustomMode(true);
-    } else if (personalityPresets[presetKey as keyof typeof personalityPresets]) {
-      setPersonality(personalityPresets[presetKey as keyof typeof personalityPresets].values);
-      setCustomMode(false);
-    } else if (customPresets[presetKey]) {
-      setPersonality(customPresets[presetKey].values);
-      setCustomMode(false);
-    }
-  };
-
-  const handleCustomizePreset = () => {
-    setCustomMode(true);
-    setSelectedPreset('custom');
-  };
-
-  const handleSavePreset = () => {
-    if (!presetName.trim()) return;
     
-    const presetKey = presetName.toLowerCase().replace(/[^a-z0-9]/g, '_');
-    const newPreset = {
-      name: presetName,
-      description: presetDescription || `Custom personality: ${presetName}`,
-      icon: '⭐',
+    // Check if current values differ from the selected personality type
+    const currentType = personalityTypes[selectedPersonality as keyof typeof personalityTypes] || customPersonalityTypes[selectedPersonality];
+    if (currentType) {
+      const newValues = { ...personality, [trait]: value };
+      const hasChanges = Object.keys(newValues).some(key => newValues[key] !== currentType.values[key]);
+      setHasCustomChanges(hasChanges);
+    }
+  };
+
+  const handlePersonalityTypeChange = (typeKey: string) => {
+    setSelectedPersonality(typeKey);
+    setHasCustomChanges(false);
+    if (personalityTypes[typeKey as keyof typeof personalityTypes]) {
+      setPersonality(personalityTypes[typeKey as keyof typeof personalityTypes].values);
+    } else if (customPersonalityTypes[typeKey]) {
+      setPersonality(customPersonalityTypes[typeKey].values);
+    }
+  };
+
+  const handleSaveCustomPersonality = () => {
+    if (!savePresetName.trim()) return;
+    
+    const presetKey = `custom_${savePresetName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
+    const newCustomType = {
+      name: savePresetName,
+      description: savePresetDescription || `Custom personality: ${savePresetName}`,
       values: { ...personality }
     };
     
-    setCustomPresets(prev => ({ ...prev, [presetKey]: newPreset }));
-    setSelectedPreset(presetKey);
-    setCustomMode(false);
+    setCustomPersonalityTypes(prev => ({ ...prev, [presetKey]: newCustomType }));
+    setSelectedPersonality(presetKey);
+    setHasCustomChanges(false);
     setShowSaveModal(false);
-    setPresetName('');
-    setPresetDescription('');
+    setSavePresetName('');
+    setSavePresetDescription('');
   };
 
-  const handleDeleteCustomPreset = (presetKey: string) => {
-    setCustomPresets(prev => {
-      const newPresets = { ...prev };
-      delete newPresets[presetKey];
-      return newPresets;
+  const handleDeleteCustomPersonality = (typeKey: string) => {
+    setCustomPersonalityTypes(prev => {
+      const newTypes = { ...prev };
+      delete newTypes[typeKey];
+      return newTypes;
     });
-    if (selectedPreset === presetKey) {
-      setSelectedPreset('professional');
-      setPersonality(personalityPresets.professional.values);
+    if (selectedPersonality === typeKey) {
+      setSelectedPersonality('professional');
+      setPersonality(personalityTypes.professional.values);
+      setHasCustomChanges(false);
     }
   };
+
 
   const handleTemplateSelect = (templateType: string) => {
     setSelectedTemplate(templateType);
@@ -429,205 +445,206 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                   )}
                   {activeTab === 'personality' && integrationMode === 'builtin' && (
                     <div className="space-y-6">
+                      {/* Bot Identity */}
+                      <div>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                          <User size={18} />
+                          Bot Identity
+                        </h3>
+                        
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                          {/* Bot Name */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Bot Name</label>
+                            <input
+                              type="text"
+                              value={botName}
+                              onChange={(e) => setBotName(e.target.value)}
+                              placeholder="e.g., Alex, Sarah, Support Bot"
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                            />
+                          </div>
+
+                          {/* Age Group */}
+                          <div>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Age Group</label>
+                            <select
+                              value={botAgeGroup}
+                              onChange={(e) => setBotAgeGroup(e.target.value)}
+                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                            >
+                              {Object.entries(ageGroups).map(([key, group]) => (
+                                <option key={key} value={key}>{group.label}</option>
+                              ))}
+                            </select>
+                            <p className="text-xs text-gray-500 mt-1">{ageGroups[botAgeGroup as keyof typeof ageGroups]?.description}</p>
+                          </div>
+                        </div>
+
+                        {/* Backstory */}
+                        <div className="mt-4">
+                          <label className="block text-sm font-medium text-gray-700 mb-2">Backstory & Role</label>
+                          <textarea
+                            value={botBackstory}
+                            onChange={(e) => setBotBackstory(e.target.value)}
+                            placeholder="e.g., I am a customer service representative with 3 years of experience helping customers with technical issues. I work for TechCorp and specialize in software troubleshooting..."
+                            rows={3}
+                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+                          />
+                        </div>
+                      </div>
+
+                      {/* Personality Type */}
                       <div>
                         <h3 className="font-semibold mb-4 flex items-center gap-2">
                           <Sparkles size={18} />
-                          Personality Presets
+                          Personality Type
                         </h3>
-                        
-                        {/* Preset Selection */}
-                        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-                          {/* Built-in Presets */}
-                          {Object.entries(personalityPresets).map(([key, preset]) => (
-                            <button
-                              key={key}
-                              onClick={() => handlePresetSelect(key)}
-                              className={`p-4 border-2 rounded-xl text-left transition-all ${
-                                selectedPreset === key && !customMode
-                                  ? 'border-black bg-gray-50' 
-                                  : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                              }`}
-                            >
-                              <div className="text-2xl mb-2">{preset.icon}</div>
-                              <h4 className="font-medium mb-1">{preset.name}</h4>
-                              <p className="text-sm text-gray-600">{preset.description}</p>
-                            </button>
-                          ))}
-                          
-                          {/* Custom Presets */}
-                          {Object.entries(customPresets).map(([key, preset]) => (
-                            <div key={key} className="relative">
-                              <button
-                                onClick={() => handlePresetSelect(key)}
-                                className={`w-full p-4 border-2 rounded-xl text-left transition-all ${
-                                  selectedPreset === key && !customMode
-                                    ? 'border-black bg-gray-50' 
-                                    : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                                }`}
-                              >
-                                <div className="text-2xl mb-2">{preset.icon}</div>
-                                <h4 className="font-medium mb-1">{preset.name}</h4>
-                                <p className="text-sm text-gray-600">{preset.description}</p>
-                                <span className="inline-block px-2 py-1 text-xs bg-blue-100 text-blue-700 rounded-full mt-2">
-                                  Custom
-                                </span>
-                              </button>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handleDeleteCustomPreset(key);
-                                }}
-                                className="absolute top-2 right-2 w-6 h-6 bg-red-100 hover:bg-red-200 text-red-600 rounded-full flex items-center justify-center text-sm transition-colors"
-                                title="Delete preset"
-                              >
-                                <Trash2 size={12} />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-
-                        {/* Custom Option */}
-                        <button
-                          onClick={() => handlePresetSelect('custom')}
-                          className={`w-full p-4 border-2 rounded-xl text-left transition-all ${
-                            selectedPreset === 'custom'
-                              ? 'border-black bg-gray-50' 
-                              : 'border-gray-200 hover:border-gray-300 hover:bg-gray-50'
-                          }`}
+                        <select
+                          value={selectedPersonality}
+                          onChange={(e) => handlePersonalityTypeChange(e.target.value)}
+                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent mb-2"
                         >
-                          <div className="flex items-center gap-3">
-                            <div className="text-2xl">⚙️</div>
-                            <div>
-                              <h4 className="font-medium">Custom Preset</h4>
-                              <p className="text-sm text-gray-600">Fine-tune personality traits manually</p>
-                            </div>
-                          </div>
-                        </button>
-                      </div>
-
-                      {/* Trait Sliders - shown when preset is selected or in custom mode */}
-                      {(selectedPreset || customMode) && (
-                        <div>
-                          <div className="flex items-center justify-between mb-4">
-                            <h3 className="font-semibold flex items-center gap-2">
-                              <Sliders size={18} />
-                              Personality Traits
-                              {!customMode && (
-                                <span className="text-sm font-normal text-gray-500">
-                                  ({personalityPresets[selectedPreset as keyof typeof personalityPresets]?.name || customPresets[selectedPreset]?.name})
-                                </span>
-                              )}
-                            </h3>
-                            {!customMode && (
-                              <button
-                                onClick={handleCustomizePreset}
-                                className="px-3 py-1 text-sm border border-gray-300 rounded-lg hover:bg-gray-50"
-                              >
-                                Customize
-                              </button>
-                            )}
-                          </div>
-                          
-                          <div className="space-y-6">
-                            {Object.entries(personality).map(([trait, value]) => (
-                              <div key={trait}>
-                                <div className="flex justify-between mb-2">
-                                  <label className="text-sm font-medium capitalize">{trait}</label>
-                                  <span className="text-sm text-gray-600">{value}%</span>
-                                </div>
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="100"
-                                  value={value}
-                                  onChange={(e) => handleSliderChange(trait, Number(e.target.value))}
-                                  disabled={!customMode}
-                                  className={`w-full h-2 bg-gray-200 rounded-lg appearance-none slider ${
-                                    customMode ? 'cursor-pointer' : 'cursor-not-allowed opacity-60'
-                                  }`}
-                                  style={{
-                                    background: `linear-gradient(to right, #000 0%, #000 ${value}%, #e5e7eb ${value}%, #e5e7eb 100%)`
-                                  }}
-                                />
-                                <div className="flex justify-between text-xs text-gray-500 mt-1">
-                                  <span>Less</span>
-                                  <span>More</span>
-                                </div>
-                              </div>
+                          <optgroup label="Built-in Types">
+                            {Object.entries(personalityTypes).map(([key, type]) => (
+                              <option key={key} value={key}>{type.name}</option>
                             ))}
-                          </div>
-
-                          {customMode && (
-                            <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                              <div className="flex items-center justify-between">
-                                <p className="text-sm text-blue-800">
-                                  💡 <strong>Custom mode active:</strong> You're now creating a personalized personality profile.
-                                </p>
-                                <button
-                                  onClick={() => setShowSaveModal(true)}
-                                  className="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
-                                >
-                                  Save as Preset
-                                </button>
-                              </div>
-                            </div>
+                          </optgroup>
+                          {Object.keys(customPersonalityTypes).length > 0 && (
+                            <optgroup label="Custom Types">
+                              {Object.entries(customPersonalityTypes).map(([key, type]) => (
+                                <option key={key} value={key}>⭐ {type.name}</option>
+                              ))}
+                            </optgroup>
+                          )}
+                        </select>
+                        <div className="flex items-center justify-between">
+                          <p className="text-sm text-gray-600">
+                            {personalityTypes[selectedPersonality as keyof typeof personalityTypes]?.description || 
+                             customPersonalityTypes[selectedPersonality]?.description}
+                          </p>
+                          {selectedPersonality.startsWith('custom_') && (
+                            <button
+                              onClick={() => handleDeleteCustomPersonality(selectedPersonality)}
+                              className="ml-2 p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded"
+                              title="Delete custom personality"
+                            >
+                              <Trash2 size={14} />
+                            </button>
                           )}
                         </div>
-                      )}
-                      
+                      </div>
+
+                      {/* Fine-tune Personality */}
                       <div>
                         <h3 className="font-semibold mb-4 flex items-center gap-2">
-                          <MessageSquare size={18} />
-                          Communication Style
+                          <Sliders size={18} />
+                          Fine-tune Personality
                         </h3>
+                        <p className="text-sm text-gray-600 mb-4">Adjust the personality traits to perfectly match your needs.</p>
+                        
+                        <div className="space-y-6">
+                          {Object.entries(personality).map(([trait, value]) => (
+                            <div key={trait}>
+                              <div className="flex justify-between mb-2">
+                                <label className="text-sm font-medium capitalize">{trait}</label>
+                                <span className="text-sm text-gray-600">{value}%</span>
+                              </div>
+                              <input
+                                type="range"
+                                min="0"
+                                max="100"
+                                value={value}
+                                onChange={(e) => handleSliderChange(trait, Number(e.target.value))}
+                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                                style={{
+                                  background: `linear-gradient(to right, #000 0%, #000 ${value}%, #e5e7eb ${value}%, #e5e7eb 100%)`
+                                }}
+                              />
+                              <div className="flex justify-between text-xs text-gray-500 mt-1">
+                                <span>Less</span>
+                                <span>More</span>
+                              </div>
+                            </div>
+                          ))}
+                        </div>
+                        
+                        {/* Save Custom Personality */}
+                        {hasCustomChanges && (
+                          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <p className="text-sm text-blue-800">
+                                💡 <strong>Custom changes detected:</strong> Save this as a new personality template?
+                              </p>
+                              <button
+                                onClick={() => setShowSaveModal(true)}
+                                className="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                              >
+                                Save as Template
+                              </button>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Response Freedom */}
+                      <div>
+                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                          <Shield size={18} />
+                          Response Freedom
+                        </h3>
+                        <p className="text-sm text-gray-600 mb-4">
+                          Control how creative vs conservative your bot should be with its responses.
+                        </p>
                         <div className="space-y-3">
-                          <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                            <input type="radio" name="style" defaultChecked className="text-black" />
-                            <div>
-                              <p className="font-medium">Conversational</p>
-                              <p className="text-sm text-gray-600">Natural, friendly dialogue style</p>
-                            </div>
-                          </label>
-                          <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                            <input type="radio" name="style" className="text-black" />
-                            <div>
-                              <p className="font-medium">Assistant</p>
-                              <p className="text-sm text-gray-600">Helpful and service-oriented</p>
-                            </div>
-                          </label>
-                          <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg hover:bg-gray-50 cursor-pointer">
-                            <input type="radio" name="style" className="text-black" />
-                            <div>
-                              <p className="font-medium">Expert</p>
-                              <p className="text-sm text-gray-600">Knowledgeable and authoritative</p>
-                            </div>
-                          </label>
+                          <div className="flex justify-between mb-2">
+                            <span className="text-sm font-medium">Response Style</span>
+                            <span className="text-sm text-gray-600">
+                              {responseFreedom <= 30 ? 'Conservative' : responseFreedom <= 70 ? 'Balanced' : 'Creative'}
+                            </span>
+                          </div>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={responseFreedom}
+                            onChange={(e) => setResponseFreedom(Number(e.target.value))}
+                            className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer slider"
+                            style={{
+                              background: `linear-gradient(to right, #000 0%, #000 ${responseFreedom}%, #e5e7eb ${responseFreedom}%, #e5e7eb 100%)`
+                            }}
+                          />
+                          <div className="flex justify-between text-xs text-gray-500">
+                            <span>Conservative<br/><span className="text-xs text-gray-400">Sticks to knowledge base</span></span>
+                            <span className="text-center">Balanced<br/><span className="text-xs text-gray-400">Some flexibility</span></span>
+                            <span className="text-right">Creative<br/><span className="text-xs text-gray-400">More spontaneous</span></span>
+                          </div>
                         </div>
                       </div>
                     </div>
                   )}
 
-                  {/* Save Preset Modal */}
+                  {/* Save Custom Personality Modal */}
                   {showSaveModal && (
                     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
                       <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
-                        <h3 className="text-lg font-semibold mb-4">Save Custom Preset</h3>
+                        <h3 className="text-lg font-semibold mb-4">Save Custom Personality</h3>
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Preset Name</label>
+                            <label className="block text-sm font-medium text-gray-700 mb-2">Template Name</label>
                             <input
                               type="text"
-                              value={presetName}
-                              onChange={(e) => setPresetName(e.target.value)}
-                              placeholder="e.g., Friendly Sales Bot"
+                              value={savePresetName}
+                              onChange={(e) => setSavePresetName(e.target.value)}
+                              placeholder="e.g., Friendly Sales Expert"
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
                           </div>
                           <div>
                             <label className="block text-sm font-medium text-gray-700 mb-2">Description (optional)</label>
                             <textarea
-                              value={presetDescription}
-                              onChange={(e) => setPresetDescription(e.target.value)}
+                              value={savePresetDescription}
+                              onChange={(e) => setSavePresetDescription(e.target.value)}
                               placeholder="Describe when to use this personality..."
                               rows={3}
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
@@ -638,24 +655,25 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                           <button
                             onClick={() => {
                               setShowSaveModal(false);
-                              setPresetName('');
-                              setPresetDescription('');
+                              setSavePresetName('');
+                              setSavePresetDescription('');
                             }}
                             className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
                           >
                             Cancel
                           </button>
                           <button
-                            onClick={handleSavePreset}
-                            disabled={!presetName.trim()}
+                            onClick={handleSaveCustomPersonality}
+                            disabled={!savePresetName.trim()}
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
-                            Save Preset
+                            Save Template
                           </button>
                         </div>
                       </div>
                     </div>
                   )}
+
                   
                   {activeTab === 'knowledge' && integrationMode === 'external' && (
                     <div className="text-center py-12">

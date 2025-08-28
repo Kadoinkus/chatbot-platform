@@ -23,6 +23,25 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
     return 'bg-red-500';
   };
 
+  // Mock billing plan data - in production this would come from props or API
+  const plans = ['Pro Plan', 'Starter', 'Pay-as-you-go', 'Prepaid Credits'];
+  const billingTypes = ['subscription', 'prepaid'];
+  const randomPlan = plans[Math.floor(Math.random() * plans.length)];
+  const randomBillingType = billingTypes[Math.floor(Math.random() * billingTypes.length)];
+  
+  const getBillingBadgeStyle = (plan: string, type: string) => {
+    if (type === 'prepaid') {
+      return 'bg-orange-100 text-orange-700 border-orange-200';
+    }
+    if (plan === 'Pro Plan') {
+      return 'bg-purple-100 text-purple-700 border-purple-200';
+    }
+    if (plan === 'Starter') {
+      return 'bg-blue-100 text-blue-700 border-blue-200';
+    }
+    return 'bg-gray-100 text-gray-700 border-gray-200';
+  };
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all group">
       <Link href={`/app/${clientId}/bot/${bot.id}/analytics`} className="block p-6">
@@ -41,6 +60,12 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
             <div>
               <h3 className="font-semibold text-lg">{bot.name}</h3>
               <p className="text-sm text-gray-600">{bot.description}</p>
+              {/* Billing plan badge */}
+              <div className="mt-2">
+                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getBillingBadgeStyle(randomPlan, randomBillingType)}`}>
+                  {randomBillingType === 'prepaid' ? 'Prepaid Credits' : randomPlan}
+                </span>
+              </div>
             </div>
           </div>
           <StatusBadge status={bot.status} />

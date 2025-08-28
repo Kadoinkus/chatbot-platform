@@ -5,6 +5,7 @@ import Sidebar from '@/components/Sidebar';
 import { ArrowLeft, Palette, Sparkles, Image, Type, Monitor, Smartphone, User, Eye, Smile, ShirtIcon as Shirt, HardHat, ShoppingCart, Lock, Crown, Zap, Package } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, Bot } from '@/lib/dataService';
+import { useCart } from '@/contexts/CartContext';
 
 export default function MascotStudioPage({ params }: { params: { clientId: string; botId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
@@ -37,6 +38,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
   const [ownedStudioPacks, setOwnedStudioPacks] = useState(['basic']);
   const [showPackSelector, setShowPackSelector] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState('');
+  const { addItem, toggleCart } = useCart();
 
   useEffect(() => {
     async function loadData() {
@@ -195,6 +197,33 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
         [setting]: value
       }
     }));
+  };
+
+  const handlePurchaseStudioPack = (packKey: string) => {
+    const pack = studioPacks[packKey as keyof typeof studioPacks];
+    if (!pack || pack.price === 0) return;
+
+    // Add to cart
+    addItem({
+      id: `studio-pack-${packKey}`,
+      type: 'addon',
+      name: pack.name,
+      description: pack.description,
+      price: pack.price,
+      image: '', // You might want to add image URLs to your studioPacks data
+      category: 'Studio Pack',
+      originalData: { packKey, type: 'studio-pack' }
+    });
+
+    // Mark as owned (simulate purchase)
+    setOwnedStudioPacks(prev => [...prev, packKey]);
+    
+    // Close any open modals/prompts
+    setShowUpgradePrompt('');
+    setShowPackSelector(false);
+
+    // Open cart to show the addition
+    toggleCart();
   };
 
   return (
@@ -455,7 +484,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                     <button 
                                       onClick={(e) => {
                                         e.stopPropagation();
-                                        setShowUpgradePrompt(packKey);
+                                        handlePurchaseStudioPack(packKey);
                                       }}
                                       className="text-xs text-blue-600 hover:text-blue-700 font-medium"
                                     >
@@ -485,13 +514,10 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                   </p>
                                   <div className="flex gap-2">
                                     <button 
-                                      onClick={() => {
-                                        setOwnedStudioPacks([...ownedStudioPacks, showUpgradePrompt]);
-                                        setShowUpgradePrompt('');
-                                      }}
+                                      onClick={() => handlePurchaseStudioPack(showUpgradePrompt)}
                                       className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700"
                                     >
-                                      Get {studioPacks[showUpgradePrompt as keyof typeof studioPacks].name} - ${studioPacks[showUpgradePrompt as keyof typeof studioPacks].price}
+                                      Add to Cart - ${studioPacks[showUpgradePrompt as keyof typeof studioPacks].price}
                                     </button>
                                     <button 
                                       onClick={() => setShowUpgradePrompt('')}
@@ -646,11 +672,11 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                                 <button 
                                                   onClick={(e) => {
                                                     e.stopPropagation();
-                                                    setOwnedStudioPacks([...ownedStudioPacks, key]);
+                                                    handlePurchaseStudioPack(key);
                                                   }}
                                                   className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 mt-1 w-full"
                                                 >
-                                                  Purchase
+                                                  Add to Cart
                                                 </button>
                                               )}
                                               {isOwned && (

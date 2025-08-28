@@ -2,7 +2,7 @@
 import { getClientById, getBotById } from '@/lib/dataService';
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { ArrowLeft, Brain, Sliders, BookOpen, MessageSquare, Zap, Shield, Sparkles, GitBranch, Plus, Play, Users, ShoppingCart, GraduationCap, Briefcase, User, ChevronRight, Settings, Copy, Trash2, Edit2 } from 'lucide-react';
+import { ArrowLeft, Brain, Sliders, BookOpen, MessageSquare, Zap, Shield, Sparkles, GitBranch, Plus, Play, Users, ShoppingCart, GraduationCap, Briefcase, User, ChevronRight, Settings, Copy, Trash2, Edit2, Link2, ExternalLink, CheckCircle, AlertCircle, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, Bot } from '@/lib/dataService';
 
@@ -60,6 +60,112 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
 
   const handleSliderChange = (trait: string, value: number) => {
     setPersonality(prev => ({ ...prev, [trait]: value }));
+  };
+
+  const handleTemplateSelect = (templateType: string) => {
+    setSelectedTemplate(templateType);
+    
+    switch (templateType) {
+      case 'university':
+        setFlowNodes([
+          { id: '1', type: 'start', label: 'Welcome', x: 50, y: 100 },
+          { id: '2', type: 'menu', label: 'Main Menu', x: 200, y: 100 },
+          { id: '3', type: 'action', label: 'Admissions', x: 350, y: 50 },
+          { id: '4', type: 'action', label: 'Courses', x: 350, y: 150 },
+          { id: '5', type: 'action', label: 'Campus Info', x: 350, y: 250 },
+          { id: '6', type: 'end', label: 'Contact Advisor', x: 500, y: 150 }
+        ]);
+        setConnections([
+          { from: '1', to: '2' },
+          { from: '2', to: '3' },
+          { from: '2', to: '4' },
+          { from: '2', to: '5' },
+          { from: '3', to: '6' },
+          { from: '4', to: '6' },
+          { from: '5', to: '6' }
+        ]);
+        break;
+      case 'support':
+        setFlowNodes([
+          { id: '1', type: 'start', label: 'Greeting', x: 50, y: 100 },
+          { id: '2', type: 'menu', label: 'Issue Type', x: 200, y: 100 },
+          { id: '3', type: 'action', label: 'Technical', x: 350, y: 50 },
+          { id: '4', type: 'action', label: 'Billing', x: 350, y: 150 },
+          { id: '5', type: 'action', label: 'General', x: 350, y: 250 },
+          { id: '6', type: 'end', label: 'Create Ticket', x: 500, y: 150 }
+        ]);
+        setConnections([
+          { from: '1', to: '2' },
+          { from: '2', to: '3' },
+          { from: '2', to: '4' },
+          { from: '2', to: '5' },
+          { from: '3', to: '6' },
+          { from: '4', to: '6' },
+          { from: '5', to: '6' }
+        ]);
+        break;
+      case 'webshop':
+        setFlowNodes([
+          { id: '1', type: 'start', label: 'Welcome', x: 50, y: 100 },
+          { id: '2', type: 'menu', label: 'Shop Menu', x: 200, y: 100 },
+          { id: '3', type: 'action', label: 'Browse Products', x: 350, y: 50 },
+          { id: '4', type: 'action', label: 'Order Status', x: 350, y: 150 },
+          { id: '5', type: 'action', label: 'Cart', x: 350, y: 250 },
+          { id: '6', type: 'end', label: 'Checkout', x: 500, y: 150 }
+        ]);
+        setConnections([
+          { from: '1', to: '2' },
+          { from: '2', to: '3' },
+          { from: '2', to: '4' },
+          { from: '2', to: '5' },
+          { from: '3', to: '6' },
+          { from: '5', to: '6' }
+        ]);
+        break;
+      case 'employee':
+        setFlowNodes([
+          { id: '1', type: 'start', label: 'HR Portal', x: 50, y: 100 },
+          { id: '2', type: 'menu', label: 'Employee Menu', x: 200, y: 100 },
+          { id: '3', type: 'action', label: 'Leave Request', x: 350, y: 50 },
+          { id: '4', type: 'action', label: 'Policies', x: 350, y: 150 },
+          { id: '5', type: 'action', label: 'Benefits', x: 350, y: 250 },
+          { id: '6', type: 'end', label: 'Submit Request', x: 500, y: 150 }
+        ]);
+        setConnections([
+          { from: '1', to: '2' },
+          { from: '2', to: '3' },
+          { from: '2', to: '4' },
+          { from: '2', to: '5' },
+          { from: '3', to: '6' }
+        ]);
+        break;
+      case 'personal':
+        setFlowNodes([
+          { id: '1', type: 'start', label: 'Hi there!', x: 50, y: 100 },
+          { id: '2', type: 'menu', label: 'How can I help?', x: 200, y: 100 },
+          { id: '3', type: 'action', label: 'Schedule', x: 350, y: 50 },
+          { id: '4', type: 'action', label: 'Reminders', x: 350, y: 150 },
+          { id: '5', type: 'action', label: 'Tasks', x: 350, y: 250 },
+          { id: '6', type: 'end', label: 'Done', x: 500, y: 150 }
+        ]);
+        setConnections([
+          { from: '1', to: '2' },
+          { from: '2', to: '3' },
+          { from: '2', to: '4' },
+          { from: '2', to: '5' },
+          { from: '3', to: '6' },
+          { from: '4', to: '6' },
+          { from: '5', to: '6' }
+        ]);
+        break;
+    }
+  };
+
+  const handleBackToTemplates = () => {
+    setSelectedTemplate(null);
+    setFlowNodes([]);
+    setConnections([]);
+    setSelectedNode(null);
   };
 
   return (
@@ -135,6 +241,16 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                       }`}
                     >
                       Chatflows
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('connect-api')}
+                      className={`pb-2 px-1 font-medium transition-colors relative ${
+                        activeTab === 'connect-api' 
+                          ? 'text-black border-b-2 border-black' 
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Connect API
                     </button>
                   </div>
                 </div>
@@ -271,26 +387,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                           
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <button
-                              onClick={() => {
-                                setSelectedTemplate('university');
-                                setFlowNodes([
-                                  { id: '1', type: 'start', label: 'Welcome', x: 50, y: 100 },
-                                  { id: '2', type: 'menu', label: 'Main Menu', x: 200, y: 100 },
-                                  { id: '3', type: 'action', label: 'Admissions', x: 350, y: 50 },
-                                  { id: '4', type: 'action', label: 'Courses', x: 350, y: 150 },
-                                  { id: '5', type: 'action', label: 'Campus Info', x: 350, y: 250 },
-                                  { id: '6', type: 'end', label: 'Contact Advisor', x: 500, y: 150 }
-                                ]);
-                                setConnections([
-                                  { from: '1', to: '2' },
-                                  { from: '2', to: '3' },
-                                  { from: '2', to: '4' },
-                                  { from: '2', to: '5' },
-                                  { from: '3', to: '6' },
-                                  { from: '4', to: '6' },
-                                  { from: '5', to: '6' }
-                                ]);
-                              }}
+                              onClick={() => handleTemplateSelect('university')}
                               className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
                             >
                               <div className="flex items-center justify-between mb-3">
@@ -302,26 +399,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                             </button>
                             
                             <button
-                              onClick={() => {
-                                setSelectedTemplate('support');
-                                setFlowNodes([
-                                  { id: '1', type: 'start', label: 'Greeting', x: 50, y: 100 },
-                                  { id: '2', type: 'menu', label: 'Issue Type', x: 200, y: 100 },
-                                  { id: '3', type: 'action', label: 'Technical', x: 350, y: 50 },
-                                  { id: '4', type: 'action', label: 'Billing', x: 350, y: 150 },
-                                  { id: '5', type: 'action', label: 'General', x: 350, y: 250 },
-                                  { id: '6', type: 'end', label: 'Create Ticket', x: 500, y: 150 }
-                                ]);
-                                setConnections([
-                                  { from: '1', to: '2' },
-                                  { from: '2', to: '3' },
-                                  { from: '2', to: '4' },
-                                  { from: '2', to: '5' },
-                                  { from: '3', to: '6' },
-                                  { from: '4', to: '6' },
-                                  { from: '5', to: '6' }
-                                ]);
-                              }}
+                              onClick={() => handleTemplateSelect('support')}
                               className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
                             >
                               <div className="flex items-center justify-between mb-3">
@@ -333,25 +411,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                             </button>
                             
                             <button
-                              onClick={() => {
-                                setSelectedTemplate('webshop');
-                                setFlowNodes([
-                                  { id: '1', type: 'start', label: 'Welcome', x: 50, y: 100 },
-                                  { id: '2', type: 'menu', label: 'Shop Menu', x: 200, y: 100 },
-                                  { id: '3', type: 'action', label: 'Browse Products', x: 350, y: 50 },
-                                  { id: '4', type: 'action', label: 'Order Status', x: 350, y: 150 },
-                                  { id: '5', type: 'action', label: 'Cart', x: 350, y: 250 },
-                                  { id: '6', type: 'end', label: 'Checkout', x: 500, y: 150 }
-                                ]);
-                                setConnections([
-                                  { from: '1', to: '2' },
-                                  { from: '2', to: '3' },
-                                  { from: '2', to: '4' },
-                                  { from: '2', to: '5' },
-                                  { from: '3', to: '6' },
-                                  { from: '5', to: '6' }
-                                ]);
-                              }}
+                              onClick={() => handleTemplateSelect('webshop')}
                               className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
                             >
                               <div className="flex items-center justify-between mb-3">
@@ -363,24 +423,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                             </button>
                             
                             <button
-                              onClick={() => {
-                                setSelectedTemplate('employee');
-                                setFlowNodes([
-                                  { id: '1', type: 'start', label: 'HR Portal', x: 50, y: 100 },
-                                  { id: '2', type: 'menu', label: 'Employee Menu', x: 200, y: 100 },
-                                  { id: '3', type: 'action', label: 'Leave Request', x: 350, y: 50 },
-                                  { id: '4', type: 'action', label: 'Policies', x: 350, y: 150 },
-                                  { id: '5', type: 'action', label: 'Benefits', x: 350, y: 250 },
-                                  { id: '6', type: 'end', label: 'Submit Request', x: 500, y: 150 }
-                                ]);
-                                setConnections([
-                                  { from: '1', to: '2' },
-                                  { from: '2', to: '3' },
-                                  { from: '2', to: '4' },
-                                  { from: '2', to: '5' },
-                                  { from: '3', to: '6' }
-                                ]);
-                              }}
+                              onClick={() => handleTemplateSelect('employee')}
                               className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
                             >
                               <div className="flex items-center justify-between mb-3">
@@ -392,26 +435,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                             </button>
                             
                             <button
-                              onClick={() => {
-                                setSelectedTemplate('personal');
-                                setFlowNodes([
-                                  { id: '1', type: 'start', label: 'Hi there!', x: 50, y: 100 },
-                                  { id: '2', type: 'menu', label: 'How can I help?', x: 200, y: 100 },
-                                  { id: '3', type: 'action', label: 'Schedule', x: 350, y: 50 },
-                                  { id: '4', type: 'action', label: 'Reminders', x: 350, y: 150 },
-                                  { id: '5', type: 'action', label: 'Tasks', x: 350, y: 250 },
-                                  { id: '6', type: 'end', label: 'Done', x: 500, y: 150 }
-                                ]);
-                                setConnections([
-                                  { from: '1', to: '2' },
-                                  { from: '2', to: '3' },
-                                  { from: '2', to: '4' },
-                                  { from: '2', to: '5' },
-                                  { from: '3', to: '6' },
-                                  { from: '4', to: '6' },
-                                  { from: '5', to: '6' }
-                                ]);
-                              }}
+                              onClick={() => handleTemplateSelect('personal')}
                               className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
                             >
                               <div className="flex items-center justify-between mb-3">
@@ -428,12 +452,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                           <div className="flex items-center justify-between mb-6">
                             <div className="flex items-center gap-3">
                               <button
-                                onClick={() => {
-                                  setSelectedTemplate(null);
-                                  setFlowNodes([]);
-                                  setConnections([]);
-                                  setSelectedNode(null);
-                                }}
+                                onClick={handleBackToTemplates}
                                 className="p-2 hover:bg-gray-100 rounded-lg"
                               >
                                 <ArrowLeft size={18} />
@@ -631,6 +650,135 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                             <input type="checkbox" className="rounded" />
                             <span className="text-sm">Use emojis in responses</span>
                           </label>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+                  
+                  {activeTab === 'connect-api' && (
+                    <div className="space-y-6">
+                      <div className="mb-6">
+                        <h3 className="font-semibold mb-2 flex items-center gap-2">
+                          <Link2 size={18} />
+                          Connect External Chatbot
+                        </h3>
+                        <p className="text-sm text-gray-600">Use your existing chatbot provider with our 3D mascot frontend</p>
+                      </div>
+                      
+                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <div className="flex items-start gap-3">
+                          <AlertCircle size={18} className="text-blue-600 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-blue-900">How it works</p>
+                            <p className="text-sm text-blue-700 mt-1">
+                              Connect your existing chatbot API and we'll handle the 3D mascot frontend. 
+                              Your chatbot logic stays the same, but gets a premium visual experience.
+                            </p>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div>
+                        <h4 className="font-medium mb-4">Choose Your Chatbot Partner</h4>
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          <div className="p-4 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all cursor-pointer group">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
+                                <MessageSquare size={20} className="text-orange-600" />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Partner</span>
+                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black" />
+                              </div>
+                            </div>
+                            <h5 className="font-semibold mb-1">Chatfuel</h5>
+                            <p className="text-sm text-gray-600 mb-3">Facebook Messenger & Instagram chatbot platform</p>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <CheckCircle size={12} className="text-green-500" />
+                              <span>Webhook Integration</span>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all cursor-pointer group">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
+                                <BotIcon size={20} className="text-blue-600" />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Partner</span>
+                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black" />
+                              </div>
+                            </div>
+                            <h5 className="font-semibold mb-1">ManyChat</h5>
+                            <p className="text-sm text-gray-600 mb-3">Multi-channel chatbot automation platform</p>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <CheckCircle size={12} className="text-green-500" />
+                              <span>API Integration</span>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all cursor-pointer group">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
+                                <Zap size={20} className="text-purple-600" />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Partner</span>
+                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black" />
+                              </div>
+                            </div>
+                            <h5 className="font-semibold mb-1">Botpress</h5>
+                            <p className="text-sm text-gray-600 mb-3">Open-source conversational AI platform</p>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <CheckCircle size={12} className="text-green-500" />
+                              <span>Webhook Integration</span>
+                            </div>
+                          </div>
+                          
+                          <div className="p-4 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all cursor-pointer group">
+                            <div className="flex items-center justify-between mb-3">
+                              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
+                                <Settings size={20} className="text-green-600" />
+                              </div>
+                              <div className="flex items-center gap-2">
+                                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">Custom</span>
+                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black" />
+                              </div>
+                            </div>
+                            <h5 className="font-semibold mb-1">Custom API</h5>
+                            <p className="text-sm text-gray-600 mb-3">Connect your own chatbot API or webhook</p>
+                            <div className="flex items-center gap-2 text-xs text-gray-500">
+                              <Settings size={12} className="text-gray-500" />
+                              <span>Custom Integration</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+                      
+                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
+                        <Link2 size={32} className="mx-auto mb-4 text-gray-400" />
+                        <h4 className="font-medium text-gray-900 mb-2">Don't see your provider?</h4>
+                        <p className="text-sm text-gray-600 mb-4">
+                          We're always adding new partners. Contact us to discuss integrating your chatbot provider.
+                        </p>
+                        <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 text-sm font-medium flex items-center gap-2 mx-auto">
+                          <ExternalLink size={14} />
+                          Request Integration
+                        </button>
+                      </div>
+                      
+                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                        <div className="flex items-start gap-3">
+                          <Sparkles size={18} className="text-yellow-600 mt-0.5" />
+                          <div>
+                            <p className="text-sm font-medium text-yellow-900">Benefits of API Integration</p>
+                            <ul className="text-sm text-yellow-800 mt-2 space-y-1">
+                              <li>• Keep your existing chatbot logic and flows</li>
+                              <li>• Add premium 3D mascot experience</li>
+                              <li>• Easy setup - just connect your API</li>
+                              <li>• Your customers get enhanced visual interaction</li>
+                            </ul>
+                          </div>
                         </div>
                       </div>
                     </div>

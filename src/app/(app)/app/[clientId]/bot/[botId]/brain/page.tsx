@@ -2,7 +2,7 @@
 import { getClientById, getBotById } from '@/lib/dataService';
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { ArrowLeft, Brain, Sliders, BookOpen, MessageSquare, Zap, Shield, Sparkles } from 'lucide-react';
+import { ArrowLeft, Brain, Sliders, BookOpen, MessageSquare, Zap, Shield, Sparkles, GitBranch, Plus, Play, Users, ShoppingCart, GraduationCap, Briefcase, User, ChevronRight, Settings, Copy, Trash2, Edit2 } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, Bot } from '@/lib/dataService';
 
@@ -11,6 +11,10 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
   const [bot, setBot] = useState<Bot | undefined>();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('personality');
+  const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
+  const [flowNodes, setFlowNodes] = useState<any[]>([]);
+  const [connections, setConnections] = useState<any[]>([]);
+  const [selectedNode, setSelectedNode] = useState<any>(null);
   
   const [personality, setPersonality] = useState({
     friendly: 80,
@@ -121,6 +125,16 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                       }`}
                     >
                       Response Templates
+                    </button>
+                    <button
+                      onClick={() => setActiveTab('chatflows')}
+                      className={`pb-2 px-1 font-medium transition-colors relative ${
+                        activeTab === 'chatflows' 
+                          ? 'text-black border-b-2 border-black' 
+                          : 'text-gray-600 hover:text-gray-900'
+                      }`}
+                    >
+                      Chatflows
                     </button>
                   </div>
                 </div>
@@ -240,6 +254,324 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                           Upload Documents
                         </button>
                       </div>
+                    </div>
+                  )}
+                  
+                  {activeTab === 'chatflows' && (
+                    <div className="space-y-6">
+                      {!selectedTemplate ? (
+                        <div>
+                          <div className="mb-6">
+                            <h3 className="font-semibold mb-2 flex items-center gap-2">
+                              <GitBranch size={18} />
+                              Select a Flow Template
+                            </h3>
+                            <p className="text-sm text-gray-600">Choose a pre-built chatflow template to get started quickly</p>
+                          </div>
+                          
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <button
+                              onClick={() => {
+                                setSelectedTemplate('university');
+                                setFlowNodes([
+                                  { id: '1', type: 'start', label: 'Welcome', x: 50, y: 100 },
+                                  { id: '2', type: 'menu', label: 'Main Menu', x: 200, y: 100 },
+                                  { id: '3', type: 'action', label: 'Admissions', x: 350, y: 50 },
+                                  { id: '4', type: 'action', label: 'Courses', x: 350, y: 150 },
+                                  { id: '5', type: 'action', label: 'Campus Info', x: 350, y: 250 },
+                                  { id: '6', type: 'end', label: 'Contact Advisor', x: 500, y: 150 }
+                                ]);
+                                setConnections([
+                                  { from: '1', to: '2' },
+                                  { from: '2', to: '3' },
+                                  { from: '2', to: '4' },
+                                  { from: '2', to: '5' },
+                                  { from: '3', to: '6' },
+                                  { from: '4', to: '6' },
+                                  { from: '5', to: '6' }
+                                ]);
+                              }}
+                              className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <GraduationCap size={24} className="text-gray-700" />
+                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black transition-colors" />
+                              </div>
+                              <h4 className="font-semibold mb-1">University</h4>
+                              <p className="text-sm text-gray-600">Student inquiries, admissions, course info</p>
+                            </button>
+                            
+                            <button
+                              onClick={() => {
+                                setSelectedTemplate('support');
+                                setFlowNodes([
+                                  { id: '1', type: 'start', label: 'Greeting', x: 50, y: 100 },
+                                  { id: '2', type: 'menu', label: 'Issue Type', x: 200, y: 100 },
+                                  { id: '3', type: 'action', label: 'Technical', x: 350, y: 50 },
+                                  { id: '4', type: 'action', label: 'Billing', x: 350, y: 150 },
+                                  { id: '5', type: 'action', label: 'General', x: 350, y: 250 },
+                                  { id: '6', type: 'end', label: 'Create Ticket', x: 500, y: 150 }
+                                ]);
+                                setConnections([
+                                  { from: '1', to: '2' },
+                                  { from: '2', to: '3' },
+                                  { from: '2', to: '4' },
+                                  { from: '2', to: '5' },
+                                  { from: '3', to: '6' },
+                                  { from: '4', to: '6' },
+                                  { from: '5', to: '6' }
+                                ]);
+                              }}
+                              className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <Users size={24} className="text-gray-700" />
+                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black transition-colors" />
+                              </div>
+                              <h4 className="font-semibold mb-1">Customer Support</h4>
+                              <p className="text-sm text-gray-600">Ticketing, FAQs, issue resolution</p>
+                            </button>
+                            
+                            <button
+                              onClick={() => {
+                                setSelectedTemplate('webshop');
+                                setFlowNodes([
+                                  { id: '1', type: 'start', label: 'Welcome', x: 50, y: 100 },
+                                  { id: '2', type: 'menu', label: 'Shop Menu', x: 200, y: 100 },
+                                  { id: '3', type: 'action', label: 'Browse Products', x: 350, y: 50 },
+                                  { id: '4', type: 'action', label: 'Order Status', x: 350, y: 150 },
+                                  { id: '5', type: 'action', label: 'Cart', x: 350, y: 250 },
+                                  { id: '6', type: 'end', label: 'Checkout', x: 500, y: 150 }
+                                ]);
+                                setConnections([
+                                  { from: '1', to: '2' },
+                                  { from: '2', to: '3' },
+                                  { from: '2', to: '4' },
+                                  { from: '2', to: '5' },
+                                  { from: '3', to: '6' },
+                                  { from: '5', to: '6' }
+                                ]);
+                              }}
+                              className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <ShoppingCart size={24} className="text-gray-700" />
+                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black transition-colors" />
+                              </div>
+                              <h4 className="font-semibold mb-1">Webshop Assistant</h4>
+                              <p className="text-sm text-gray-600">Product search, recommendations, checkout</p>
+                            </button>
+                            
+                            <button
+                              onClick={() => {
+                                setSelectedTemplate('employee');
+                                setFlowNodes([
+                                  { id: '1', type: 'start', label: 'HR Portal', x: 50, y: 100 },
+                                  { id: '2', type: 'menu', label: 'Employee Menu', x: 200, y: 100 },
+                                  { id: '3', type: 'action', label: 'Leave Request', x: 350, y: 50 },
+                                  { id: '4', type: 'action', label: 'Policies', x: 350, y: 150 },
+                                  { id: '5', type: 'action', label: 'Benefits', x: 350, y: 250 },
+                                  { id: '6', type: 'end', label: 'Submit Request', x: 500, y: 150 }
+                                ]);
+                                setConnections([
+                                  { from: '1', to: '2' },
+                                  { from: '2', to: '3' },
+                                  { from: '2', to: '4' },
+                                  { from: '2', to: '5' },
+                                  { from: '3', to: '6' }
+                                ]);
+                              }}
+                              className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <Briefcase size={24} className="text-gray-700" />
+                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black transition-colors" />
+                              </div>
+                              <h4 className="font-semibold mb-1">Employee Journey</h4>
+                              <p className="text-sm text-gray-600">Onboarding, HR queries, internal help</p>
+                            </button>
+                            
+                            <button
+                              onClick={() => {
+                                setSelectedTemplate('personal');
+                                setFlowNodes([
+                                  { id: '1', type: 'start', label: 'Hi there!', x: 50, y: 100 },
+                                  { id: '2', type: 'menu', label: 'How can I help?', x: 200, y: 100 },
+                                  { id: '3', type: 'action', label: 'Schedule', x: 350, y: 50 },
+                                  { id: '4', type: 'action', label: 'Reminders', x: 350, y: 150 },
+                                  { id: '5', type: 'action', label: 'Tasks', x: 350, y: 250 },
+                                  { id: '6', type: 'end', label: 'Done', x: 500, y: 150 }
+                                ]);
+                                setConnections([
+                                  { from: '1', to: '2' },
+                                  { from: '2', to: '3' },
+                                  { from: '2', to: '4' },
+                                  { from: '2', to: '5' },
+                                  { from: '3', to: '6' },
+                                  { from: '4', to: '6' },
+                                  { from: '5', to: '6' }
+                                ]);
+                              }}
+                              className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
+                            >
+                              <div className="flex items-center justify-between mb-3">
+                                <User size={24} className="text-gray-700" />
+                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black transition-colors" />
+                              </div>
+                              <h4 className="font-semibold mb-1">Personal Assistant</h4>
+                              <p className="text-sm text-gray-600">Calendar, tasks, personal queries</p>
+                            </button>
+                          </div>
+                        </div>
+                      ) : (
+                        <div>
+                          <div className="flex items-center justify-between mb-6">
+                            <div className="flex items-center gap-3">
+                              <button
+                                onClick={() => {
+                                  setSelectedTemplate(null);
+                                  setFlowNodes([]);
+                                  setConnections([]);
+                                  setSelectedNode(null);
+                                }}
+                                className="p-2 hover:bg-gray-100 rounded-lg"
+                              >
+                                <ArrowLeft size={18} />
+                              </button>
+                              <div>
+                                <h3 className="font-semibold flex items-center gap-2">
+                                  <GitBranch size={18} />
+                                  {selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1)} Flow
+                                </h3>
+                                <p className="text-sm text-gray-600">Drag nodes to reposition • Click to select and edit</p>
+                              </div>
+                            </div>
+                            <div className="flex gap-2">
+                              <button className="p-2 hover:bg-gray-100 rounded-lg" title="Add Node">
+                                <Plus size={18} />
+                              </button>
+                              <button className="p-2 hover:bg-gray-100 rounded-lg" title="Test Flow">
+                                <Play size={18} />
+                              </button>
+                              <button className="p-2 hover:bg-gray-100 rounded-lg" title="Duplicate">
+                                <Copy size={18} />
+                              </button>
+                              <button className="p-2 hover:bg-gray-100 rounded-lg" title="Delete">
+                                <Trash2 size={18} />
+                              </button>
+                            </div>
+                          </div>
+                          
+                          <div className="border-2 border-gray-200 rounded-xl bg-gray-50 relative" style={{ height: '400px' }}>
+                            <svg className="absolute inset-0 w-full h-full">
+                              <defs>
+                                <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
+                                  <circle cx="1" cy="1" r="1" fill="#e5e7eb" />
+                                </pattern>
+                              </defs>
+                              <rect width="100%" height="100%" fill="url(#grid)" />
+                              
+                              {connections.map((conn, idx) => {
+                                const fromNode = flowNodes.find(n => n.id === conn.from);
+                                const toNode = flowNodes.find(n => n.id === conn.to);
+                                if (!fromNode || !toNode) return null;
+                                return (
+                                  <line
+                                    key={idx}
+                                    x1={fromNode.x + 60}
+                                    y1={fromNode.y + 20}
+                                    x2={toNode.x}
+                                    y2={toNode.y + 20}
+                                    stroke="#9ca3af"
+                                    strokeWidth="2"
+                                    markerEnd="url(#arrowhead)"
+                                  />
+                                );
+                              })}
+                              
+                              <defs>
+                                <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                                  <polygon points="0 0, 10 3.5, 0 7" fill="#9ca3af" />
+                                </marker>
+                              </defs>
+                            </svg>
+                            
+                            {flowNodes.map((node) => (
+                              <div
+                                key={node.id}
+                                onClick={() => setSelectedNode(node)}
+                                className={`absolute cursor-pointer transition-all ${
+                                  selectedNode?.id === node.id ? 'ring-2 ring-black' : ''
+                                }`}
+                                style={{
+                                  left: `${node.x}px`,
+                                  top: `${node.y}px`,
+                                  width: '120px'
+                                }}
+                              >
+                                <div className={`px-3 py-2 rounded-lg text-sm font-medium text-center shadow-sm border ${
+                                  node.type === 'start' ? 'bg-green-100 border-green-300 text-green-900' :
+                                  node.type === 'end' ? 'bg-red-100 border-red-300 text-red-900' :
+                                  node.type === 'menu' ? 'bg-blue-100 border-blue-300 text-blue-900' :
+                                  'bg-white border-gray-300 text-gray-900'
+                                }`}>
+                                  {node.label}
+                                </div>
+                              </div>
+                            ))}
+                          </div>
+                          
+                          {selectedNode && (
+                            <div className="mt-6 p-4 bg-white border border-gray-200 rounded-lg">
+                              <div className="flex items-center justify-between mb-3">
+                                <h4 className="font-medium flex items-center gap-2">
+                                  <Settings size={16} />
+                                  Node Settings
+                                </h4>
+                                <button
+                                  onClick={() => setSelectedNode(null)}
+                                  className="text-gray-400 hover:text-gray-600"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                              <div className="space-y-3">
+                                <div>
+                                  <label className="block text-sm font-medium mb-1">Label</label>
+                                  <input
+                                    type="text"
+                                    value={selectedNode.label}
+                                    onChange={(e) => {
+                                      setFlowNodes(nodes =>
+                                        nodes.map(n => n.id === selectedNode.id ? { ...n, label: e.target.value } : n)
+                                      );
+                                      setSelectedNode({ ...selectedNode, label: e.target.value });
+                                    }}
+                                    className="w-full px-3 py-1 border border-gray-200 rounded-lg text-sm"
+                                  />
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium mb-1">Type</label>
+                                  <select className="w-full px-3 py-1 border border-gray-200 rounded-lg text-sm">
+                                    <option value="start">Start Node</option>
+                                    <option value="menu">Menu Node</option>
+                                    <option value="action">Action Node</option>
+                                    <option value="end">End Node</option>
+                                  </select>
+                                </div>
+                                <div>
+                                  <label className="block text-sm font-medium mb-1">Response</label>
+                                  <textarea
+                                    className="w-full px-3 py-1 border border-gray-200 rounded-lg text-sm resize-none"
+                                    rows={2}
+                                    placeholder="Enter bot response..."
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      )}
                     </div>
                   )}
                   

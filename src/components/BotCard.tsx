@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import StatusBadge from '@/components/StatusBadge';
-import { MessageSquare, Clock, TrendingUp, BarChart3, Palette, Brain, Headphones } from 'lucide-react';
+import { MessageSquare, Clock, TrendingUp, BarChart3, Palette, Brain, Headphones, Play, Pause } from 'lucide-react';
 import type { Mascot } from '@/lib/data';
 
 interface BotCardProps {
@@ -13,6 +13,13 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
     e.preventDefault();
     e.stopPropagation();
     window.location.href = path;
+  };
+
+  const handleToggleStatus = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    // TODO: Implement actual status toggle API call
+    console.log(`Toggling bot ${bot.id} from ${bot.status} to ${bot.status === 'Live' ? 'Paused' : 'Live'}`);
   };
 
   // Mock usage data - in production this would come from props or API
@@ -113,7 +120,7 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
       </Link>
       
       <div className="border-t border-gray-100">
-        <div className="grid grid-cols-4 divide-x divide-gray-100">
+        <div className="grid grid-cols-5 divide-x divide-gray-100">
           <Link
             href={`/app/${clientId}/bot/${bot.id}/analytics`}
             onClick={(e) => handleActionClick(e, `/app/${clientId}/bot/${bot.id}/analytics`)}
@@ -149,6 +156,26 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
             <Headphones size={18} className="text-gray-600 group-hover/btn:text-gray-900 mb-1" />
             <span className="text-xs text-gray-600 group-hover/btn:text-gray-900 font-medium">Support</span>
           </Link>
+          
+          <button
+            onClick={handleToggleStatus}
+            className={`flex flex-col items-center justify-center py-3 px-2 hover:bg-gray-50 transition-colors group/btn border-l border-gray-200 ${
+              bot.status === 'Needs finalization' ? 'opacity-50 cursor-not-allowed' : ''
+            }`}
+            disabled={bot.status === 'Needs finalization'}
+            title={bot.status === 'Needs finalization' ? 'Complete setup to enable controls' : bot.status === 'Live' ? 'Pause bot' : 'Resume bot'}
+          >
+            {bot.status === 'Live' ? (
+              <Pause size={18} className="text-red-600 group-hover/btn:text-red-700 mb-1" />
+            ) : (
+              <Play size={18} className="text-green-600 group-hover/btn:text-green-700 mb-1" />
+            )}
+            <span className="text-xs font-medium">
+              <span className={bot.status === 'Live' ? 'text-red-600 group-hover/btn:text-red-700' : 'text-green-600 group-hover/btn:text-green-700'}>
+                {bot.status === 'Live' ? 'Pause' : 'Resume'}
+              </span>
+            </span>
+          </button>
         </div>
       </div>
     </div>

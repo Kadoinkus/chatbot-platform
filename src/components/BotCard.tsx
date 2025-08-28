@@ -66,46 +66,44 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all group relative">
+    <div className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 group relative flex flex-col">
       {/* Header Section */}
-      <div className="p-6 pb-4">
+      <div className="p-6 pb-4 flex-1">
         <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-3">
+          <div className="flex items-center gap-4">
             <img 
               src={bot.image} 
               alt={bot.name}
-              className="w-12 h-12 rounded-full bg-gray-100"
+              className="w-24 h-24 rounded-full bg-gray-100 group-hover:scale-105 transition-transform duration-300"
             />
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-lg">{bot.name}</h3>
+                <h3 className="font-semibold text-2xl">{bot.name}</h3>
                 <StatusBadge status={bot.status} />
               </div>
-              <p className="text-sm text-gray-600 mt-0.5">{bot.description}</p>
+              <p className="text-sm text-gray-600 mt-1">{bot.description}</p>
+              <div className="mt-2">
+                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-200 hover:scale-105 ${getBillingBadgeStyle(randomPlan, randomBillingType)}`}>
+                  {randomBillingType === 'prepaid' ? 'Prepaid Credits' : randomPlan}
+                </span>
+              </div>
             </div>
           </div>
           <div className="relative" ref={dropdownRef}>
             <button 
-              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              className="p-1 hover:bg-gray-100 rounded-lg transition-all duration-200 hover:rotate-90"
               onClick={(e) => {
                 e.preventDefault();
                 e.stopPropagation();
                 setShowDropdown(!showDropdown);
               }}
             >
-              <MoreVertical size={18} className="text-gray-400" />
+              <MoreVertical size={18} className="text-gray-400 transition-transform duration-200" />
             </button>
             
             {/* Dropdown Menu */}
             {showDropdown && (
               <div className="absolute right-0 top-8 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
-                <Link 
-                  href={`/app/${clientId}/bot/${bot.id}/mascot`}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
-                >
-                  <Palette size={14} />
-                  Mascot Studio
-                </Link>
                 <Link 
                   href={`/app/${clientId}/bot/${bot.id}/support`}
                   className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
@@ -147,9 +145,9 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
                 {bundleLoads.percentage}%
               </span>
             </div>
-            <div className="w-full bg-gray-100 rounded-full h-2">
+            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
               <div 
-                className={`h-2 rounded-full transition-all ${
+                className={`h-2 rounded-full transition-all duration-500 ease-out ${
                   bundleLoads.percentage < 70 ? 'bg-gray-900' :
                   bundleLoads.percentage < 90 ? 'bg-yellow-600' : 'bg-red-600'
                 }`}
@@ -177,9 +175,9 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
                 {chatUsage.percentage}%
               </span>
             </div>
-            <div className="w-full bg-gray-100 rounded-full h-2">
+            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
               <div 
-                className={`h-2 rounded-full transition-all ${
+                className={`h-2 rounded-full transition-all duration-500 ease-out ${
                   chatUsage.percentage < 70 ? 'bg-gray-900' :
                   chatUsage.percentage < 90 ? 'bg-yellow-600' : 'bg-red-600'
                 }`}
@@ -194,63 +192,60 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
           </div>
         </div>
         
-        {/* Billing Plan Badge */}
-        <div className="mt-4 flex items-center justify-between">
-          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getBillingBadgeStyle(randomPlan, randomBillingType)}`}>
-            {randomBillingType === 'prepaid' ? 'Prepaid Credits' : randomPlan}
-          </span>
-          {bot.status === 'Live' && (
+        {/* Additional Info */}
+        {bot.status === 'Live' && (
+          <div className="mt-4">
             <span className="text-xs text-gray-500">
               {bot.conversations} conversations today
             </span>
-          )}
-        </div>
+          </div>
+        )}
       </div>
       
       {/* Action Bar */}
       <div className="border-t border-gray-100 flex items-center">
         <Link
           href={`/app/${clientId}/bot/${bot.id}/analytics`}
-          className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-gray-50 transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-gray-50 transition-all duration-150 group/link"
         >
-          <BarChart3 size={16} className="text-gray-600" />
-          <span className="text-sm font-medium text-gray-700">Analytics</span>
+          <BarChart3 size={16} className="text-gray-600 group-hover/link:text-gray-900 transition-colors duration-150" />
+          <span className="text-sm font-medium text-gray-700 group-hover/link:text-gray-900 transition-colors duration-150">Analytics</span>
         </Link>
         
         <div className="w-px h-8 bg-gray-100" />
         
         <Link
           href={`/app/${clientId}/bot/${bot.id}/mascot`}
-          className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-gray-50 transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-gray-50 transition-all duration-150 group/link"
         >
-          <Palette size={16} className="text-gray-600" />
-          <span className="text-sm font-medium text-gray-700">Mascot</span>
+          <Palette size={16} className="text-gray-600 group-hover/link:text-gray-900 transition-colors duration-150" />
+          <span className="text-sm font-medium text-gray-700 group-hover/link:text-gray-900 transition-colors duration-150">Customize</span>
         </Link>
         
         <div className="w-px h-8 bg-gray-100" />
         
         <Link
           href={`/app/${clientId}/bot/${bot.id}/brain`}
-          className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-gray-50 transition-colors"
+          className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-gray-50 transition-all duration-150 group/link"
         >
-          <Brain size={16} className="text-gray-600" />
-          <span className="text-sm font-medium text-gray-700">Configure</span>
+          <Brain size={16} className="text-gray-600 group-hover/link:text-gray-900 transition-colors duration-150" />
+          <span className="text-sm font-medium text-gray-700 group-hover/link:text-gray-900 transition-colors duration-150">Persona</span>
         </Link>
         
         <div className="w-px h-8 bg-gray-100" />
         
         <button
           onClick={handleToggleStatus}
-          className={`px-4 py-3 hover:bg-gray-50 transition-colors flex items-center justify-center ${
+          className={`px-4 py-3 hover:bg-gray-50 transition-all duration-150 flex items-center justify-center group/pause ${
             bot.status === 'Needs finalization' ? 'opacity-50 cursor-not-allowed' : ''
           }`}
           disabled={bot.status === 'Needs finalization'}
           title={bot.status === 'Needs finalization' ? 'Complete setup to enable controls' : bot.status === 'Live' ? 'Pause bot' : 'Resume bot'}
         >
           {bot.status === 'Live' ? (
-            <Pause size={16} className="text-red-600" />
+            <Pause size={16} className="text-red-600 group-hover/pause:scale-110 transition-transform duration-150" />
           ) : (
-            <Play size={16} className="text-green-600" />
+            <Play size={16} className="text-green-600 group-hover/pause:scale-110 transition-transform duration-150" />
           )}
         </button>
       </div>

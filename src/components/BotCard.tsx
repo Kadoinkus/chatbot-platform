@@ -15,22 +15,49 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
     window.location.href = path;
   };
 
+  // Mock usage data - in production this would come from props or API
+  const usage = Math.floor(Math.random() * 100);
+  const getUsageColor = () => {
+    if (usage < 70) return 'bg-green-500';
+    if (usage < 90) return 'bg-yellow-500';
+    return 'bg-red-500';
+  };
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all group">
       <Link href={`/app/${clientId}/bot/${bot.id}/analytics`} className="block p-6">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-4">
-            <img 
-              src={bot.image} 
-              alt={bot.name}
-              className="w-16 h-16 rounded-full bg-gray-100 group-hover:scale-105 transition-transform"
-            />
+            <div className="relative">
+              <img 
+                src={bot.image} 
+                alt={bot.name}
+                className="w-16 h-16 rounded-full bg-gray-100 group-hover:scale-105 transition-transform"
+              />
+              {usage > 80 && (
+                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
+              )}
+            </div>
             <div>
               <h3 className="font-semibold text-lg">{bot.name}</h3>
               <p className="text-sm text-gray-600">{bot.description}</p>
             </div>
           </div>
           <StatusBadge status={bot.status} />
+        </div>
+        
+        {/* Usage Indicator */}
+        <div className="mb-3">
+          <div className="flex justify-between items-center text-xs mb-1">
+            <span className="text-gray-600">Usage Limit</span>
+            <span className="font-medium">{usage}%</span>
+          </div>
+          <div className="w-full bg-gray-200 rounded-full h-1.5">
+            <div 
+              className={`h-1.5 rounded-full transition-all ${getUsageColor()}`}
+              style={{ width: `${usage}%` }}
+            />
+          </div>
         </div>
         
         <div className="grid grid-cols-3 gap-4">

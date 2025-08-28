@@ -2,6 +2,7 @@
 import { getClientById, getBotById } from '@/lib/dataService';
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
+import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Headphones, Plus, Search, Filter, AlertCircle, CheckCircle, Clock, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, Bot } from '@/lib/dataService';
@@ -125,18 +126,33 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
             Back to bots
           </Link>
           
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Support & Tickets</h1>
-              <p className="text-gray-600">Manage support requests for {bot.name}</p>
+          {/* Bot Header */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-4">
+                <img 
+                  src={bot.image} 
+                  alt={bot.name}
+                  className="w-16 h-16 rounded-full bg-gray-100"
+                />
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <h1 className="text-2xl font-bold">{bot.name}</h1>
+                    <StatusBadge status={bot.status} />
+                  </div>
+                  <p className="text-gray-600 mb-1">Manage support requests and tickets</p>
+                  <p className="text-sm text-gray-500">Client: {client.name}</p>
+                </div>
+              </div>
+              
+              <button 
+                onClick={() => setShowNewTicket(true)}
+                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2"
+              >
+                <Plus size={18} />
+                New Ticket
+              </button>
             </div>
-            <button 
-              onClick={() => setShowNewTicket(true)}
-              className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2"
-            >
-              <Plus size={18} />
-              New Ticket
-            </button>
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">

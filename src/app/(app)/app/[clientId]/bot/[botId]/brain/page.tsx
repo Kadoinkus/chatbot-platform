@@ -2,6 +2,7 @@
 import { getClientById, getBotById } from '@/lib/dataService';
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
+import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Brain, Sliders, BookOpen, MessageSquare, Zap, Shield, Sparkles, GitBranch, Plus, Play, Users, ShoppingCart, GraduationCap, Briefcase, User, ChevronRight, Settings, Copy, Trash2, Edit2, Link2, ExternalLink, CheckCircle, AlertCircle, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, Bot } from '@/lib/dataService';
@@ -278,23 +279,38 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
             Back to bots
           </Link>
           
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold mb-2">Brain Studio</h1>
-              <p className="text-gray-600">
-                {integrationMode === 'builtin' 
-                  ? `Configure ${bot.name}'s personality and knowledge base` 
-                  : `Connect ${bot.name} to your existing chatbot provider`
-                }
-              </p>
-            </div>
-            <div className="flex gap-3">
-              <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
-                Test Responses
-              </button>
-              <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
-                Save Changes
-              </button>
+          {/* Bot Header */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-4">
+                <img 
+                  src={bot.image} 
+                  alt={bot.name}
+                  className="w-16 h-16 rounded-full bg-gray-100"
+                />
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <h1 className="text-2xl font-bold">{bot.name}</h1>
+                    <StatusBadge status={bot.status} />
+                  </div>
+                  <p className="text-gray-600 mb-1">
+                    {integrationMode === 'builtin' 
+                      ? 'Configure personality and knowledge base' 
+                      : 'Connect to your existing chatbot provider'
+                    }
+                  </p>
+                  <p className="text-sm text-gray-500">Client: {client.name}</p>
+                </div>
+              </div>
+              
+              <div className="flex gap-3">
+                <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
+                  Test Responses
+                </button>
+                <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
+                  Save Changes
+                </button>
+              </div>
             </div>
           </div>
           

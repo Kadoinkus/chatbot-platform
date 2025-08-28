@@ -5,8 +5,9 @@ import Sidebar from '@/components/Sidebar';
 import { 
   CreditCard, TrendingUp, AlertCircle, CheckCircle, 
   Download, Plus, Wallet, Package, Activity, 
-  DollarSign, Calendar, Bot, BarChart3
+  DollarSign, Calendar, Bot, BarChart3, Settings, Store
 } from 'lucide-react';
+import Link from 'next/link';
 import type { Client } from '@/lib/dataService';
 
 export default function BillingPage({ params }: { params: { clientId: string } }) {
@@ -22,6 +23,24 @@ export default function BillingPage({ params }: { params: { clientId: string } }
     subscriptions: [
       { id: 1, name: 'Pro Plan - Liza', price: 299, status: 'active', renewal: '2024-02-15' },
       { id: 2, name: 'Starter - Remco', price: 99, status: 'active', renewal: '2024-02-15' }
+    ],
+    purchasedTemplates: [
+      { 
+        id: 'template-1', 
+        name: 'Customer Support Pro', 
+        price: 29, 
+        purchaseDate: '2024-01-15', 
+        status: 'active',
+        type: 'subscription'
+      },
+      { 
+        id: 'template-6', 
+        name: 'Education Tutor', 
+        price: 35, 
+        purchaseDate: '2024-01-20', 
+        status: 'active',
+        type: 'subscription'
+      }
     ],
     mascotUsage: [
       { 
@@ -192,6 +211,16 @@ export default function BillingPage({ params }: { params: { clientId: string } }
                   }`}
                 >
                   Invoices
+                </button>
+                <button
+                  onClick={() => setActiveTab('purchases')}
+                  className={`pb-2 px-1 font-medium transition-colors relative whitespace-nowrap ${
+                    activeTab === 'purchases' 
+                      ? 'text-black border-b-2 border-black' 
+                      : 'text-gray-600 hover:text-gray-900'
+                  }`}
+                >
+                  Purchases
                 </button>
               </div>
             </div>
@@ -510,6 +539,65 @@ export default function BillingPage({ params }: { params: { clientId: string } }
                         </div>
                       </div>
                     ))}
+                  </div>
+                </div>
+              )}
+              
+              {activeTab === 'purchases' && (
+                <div className="space-y-4">
+                  <div className="flex justify-between items-center mb-4">
+                    <h3 className="font-semibold">Bot Template Purchases</h3>
+                    <button className="text-sm text-black hover:underline">View All Orders</button>
+                  </div>
+                  
+                  <div className="space-y-3">
+                    {billingData.purchasedTemplates.map((template) => (
+                      <div key={template.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                        <div className="flex items-center gap-4">
+                          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                            <Bot size={20} className="text-gray-600" />
+                          </div>
+                          <div>
+                            <p className="font-medium">{template.name}</p>
+                            <p className="text-sm text-gray-600">Purchased on {template.purchaseDate}</p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-4">
+                          <div className="text-right">
+                            <p className="font-semibold">${template.price}/month</p>
+                            <p className="text-xs text-gray-600 capitalize">{template.type}</p>
+                          </div>
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            template.status === 'active' 
+                              ? 'bg-green-100 text-green-700' 
+                              : 'bg-gray-100 text-gray-700'
+                          }`}>
+                            {template.status}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <button className="p-2 hover:bg-gray-100 rounded" title="Manage">
+                              <Settings size={16} />
+                            </button>
+                            <button className="p-2 hover:bg-gray-100 rounded" title="Download Receipt">
+                              <Download size={16} />
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                  
+                  <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
+                    <Bot size={48} className="mx-auto text-gray-300 mb-4" />
+                    <h4 className="font-medium text-gray-900 mb-2">Need more bot templates?</h4>
+                    <p className="text-sm text-gray-600 mb-4">Browse our marketplace for specialized bots</p>
+                    <Link
+                      href={`/app/${client.id}/marketplace`}
+                      className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                    >
+                      <Store size={16} />
+                      Browse Marketplace
+                    </Link>
                   </div>
                 </div>
               )}

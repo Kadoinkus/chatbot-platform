@@ -1,8 +1,9 @@
 'use client';
 import { useState } from 'react';
-import { Home, BarChart3, Bot, Settings, HelpCircle, LogOut, Users, MessageSquare, Menu, X, Store, CreditCard } from 'lucide-react';
+import { Home, BarChart3, Bot, Settings, HelpCircle, LogOut, Users, MessageSquare, Menu, X, Store, CreditCard, ShoppingCart } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
+import { useCart } from '@/contexts/CartContext';
 
 interface SidebarProps {
   clientId?: string;
@@ -11,6 +12,7 @@ interface SidebarProps {
 export default function Sidebar({ clientId }: SidebarProps) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
+  const { totalItems, toggleCart } = useCart();
   
   const navItems = [
     { icon: Home, label: 'Dashboard', href: clientId ? `/app/${clientId}` : '/app' },
@@ -70,6 +72,22 @@ export default function Sidebar({ clientId }: SidebarProps) {
       </nav>
       
       <div className="flex flex-col gap-2 mt-auto">
+        {/* Cart Icon */}
+        {clientId && (
+          <button
+            onClick={toggleCart}
+            className="w-12 h-12 flex items-center justify-center rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors relative"
+            title={`Cart (${totalItems})`}
+          >
+            <ShoppingCart className="w-5 h-5" />
+            {totalItems > 0 && (
+              <span className="absolute -top-1 -right-1 bg-red-500 text-white text-xs w-5 h-5 rounded-full flex items-center justify-center">
+                {totalItems > 9 ? '9+' : totalItems}
+              </span>
+            )}
+          </button>
+        )}
+        
         {bottomItems.map((item) => {
           const Icon = item.icon;
           return (
@@ -131,6 +149,27 @@ export default function Sidebar({ clientId }: SidebarProps) {
             </nav>
             
             <div className="space-y-2 mt-auto pt-4 border-t border-white/10">
+              {/* Cart for Mobile */}
+              {clientId && (
+                <button
+                  onClick={() => {
+                    toggleCart();
+                    setIsMobileOpen(false);
+                  }}
+                  className="flex items-center justify-between w-full px-4 py-3 rounded-lg text-gray-400 hover:text-white hover:bg-white/5 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <ShoppingCart className="w-5 h-5" />
+                    Cart
+                  </div>
+                  {totalItems > 0 && (
+                    <span className="bg-red-500 text-white text-xs px-2 py-1 rounded-full">
+                      {totalItems}
+                    </span>
+                  )}
+                </button>
+              )}
+              
               {bottomItems.map((item) => {
                 const Icon = item.icon;
                 return (

@@ -1,8 +1,10 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { getClientById } from '@/lib/dataService';
+import { useCart } from '@/contexts/CartContext';
 import Sidebar from '@/components/Sidebar';
-import { Star, Zap, MessageCircle, Gamepad, Heart, ShoppingCart } from 'lucide-react';
+import { Star, Zap, MessageCircle, Gamepad, Heart, ShoppingCart, CheckCircle, Plus } from 'lucide-react';
+import Link from 'next/link';
 import type { Client } from '@/lib/dataService';
 
 type BotTemplate = {
@@ -161,6 +163,9 @@ export default function MarketplacePage({ params }: { params: { clientId: string
   const [loading, setLoading] = useState(true);
   const [selectedCategory, setSelectedCategory] = useState('All Categories');
   const [searchQuery, setSearchQuery] = useState('');
+  const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
+  
+  const { addItem, totalItems } = useCart();
 
   useEffect(() => {
     async function loadData() {
@@ -330,16 +335,42 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                         </div>
                       )}
                     </div>
-                    <button 
-                      className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium flex items-center gap-2"
-                      onClick={() => {
-                        // TODO: Add to cart or install logic
-                        alert(`Adding ${template.name} to your bots...`);
-                      }}
-                    >
-                      <ShoppingCart size={14} />
-                      {template.price === 'Free' ? 'Install' : 'Add to Cart'}
-                    </button>
+                    {addedItems.has(template.id) ? (
+                      <button className="bg-green-600 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium flex items-center gap-2" disabled>
+                        <CheckCircle size={14} />
+                        Added
+                      </button>
+                    ) : (
+                      <button 
+                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium flex items-center gap-2"
+                        onClick={() => {
+                          addItem({
+                            id: template.id,
+                            type: 'template',
+                            name: template.name,
+                            description: template.description,
+                            price: template.price,
+                            image: template.image,
+                            category: template.category,
+                            originalData: template
+                          });
+                          setAddedItems(prev => new Set(prev).add(template.id));
+                          setTimeout(() => {
+                            setAddedItems(prev => {
+                              const newSet = new Set(prev);
+                              newSet.delete(template.id);
+                              return newSet;
+                            });
+                          }, 2000);
+                        }}
+                      >
+                        {template.price === 'Free' ? (
+                          <><Plus size={14} />Install</>
+                        ) : (
+                          <><ShoppingCart size={14} />Add to Cart</>
+                        )}
+                      </button>
+                    )}
                   </div>
                 </div>
               </div>

@@ -2,22 +2,22 @@
 import { useState } from 'react';
 import { clients } from '@/lib/data';
 import Sidebar from '@/components/Sidebar';
-import { ArrowLeft, Save, Upload, Globe, Clock, MessageSquare, Zap, Shield, Bell, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Save, Key, Clock, Shield, Bell, AlertTriangle, Database, Webhook, Download, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 
 export default function BotSettingsPage({ params }: { params: { clientId: string; botId: string } }) {
   const client = clients.find(c => c.id === params.clientId);
   const bot = client?.mascots.find(m => m.id === params.botId);
-  const [activeTab, setActiveTab] = useState('general');
+  const [activeTab, setActiveTab] = useState('api');
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Form states
-  const [botName, setBotName] = useState(bot?.name || '');
-  const [description, setDescription] = useState(bot?.description || '');
-  const [welcomeMessage, setWelcomeMessage] = useState(`Hi! I'm ${bot?.name}. How can I help you today?`);
-  const [fallbackMessage, setFallbackMessage] = useState("I&apos;m not sure I understand. Could you please rephrase that?");
-  const [personality, setPersonality] = useState('professional');
-  const [responseSpeed, setResponseSpeed] = useState('instant');
+  // Form states for administrative settings
+  const [apiSettings, setApiSettings] = useState({
+    apiKey: 'sk-live-xxx...xxx',
+    webhookUrl: '',
+    rateLimit: 1000,
+  });
+  
   const [businessHours, setBusinessHours] = useState({
     enabled: true,
     timezone: 'America/New_York',
@@ -31,17 +31,25 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
       sunday: { enabled: false, start: '09:00', end: '17:00' },
     }
   });
+  
+  const [securitySettings, setSecuritySettings] = useState({
+    allowedDomains: '',
+    ipWhitelist: '',
+    encryption: true,
+    dataRetention: 30
+  });
 
   if (!client || !bot) {
     return <div className="p-6">Bot not found</div>;
   }
 
   const tabs = [
-    { id: 'general', label: 'General', icon: MessageSquare },
-    { id: 'behavior', label: 'Behavior', icon: Zap },
+    { id: 'api', label: 'API & Keys', icon: Key },
     { id: 'availability', label: 'Availability', icon: Clock },
     { id: 'security', label: 'Security', icon: Shield },
-    { id: 'notifications', label: 'Notifications', icon: Bell },
+    { id: 'webhooks', label: 'Webhooks', icon: Webhook },
+    { id: 'billing', label: 'Billing & Usage', icon: CreditCard },
+    { id: 'data', label: 'Data & Export', icon: Database },
     { id: 'advanced', label: 'Advanced', icon: AlertTriangle },
   ];
 
@@ -59,17 +67,17 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
         <div className="container max-w-7xl mx-auto p-8">
           <div className="mb-6">
             <Link 
-              href={`/app/${client.id}/bot/${bot.id}`}
+              href={`/app/${client.id}`}
               className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
             >
               <ArrowLeft size={16} />
-              Back to analytics
+              Back to bots
             </Link>
             
             <div className="flex items-center justify-between">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Bot Settings</h1>
-                <p className="text-gray-600">Configure {bot.name}'s behavior and appearance</p>
+                <h1 className="text-3xl font-bold mb-2">Operations</h1>
+                <p className="text-gray-600">Technical configuration and administration for {bot.name}</p>
               </div>
               {hasChanges && (
                 <button
@@ -109,219 +117,163 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
 
             {/* Settings Content */}
             <div className="flex-1">
-              {activeTab === 'general' && (
+              {activeTab === 'api' && (
                 <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <h2 className="text-xl font-semibold mb-6">General Settings</h2>
+                  <h2 className="text-xl font-semibold mb-6">API Configuration</h2>
                   
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Bot Avatar
+                        API Key
+                      </label>
+                      <div className="flex gap-2">
+                        <input
+                          type="text"
+                          value={apiSettings.apiKey}
+                          readOnly
+                          className="flex-1 px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 font-mono text-sm"
+                        />
+                        <button className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                          Regenerate
+                        </button>
+                      </div>
+                      <p className="text-sm text-gray-500 mt-1">
+                        Use this key to authenticate API requests
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Widget ID
+                      </label>
+                      <input
+                        type="text"
+                        value={`widget-${bot.id}`}
+                        readOnly
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 font-mono text-sm"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">
+                        Unique identifier for embedding the chat widget
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Rate Limiting
                       </label>
                       <div className="flex items-center gap-4">
-                        <img 
-                          src={bot.image} 
-                          alt={bot.name}
-                          className="w-20 h-20 rounded-full"
+                        <input
+                          type="number"
+                          value={apiSettings.rateLimit}
+                          onChange={(e) => {
+                            setApiSettings({...apiSettings, rateLimit: parseInt(e.target.value)});
+                            setHasChanges(true);
+                          }}
+                          className="w-32 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
                         />
-                        <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
-                          <Upload size={16} />
-                          Change Avatar
-                        </button>
+                        <span className="text-sm text-gray-600">requests per hour</span>
                       </div>
                     </div>
 
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Bot Name
-                      </label>
-                      <input
-                        type="text"
-                        value={botName}
-                        onChange={(e) => {
-                          setBotName(e.target.value);
-                          setHasChanges(true);
-                        }}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Description
+                        Embed Code
                       </label>
                       <textarea
-                        value={description}
-                        onChange={(e) => {
-                          setDescription(e.target.value);
-                          setHasChanges(true);
-                        }}
-                        rows={3}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                        readOnly
+                        rows={4}
+                        value={`<script src="https://api.chatbot.com/widget.js"\n  data-bot-id="${bot.id}"\n  data-client-id="${client.id}">\n</script>`}
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 font-mono text-sm"
                       />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Welcome Message
-                      </label>
-                      <textarea
-                        value={welcomeMessage}
-                        onChange={(e) => {
-                          setWelcomeMessage(e.target.value);
-                          setHasChanges(true);
-                        }}
-                        rows={3}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none"
-                        placeholder="The first message users see when they start a conversation"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Fallback Message
-                      </label>
-                      <textarea
-                        value={fallbackMessage}
-                        onChange={(e) => {
-                          setFallbackMessage(e.target.value);
-                          setHasChanges(true);
-                        }}
-                        rows={3}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none"
-                        placeholder="Message shown when the bot doesn't understand the user"
-                      />
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Language
-                      </label>
-                      <select className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black">
-                        <option>English</option>
-                        <option>Spanish</option>
-                        <option>French</option>
-                        <option>German</option>
-                        <option>Dutch</option>
-                      </select>
+                      <button className="mt-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                        Copy Code
+                      </button>
                     </div>
                   </div>
                 </div>
               )}
 
-              {activeTab === 'behavior' && (
+              {activeTab === 'security' && (
                 <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <h2 className="text-xl font-semibold mb-6">Behavior Settings</h2>
+                  <h2 className="text-xl font-semibold mb-6">Security Settings</h2>
                   
                   <div className="space-y-6">
                     <div>
                       <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Personality
+                        Allowed Domains
                       </label>
-                      <select 
-                        value={personality}
+                      <textarea
+                        value={securitySettings.allowedDomains}
                         onChange={(e) => {
-                          setPersonality(e.target.value);
+                          setSecuritySettings({...securitySettings, allowedDomains: e.target.value});
                           setHasChanges(true);
                         }}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                      >
-                        <option value="professional">Professional</option>
-                        <option value="friendly">Friendly</option>
-                        <option value="casual">Casual</option>
-                        <option value="formal">Formal</option>
-                        <option value="playful">Playful</option>
-                      </select>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Defines how the bot communicates with users
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Response Speed
-                      </label>
-                      <select 
-                        value={responseSpeed}
-                        onChange={(e) => {
-                          setResponseSpeed(e.target.value);
-                          setHasChanges(true);
-                        }}
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                      >
-                        <option value="instant">Instant</option>
-                        <option value="natural">Natural (1-2 seconds)</option>
-                        <option value="thoughtful">Thoughtful (3-5 seconds)</option>
-                      </select>
-                      <p className="text-sm text-gray-500 mt-1">
-                        Simulates typing time for more natural conversations
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Confidence Threshold
-                      </label>
-                      <input
-                        type="range"
-                        min="0"
-                        max="100"
-                        defaultValue="70"
-                        className="w-full"
-                        onChange={() => setHasChanges(true)}
+                        rows={3}
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black font-mono text-sm"
+                        placeholder="example.com\napp.example.com"
                       />
-                      <div className="flex justify-between text-sm text-gray-500">
-                        <span>Low (More responses)</span>
-                        <span>High (More accurate)</span>
+                      <p className="text-sm text-gray-500 mt-1">
+                        One domain per line. Widget will only load on these domains.
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        IP Whitelist
+                      </label>
+                      <textarea
+                        value={securitySettings.ipWhitelist}
+                        onChange={(e) => {
+                          setSecuritySettings({...securitySettings, ipWhitelist: e.target.value});
+                          setHasChanges(true);
+                        }}
+                        rows={3}
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black font-mono text-sm"
+                        placeholder="192.168.1.1\n10.0.0.0/8"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">
+                        Restrict API access to specific IP addresses or ranges
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center gap-3">
+                        <input 
+                          type="checkbox" 
+                          checked={securitySettings.encryption}
+                          onChange={(e) => {
+                            setSecuritySettings({...securitySettings, encryption: e.target.checked});
+                            setHasChanges(true);
+                          }}
+                          className="w-4 h-4 rounded"
+                        />
+                        <span className="text-sm font-medium text-gray-700">
+                          End-to-end encryption
+                        </span>
+                      </label>
+                      <p className="text-sm text-gray-500 mt-1 ml-7">
+                        Encrypt all messages between users and the bot
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Data Retention Period
+                      </label>
+                      <div className="flex items-center gap-4">
+                        <input
+                          type="number"
+                          value={securitySettings.dataRetention}
+                          onChange={(e) => {
+                            setSecuritySettings({...securitySettings, dataRetention: parseInt(e.target.value)});
+                            setHasChanges(true);
+                          }}
+                          className="w-32 px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        />
+                        <span className="text-sm text-gray-600">days</span>
                       </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-gray-700 mb-2">
-                        Max Conversation Length
-                      </label>
-                      <input
-                        type="number"
-                        defaultValue="50"
-                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
-                        onChange={() => setHasChanges(true)}
-                      />
                       <p className="text-sm text-gray-500 mt-1">
-                        Maximum number of messages before suggesting human handoff
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="flex items-center gap-3">
-                        <input 
-                          type="checkbox" 
-                          defaultChecked 
-                          className="w-4 h-4 rounded"
-                          onChange={() => setHasChanges(true)}
-                        />
-                        <span className="text-sm font-medium text-gray-700">
-                          Enable small talk
-                        </span>
-                      </label>
-                      <p className="text-sm text-gray-500 mt-1 ml-7">
-                        Allow the bot to engage in casual conversation
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="flex items-center gap-3">
-                        <input 
-                          type="checkbox" 
-                          defaultChecked 
-                          className="w-4 h-4 rounded"
-                          onChange={() => setHasChanges(true)}
-                        />
-                        <span className="text-sm font-medium text-gray-700">
-                          Use emojis
-                        </span>
-                      </label>
-                      <p className="text-sm text-gray-500 mt-1 ml-7">
-                        Include emojis in responses for friendlier interactions
+                        Automatically delete conversation data after this period
                       </p>
                     </div>
                   </div>
@@ -438,20 +390,196 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                 </div>
               )}
 
-              {(activeTab === 'security' || activeTab === 'notifications' || activeTab === 'advanced') && (
+              {activeTab === 'webhooks' && (
                 <div className="bg-white rounded-xl border border-gray-200 p-6">
-                  <h2 className="text-xl font-semibold mb-6 capitalize">{activeTab} Settings</h2>
-                  <div className="text-center py-12">
-                    <div className="w-16 h-16 bg-gray-100 rounded-full mx-auto mb-4 flex items-center justify-center">
-                      {activeTab === 'security' && <Shield size={32} className="text-gray-400" />}
-                      {activeTab === 'notifications' && <Bell size={32} className="text-gray-400" />}
-                      {activeTab === 'advanced' && <AlertTriangle size={32} className="text-gray-400" />}
+                  <h2 className="text-xl font-semibold mb-6">Webhook Configuration</h2>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Webhook URL
+                      </label>
+                      <input
+                        type="url"
+                        value={apiSettings.webhookUrl}
+                        onChange={(e) => {
+                          setApiSettings({...apiSettings, webhookUrl: e.target.value});
+                          setHasChanges(true);
+                        }}
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                        placeholder="https://your-server.com/webhook"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">
+                        Receive real-time updates when events occur
+                      </p>
                     </div>
-                    <p className="text-gray-500">
-                      {activeTab === 'security' && 'Security settings will be available soon'}
-                      {activeTab === 'notifications' && 'Notification settings will be available soon'}
-                      {activeTab === 'advanced' && 'Advanced settings will be available soon'}
-                    </p>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Events to Subscribe
+                      </label>
+                      <div className="space-y-2">
+                        {['New conversation', 'Message received', 'Conversation ended', 'Human handoff requested', 'Error occurred'].map(event => (
+                          <label key={event} className="flex items-center gap-3">
+                            <input 
+                              type="checkbox" 
+                              defaultChecked 
+                              className="w-4 h-4 rounded"
+                              onChange={() => setHasChanges(true)}
+                            />
+                            <span className="text-sm text-gray-700">{event}</span>
+                          </label>
+                        ))}
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Secret Key
+                      </label>
+                      <input
+                        type="text"
+                        value="whsec_xxx...xxx"
+                        readOnly
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg bg-gray-50 font-mono text-sm"
+                      />
+                      <p className="text-sm text-gray-500 mt-1">
+                        Use this to verify webhook signatures
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'billing' && (
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                  <h2 className="text-xl font-semibold mb-6">Billing & Usage</h2>
+                  
+                  <div className="space-y-6">
+                    <div className="grid grid-cols-2 gap-4">
+                      <div className="border border-gray-200 rounded-lg p-4">
+                        <p className="text-sm text-gray-600 mb-1">Current Plan</p>
+                        <p className="text-xl font-semibold">Pro Plan</p>
+                        <p className="text-sm text-gray-500">$299/month</p>
+                      </div>
+                      <div className="border border-gray-200 rounded-lg p-4">
+                        <p className="text-sm text-gray-600 mb-1">Usage This Month</p>
+                        <p className="text-xl font-semibold">823 / 1,000</p>
+                        <p className="text-sm text-gray-500">Bundle loads</p>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Usage Alerts
+                      </label>
+                      <div className="space-y-2">
+                        <label className="flex items-center gap-3">
+                          <input type="checkbox" defaultChecked className="w-4 h-4 rounded" />
+                          <span className="text-sm text-gray-700">Alert when usage reaches 80%</span>
+                        </label>
+                        <label className="flex items-center gap-3">
+                          <input type="checkbox" defaultChecked className="w-4 h-4 rounded" />
+                          <span className="text-sm text-gray-700">Alert when usage reaches 100%</span>
+                        </label>
+                      </div>
+                    </div>
+
+                    <div>
+                      <Link 
+                        href={`/app/${client.id}/billing`}
+                        className="inline-flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                      >
+                        <CreditCard size={16} />
+                        Manage Billing
+                      </Link>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'data' && (
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                  <h2 className="text-xl font-semibold mb-6">Data & Export</h2>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-4">
+                        Export Data
+                      </label>
+                      <div className="space-y-3">
+                        <button className="flex items-center justify-between w-full px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                          <span>Export conversations (CSV)</span>
+                          <Download size={16} />
+                        </button>
+                        <button className="flex items-center justify-between w-full px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                          <span>Export training data (JSON)</span>
+                          <Download size={16} />
+                        </button>
+                        <button className="flex items-center justify-between w-full px-4 py-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                          <span>Export analytics report (PDF)</span>
+                          <Download size={16} />
+                        </button>
+                      </div>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Backup Schedule
+                      </label>
+                      <select className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black">
+                        <option>Daily</option>
+                        <option>Weekly</option>
+                        <option>Monthly</option>
+                        <option>Disabled</option>
+                      </select>
+                    </div>
+
+                    <div className="border-t pt-6">
+                      <h3 className="text-sm font-medium text-red-600 mb-4">Danger Zone</h3>
+                      <button className="px-4 py-2 border border-red-300 text-red-600 rounded-lg hover:bg-red-50">
+                        Delete All Data
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {activeTab === 'advanced' && (
+                <div className="bg-white rounded-xl border border-gray-200 p-6">
+                  <h2 className="text-xl font-semibold mb-6">Advanced Settings</h2>
+                  
+                  <div className="space-y-6">
+                    <div>
+                      <label className="flex items-center gap-3">
+                        <input type="checkbox" className="w-4 h-4 rounded" />
+                        <span className="text-sm font-medium text-gray-700">Debug Mode</span>
+                      </label>
+                      <p className="text-sm text-gray-500 mt-1 ml-7">
+                        Enable detailed logging for troubleshooting
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="flex items-center gap-3">
+                        <input type="checkbox" className="w-4 h-4 rounded" />
+                        <span className="text-sm font-medium text-gray-700">Beta Features</span>
+                      </label>
+                      <p className="text-sm text-gray-500 mt-1 ml-7">
+                        Try experimental features before they're released
+                      </p>
+                    </div>
+
+                    <div>
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Custom CSS
+                      </label>
+                      <textarea
+                        rows={5}
+                        className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black font-mono text-sm"
+                        placeholder="/* Add custom styles for the chat widget */"
+                      />
+                    </div>
                   </div>
                 </div>
               )}

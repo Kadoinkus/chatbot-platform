@@ -116,7 +116,7 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
                   className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
                 >
                   <Settings size={14} />
-                  Settings
+                  Operations
                 </Link>
                 <div className="border-t border-gray-100 my-1" />
                 <button className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left">

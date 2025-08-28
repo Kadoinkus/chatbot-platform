@@ -15,6 +15,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
   const [flowNodes, setFlowNodes] = useState<any[]>([]);
   const [connections, setConnections] = useState<any[]>([]);
   const [selectedNode, setSelectedNode] = useState<any>(null);
+  const [integrationMode, setIntegrationMode] = useState<'builtin' | 'external'>('builtin');
   
   const [personality, setPersonality] = useState({
     friendly: 80,
@@ -185,7 +186,12 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold mb-2">Brain Studio</h1>
-              <p className="text-gray-600">Configure {bot.name}'s personality and knowledge base</p>
+              <p className="text-gray-600">
+                {integrationMode === 'builtin' 
+                  ? `Configure ${bot.name}'s personality and knowledge base` 
+                  : `Connect ${bot.name} to your existing chatbot provider`
+                }
+              </p>
             </div>
             <div className="flex gap-3">
               <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
@@ -197,66 +203,152 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
             </div>
           </div>
           
+          {/* Mode Selector */}
+          <div className="mb-6 bg-white rounded-xl border border-gray-200 p-6">
+            <h3 className="font-semibold mb-4">Choose Configuration Mode</h3>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <label className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                integrationMode === 'builtin' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
+              }`}>
+                <input 
+                  type="radio" 
+                  name="mode" 
+                  value="builtin"
+                  checked={integrationMode === 'builtin'}
+                  onChange={() => {
+                    setIntegrationMode('builtin');
+                    setActiveTab('personality');
+                  }}
+                  className="sr-only"
+                />
+                <div className="flex items-center gap-3 mb-2">
+                  <Brain size={20} />
+                  <p className="font-medium">Built-in AI</p>
+                </div>
+                <p className="text-sm text-gray-600">Configure personality, knowledge base, and chatflows using our platform</p>
+              </label>
+              
+              <label className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
+                integrationMode === 'external' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
+              }`}>
+                <input 
+                  type="radio" 
+                  name="mode" 
+                  value="external"
+                  checked={integrationMode === 'external'}
+                  onChange={() => {
+                    setIntegrationMode('external');
+                    setActiveTab('connect-api');
+                  }}
+                  className="sr-only"
+                />
+                <div className="flex items-center gap-3 mb-2">
+                  <Link2 size={20} />
+                  <p className="font-medium">External Provider</p>
+                </div>
+                <p className="text-sm text-gray-600">Connect your existing chatbot and use our 3D mascot frontend only</p>
+              </label>
+            </div>
+            
+            {integrationMode === 'external' && (
+              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                <p className="text-sm text-blue-800">
+                  <strong>External mode:</strong> Your chatbot provider handles all AI logic. 
+                  We only provide the 3D mascot interface and animations.
+                </p>
+              </div>
+            )}
+          </div>
+          
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <div className="bg-white rounded-xl border border-gray-200">
                 <div className="border-b border-gray-200">
-                  <div className="flex gap-6 p-6">
+                  <div className="flex gap-6 p-6 overflow-x-auto">
                     <button
-                      onClick={() => setActiveTab('personality')}
-                      className={`pb-2 px-1 font-medium transition-colors relative ${
-                        activeTab === 'personality' 
-                          ? 'text-black border-b-2 border-black' 
-                          : 'text-gray-600 hover:text-gray-900'
+                      onClick={() => integrationMode === 'builtin' && setActiveTab('personality')}
+                      disabled={integrationMode === 'external'}
+                      className={`pb-2 px-1 font-medium transition-colors relative flex items-center gap-2 ${
+                        integrationMode === 'external' 
+                          ? 'text-gray-300 cursor-not-allowed' 
+                          : activeTab === 'personality' 
+                            ? 'text-black border-b-2 border-black' 
+                            : 'text-gray-600 hover:text-gray-900'
                       }`}
                     >
                       Personality
+                      {integrationMode === 'external' && <Shield size={14} className="text-gray-300" />}
                     </button>
                     <button
-                      onClick={() => setActiveTab('knowledge')}
-                      className={`pb-2 px-1 font-medium transition-colors relative ${
-                        activeTab === 'knowledge' 
-                          ? 'text-black border-b-2 border-black' 
-                          : 'text-gray-600 hover:text-gray-900'
+                      onClick={() => integrationMode === 'builtin' && setActiveTab('knowledge')}
+                      disabled={integrationMode === 'external'}
+                      className={`pb-2 px-1 font-medium transition-colors relative flex items-center gap-2 ${
+                        integrationMode === 'external' 
+                          ? 'text-gray-300 cursor-not-allowed' 
+                          : activeTab === 'knowledge' 
+                            ? 'text-black border-b-2 border-black' 
+                            : 'text-gray-600 hover:text-gray-900'
                       }`}
                     >
                       Knowledge Base
+                      {integrationMode === 'external' && <Shield size={14} className="text-gray-300" />}
                     </button>
                     <button
-                      onClick={() => setActiveTab('responses')}
-                      className={`pb-2 px-1 font-medium transition-colors relative ${
-                        activeTab === 'responses' 
-                          ? 'text-black border-b-2 border-black' 
-                          : 'text-gray-600 hover:text-gray-900'
+                      onClick={() => integrationMode === 'builtin' && setActiveTab('responses')}
+                      disabled={integrationMode === 'external'}
+                      className={`pb-2 px-1 font-medium transition-colors relative flex items-center gap-2 ${
+                        integrationMode === 'external' 
+                          ? 'text-gray-300 cursor-not-allowed' 
+                          : activeTab === 'responses' 
+                            ? 'text-black border-b-2 border-black' 
+                            : 'text-gray-600 hover:text-gray-900'
                       }`}
                     >
                       Response Templates
+                      {integrationMode === 'external' && <Shield size={14} className="text-gray-300" />}
                     </button>
                     <button
-                      onClick={() => setActiveTab('chatflows')}
-                      className={`pb-2 px-1 font-medium transition-colors relative ${
-                        activeTab === 'chatflows' 
-                          ? 'text-black border-b-2 border-black' 
-                          : 'text-gray-600 hover:text-gray-900'
+                      onClick={() => integrationMode === 'builtin' && setActiveTab('chatflows')}
+                      disabled={integrationMode === 'external'}
+                      className={`pb-2 px-1 font-medium transition-colors relative flex items-center gap-2 ${
+                        integrationMode === 'external' 
+                          ? 'text-gray-300 cursor-not-allowed' 
+                          : activeTab === 'chatflows' 
+                            ? 'text-black border-b-2 border-black' 
+                            : 'text-gray-600 hover:text-gray-900'
                       }`}
                     >
                       Chatflows
+                      {integrationMode === 'external' && <Shield size={14} className="text-gray-300" />}
                     </button>
                     <button
-                      onClick={() => setActiveTab('connect-api')}
-                      className={`pb-2 px-1 font-medium transition-colors relative ${
-                        activeTab === 'connect-api' 
-                          ? 'text-black border-b-2 border-black' 
-                          : 'text-gray-600 hover:text-gray-900'
+                      onClick={() => integrationMode === 'external' && setActiveTab('connect-api')}
+                      disabled={integrationMode === 'builtin'}
+                      className={`pb-2 px-1 font-medium transition-colors relative flex items-center gap-2 ${
+                        integrationMode === 'builtin' 
+                          ? 'text-gray-300 cursor-not-allowed' 
+                          : activeTab === 'connect-api' 
+                            ? 'text-black border-b-2 border-black' 
+                            : 'text-gray-600 hover:text-gray-900'
                       }`}
                     >
                       Connect API
+                      {integrationMode === 'external' && <CheckCircle size={14} className="text-green-500" />}
+                      {integrationMode === 'builtin' && <Shield size={14} className="text-gray-300" />}
                     </button>
                   </div>
                 </div>
                 
                 <div className="p-6">
-                  {activeTab === 'personality' && (
+                  {activeTab === 'personality' && integrationMode === 'external' && (
+                    <div className="text-center py-12">
+                      <Shield size={48} className="mx-auto text-gray-300 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Personality Managed Externally</h3>
+                      <p className="text-gray-600 mb-4">Your external chatbot provider handles personality configuration.</p>
+                      <p className="text-sm text-gray-500">Switch to "Built-in AI" mode to configure personality traits here.</p>
+                    </div>
+                  )}
+                  {activeTab === 'personality' && integrationMode === 'builtin' && (
                     <div className="space-y-6">
                       <div>
                         <h3 className="font-semibold mb-4 flex items-center gap-2">
@@ -322,7 +414,15 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                     </div>
                   )}
                   
-                  {activeTab === 'knowledge' && (
+                  {activeTab === 'knowledge' && integrationMode === 'external' && (
+                    <div className="text-center py-12">
+                      <Shield size={48} className="mx-auto text-gray-300 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Knowledge Base Managed Externally</h3>
+                      <p className="text-gray-600 mb-4">Your external chatbot provider handles knowledge base configuration.</p>
+                      <p className="text-sm text-gray-500">Switch to "Built-in AI" mode to manage knowledge sources here.</p>
+                    </div>
+                  )}
+                  {activeTab === 'knowledge' && integrationMode === 'builtin' && (
                     <div className="space-y-6">
                       <div className="flex justify-between items-center mb-4">
                         <h3 className="font-semibold flex items-center gap-2">
@@ -373,7 +473,15 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                     </div>
                   )}
                   
-                  {activeTab === 'chatflows' && (
+                  {activeTab === 'chatflows' && integrationMode === 'external' && (
+                    <div className="text-center py-12">
+                      <Shield size={48} className="mx-auto text-gray-300 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Chatflows Managed Externally</h3>
+                      <p className="text-gray-600 mb-4">Your external chatbot provider handles conversation flow configuration.</p>
+                      <p className="text-sm text-gray-500">Switch to "Built-in AI" mode to design chatflows here.</p>
+                    </div>
+                  )}
+                  {activeTab === 'chatflows' && integrationMode === 'builtin' && (
                     <div className="space-y-6">
                       {!selectedTemplate ? (
                         <div>
@@ -594,7 +702,15 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                     </div>
                   )}
                   
-                  {activeTab === 'responses' && (
+                  {activeTab === 'responses' && integrationMode === 'external' && (
+                    <div className="text-center py-12">
+                      <Shield size={48} className="mx-auto text-gray-300 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">Response Templates Managed Externally</h3>
+                      <p className="text-gray-600 mb-4">Your external chatbot provider handles response template configuration.</p>
+                      <p className="text-sm text-gray-500">Switch to "Built-in AI" mode to configure response templates here.</p>
+                    </div>
+                  )}
+                  {activeTab === 'responses' && integrationMode === 'builtin' && (
                     <div className="space-y-6">
                       <div>
                         <h3 className="font-semibold mb-4 flex items-center gap-2">
@@ -655,7 +771,15 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                     </div>
                   )}
                   
-                  {activeTab === 'connect-api' && (
+                  {activeTab === 'connect-api' && integrationMode === 'builtin' && (
+                    <div className="text-center py-12">
+                      <Shield size={48} className="mx-auto text-gray-300 mb-4" />
+                      <h3 className="text-lg font-medium text-gray-900 mb-2">API Connection Not Needed</h3>
+                      <p className="text-gray-600 mb-4">You're using our built-in AI, so no external API connection is required.</p>
+                      <p className="text-sm text-gray-500">Switch to "External Provider" mode to connect external chatbot APIs.</p>
+                    </div>
+                  )}
+                  {activeTab === 'connect-api' && integrationMode === 'external' && (
                     <div className="space-y-6">
                       <div className="mb-6">
                         <h3 className="font-semibold mb-2 flex items-center gap-2">

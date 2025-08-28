@@ -17,7 +17,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
   const [connections, setConnections] = useState<any[]>([]);
   const [selectedNode, setSelectedNode] = useState<any>(null);
   const [integrationMode, setIntegrationMode] = useState<'builtin' | 'external'>('builtin');
-  const [botName, setBotName] = useState('Assistant');
+  const [botName, setBotName] = useState('');
   const [botAgeGroup, setBotAgeGroup] = useState('professional');
   const [botBackstory, setBotBackstory] = useState('I am a helpful AI assistant created to provide support and answer questions.');
   const [selectedPersonality, setSelectedPersonality] = useState('professional');
@@ -88,6 +88,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
         ]);
         setClient(clientData);
         setBot(botData);
+        setBotName(botData.name); // Initialize with actual bot name
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -155,6 +156,14 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
       setSelectedPersonality('professional');
       setPersonality(personalityTypes.professional.values);
       setHasCustomChanges(false);
+    }
+  };
+
+  const handleBotNameChange = (newName: string) => {
+    setBotName(newName);
+    // Also update the bot object in state so the header shows the new name immediately
+    if (bot) {
+      setBot({ ...bot, name: newName });
     }
   };
 
@@ -475,7 +484,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                             <input
                               type="text"
                               value={botName}
-                              onChange={(e) => setBotName(e.target.value)}
+                              onChange={(e) => handleBotNameChange(e.target.value)}
                               placeholder="e.g., Alex, Sarah, Support Bot"
                               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
                             />

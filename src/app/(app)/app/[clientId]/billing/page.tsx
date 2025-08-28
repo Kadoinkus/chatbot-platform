@@ -5,7 +5,8 @@ import Sidebar from '@/components/Sidebar';
 import { 
   CreditCard, TrendingUp, AlertCircle, CheckCircle, 
   Download, Plus, Wallet, Package, Activity, 
-  DollarSign, Calendar, Bot, BarChart3, Settings, Store
+  DollarSign, Calendar, Bot, BarChart3, Settings, Store,
+  Users, MessageCircle, Server
 } from 'lucide-react';
 import Link from 'next/link';
 import type { Client } from '@/lib/dataService';
@@ -51,6 +52,10 @@ export default function BillingPage({ params }: { params: { clientId: string } }
         limit: 10000,
         conversations: 8234,
         apiCalls: 24521,
+        bundleLoads: 823,
+        bundleLimit: 1000,
+        chatMessages: 42341,
+        chatLimit: 50000,
         cost: 1245.32
       },
       { 
@@ -61,6 +66,10 @@ export default function BillingPage({ params }: { params: { clientId: string } }
         limit: 5000,
         conversations: 2234,
         apiCalls: 8932,
+        bundleLoads: 445,
+        bundleLimit: 500,
+        chatMessages: 18932,
+        chatLimit: 25000,
         cost: 578.13
       }
     ],
@@ -352,17 +361,56 @@ export default function BillingPage({ params }: { params: { clientId: string } }
                         </div>
                       </div>
                       
-                      <div className="grid grid-cols-3 gap-4 text-sm">
+                      <div className="space-y-3">
+                        {/* Bundle Loads */}
                         <div>
-                          <p className="text-gray-600">Conversations</p>
-                          <p className="font-medium">{mascot.conversations.toLocaleString()}</p>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="flex items-center gap-1">
+                              <Server size={14} className="text-gray-600" />
+                              Bundle Loads (3D Experience)
+                            </span>
+                            <span>{mascot.bundleLoads.toLocaleString()} / {mascot.bundleLimit.toLocaleString()}</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div 
+                              className={`h-1.5 rounded-full ${
+                                (mascot.bundleLoads / mascot.bundleLimit * 100) < 70 ? 'bg-green-500' :
+                                (mascot.bundleLoads / mascot.bundleLimit * 100) < 90 ? 'bg-yellow-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${Math.min(100, mascot.bundleLoads / mascot.bundleLimit * 100)}%` }}
+                            />
+                          </div>
+                          {mascot.bundleLoads / mascot.bundleLimit > 0.9 && (
+                            <p className="text-xs text-orange-600 mt-1">⚠️ 2D fallback active - bundle limit reached</p>
+                          )}
                         </div>
+                        
+                        {/* Chat Messages */}
                         <div>
-                          <p className="text-gray-600">API Calls</p>
-                          <p className="font-medium">{mascot.apiCalls.toLocaleString()}</p>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="flex items-center gap-1">
+                              <MessageCircle size={14} className="text-gray-600" />
+                              Chat Messages
+                            </span>
+                            <span>{(mascot.chatMessages / 1000).toFixed(1)}k / {(mascot.chatLimit / 1000).toFixed(0)}k</span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5">
+                            <div 
+                              className={`h-1.5 rounded-full ${
+                                (mascot.chatMessages / mascot.chatLimit * 100) < 70 ? 'bg-blue-500' :
+                                (mascot.chatMessages / mascot.chatLimit * 100) < 90 ? 'bg-yellow-500' : 'bg-red-500'
+                              }`}
+                              style={{ width: `${Math.min(100, mascot.chatMessages / mascot.chatLimit * 100)}%` }}
+                            />
+                          </div>
                         </div>
-                        <div className="text-right">
-                          <button className="text-black hover:underline">Set Limit</button>
+                        
+                        <div className="flex justify-between items-center pt-2 border-t">
+                          <div className="text-sm">
+                            <span className="text-gray-600">Bandwidth cost: </span>
+                            <span className="font-medium">${(mascot.bundleLoads * 0.05).toFixed(2)}</span>
+                          </div>
+                          <button className="text-sm text-black hover:underline">Adjust Limits</button>
                         </div>
                       </div>
                     </div>
@@ -381,11 +429,19 @@ export default function BillingPage({ params }: { params: { clientId: string } }
                         <ul className="space-y-2 mb-6">
                           <li className="text-sm flex items-center gap-2">
                             <CheckCircle size={16} className="text-green-500" />
-                            5,000 conversations
+                            500 bundle loads/month
+                          </li>
+                          <li className="text-sm flex items-center gap-2">
+                            <CheckCircle size={16} className="text-green-500" />
+                            25k chat messages
                           </li>
                           <li className="text-sm flex items-center gap-2">
                             <CheckCircle size={16} className="text-green-500" />
                             Basic analytics
+                          </li>
+                          <li className="text-sm flex items-center gap-2">
+                            <CheckCircle size={16} className="text-green-500" />
+                            2D fallback included
                           </li>
                           <li className="text-sm flex items-center gap-2">
                             <CheckCircle size={16} className="text-green-500" />
@@ -406,7 +462,11 @@ export default function BillingPage({ params }: { params: { clientId: string } }
                         <ul className="space-y-2 mb-6">
                           <li className="text-sm flex items-center gap-2">
                             <CheckCircle size={16} className="text-green-500" />
-                            25,000 conversations
+                            5,000 bundle loads/month
+                          </li>
+                          <li className="text-sm flex items-center gap-2">
+                            <CheckCircle size={16} className="text-green-500" />
+                            250k chat messages
                           </li>
                           <li className="text-sm flex items-center gap-2">
                             <CheckCircle size={16} className="text-green-500" />
@@ -432,7 +492,11 @@ export default function BillingPage({ params }: { params: { clientId: string } }
                         <ul className="space-y-2 mb-6">
                           <li className="text-sm flex items-center gap-2">
                             <CheckCircle size={16} className="text-green-500" />
-                            Unlimited conversations
+                            Unlimited bundle loads
+                          </li>
+                          <li className="text-sm flex items-center gap-2">
+                            <CheckCircle size={16} className="text-green-500" />
+                            Unlimited chat messages
                           </li>
                           <li className="text-sm flex items-center gap-2">
                             <CheckCircle size={16} className="text-green-500" />

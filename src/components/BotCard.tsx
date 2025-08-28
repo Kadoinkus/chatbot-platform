@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import StatusBadge from '@/components/StatusBadge';
-import { MessageSquare, Clock, TrendingUp, BarChart3, Palette, Brain, Headphones, Play, Pause } from 'lucide-react';
+import { MessageSquare, Clock, TrendingUp, BarChart3, Palette, Brain, Headphones, Play, Pause, Users, MessageCircle, AlertTriangle } from 'lucide-react';
 import type { Mascot } from '@/lib/data';
 
 interface BotCardProps {
@@ -29,6 +29,21 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
     if (usage < 90) return 'bg-yellow-500';
     return 'bg-red-500';
   };
+
+  // Mock bundle loads and chat usage - in production from server metrics
+  const bundleLoads = {
+    current: Math.floor(Math.random() * 800) + 200,
+    limit: 1000,
+    percentage: 0
+  };
+  bundleLoads.percentage = Math.round((bundleLoads.current / bundleLoads.limit) * 100);
+  
+  const chatUsage = {
+    current: Math.floor(Math.random() * 40000) + 5000,
+    limit: 50000,
+    percentage: 0
+  };
+  chatUsage.percentage = Math.round((chatUsage.current / chatUsage.limit) * 100);
 
   // Mock billing plan data - in production this would come from props or API
   const plans = ['Pro Plan', 'Starter', 'Pay-as-you-go', 'Prepaid Credits'];
@@ -78,17 +93,56 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
           <StatusBadge status={bot.status} />
         </div>
         
-        {/* Usage Indicator */}
-        <div className="mb-3">
-          <div className="flex justify-between items-center text-xs mb-1">
-            <span className="text-gray-600">Usage Limit</span>
-            <span className="font-medium">{usage}%</span>
+        {/* Usage Indicators */}
+        <div className="space-y-2 mb-3">
+          {/* Bundle Loads */}
+          <div>
+            <div className="flex justify-between items-center text-xs mb-1">
+              <span className="text-gray-600 flex items-center gap-1">
+                <Users size={12} />
+                Bundle Loads
+              </span>
+              <span className="font-medium">
+                {bundleLoads.current.toLocaleString()}/{bundleLoads.limit.toLocaleString()}
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-1.5">
+              <div 
+                className={`h-1.5 rounded-full transition-all ${
+                  bundleLoads.percentage < 70 ? 'bg-green-500' :
+                  bundleLoads.percentage < 90 ? 'bg-yellow-500' : 'bg-red-500'
+                }`}
+                style={{ width: `${bundleLoads.percentage}%` }}
+              />
+            </div>
+            {bundleLoads.percentage > 80 && (
+              <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
+                <AlertTriangle size={10} />
+                {bundleLoads.percentage > 90 ? '2D fallback active' : 'Approaching limit'}
+              </p>
+            )}
           </div>
-          <div className="w-full bg-gray-200 rounded-full h-1.5">
-            <div 
-              className={`h-1.5 rounded-full transition-all ${getUsageColor()}`}
-              style={{ width: `${usage}%` }}
-            />
+          
+          {/* Chat Messages */}
+          <div>
+            <div className="flex justify-between items-center text-xs mb-1">
+              <span className="text-gray-600 flex items-center gap-1">
+                <MessageCircle size={12} />
+                Chat Messages
+              </span>
+              <span className="font-medium">
+                {(chatUsage.current / 1000).toFixed(1)}k/{(chatUsage.limit / 1000).toFixed(0)}k
+              </span>
+            </div>
+            <div className="w-full bg-gray-200 rounded-full h-1.5">
+              <div 
+                className={`h-1.5 rounded-full transition-all ${
+                  chatUsage.percentage < 70 ? 'bg-blue-500' :
+                  chatUsage.percentage < 90 ? 'bg-yellow-500' : 'bg-red-500'
+                }`}
+                style={{ width: `${chatUsage.percentage}%` }}
+              />
+            </div>
           </div>
         </div>
         

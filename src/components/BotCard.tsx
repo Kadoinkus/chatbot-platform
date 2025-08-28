@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import StatusBadge from '@/components/StatusBadge';
-import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, MessageCircle, AlertTriangle, MoreVertical, Settings, Trash2, Copy } from 'lucide-react';
+import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, MessageCircle, AlertTriangle, MoreVertical, Settings, Trash2, Copy, Box, Square } from 'lucide-react';
 import type { Mascot } from '@/lib/data';
 
 interface BotCardProps {
@@ -12,12 +12,42 @@ interface BotCardProps {
 export default function BotCard({ bot, clientId }: BotCardProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const [showModeWarning, setShowModeWarning] = useState(false);
+  const [manualMode, setManualMode] = useState<'3d' | '2d' | null>(null);
 
   const handleToggleStatus = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     // TODO: Implement actual status toggle API call
     console.log(`Toggling bot ${bot.id} from ${bot.status} to ${bot.status === 'Live' ? 'Paused' : 'Live'}`);
+  };
+
+  const handleModeToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // If bundle limit exceeded, can only go to 2D
+    if (bundleLoads.percentage > 90) {
+      alert('Bundle limit exceeded. Bot is automatically in 2D mode until usage decreases.');
+      return;
+    }
+    
+    // If currently in 3D, show warning before switching to 2D
+    if (is3DMode) {
+      setShowModeWarning(true);
+    } else {
+      // If in 2D, switch back to 3D immediately
+      setManualMode('3d');
+    }
+  };
+
+  const confirmModeSwitch = () => {
+    setManualMode('2d');
+    setShowModeWarning(false);
+  };
+
+  const cancelModeSwitch = () => {
+    setShowModeWarning(false);
   };
 
   // Close dropdown when clicking outside
@@ -52,6 +82,10 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
   const randomPlan = plans[Math.floor(Math.random() * plans.length)];
   const randomBillingType = billingTypes[Math.floor(Math.random() * billingTypes.length)];
   
+  // Determine 2D/3D mode - in production this would come from props or API
+  const autoFallback = bundleLoads.percentage > 90; // Auto switch to 2D if bundle limit exceeded
+  const is3DMode = !autoFallback && manualMode !== '2d';
+  
   const getBillingBadgeStyle = (plan: string, type: string) => {
     if (type === 'prepaid') {
       return 'bg-orange-100 text-orange-700 border-orange-200';
@@ -71,11 +105,27 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
       <div className="p-6 pb-4 flex-1">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-4">
-            <img 
-              src={bot.image} 
-              alt={bot.name}
-              className="w-24 h-24 rounded-full bg-gray-100 group-hover:scale-105 transition-transform duration-300"
-            />
+            <div className="relative">
+              <img 
+                src={bot.image} 
+                alt={bot.name}
+                className="w-24 h-24 rounded-full bg-gray-100 group-hover:scale-105 transition-transform duration-300"
+              />
+              {/* 2D/3D Mode Indicator */}
+              <button 
+                onClick={handleModeToggle}
+                className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-white flex items-center justify-center text-white text-xs font-bold shadow-sm transition-all duration-200 hover:scale-110 ${
+                  is3DMode ? 'bg-green-600 hover:bg-green-700' : 'bg-orange-600 hover:bg-orange-700'
+                }`}
+                title={`${is3DMode ? '3D Mode Active' : '2D Mode Active'} - Click to ${is3DMode ? 'switch to 2D' : 'switch to 3D'}`}
+              >
+                {is3DMode ? (
+                  <Box size={12} />
+                ) : (
+                  <Square size={12} />
+                )}
+              </button>
+            </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
                 <h3 className="font-semibold text-2xl">{bot.name}</h3>
@@ -158,8 +208,11 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
               <span className="text-xs text-gray-500">
                 {bundleLoads.current.toLocaleString()} / {bundleLoads.limit.toLocaleString()}
               </span>
-              {bundleLoads.percentage > 90 && (
-                <span className="text-xs text-red-600 font-medium">2D fallback active</span>
+              {!is3DMode && (
+                <span className="text-xs text-orange-600 font-medium flex items-center gap-1">
+                  <Square size={10} />
+                  2D mode active
+                </span>
               )}
             </div>
           </div>
@@ -249,6 +302,50 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
           )}
         </button>
       </div>
+      
+      {/* Mode Switch Warning Modal */}
+      {showModeWarning && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+          <div className="bg-white rounded-xl p-6 max-w-md mx-4">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="w-10 h-10 bg-orange-100 rounded-full flex items-center justify-center">
+                <Square size={20} className="text-orange-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-lg">Switch to 2D Mode?</h3>
+                <p className="text-sm text-gray-600">This will reduce visual quality</p>
+              </div>
+            </div>
+            
+            <div className="mb-6">
+              <p className="text-sm text-gray-700 mb-3">
+                Switching to 2D mode will:
+              </p>
+              <ul className="text-sm text-gray-600 space-y-1 ml-4">
+                <li>• Reduce bandwidth usage by ~85%</li>
+                <li>• Use simpler chat interface</li>
+                <li>• Maintain full functionality</li>
+                <li>• You can switch back anytime</li>
+              </ul>
+            </div>
+            
+            <div className="flex gap-3">
+              <button
+                onClick={cancelModeSwitch}
+                className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmModeSwitch}
+                className="flex-1 px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 transition-colors"
+              >
+                Switch to 2D
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

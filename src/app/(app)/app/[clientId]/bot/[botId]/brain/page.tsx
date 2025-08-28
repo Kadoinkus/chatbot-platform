@@ -614,18 +614,20 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                         </h3>
                         <p className="text-sm text-gray-600 mb-4">Adjust the personality balance to perfectly match your needs.</p>
                         
-                        <div className="space-y-8">
+                        <div className="space-y-6">
                           {Object.entries(personalitySpectrums).map(([spectrumKey, spectrum]) => (
-                            <div key={spectrumKey} className="space-y-3">
-                              <div className="flex justify-between items-center mb-2">
+                            <div key={spectrumKey} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                              <div className="mb-3">
                                 <label className="text-sm font-medium">{spectrum.name}</label>
-                                <div className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded">
-                                  {(personality[spectrumKey as keyof typeof personality] || 50) < 40 ? 'More ' + spectrum.left.label : 
-                                   (personality[spectrumKey as keyof typeof personality] || 50) > 60 ? 'More ' + spectrum.right.label : 'Balanced'}
-                                </div>
+                              </div>
+
+                              {/* Clear left/right labels above slider */}
+                              <div className="flex justify-between text-xs font-medium text-gray-600 mb-2">
+                                <span>← {spectrum.left.label}</span>
+                                <span>{spectrum.right.label} →</span>
                               </div>
                               
-                              <div className="relative">
+                              <div className="relative mb-3">
                                 <input
                                   type="range"
                                   min="0"
@@ -639,14 +641,13 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                                 />
                               </div>
                               
-                              <div className="flex justify-between text-xs text-gray-500 mt-2">
-                                <div className="text-left max-w-[40%]">
-                                  <div className="font-medium text-gray-700">{spectrum.left.label}</div>
-                                  <div className="text-gray-500">{spectrum.left.description}</div>
+                              {/* Description text below slider */}
+                              <div className="flex justify-between text-xs text-gray-500">
+                                <div className="text-left max-w-[45%]">
+                                  <span className="text-gray-600">{spectrum.left.description}</span>
                                 </div>
-                                <div className="text-right max-w-[40%]">
-                                  <div className="font-medium text-gray-700">{spectrum.right.label}</div>
-                                  <div className="text-gray-500">{spectrum.right.description}</div>
+                                <div className="text-right max-w-[45%]">
+                                  <span className="text-gray-600">{spectrum.right.description}</span>
                                 </div>
                               </div>
                             </div>
@@ -682,11 +683,8 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                         </p>
                         
                         <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                          <div className="flex justify-between items-center mb-3">
+                          <div className="mb-3">
                             <span className="text-sm font-medium">Response Style</span>
-                            <span className="text-sm text-gray-600 px-2 py-1 bg-white rounded">
-                              {(responseFreedom || 50) <= 30 ? 'Conservative' : (responseFreedom || 50) <= 70 ? 'Balanced' : 'Creative'}
-                            </span>
                           </div>
                           
                           <div className="mb-4">

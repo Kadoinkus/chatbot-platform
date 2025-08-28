@@ -4,6 +4,7 @@ import { clients } from '@/lib/data';
 import Sidebar from '@/components/Sidebar';
 import { ArrowLeft, Save, Key, Clock, Shield, Bell, AlertTriangle, Database, Webhook, Download, CreditCard } from 'lucide-react';
 import Link from 'next/link';
+import StatusBadge from '@/components/StatusBadge';
 
 export default function BotSettingsPage({ params }: { params: { clientId: string; botId: string } }) {
   const client = clients.find(c => c.id === params.clientId);
@@ -73,11 +74,25 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
               <ArrowLeft size={16} />
               Back to bots
             </Link>
-            
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold mb-2">Operations</h1>
-                <p className="text-gray-600">Technical configuration and administration for {bot.name}</p>
+          </div>
+
+          {/* Bot Header */}
+          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+            <div className="flex items-start justify-between">
+              <div className="flex items-center gap-4">
+                <img 
+                  src={bot.image} 
+                  alt={bot.name}
+                  className="w-16 h-16 rounded-full bg-gray-100"
+                />
+                <div>
+                  <div className="flex items-center gap-3 mb-1">
+                    <h1 className="text-2xl font-bold">{bot.name}</h1>
+                    <StatusBadge status={bot.status} />
+                  </div>
+                  <p className="text-gray-600 mb-1">Technical configuration and administration</p>
+                  <p className="text-sm text-gray-500">Client: {client.name}</p>
+                </div>
               </div>
               {hasChanges && (
                 <button

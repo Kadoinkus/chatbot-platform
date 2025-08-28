@@ -1,112 +1,139 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { getClientById } from '@/lib/dataService';
+import { clients } from '@/lib/data';
+import { 
+  getClientBilling, 
+  calculateTotalMonthlyCost, 
+  predictCreditUsage,
+  getSubscriptionPlans,
+  getCreditPricing,
+  updateBotBilling,
+  purchaseCredits,
+  type ClientBilling,
+  type BotBilling 
+} from '@/lib/billingService';
 import Sidebar from '@/components/Sidebar';
 import { 
-  CreditCard, TrendingUp, AlertCircle, CheckCircle, 
-  Download, Plus, Wallet, Package, Activity, 
-  DollarSign, Calendar, Bot, BarChart3, Settings, Store,
-  Users, MessageCircle, Server
+  CreditCard, TrendingUp, AlertCircle, CheckCircle, ChevronDown,
+  Download, Plus, Wallet, Package, Activity, Table, Grid3X3,
+  DollarSign, Calendar, Bot, BarChart3, Settings, Check, X,
+  Users, MessageCircle, Server, Eye, EyeOff, Info, ArrowUpRight, ArrowDownRight
 } from 'lucide-react';
 import Link from 'next/link';
-import type { Client } from '@/lib/dataService';
+import type { Client, Mascot } from '@/lib/data';
 
 export default function BillingPage({ params }: { params: { clientId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
+  const [billingData, setBillingData] = useState<ClientBilling | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activeTab, setActiveTab] = useState('overview');
-  const [billingModel, setBillingModel] = useState('prepaid');
-  const [showAddCredits, setShowAddCredits] = useState(false);
-  
-  const [billingData] = useState({
-    balance: 2450.00,
-    monthlyUsage: 1823.45,
-    subscriptions: [
-      { id: 1, name: 'Pro Plan - Liza', price: 299, status: 'active', renewal: '2024-02-15' },
-      { id: 2, name: 'Starter - Remco', price: 99, status: 'active', renewal: '2024-02-15' }
-    ],
-    purchasedTemplates: [
-      { 
-        id: 'template-1', 
-        name: 'Customer Support Pro', 
-        price: 29, 
-        purchaseDate: '2024-01-15', 
-        status: 'active',
-        type: 'subscription'
-      },
-      { 
-        id: 'template-6', 
-        name: 'Education Tutor', 
-        price: 35, 
-        purchaseDate: '2024-01-20', 
-        status: 'active',
-        type: 'subscription'
-      }
-    ],
-    mascotUsage: [
-      { 
-        id: 'liza', 
-        name: 'Liza', 
-        plan: 'Pro Plan',
-        usage: 82,
-        limit: 10000,
-        conversations: 8234,
-        apiCalls: 24521,
-        bundleLoads: 823,
-        bundleLimit: 1000,
-        chatMessages: 42341,
-        chatLimit: 50000,
-        cost: 1245.32
-      },
-      { 
-        id: 'remco', 
-        name: 'Remco', 
-        plan: 'Pay-as-you-go',
-        usage: 45,
-        limit: 5000,
-        conversations: 2234,
-        apiCalls: 8932,
-        bundleLoads: 445,
-        bundleLimit: 500,
-        chatMessages: 18932,
-        chatLimit: 25000,
-        cost: 578.13
-      }
-    ],
-    invoices: [
-      { id: 'INV-001', date: '2024-01-01', amount: 398.00, status: 'paid' },
-      { id: 'INV-002', date: '2024-01-15', amount: 125.00, status: 'paid' },
-      { id: 'INV-003', date: '2024-02-01', amount: 398.00, status: 'pending' }
-    ]
-  });
+  const [viewMode, setViewMode] = useState<'cards' | 'table'>('cards');
+  const [expandedBots, setExpandedBots] = useState<Set<string>>(new Set());
+  const [showBuyCredits, setShowBuyCredits] = useState(false);
+  const [creditAmount, setCreditAmount] = useState(100);
+  const [saveSuccess, setSaveSuccess] = useState<string | null>(null);
+  const [pendingChanges, setPendingChanges] = useState<Record<string, {
+    model: 'subscription' | 'credits';
+    tier?: 'basic' | 'premium' | 'enterprise';
+  }>>({});
 
   useEffect(() => {
     async function loadData() {
-      try {
-        const clientData = await getClientById(params.clientId);
-        setClient(clientData);
-      } catch (error) {
-        console.error('Error loading data:', error);
-      } finally {
-        setLoading(false);
-      }
+      // Find client with mascots
+      const clientData = clients.find(c => c.id === params.clientId);
+      setClient(clientData);
+      
+      // Load billing data
+      const billing = await getClientBilling(params.clientId);
+      setBillingData(billing);
+      
+      setLoading(false);
     }
     loadData();
   }, [params.clientId]);
 
+  const handleBillingChange = (botId: string, model: 'subscription' | 'credits', tier?: 'basic' | 'premium' | 'enterprise') => {
+    setPendingChanges(prev => ({
+      ...prev,
+      [botId]: { model, tier }
+    }));
+  };
+
+  const saveBillingChanges = async (botId: string) => {
+    const change = pendingChanges[botId];
+    if (!change) return;
+
+    const success = await updateBotBilling(params.clientId, botId, change.model, change.tier);
+    if (success) {
+      setSaveSuccess(botId);
+      setPendingChanges(prev => {
+        const newChanges = { ...prev };
+        delete newChanges[botId];
+        return newChanges;
+      });
+      setTimeout(() => setSaveSuccess(null), 3000);
+    }
+  };
+
+  const handlePurchaseCredits = async () => {
+    const result = await purchaseCredits(params.clientId, creditAmount);
+    if (result.success && billingData) {
+      setBillingData({
+        ...billingData,
+        balance: result.newBalance
+      });
+      setShowBuyCredits(false);
+      setSaveSuccess('credits');
+      setTimeout(() => setSaveSuccess(null), 3000);
+    }
+  };
+
+  const toggleBotExpansion = (botId: string) => {
+    setExpandedBots(prev => {
+      const newSet = new Set(prev);
+      if (newSet.has(botId)) {
+        newSet.delete(botId);
+      } else {
+        newSet.add(botId);
+      }
+      return newSet;
+    });
+  };
+
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar clientId={params.clientId} />
+        <main className="flex-1 lg:ml-16">
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center">
+              <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900 mx-auto"></div>
+              <p className="mt-4 text-gray-600">Loading billing data...</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
   }
   
-  if (!client) {
-    return <div className="p-6">Client not found</div>;
+  if (!client || !billingData) {
+    return (
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar clientId={params.clientId} />
+        <main className="flex-1 lg:ml-16">
+          <div className="flex items-center justify-center h-screen">
+            <div className="text-center">
+              <AlertCircle size={48} className="text-gray-400 mx-auto mb-4" />
+              <p className="text-gray-600">No billing data found</p>
+            </div>
+          </div>
+        </main>
+      </div>
+    );
   }
 
-  const getUsageColor = (usage: number) => {
-    if (usage < 70) return 'bg-green-500';
-    if (usage < 90) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
+  const totalCosts = calculateTotalMonthlyCost(billingData);
+  const costTrend = totalCosts.total > 1500 ? 'up' : 'down';
+  const costChange = Math.abs((totalCosts.total - 1500) / 1500 * 100);
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -114,608 +141,479 @@ export default function BillingPage({ params }: { params: { clientId: string } }
       
       <main className="flex-1 lg:ml-16">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
+          {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
               <h1 className="text-3xl font-bold mb-2">Billing & Usage</h1>
-              <p className="text-gray-600">Manage your subscription, credits, and usage limits</p>
+              <p className="text-gray-600">Manage costs and monitor usage across all bots</p>
             </div>
             <button 
-              onClick={() => setShowAddCredits(true)}
+              onClick={() => setShowBuyCredits(true)}
               className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2"
             >
               <Plus size={18} />
-              Add Credits
+              Buy Credits
             </button>
           </div>
           
-          {/* Stats Cards */}
+          {/* Cost Summary Cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Current Balance</span>
-                <Wallet size={16} className="text-gray-400" />
+                <span className="text-sm text-gray-600">Total Monthly Cost</span>
+                <DollarSign size={16} className="text-gray-400" />
+              </div>
+              <p className="text-2xl font-bold">${totalCosts.total.toFixed(2)}</p>
+              <p className={`text-xs mt-1 flex items-center gap-1 ${costTrend === 'up' ? 'text-red-600' : 'text-green-600'}`}>
+                {costTrend === 'up' ? <ArrowUpRight size={12} /> : <ArrowDownRight size={12} />}
+                {costChange.toFixed(1)}% from last month
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Subscriptions</span>
+                <Package size={16} className="text-blue-400" />
+              </div>
+              <p className="text-2xl font-bold">${totalCosts.subscriptions.toFixed(2)}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {totalCosts.breakdown.filter(b => b.type === 'subscription').length} active plans
+              </p>
+            </div>
+            
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Credit Usage</span>
+                <Wallet size={16} className="text-green-400" />
+              </div>
+              <p className="text-2xl font-bold">${totalCosts.credits.toFixed(2)}</p>
+              <p className="text-xs text-gray-500 mt-1">This month so far</p>
+            </div>
+            
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Credit Balance</span>
+                <Wallet size={16} className="text-purple-400" />
               </div>
               <p className="text-2xl font-bold">${billingData.balance.toFixed(2)}</p>
-              <p className="text-xs text-gray-500 mt-1">Prepaid credits</p>
-            </div>
-            
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Monthly Usage</span>
-                <TrendingUp size={16} className="text-blue-400" />
-              </div>
-              <p className="text-2xl font-bold">${billingData.monthlyUsage.toFixed(2)}</p>
-              <p className="text-xs text-green-600 mt-1">-12% from last month</p>
-            </div>
-            
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Active Subscriptions</span>
-                <Package size={16} className="text-green-400" />
-              </div>
-              <p className="text-2xl font-bold">{billingData.subscriptions.length}</p>
-              <p className="text-xs text-gray-500 mt-1">$398/month total</p>
-            </div>
-            
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Active Mascots</span>
-                <Bot size={16} className="text-purple-400" />
-              </div>
-              <p className="text-2xl font-bold">{billingData.mascotUsage.length}</p>
-              <p className="text-xs text-gray-500 mt-1">All operational</p>
+              {billingData.autoRecharge.enabled && (
+                <p className="text-xs text-gray-500 mt-1">
+                  Auto-recharge at ${billingData.autoRecharge.threshold}
+                </p>
+              )}
             </div>
           </div>
           
-          {/* Tabs */}
+          {/* Bot Management Section */}
           <div className="bg-white rounded-xl border border-gray-200">
-            <div className="border-b border-gray-200">
-              <div className="flex gap-6 p-6 overflow-x-auto">
-                <button
-                  onClick={() => setActiveTab('overview')}
-                  className={`pb-2 px-1 font-medium transition-colors relative whitespace-nowrap ${
-                    activeTab === 'overview' 
-                      ? 'text-black border-b-2 border-black' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Overview
-                </button>
-                <button
-                  onClick={() => setActiveTab('usage')}
-                  className={`pb-2 px-1 font-medium transition-colors relative whitespace-nowrap ${
-                    activeTab === 'usage' 
-                      ? 'text-black border-b-2 border-black' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Mascot Usage
-                </button>
-                <button
-                  onClick={() => setActiveTab('plans')}
-                  className={`pb-2 px-1 font-medium transition-colors relative whitespace-nowrap ${
-                    activeTab === 'plans' 
-                      ? 'text-black border-b-2 border-black' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Billing Plans
-                </button>
-                <button
-                  onClick={() => setActiveTab('payment')}
-                  className={`pb-2 px-1 font-medium transition-colors relative whitespace-nowrap ${
-                    activeTab === 'payment' 
-                      ? 'text-black border-b-2 border-black' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Payment Methods
-                </button>
-                <button
-                  onClick={() => setActiveTab('invoices')}
-                  className={`pb-2 px-1 font-medium transition-colors relative whitespace-nowrap ${
-                    activeTab === 'invoices' 
-                      ? 'text-black border-b-2 border-black' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Invoices
-                </button>
-                <button
-                  onClick={() => setActiveTab('purchases')}
-                  className={`pb-2 px-1 font-medium transition-colors relative whitespace-nowrap ${
-                    activeTab === 'purchases' 
-                      ? 'text-black border-b-2 border-black' 
-                      : 'text-gray-600 hover:text-gray-900'
-                  }`}
-                >
-                  Purchases
-                </button>
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <div>
+                  <h2 className="text-xl font-semibold">Bot Billing Management</h2>
+                  <p className="text-sm text-gray-600 mt-1">
+                    Configure billing for {client.mascots.length} bots
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="flex items-center bg-gray-100 rounded-lg p-1">
+                    <button
+                      onClick={() => setViewMode('cards')}
+                      className={`p-2 rounded ${viewMode === 'cards' ? 'bg-white shadow-sm' : ''}`}
+                      title="Card view"
+                    >
+                      <Grid3X3 size={18} />
+                    </button>
+                    <button
+                      onClick={() => setViewMode('table')}
+                      className={`p-2 rounded ${viewMode === 'table' ? 'bg-white shadow-sm' : ''}`}
+                      title="Table view"
+                    >
+                      <Table size={18} />
+                    </button>
+                  </div>
+                </div>
               </div>
             </div>
             
             <div className="p-6">
-              {activeTab === 'overview' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-semibold mb-4">Current Billing Model</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <label className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        billingModel === 'payg' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
+              {viewMode === 'cards' ? (
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+                  {client.mascots.map(mascot => {
+                    const botBilling = billingData.bots[mascot.id];
+                    const isExpanded = expandedBots.has(mascot.id);
+                    const hasChanges = pendingChanges[mascot.id] !== undefined;
+                    const predictions = botBilling ? predictCreditUsage(botBilling) : null;
+                    
+                    if (!botBilling) return null;
+                    
+                    return (
+                      <div key={mascot.id} className={`border rounded-lg transition-all ${
+                        hasChanges ? 'border-orange-300 bg-orange-50' : 'border-gray-200'
                       }`}>
-                        <input 
-                          type="radio" 
-                          name="billing" 
-                          checked={billingModel === 'payg'}
-                          onChange={() => setBillingModel('payg')}
-                          className="sr-only"
-                        />
-                        <div className="flex items-center gap-3 mb-2">
-                          <Activity size={20} />
-                          <p className="font-medium">Pay-as-you-go</p>
-                        </div>
-                        <p className="text-sm text-gray-600">Set daily/monthly limits per mascot</p>
-                      </label>
-                      
-                      <label className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        billingModel === 'subscription' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
-                      }`}>
-                        <input 
-                          type="radio" 
-                          name="billing" 
-                          checked={billingModel === 'subscription'}
-                          onChange={() => setBillingModel('subscription')}
-                          className="sr-only"
-                        />
-                        <div className="flex items-center gap-3 mb-2">
-                          <Package size={20} />
-                          <p className="font-medium">Subscription</p>
-                        </div>
-                        <p className="text-sm text-gray-600">All-inclusive monthly plans</p>
-                      </label>
-                      
-                      <label className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                        billingModel === 'prepaid' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
-                      }`}>
-                        <input 
-                          type="radio" 
-                          name="billing" 
-                          checked={billingModel === 'prepaid'}
-                          onChange={() => setBillingModel('prepaid')}
-                          className="sr-only"
-                        />
-                        <div className="flex items-center gap-3 mb-2">
-                          <Wallet size={20} />
-                          <p className="font-medium">Prepaid Credits</p>
-                        </div>
-                        <p className="text-sm text-gray-600">Load wallet with credits</p>
-                      </label>
-                    </div>
-                  </div>
-                  
-                  <div>
-                    <h3 className="font-semibold mb-4">Quick Actions</h3>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-                      <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                        <DollarSign size={20} className="mb-2 text-gray-600" />
-                        <p className="font-medium">Add Credits</p>
-                        <p className="text-sm text-gray-600">Top up your balance</p>
-                      </button>
-                      <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                        <BarChart3 size={20} className="mb-2 text-gray-600" />
-                        <p className="font-medium">Usage Report</p>
-                        <p className="text-sm text-gray-600">Download detailed report</p>
-                      </button>
-                      <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                        <AlertCircle size={20} className="mb-2 text-gray-600" />
-                        <p className="font-medium">Set Alerts</p>
-                        <p className="text-sm text-gray-600">Configure notifications</p>
-                      </button>
-                      <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-                        <Calendar size={20} className="mb-2 text-gray-600" />
-                        <p className="font-medium">Billing Cycle</p>
-                        <p className="text-sm text-gray-600">Change billing period</p>
-                      </button>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {activeTab === 'usage' && (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-semibold">Mascot Usage & Limits</h3>
-                    <select className="px-3 py-2 border border-gray-200 rounded-lg text-sm">
-                      <option>This Month</option>
-                      <option>Last Month</option>
-                      <option>Last 3 Months</option>
-                    </select>
-                  </div>
-                  
-                  {billingData.mascotUsage.map((mascot) => (
-                    <div key={mascot.id} className="border border-gray-200 rounded-lg p-4">
-                      <div className="flex items-start justify-between mb-4">
-                        <div className="flex items-center gap-3">
-                          <div className="w-12 h-12 bg-gray-200 rounded-full" />
-                          <div>
-                            <p className="font-medium">{mascot.name}</p>
-                            <p className="text-sm text-gray-600">{mascot.plan}</p>
+                        <div className="p-4">
+                          {/* Bot Header */}
+                          <div className="flex items-start justify-between mb-4">
+                            <div className="flex items-center gap-3">
+                              <img 
+                                src={mascot.image} 
+                                alt={mascot.name}
+                                className="w-12 h-12 rounded-full"
+                              />
+                              <div>
+                                <h3 className="font-semibold flex items-center gap-2">
+                                  {mascot.name}
+                                  {saveSuccess === mascot.id && (
+                                    <CheckCircle size={16} className="text-green-500" />
+                                  )}
+                                </h3>
+                                <p className="text-sm text-gray-600">{mascot.description}</p>
+                              </div>
+                            </div>
+                            <button
+                              onClick={() => toggleBotExpansion(mascot.id)}
+                              className="p-1 hover:bg-gray-100 rounded"
+                            >
+                              {isExpanded ? <EyeOff size={16} /> : <Eye size={16} />}
+                            </button>
                           </div>
-                        </div>
-                        <div className="text-right">
-                          <p className="font-semibold">${mascot.cost}</p>
-                          <p className="text-xs text-gray-600">this month</p>
-                        </div>
-                      </div>
-                      
-                      <div className="mb-3">
-                        <div className="flex justify-between text-sm mb-1">
-                          <span>Usage: {mascot.conversations} / {mascot.limit} conversations</span>
-                          <span>{mascot.usage}%</span>
-                        </div>
-                        <div className="w-full bg-gray-200 rounded-full h-2">
-                          <div 
-                            className={`h-2 rounded-full ${getUsageColor(mascot.usage)}`}
-                            style={{ width: `${mascot.usage}%` }}
-                          />
-                        </div>
-                      </div>
-                      
-                      <div className="space-y-3">
-                        {/* Bundle Loads */}
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="flex items-center gap-1">
-                              <Server size={14} className="text-gray-600" />
-                              Bundle Loads (3D Experience)
-                            </span>
-                            <span>{mascot.bundleLoads.toLocaleString()} / {mascot.bundleLimit.toLocaleString()}</span>
+                          
+                          {/* Quick Stats */}
+                          <div className="grid grid-cols-2 gap-3 mb-4">
+                            <div className="bg-gray-50 rounded-lg p-3">
+                              <p className="text-xs text-gray-600 mb-1">Monthly Cost</p>
+                              <p className="text-lg font-semibold">
+                                ${botBilling.billingModel === 'subscription' 
+                                  ? botBilling.monthlyPrice 
+                                  : botBilling.usage.currentMonthCost.toFixed(2)}
+                              </p>
+                            </div>
+                            <div className="bg-gray-50 rounded-lg p-3">
+                              <p className="text-xs text-gray-600 mb-1">
+                                {botBilling.billingModel === 'subscription' ? 'Plan' : 'Credits'}
+                              </p>
+                              <p className="text-lg font-semibold">
+                                {botBilling.billingModel === 'subscription' 
+                                  ? botBilling.subscriptionTier 
+                                  : `$${botBilling.credits.toFixed(2)}`}
+                              </p>
+                            </div>
                           </div>
-                          <div className="w-full bg-gray-200 rounded-full h-1.5">
-                            <div 
-                              className={`h-1.5 rounded-full ${
-                                (mascot.bundleLoads / mascot.bundleLimit * 100) < 70 ? 'bg-green-500' :
-                                (mascot.bundleLoads / mascot.bundleLimit * 100) < 90 ? 'bg-yellow-500' : 'bg-red-500'
-                              }`}
-                              style={{ width: `${Math.min(100, mascot.bundleLoads / mascot.bundleLimit * 100)}%` }}
-                            />
-                          </div>
-                          {mascot.bundleLoads / mascot.bundleLimit > 0.9 && (
-                            <p className="text-xs text-orange-600 mt-1">⚠️ 2D fallback active - bundle limit reached</p>
+                          
+                          {/* Usage Bars */}
+                          {botBilling.billingModel === 'subscription' && (
+                            <div className="space-y-2 mb-4">
+                              <div>
+                                <div className="flex justify-between text-xs mb-1">
+                                  <span>Bundle Loads</span>
+                                  <span>{botBilling.usage.bundleLoads} / {botBilling.usage.bundleLimit}</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div 
+                                    className={`h-2 rounded-full ${
+                                      (botBilling.usage.bundleLoads / botBilling.usage.bundleLimit * 100) < 70 
+                                        ? 'bg-green-500' 
+                                        : (botBilling.usage.bundleLoads / botBilling.usage.bundleLimit * 100) < 90 
+                                          ? 'bg-yellow-500' 
+                                          : 'bg-red-500'
+                                    }`}
+                                    style={{ width: `${Math.min(100, botBilling.usage.bundleLoads / botBilling.usage.bundleLimit * 100)}%` }}
+                                  />
+                                </div>
+                              </div>
+                              <div>
+                                <div className="flex justify-between text-xs mb-1">
+                                  <span>Messages</span>
+                                  <span>{(botBilling.usage.chatMessages / 1000).toFixed(1)}k / {(botBilling.usage.chatLimit / 1000).toFixed(0)}k</span>
+                                </div>
+                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                  <div 
+                                    className={`h-2 rounded-full ${
+                                      (botBilling.usage.chatMessages / botBilling.usage.chatLimit * 100) < 70 
+                                        ? 'bg-blue-500' 
+                                        : (botBilling.usage.chatMessages / botBilling.usage.chatLimit * 100) < 90 
+                                          ? 'bg-yellow-500' 
+                                          : 'bg-red-500'
+                                    }`}
+                                    style={{ width: `${Math.min(100, botBilling.usage.chatMessages / botBilling.usage.chatLimit * 100)}%` }}
+                                  />
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Credit predictions */}
+                          {botBilling.billingModel === 'credits' && predictions && (
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-3 mb-4">
+                              <div className="flex items-start gap-2">
+                                <AlertCircle size={16} className="text-yellow-600 mt-0.5" />
+                                <div className="text-xs">
+                                  <p className="font-medium text-yellow-900">
+                                    Credits will last ~{predictions.daysRemaining} days
+                                  </p>
+                                  <p className="text-yellow-700">
+                                    Monthly estimate: ${predictions.estimatedMonthlyCost}
+                                  </p>
+                                </div>
+                              </div>
+                            </div>
+                          )}
+                          
+                          {/* Expanded Details */}
+                          {isExpanded && (
+                            <div className="border-t pt-4 mt-4 space-y-4">
+                              {/* Billing Model Selection */}
+                              <div>
+                                <label className="block text-sm font-medium mb-2">Billing Model</label>
+                                <select
+                                  value={pendingChanges[mascot.id]?.model || botBilling.billingModel}
+                                  onChange={(e) => {
+                                    const model = e.target.value as 'subscription' | 'credits';
+                                    handleBillingChange(mascot.id, model, model === 'subscription' ? 'basic' : undefined);
+                                  }}
+                                  className="w-full p-2 border border-gray-200 rounded-lg"
+                                >
+                                  <option value="subscription">Monthly Subscription</option>
+                                  <option value="credits">Pay with Credits</option>
+                                </select>
+                              </div>
+                              
+                              {/* Subscription Tier Selection */}
+                              {(pendingChanges[mascot.id]?.model || botBilling.billingModel) === 'subscription' && (
+                                <div>
+                                  <label className="block text-sm font-medium mb-2">Subscription Tier</label>
+                                  <select
+                                    value={pendingChanges[mascot.id]?.tier || botBilling.subscriptionTier || 'basic'}
+                                    onChange={(e) => {
+                                      const tier = e.target.value as 'basic' | 'premium' | 'enterprise';
+                                      handleBillingChange(mascot.id, 'subscription', tier);
+                                    }}
+                                    className="w-full p-2 border border-gray-200 rounded-lg"
+                                  >
+                                    <option value="basic">Basic ($99/mo)</option>
+                                    <option value="premium">Premium ($299/mo)</option>
+                                    <option value="enterprise">Enterprise ($999/mo)</option>
+                                  </select>
+                                </div>
+                              )}
+                              
+                              {/* Save Button */}
+                              {hasChanges && (
+                                <div className="flex gap-2">
+                                  <button
+                                    onClick={() => saveBillingChanges(mascot.id)}
+                                    className="flex-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                                  >
+                                    Save Changes
+                                  </button>
+                                  <button
+                                    onClick={() => {
+                                      setPendingChanges(prev => {
+                                        const newChanges = { ...prev };
+                                        delete newChanges[mascot.id];
+                                        return newChanges;
+                                      });
+                                    }}
+                                    className="px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                                  >
+                                    Cancel
+                                  </button>
+                                </div>
+                              )}
+                            </div>
                           )}
                         </div>
-                        
-                        {/* Chat Messages */}
-                        <div>
-                          <div className="flex justify-between text-sm mb-1">
-                            <span className="flex items-center gap-1">
-                              <MessageCircle size={14} className="text-gray-600" />
-                              Chat Messages
-                            </span>
-                            <span>{(mascot.chatMessages / 1000).toFixed(1)}k / {(mascot.chatLimit / 1000).toFixed(0)}k</span>
-                          </div>
-                          <div className="w-full bg-gray-200 rounded-full h-1.5">
-                            <div 
-                              className={`h-1.5 rounded-full ${
-                                (mascot.chatMessages / mascot.chatLimit * 100) < 70 ? 'bg-blue-500' :
-                                (mascot.chatMessages / mascot.chatLimit * 100) < 90 ? 'bg-yellow-500' : 'bg-red-500'
-                              }`}
-                              style={{ width: `${Math.min(100, mascot.chatMessages / mascot.chatLimit * 100)}%` }}
-                            />
-                          </div>
-                        </div>
-                        
-                        <div className="flex justify-between items-center pt-2 border-t">
-                          <div className="text-sm">
-                            <span className="text-gray-600">Bandwidth cost: </span>
-                            <span className="font-medium">${(mascot.bundleLoads * 0.05).toFixed(2)}</span>
-                          </div>
-                          <button className="text-sm text-black hover:underline">Adjust Limits</button>
-                        </div>
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
+                </div>
+              ) : (
+                /* Table View */
+                <div className="overflow-x-auto">
+                  <table className="w-full">
+                    <thead>
+                      <tr className="border-b">
+                        <th className="text-left py-2 px-3">Bot</th>
+                        <th className="text-left py-2 px-3">Model</th>
+                        <th className="text-left py-2 px-3">Plan/Credits</th>
+                        <th className="text-right py-2 px-3">Monthly Cost</th>
+                        <th className="text-right py-2 px-3">Usage</th>
+                        <th className="text-center py-2 px-3">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {client.mascots.map(mascot => {
+                        const botBilling = billingData.bots[mascot.id];
+                        if (!botBilling) return null;
+                        
+                        return (
+                          <tr key={mascot.id} className="border-b hover:bg-gray-50">
+                            <td className="py-3 px-3">
+                              <div className="flex items-center gap-2">
+                                <img src={mascot.image} alt={mascot.name} className="w-8 h-8 rounded-full" />
+                                <div>
+                                  <p className="font-medium">{mascot.name}</p>
+                                  <p className="text-xs text-gray-600">{mascot.status}</p>
+                                </div>
+                              </div>
+                            </td>
+                            <td className="py-3 px-3">
+                              <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                                botBilling.billingModel === 'subscription'
+                                  ? 'bg-blue-100 text-blue-700'
+                                  : 'bg-green-100 text-green-700'
+                              }`}>
+                                {botBilling.billingModel}
+                              </span>
+                            </td>
+                            <td className="py-3 px-3">
+                              {botBilling.billingModel === 'subscription'
+                                ? botBilling.subscriptionTier
+                                : `$${botBilling.credits.toFixed(2)}`}
+                            </td>
+                            <td className="py-3 px-3 text-right font-medium">
+                              ${botBilling.billingModel === 'subscription'
+                                ? botBilling.monthlyPrice
+                                : botBilling.usage.currentMonthCost.toFixed(2)}
+                            </td>
+                            <td className="py-3 px-3 text-right">
+                              <div className="text-xs">
+                                <p>{botBilling.usage.bundleLoads} loads</p>
+                                <p>{(botBilling.usage.chatMessages / 1000).toFixed(1)}k msgs</p>
+                              </div>
+                            </td>
+                            <td className="py-3 px-3 text-center">
+                              <Link
+                                href={`/app/${params.clientId}/bot/${mascot.id}/analytics`}
+                                className="text-sm text-black hover:underline"
+                              >
+                                View Details
+                              </Link>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
                 </div>
               )}
-              
-              {activeTab === 'plans' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-semibold mb-4">Available Plans</h3>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      <div className="border border-gray-200 rounded-lg p-6">
-                        <h4 className="font-semibold text-lg mb-2">Starter</h4>
-                        <p className="text-3xl font-bold mb-4">$99<span className="text-sm text-gray-600">/month</span></p>
-                        <ul className="space-y-2 mb-6">
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            500 bundle loads/month
-                          </li>
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            25k chat messages
-                          </li>
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            Basic analytics
-                          </li>
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            2D fallback included
-                          </li>
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            Email support
-                          </li>
-                        </ul>
-                        <button className="w-full px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
-                          Select Plan
-                        </button>
-                      </div>
-                      
-                      <div className="border-2 border-black rounded-lg p-6 relative">
-                        <div className="absolute -top-3 left-1/2 -translate-x-1/2 bg-black text-white px-3 py-1 rounded-full text-xs">
-                          POPULAR
-                        </div>
-                        <h4 className="font-semibold text-lg mb-2">Pro</h4>
-                        <p className="text-3xl font-bold mb-4">$299<span className="text-sm text-gray-600">/month</span></p>
-                        <ul className="space-y-2 mb-6">
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            5,000 bundle loads/month
-                          </li>
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            250k chat messages
-                          </li>
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            Advanced analytics
-                          </li>
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            Priority support
-                          </li>
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            Custom integrations
-                          </li>
-                        </ul>
-                        <button className="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
-                          Current Plan
-                        </button>
-                      </div>
-                      
-                      <div className="border border-gray-200 rounded-lg p-6">
-                        <h4 className="font-semibold text-lg mb-2">Enterprise</h4>
-                        <p className="text-3xl font-bold mb-4">Custom</p>
-                        <ul className="space-y-2 mb-6">
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            Unlimited bundle loads
-                          </li>
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            Unlimited chat messages
-                          </li>
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            Custom analytics
-                          </li>
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            Dedicated support
-                          </li>
-                          <li className="text-sm flex items-center gap-2">
-                            <CheckCircle size={16} className="text-green-500" />
-                            SLA guarantee
-                          </li>
-                        </ul>
-                        <button className="w-full px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
-                          Contact Sales
-                        </button>
-                      </div>
+            </div>
+          </div>
+          
+          {/* Recent Invoices */}
+          <div className="bg-white rounded-xl border border-gray-200 mt-6">
+            <div className="p-6 border-b border-gray-200">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Recent Invoices</h2>
+                <button className="text-sm text-black hover:underline">View All</button>
+              </div>
+            </div>
+            <div className="p-6">
+              <div className="space-y-3">
+                {billingData.invoices.slice(0, 3).map(invoice => (
+                  <div key={invoice.id} className="flex items-center justify-between py-3 border-b last:border-0">
+                    <div>
+                      <p className="font-medium">{invoice.id}</p>
+                      <p className="text-sm text-gray-600">{invoice.date}</p>
                     </div>
-                  </div>
-                </div>
-              )}
-              
-              {activeTab === 'payment' && (
-                <div className="space-y-6">
-                  <div>
-                    <h3 className="font-semibold mb-4">Payment Methods</h3>
-                    <div className="space-y-3">
-                      <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-8 bg-gray-200 rounded" />
-                          <div>
-                            <p className="font-medium">•••• •••• •••• 4242</p>
-                            <p className="text-sm text-gray-600">Expires 12/25</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Default</span>
-                          <button className="text-sm text-gray-600 hover:text-gray-900">Edit</button>
-                        </div>
-                      </div>
-                      
-                      <button className="w-full p-4 border-2 border-dashed border-gray-300 rounded-lg hover:border-gray-400 text-gray-600">
-                        + Add Payment Method
+                    <div className="flex items-center gap-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                        invoice.status === 'paid'
+                          ? 'bg-green-100 text-green-700'
+                          : invoice.status === 'pending'
+                            ? 'bg-yellow-100 text-yellow-700'
+                            : 'bg-red-100 text-red-700'
+                      }`}>
+                        {invoice.status}
+                      </span>
+                      <p className="font-semibold">${invoice.amount.toFixed(2)}</p>
+                      <button className="p-1 hover:bg-gray-100 rounded">
+                        <Download size={16} />
                       </button>
                     </div>
                   </div>
-                  
-                  <div>
-                    <h3 className="font-semibold mb-4">Billing Settings</h3>
-                    <div className="space-y-4">
-                      <label className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Auto-renewal</p>
-                          <p className="text-sm text-gray-600">Automatically renew subscriptions</p>
-                        </div>
-                        <input type="checkbox" defaultChecked className="rounded" />
-                      </label>
-                      <label className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Auto top-up</p>
-                          <p className="text-sm text-gray-600">Add credits when balance is low</p>
-                        </div>
-                        <input type="checkbox" className="rounded" />
-                      </label>
-                      <label className="flex items-center justify-between">
-                        <div>
-                          <p className="font-medium">Usage alerts</p>
-                          <p className="text-sm text-gray-600">Email when reaching 80% of limit</p>
-                        </div>
-                        <input type="checkbox" defaultChecked className="rounded" />
-                      </label>
-                    </div>
-                  </div>
-                </div>
-              )}
-              
-              {activeTab === 'invoices' && (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-semibold">Invoice History</h3>
-                    <button className="text-sm text-black hover:underline">Download All</button>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {billingData.invoices.map((invoice) => (
-                      <div key={invoice.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                        <div>
-                          <p className="font-medium">{invoice.id}</p>
-                          <p className="text-sm text-gray-600">{invoice.date}</p>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <p className="font-semibold">${invoice.amount.toFixed(2)}</p>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            invoice.status === 'paid' 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-yellow-100 text-yellow-700'
-                          }`}>
-                            {invoice.status}
-                          </span>
-                          <button className="p-2 hover:bg-gray-100 rounded">
-                            <Download size={16} />
-                          </button>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              )}
-              
-              {activeTab === 'purchases' && (
-                <div className="space-y-4">
-                  <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-semibold">Bot Template Purchases</h3>
-                    <button className="text-sm text-black hover:underline">View All Orders</button>
-                  </div>
-                  
-                  <div className="space-y-3">
-                    {billingData.purchasedTemplates.map((template) => (
-                      <div key={template.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
-                        <div className="flex items-center gap-4">
-                          <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
-                            <Bot size={20} className="text-gray-600" />
-                          </div>
-                          <div>
-                            <p className="font-medium">{template.name}</p>
-                            <p className="text-sm text-gray-600">Purchased on {template.purchaseDate}</p>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-4">
-                          <div className="text-right">
-                            <p className="font-semibold">${template.price}/month</p>
-                            <p className="text-xs text-gray-600 capitalize">{template.type}</p>
-                          </div>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            template.status === 'active' 
-                              ? 'bg-green-100 text-green-700' 
-                              : 'bg-gray-100 text-gray-700'
-                          }`}>
-                            {template.status}
-                          </span>
-                          <div className="flex items-center gap-1">
-                            <button className="p-2 hover:bg-gray-100 rounded" title="Manage">
-                              <Settings size={16} />
-                            </button>
-                            <button className="p-2 hover:bg-gray-100 rounded" title="Download Receipt">
-                              <Download size={16} />
-                            </button>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                  
-                  <div className="text-center py-8 border-2 border-dashed border-gray-200 rounded-lg">
-                    <Bot size={48} className="mx-auto text-gray-300 mb-4" />
-                    <h4 className="font-medium text-gray-900 mb-2">Need more bot templates?</h4>
-                    <p className="text-sm text-gray-600 mb-4">Browse our marketplace for specialized bots</p>
-                    <Link
-                      href={`/app/${client.id}/marketplace`}
-                      className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
-                    >
-                      <Store size={16} />
-                      Browse Marketplace
-                    </Link>
-                  </div>
-                </div>
-              )}
+                ))}
+              </div>
             </div>
           </div>
         </div>
       </main>
       
-      {showAddCredits && (
+      {/* Success Toast */}
+      {saveSuccess && (
+        <div className="fixed bottom-4 right-4 bg-green-600 text-white px-4 py-2 rounded-lg shadow-lg flex items-center gap-2">
+          <CheckCircle size={18} />
+          {saveSuccess === 'credits' ? 'Credits purchased successfully!' : 'Changes saved successfully!'}
+        </div>
+      )}
+      
+      {/* Buy Credits Modal */}
+      {showBuyCredits && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl max-w-md w-full">
             <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Add Credits</h2>
-              <p className="text-sm text-gray-600 mt-1">Top up your prepaid balance</p>
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold">Buy Credits</h2>
+                <button 
+                  onClick={() => setShowBuyCredits(false)}
+                  className="text-gray-400 hover:text-gray-600"
+                >
+                  <X size={20} />
+                </button>
+              </div>
             </div>
             
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Amount</label>
-                <div className="grid grid-cols-4 gap-2">
-                  <button className="p-2 border-2 border-black rounded-lg bg-gray-50">$100</button>
-                  <button className="p-2 border border-gray-200 rounded-lg hover:border-gray-300">$250</button>
-                  <button className="p-2 border border-gray-200 rounded-lg hover:border-gray-300">$500</button>
-                  <button className="p-2 border border-gray-200 rounded-lg hover:border-gray-300">$1000</button>
+                <label className="block text-sm font-medium mb-2">Select Amount</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {[50, 100, 250, 500, 1000].map(amount => (
+                    <button
+                      key={amount}
+                      onClick={() => setCreditAmount(amount)}
+                      className={`p-3 border-2 rounded-lg font-medium transition-colors ${
+                        creditAmount === amount
+                          ? 'border-green-500 bg-green-50 text-green-700'
+                          : 'border-gray-200 hover:border-gray-300'
+                      }`}
+                    >
+                      ${amount}
+                      {amount >= 250 && (
+                        <div className="text-xs mt-1">
+                          {amount === 250 && 'Save 5%'}
+                          {amount === 500 && 'Save 10%'}
+                          {amount === 1000 && 'Save 15%'}
+                        </div>
+                      )}
+                    </button>
+                  ))}
                 </div>
-                <input 
-                  type="number" 
-                  placeholder="Custom amount" 
-                  className="w-full mt-2 p-2 border border-gray-200 rounded-lg"
-                />
               </div>
               
-              <div>
-                <label className="block text-sm font-medium mb-2">Payment Method</label>
-                <select className="w-full p-2 border border-gray-200 rounded-lg">
-                  <option>•••• 4242 (Default)</option>
-                  <option>Add new card</option>
-                </select>
+              <div className="p-4 bg-gray-50 rounded-lg">
+                <div className="flex justify-between text-sm mb-2">
+                  <span>Current Balance:</span>
+                  <span className="font-medium">${billingData.balance.toFixed(2)}</span>
+                </div>
+                <div className="flex justify-between text-sm">
+                  <span>After Purchase:</span>
+                  <span className="font-bold">${(billingData.balance + creditAmount).toFixed(2)}</span>
+                </div>
               </div>
-            </div>
-            
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-              <button 
-                onClick={() => setShowAddCredits(false)}
-                className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button 
-                onClick={() => setShowAddCredits(false)}
-                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
-              >
-                Add Credits
-              </button>
+              
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setShowBuyCredits(false)}
+                  className="flex-1 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handlePurchaseCredits}
+                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700"
+                >
+                  Purchase ${creditAmount}
+                </button>
+              </div>
             </div>
           </div>
         </div>

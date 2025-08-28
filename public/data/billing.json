@@ -1,0 +1,306 @@
+{
+  "clients": {
+    "c1": {
+      "balance": 3247.50,
+      "currency": "USD",
+      "billingCycle": "monthly",
+      "nextBillingDate": "2024-03-01",
+      "paymentMethod": {
+        "type": "credit_card",
+        "last4": "4242",
+        "brand": "visa",
+        "expiryMonth": 12,
+        "expiryYear": 2025
+      },
+      "autoRecharge": {
+        "enabled": true,
+        "threshold": 100,
+        "amount": 500
+      },
+      "bots": {
+        "m1": {
+          "billingModel": "subscription",
+          "subscriptionTier": "premium",
+          "monthlyPrice": 299,
+          "credits": 250,
+          "usage": {
+            "bundleLoads": 3421,
+            "bundleLimit": 5000,
+            "chatMessages": 87234,
+            "chatLimit": 100000,
+            "currentMonthCost": 299,
+            "extraCharges": 0
+          },
+          "history": [
+            { "month": "2024-01", "cost": 299, "bundleLoads": 4234, "chatMessages": 98234 },
+            { "month": "2023-12", "cost": 299, "bundleLoads": 3876, "chatMessages": 76234 }
+          ]
+        },
+        "m2": {
+          "billingModel": "subscription",
+          "subscriptionTier": "basic",
+          "monthlyPrice": 99,
+          "credits": 150,
+          "usage": {
+            "bundleLoads": 823,
+            "bundleLimit": 1000,
+            "chatMessages": 18932,
+            "chatLimit": 25000,
+            "currentMonthCost": 99,
+            "extraCharges": 0
+          },
+          "history": [
+            { "month": "2024-01", "cost": 99, "bundleLoads": 934, "chatMessages": 21234 },
+            { "month": "2023-12", "cost": 99, "bundleLoads": 756, "chatMessages": 17234 }
+          ]
+        }
+      },
+      "invoices": [
+        {
+          "id": "INV-2024-002",
+          "date": "2024-02-01",
+          "amount": 398.00,
+          "status": "paid",
+          "items": [
+            { "description": "Liza - Premium Plan", "amount": 299 },
+            { "description": "Remco - Basic Plan", "amount": 99 }
+          ]
+        },
+        {
+          "id": "INV-2024-001",
+          "date": "2024-01-01",
+          "amount": 398.00,
+          "status": "paid",
+          "items": [
+            { "description": "Liza - Premium Plan", "amount": 299 },
+            { "description": "Remco - Basic Plan", "amount": 99 }
+          ]
+        },
+        {
+          "id": "INV-2023-012",
+          "date": "2023-12-01",
+          "amount": 448.50,
+          "status": "paid",
+          "items": [
+            { "description": "Liza - Premium Plan", "amount": 299 },
+            { "description": "Remco - Basic Plan", "amount": 99 },
+            { "description": "Extra Credits", "amount": 50.50 }
+          ]
+        }
+      ],
+      "transactions": [
+        { "date": "2024-02-15", "type": "credit_purchase", "amount": 100, "status": "completed" },
+        { "date": "2024-02-01", "type": "subscription", "amount": 398, "status": "completed" },
+        { "date": "2024-01-28", "type": "credit_purchase", "amount": 250, "status": "completed" }
+      ]
+    },
+    "c2": {
+      "balance": 1823.75,
+      "currency": "USD",
+      "billingCycle": "monthly",
+      "nextBillingDate": "2024-03-01",
+      "paymentMethod": {
+        "type": "credit_card",
+        "last4": "5555",
+        "brand": "mastercard",
+        "expiryMonth": 3,
+        "expiryYear": 2026
+      },
+      "autoRecharge": {
+        "enabled": false,
+        "threshold": 50,
+        "amount": 200
+      },
+      "bots": {
+        "m3": {
+          "billingModel": "credits",
+          "monthlyPrice": 0,
+          "credits": 523.45,
+          "usage": {
+            "bundleLoads": 2134,
+            "bundleLimit": 0,
+            "chatMessages": 45234,
+            "chatLimit": 0,
+            "currentMonthCost": 187.34,
+            "extraCharges": 0
+          },
+          "history": [
+            { "month": "2024-01", "cost": 234.56, "bundleLoads": 2834, "chatMessages": 52234 },
+            { "month": "2023-12", "cost": 198.23, "bundleLoads": 2234, "chatMessages": 41234 }
+          ]
+        },
+        "m4": {
+          "billingModel": "subscription",
+          "subscriptionTier": "enterprise",
+          "monthlyPrice": 999,
+          "credits": 500,
+          "usage": {
+            "bundleLoads": 12543,
+            "bundleLimit": 999999,
+            "chatMessages": 234567,
+            "chatLimit": 999999,
+            "currentMonthCost": 999,
+            "extraCharges": 0
+          },
+          "history": [
+            { "month": "2024-01", "cost": 999, "bundleLoads": 14234, "chatMessages": 267234 },
+            { "month": "2023-12", "cost": 999, "bundleLoads": 11234, "chatMessages": 198234 }
+          ]
+        }
+      },
+      "invoices": [
+        {
+          "id": "INV-2024-102",
+          "date": "2024-02-01",
+          "amount": 1186.34,
+          "status": "pending",
+          "items": [
+            { "description": "Max - Enterprise Plan", "amount": 999 },
+            { "description": "Vinny - Credit Usage", "amount": 187.34 }
+          ]
+        }
+      ],
+      "transactions": [
+        { "date": "2024-02-10", "type": "credit_purchase", "amount": 500, "status": "completed" },
+        { "date": "2024-02-01", "type": "subscription", "amount": 999, "status": "completed" }
+      ]
+    },
+    "c3": {
+      "balance": 567.25,
+      "currency": "USD",
+      "billingCycle": "monthly",
+      "nextBillingDate": "2024-03-01",
+      "paymentMethod": {
+        "type": "credit_card",
+        "last4": "1234",
+        "brand": "amex",
+        "expiryMonth": 8,
+        "expiryYear": 2024
+      },
+      "autoRecharge": {
+        "enabled": true,
+        "threshold": 200,
+        "amount": 1000
+      },
+      "bots": {
+        "m5": {
+          "billingModel": "credits",
+          "monthlyPrice": 0,
+          "credits": 234.50,
+          "usage": {
+            "bundleLoads": 0,
+            "bundleLimit": 0,
+            "chatMessages": 0,
+            "chatLimit": 0,
+            "currentMonthCost": 0,
+            "extraCharges": 0
+          },
+          "history": []
+        },
+        "m6": {
+          "billingModel": "subscription",
+          "subscriptionTier": "basic",
+          "monthlyPrice": 99,
+          "credits": 100,
+          "usage": {
+            "bundleLoads": 456,
+            "bundleLimit": 1000,
+            "chatMessages": 12345,
+            "chatLimit": 25000,
+            "currentMonthCost": 99,
+            "extraCharges": 0
+          },
+          "history": [
+            { "month": "2024-01", "cost": 99, "bundleLoads": 523, "chatMessages": 14234 }
+          ]
+        }
+      },
+      "invoices": [
+        {
+          "id": "INV-2024-201",
+          "date": "2024-02-01",
+          "amount": 99.00,
+          "status": "paid",
+          "items": [
+            { "description": "Joy - Basic Plan", "amount": 99 }
+          ]
+        }
+      ],
+      "transactions": [
+        { "date": "2024-02-01", "type": "subscription", "amount": 99, "status": "completed" }
+      ]
+    }
+  },
+  "plans": {
+    "subscription": {
+      "basic": {
+        "name": "Basic",
+        "price": 99,
+        "currency": "USD",
+        "limits": {
+          "bundleLoads": 1000,
+          "chatMessages": 25000,
+          "apiCalls": 50000,
+          "storage": "10GB"
+        },
+        "features": [
+          "Standard 3D avatars",
+          "Email support",
+          "Basic analytics",
+          "2D fallback included"
+        ]
+      },
+      "premium": {
+        "name": "Premium",
+        "price": 299,
+        "currency": "USD",
+        "limits": {
+          "bundleLoads": 5000,
+          "chatMessages": 100000,
+          "apiCalls": 250000,
+          "storage": "50GB"
+        },
+        "features": [
+          "HD 3D avatars",
+          "Priority support",
+          "Advanced analytics",
+          "Custom branding",
+          "API access"
+        ]
+      },
+      "enterprise": {
+        "name": "Enterprise",
+        "price": 999,
+        "currency": "USD",
+        "limits": {
+          "bundleLoads": 999999,
+          "chatMessages": 999999,
+          "apiCalls": 999999,
+          "storage": "Unlimited"
+        },
+        "features": [
+          "Ultra HD 3D avatars",
+          "24/7 phone support",
+          "Custom analytics",
+          "White labeling",
+          "Dedicated server",
+          "SLA guarantee"
+        ]
+      }
+    },
+    "credits": {
+      "pricing": {
+        "bundleLoad": 0.04,
+        "chatMessage": 0.0015,
+        "apiCall": 0.0001
+      },
+      "packages": [
+        { "amount": 50, "bonus": 0, "savings": 0 },
+        { "amount": 100, "bonus": 5, "savings": 5 },
+        { "amount": 250, "bonus": 25, "savings": 12.5 },
+        { "amount": 500, "bonus": 75, "savings": 25 },
+        { "amount": 1000, "bonus": 200, "savings": 50 }
+      ]
+    }
+  }
+}

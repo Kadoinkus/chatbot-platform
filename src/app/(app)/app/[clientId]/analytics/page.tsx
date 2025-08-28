@@ -24,17 +24,17 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  // Filter bots based on selection
+  const filteredBots = useMemo(() => {
+    if (!client || selectedBots.includes('all')) {
+      return client?.mascots || [];
+    }
+    return client.mascots.filter(bot => selectedBots.includes(bot.id));
+  }, [client, selectedBots]);
+
   if (!client) {
     return <div className="p-6">Client not found</div>;
   }
-
-  // Filter bots based on selection
-  const filteredBots = useMemo(() => {
-    if (selectedBots.includes('all')) {
-      return client.mascots;
-    }
-    return client.mascots.filter(bot => selectedBots.includes(bot.id));
-  }, [client.mascots, selectedBots]);
 
   // Calculate metrics for selected bots
   const totalConversations = filteredBots.reduce((acc, bot) => acc + bot.conversations, 0);

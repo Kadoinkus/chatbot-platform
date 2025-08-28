@@ -1,6 +1,7 @@
 import Link from 'next/link';
+import { useState, useRef, useEffect } from 'react';
 import StatusBadge from '@/components/StatusBadge';
-import { MessageSquare, Clock, TrendingUp, BarChart3, Palette, Brain, Headphones, Play, Pause, Users, MessageCircle, AlertTriangle } from 'lucide-react';
+import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, MessageCircle, AlertTriangle, MoreVertical, Settings, Trash2, Copy } from 'lucide-react';
 import type { Mascot } from '@/lib/data';
 
 interface BotCardProps {
@@ -9,11 +10,8 @@ interface BotCardProps {
 }
 
 export default function BotCard({ bot, clientId }: BotCardProps) {
-  const handleActionClick = (e: React.MouseEvent, path: string) => {
-    e.preventDefault();
-    e.stopPropagation();
-    window.location.href = path;
-  };
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
 
   const handleToggleStatus = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -22,13 +20,16 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
     console.log(`Toggling bot ${bot.id} from ${bot.status} to ${bot.status === 'Live' ? 'Paused' : 'Live'}`);
   };
 
-  // Mock usage data - in production this would come from props or API
-  const usage = Math.floor(Math.random() * 100);
-  const getUsageColor = () => {
-    if (usage < 70) return 'bg-green-500';
-    if (usage < 90) return 'bg-yellow-500';
-    return 'bg-red-500';
-  };
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target as Node)) {
+        setShowDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Mock bundle loads and chat usage - in production from server metrics
   const bundleLoads = {
@@ -65,172 +66,193 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
   };
 
   return (
-    <div className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all group">
-      <Link href={`/app/${clientId}/bot/${bot.id}/analytics`} className="block p-6">
+    <div className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 transition-all group relative">
+      {/* Header Section */}
+      <div className="p-6 pb-4">
         <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <img 
-                src={bot.image} 
-                alt={bot.name}
-                className="w-16 h-16 rounded-full bg-gray-100 group-hover:scale-105 transition-transform"
-              />
-              {usage > 80 && (
-                <div className="absolute -top-1 -right-1 w-3 h-3 bg-red-500 rounded-full animate-pulse" />
-              )}
-            </div>
-            <div>
-              <h3 className="font-semibold text-lg">{bot.name}</h3>
-              <p className="text-sm text-gray-600">{bot.description}</p>
-              {/* Billing plan badge */}
-              <div className="mt-2">
-                <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium border ${getBillingBadgeStyle(randomPlan, randomBillingType)}`}>
-                  {randomBillingType === 'prepaid' ? 'Prepaid Credits' : randomPlan}
-                </span>
+          <div className="flex items-center gap-3">
+            <img 
+              src={bot.image} 
+              alt={bot.name}
+              className="w-12 h-12 rounded-full bg-gray-100"
+            />
+            <div className="flex-1">
+              <div className="flex items-center gap-2">
+                <h3 className="font-semibold text-lg">{bot.name}</h3>
+                <StatusBadge status={bot.status} />
               </div>
+              <p className="text-sm text-gray-600 mt-0.5">{bot.description}</p>
             </div>
           </div>
-          <StatusBadge status={bot.status} />
+          <div className="relative" ref={dropdownRef}>
+            <button 
+              className="p-1 hover:bg-gray-100 rounded-lg transition-colors"
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                setShowDropdown(!showDropdown);
+              }}
+            >
+              <MoreVertical size={18} className="text-gray-400" />
+            </button>
+            
+            {/* Dropdown Menu */}
+            {showDropdown && (
+              <div className="absolute right-0 top-8 w-48 bg-white border border-gray-200 rounded-lg shadow-lg z-10">
+                <Link 
+                  href={`/app/${clientId}/bot/${bot.id}/mascot`}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <Palette size={14} />
+                  Mascot Studio
+                </Link>
+                <Link 
+                  href={`/app/${clientId}/bot/${bot.id}/support`}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <Headphones size={14} />
+                  Support & Tickets
+                </Link>
+                <Link 
+                  href={`/app/${clientId}/bot/${bot.id}/settings`}
+                  className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50"
+                >
+                  <Settings size={14} />
+                  Settings
+                </Link>
+                <div className="border-t border-gray-100 my-1" />
+                <button className="flex items-center gap-2 px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 w-full text-left">
+                  <Copy size={14} />
+                  Duplicate Bot
+                </button>
+                <button className="flex items-center gap-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 w-full text-left">
+                  <Trash2 size={14} />
+                  Delete Bot
+                </button>
+              </div>
+            )}
+          </div>
         </div>
         
         {/* Usage Indicators */}
-        <div className="space-y-2 mb-3">
+        <div className="space-y-3">
           {/* Bundle Loads */}
           <div>
-            <div className="flex justify-between items-center text-xs mb-1">
-              <span className="text-gray-600 flex items-center gap-1">
-                <Users size={12} />
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
+                <Server size={14} className="text-gray-500" />
                 Bundle Loads
               </span>
-              <span className="font-medium">
-                {bundleLoads.current.toLocaleString()}/{bundleLoads.limit.toLocaleString()}
+              <span className="text-xs text-gray-600">
+                {bundleLoads.percentage}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-1.5">
+            <div className="w-full bg-gray-100 rounded-full h-2">
               <div 
-                className={`h-1.5 rounded-full transition-all ${
-                  bundleLoads.percentage < 70 ? 'bg-green-500' :
-                  bundleLoads.percentage < 90 ? 'bg-yellow-500' : 'bg-red-500'
+                className={`h-2 rounded-full transition-all ${
+                  bundleLoads.percentage < 70 ? 'bg-gray-900' :
+                  bundleLoads.percentage < 90 ? 'bg-yellow-600' : 'bg-red-600'
                 }`}
                 style={{ width: `${bundleLoads.percentage}%` }}
               />
             </div>
-            {bundleLoads.percentage > 80 && (
-              <p className="text-xs text-orange-600 mt-1 flex items-center gap-1">
-                <AlertTriangle size={10} />
-                {bundleLoads.percentage > 90 ? '2D fallback active' : 'Approaching limit'}
-              </p>
-            )}
+            <div className="flex justify-between items-center mt-1">
+              <span className="text-xs text-gray-500">
+                {bundleLoads.current.toLocaleString()} / {bundleLoads.limit.toLocaleString()}
+              </span>
+              {bundleLoads.percentage > 90 && (
+                <span className="text-xs text-red-600 font-medium">2D fallback active</span>
+              )}
+            </div>
           </div>
           
           {/* Chat Messages */}
           <div>
-            <div className="flex justify-between items-center text-xs mb-1">
-              <span className="text-gray-600 flex items-center gap-1">
-                <MessageCircle size={12} />
+            <div className="flex justify-between items-center mb-1.5">
+              <span className="text-xs font-medium text-gray-700 flex items-center gap-1.5">
+                <MessageCircle size={14} className="text-gray-500" />
                 Chat Messages
               </span>
-              <span className="font-medium">
-                {(chatUsage.current / 1000).toFixed(1)}k/{(chatUsage.limit / 1000).toFixed(0)}k
+              <span className="text-xs text-gray-600">
+                {chatUsage.percentage}%
               </span>
             </div>
-            <div className="w-full bg-gray-200 rounded-full h-1.5">
+            <div className="w-full bg-gray-100 rounded-full h-2">
               <div 
-                className={`h-1.5 rounded-full transition-all ${
-                  chatUsage.percentage < 70 ? 'bg-blue-500' :
-                  chatUsage.percentage < 90 ? 'bg-yellow-500' : 'bg-red-500'
+                className={`h-2 rounded-full transition-all ${
+                  chatUsage.percentage < 70 ? 'bg-gray-900' :
+                  chatUsage.percentage < 90 ? 'bg-yellow-600' : 'bg-red-600'
                 }`}
                 style={{ width: `${chatUsage.percentage}%` }}
               />
             </div>
+            <div className="flex justify-between items-center mt-1">
+              <span className="text-xs text-gray-500">
+                {(chatUsage.current / 1000).toFixed(1)}k / {(chatUsage.limit / 1000).toFixed(0)}k
+              </span>
+            </div>
           </div>
         </div>
         
-        <div className="grid grid-cols-3 gap-4">
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-gray-600 mb-1">
-              <MessageSquare size={14} />
-              <span className="text-xs">Conversations</span>
-            </div>
-            <p className="font-semibold text-xl">{bot.conversations}</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-gray-600 mb-1">
-              <Clock size={14} />
-              <span className="text-xs">Response</span>
-            </div>
-            <p className="font-semibold text-xl">{bot.metrics.responseTime}s</p>
-          </div>
-          
-          <div className="text-center">
-            <div className="flex items-center justify-center gap-1 text-gray-600 mb-1">
-              <TrendingUp size={14} />
-              <span className="text-xs">Resolution</span>
-            </div>
-            <p className="font-semibold text-xl">{bot.metrics.resolutionRate}%</p>
-          </div>
-        </div>
-      </Link>
-      
-      <div className="border-t border-gray-100">
-        <div className="grid grid-cols-5 divide-x divide-gray-100">
-          <Link
-            href={`/app/${clientId}/bot/${bot.id}/analytics`}
-            onClick={(e) => handleActionClick(e, `/app/${clientId}/bot/${bot.id}/analytics`)}
-            className="flex flex-col items-center justify-center py-3 px-2 hover:bg-gray-50 transition-colors group/btn"
-          >
-            <BarChart3 size={18} className="text-gray-600 group-hover/btn:text-gray-900 mb-1" />
-            <span className="text-xs text-gray-600 group-hover/btn:text-gray-900 font-medium">Analytics</span>
-          </Link>
-          
-          <Link
-            href={`/app/${clientId}/bot/${bot.id}/mascot`}
-            onClick={(e) => handleActionClick(e, `/app/${clientId}/bot/${bot.id}/mascot`)}
-            className="flex flex-col items-center justify-center py-3 px-2 hover:bg-gray-50 transition-colors group/btn"
-          >
-            <Palette size={18} className="text-gray-600 group-hover/btn:text-gray-900 mb-1" />
-            <span className="text-xs text-gray-600 group-hover/btn:text-gray-900 font-medium">Mascot</span>
-          </Link>
-          
-          <Link
-            href={`/app/${clientId}/bot/${bot.id}/brain`}
-            onClick={(e) => handleActionClick(e, `/app/${clientId}/bot/${bot.id}/brain`)}
-            className="flex flex-col items-center justify-center py-3 px-2 hover:bg-gray-50 transition-colors group/btn"
-          >
-            <Brain size={18} className="text-gray-600 group-hover/btn:text-gray-900 mb-1" />
-            <span className="text-xs text-gray-600 group-hover/btn:text-gray-900 font-medium">Brain</span>
-          </Link>
-          
-          <Link
-            href={`/app/${clientId}/bot/${bot.id}/support`}
-            onClick={(e) => handleActionClick(e, `/app/${clientId}/bot/${bot.id}/support`)}
-            className="flex flex-col items-center justify-center py-3 px-2 hover:bg-gray-50 transition-colors group/btn"
-          >
-            <Headphones size={18} className="text-gray-600 group-hover/btn:text-gray-900 mb-1" />
-            <span className="text-xs text-gray-600 group-hover/btn:text-gray-900 font-medium">Support</span>
-          </Link>
-          
-          <button
-            onClick={handleToggleStatus}
-            className={`flex flex-col items-center justify-center py-3 px-2 hover:bg-gray-50 transition-colors group/btn border-l border-gray-200 ${
-              bot.status === 'Needs finalization' ? 'opacity-50 cursor-not-allowed' : ''
-            }`}
-            disabled={bot.status === 'Needs finalization'}
-            title={bot.status === 'Needs finalization' ? 'Complete setup to enable controls' : bot.status === 'Live' ? 'Pause bot' : 'Resume bot'}
-          >
-            {bot.status === 'Live' ? (
-              <Pause size={18} className="text-red-600 group-hover/btn:text-red-700 mb-1" />
-            ) : (
-              <Play size={18} className="text-green-600 group-hover/btn:text-green-700 mb-1" />
-            )}
-            <span className="text-xs font-medium">
-              <span className={bot.status === 'Live' ? 'text-red-600 group-hover/btn:text-red-700' : 'text-green-600 group-hover/btn:text-green-700'}>
-                {bot.status === 'Live' ? 'Pause' : 'Resume'}
-              </span>
+        {/* Billing Plan Badge */}
+        <div className="mt-4 flex items-center justify-between">
+          <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border ${getBillingBadgeStyle(randomPlan, randomBillingType)}`}>
+            {randomBillingType === 'prepaid' ? 'Prepaid Credits' : randomPlan}
+          </span>
+          {bot.status === 'Live' && (
+            <span className="text-xs text-gray-500">
+              {bot.conversations} conversations today
             </span>
-          </button>
+          )}
         </div>
+      </div>
+      
+      {/* Action Bar */}
+      <div className="border-t border-gray-100 flex items-center">
+        <Link
+          href={`/app/${clientId}/bot/${bot.id}/analytics`}
+          className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-gray-50 transition-colors"
+        >
+          <BarChart3 size={16} className="text-gray-600" />
+          <span className="text-sm font-medium text-gray-700">Analytics</span>
+        </Link>
+        
+        <div className="w-px h-8 bg-gray-100" />
+        
+        <Link
+          href={`/app/${clientId}/bot/${bot.id}/mascot`}
+          className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-gray-50 transition-colors"
+        >
+          <Palette size={16} className="text-gray-600" />
+          <span className="text-sm font-medium text-gray-700">Mascot</span>
+        </Link>
+        
+        <div className="w-px h-8 bg-gray-100" />
+        
+        <Link
+          href={`/app/${clientId}/bot/${bot.id}/brain`}
+          className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-gray-50 transition-colors"
+        >
+          <Brain size={16} className="text-gray-600" />
+          <span className="text-sm font-medium text-gray-700">Configure</span>
+        </Link>
+        
+        <div className="w-px h-8 bg-gray-100" />
+        
+        <button
+          onClick={handleToggleStatus}
+          className={`px-4 py-3 hover:bg-gray-50 transition-colors flex items-center justify-center ${
+            bot.status === 'Needs finalization' ? 'opacity-50 cursor-not-allowed' : ''
+          }`}
+          disabled={bot.status === 'Needs finalization'}
+          title={bot.status === 'Needs finalization' ? 'Complete setup to enable controls' : bot.status === 'Live' ? 'Pause bot' : 'Resume bot'}
+        >
+          {bot.status === 'Live' ? (
+            <Pause size={16} className="text-red-600" />
+          ) : (
+            <Play size={16} className="text-green-600" />
+          )}
+        </button>
       </div>
     </div>
   );

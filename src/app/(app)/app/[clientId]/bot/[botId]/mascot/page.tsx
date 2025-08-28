@@ -35,6 +35,8 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
   });
   const [optionSettings, setOptionSettings] = useState({});
   const [ownedStudioPacks, setOwnedStudioPacks] = useState(['basic']);
+  const [showPackSelector, setShowPackSelector] = useState(false);
+  const [showUpgradePrompt, setShowUpgradePrompt] = useState('');
 
   useEffect(() => {
     async function loadData() {
@@ -288,57 +290,39 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                         </div>
                       </div>
 
-                      {/* Studio Pack Selection */}
+                      {/* Active Studio Pack Indicator */}
                       <div>
                         <h3 className="font-semibold mb-4 flex items-center gap-2">
-                          <Crown size={18} />
-                          Studio Packs
+                          <Package size={18} />
+                          Active Style Pack
                         </h3>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          {Object.entries(studioPacks).map(([key, pack]) => {
-                            const isOwned = ownedStudioPacks.includes(key);
-                            const isSelected = selectedSubTemplate === key;
-                            return (
-                              <div
-                                key={key}
-                                className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                  isSelected 
-                                    ? 'border-black bg-gray-50' 
-                                    : 'border-gray-200 hover:border-gray-300'
-                                }`}
-                                onClick={() => isOwned && setSelectedSubTemplate(key)}
-                              >
-                                <div className="flex items-start justify-between">
-                                  <div className="flex items-center gap-3">
-                                    <span className="text-2xl">{pack.icon}</span>
-                                    <div>
-                                      <h4 className="font-medium flex items-center gap-2">
-                                        {pack.name}
-                                        {!isOwned && <Lock size={14} className="text-gray-400" />}
-                                      </h4>
-                                      <p className="text-sm text-gray-600">{pack.description}</p>
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    {pack.price === 0 ? (
-                                      <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
-                                        FREE
-                                      </span>
-                                    ) : (
-                                      <div>
-                                        <p className="font-semibold">${pack.price}</p>
-                                        {!isOwned && (
-                                          <button className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 mt-1">
-                                            Buy
-                                          </button>
-                                        )}
-                                      </div>
-                                    )}
-                                  </div>
-                                </div>
-                              </div>
-                            );
-                          })}
+                        <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-between">
+                          <div className="flex items-center gap-3">
+                            <span className="text-xl">{studioPacks[selectedSubTemplate as keyof typeof studioPacks].icon}</span>
+                            <div>
+                              <h4 className="font-medium">{studioPacks[selectedSubTemplate as keyof typeof studioPacks].name}</h4>
+                              <p className="text-xs text-gray-600">
+                                {studioPacks[selectedSubTemplate as keyof typeof studioPacks].price === 0 ? 'Included with template' : `$${studioPacks[selectedSubTemplate as keyof typeof studioPacks].price} • Active for all customizations`}
+                              </p>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            {studioPacks[selectedSubTemplate as keyof typeof studioPacks].price === 0 ? (
+                              <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                                FREE
+                              </span>
+                            ) : (
+                              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                                ${studioPacks[selectedSubTemplate as keyof typeof studioPacks].price}
+                              </span>
+                            )}
+                            <button 
+                              onClick={() => setShowPackSelector(!showPackSelector)}
+                              className="px-3 py-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                            >
+                              Change
+                            </button>
+                          </div>
                         </div>
                       </div>
 
@@ -445,25 +429,88 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                             const categoryOptions = pack.assets[selectedSubCategory as keyof typeof pack.assets];
                             if (!categoryOptions) return null;
 
-                            return categoryOptions.slice(0, 2).map(option => (
+                            const previewCount = Math.min(2, categoryOptions.length);
+                            
+                            return categoryOptions.slice(0, previewCount).map((option, index) => (
                               <div
                                 key={`locked-${packKey}-${option}`}
-                                className="p-3 border-2 border-gray-200 rounded-lg opacity-60 cursor-pointer hover:opacity-80 transition-all"
+                                className="p-3 border-2 border-dashed border-gray-300 rounded-lg opacity-75 cursor-pointer hover:opacity-90 transition-all group"
+                                onClick={() => setShowUpgradePrompt(packKey)}
                               >
-                                <div className="w-full h-20 bg-gray-200 rounded mb-2 flex items-center justify-center relative">
-                                  <Lock size={16} className="text-gray-400" />
+                                <div className="w-full h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded mb-2 flex items-center justify-center relative">
+                                  <Lock size={14} className="text-gray-400" />
+                                  <div className="absolute inset-0 bg-black/10 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span className="text-xs text-white bg-black/50 px-2 py-1 rounded">Preview</span>
+                                  </div>
                                 </div>
-                                <p className="text-sm font-medium capitalize">{option.replace(/_/g, ' ')}</p>
+                                <p className="text-sm font-medium capitalize text-gray-600">{option.replace(/_/g, ' ')}</p>
                                 <div className="flex items-center justify-between mt-1">
-                                  <p className="text-xs text-gray-500">{pack.name}</p>
-                                  <button className="text-xs text-blue-600 hover:text-blue-700">
-                                    ${pack.price}
-                                  </button>
+                                  <p className="text-xs text-gray-500 flex items-center gap-1">
+                                    <Crown size={10} className="text-yellow-500" />
+                                    {pack.name}
+                                  </p>
+                                  {index === previewCount - 1 && categoryOptions.length > previewCount ? (
+                                    <span className="text-xs text-blue-600">+{categoryOptions.length - previewCount} more</span>
+                                  ) : (
+                                    <button 
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setShowUpgradePrompt(packKey);
+                                      }}
+                                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                                    >
+                                      ${pack.price}
+                                    </button>
+                                  )}
                                 </div>
                               </div>
                             ));
                           })}
                         </div>
+                        
+                        {/* Contextual upgrade prompt */}
+                        {showUpgradePrompt && (
+                          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                            <div className="flex items-start justify-between">
+                              <div className="flex items-start gap-3">
+                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
+                                  <Crown size={16} className="text-blue-600" />
+                                </div>
+                                <div>
+                                  <h4 className="font-medium text-blue-900">
+                                    Get Premium {selectedSubCategory.charAt(0).toUpperCase() + selectedSubCategory.slice(1)} Styles
+                                  </h4>
+                                  <p className="text-sm text-blue-700 mb-3">
+                                    Get {studioPacks[showUpgradePrompt as keyof typeof studioPacks].name} for ${studioPacks[showUpgradePrompt as keyof typeof studioPacks].price} and unlock premium {selectedSubCategory} styles.
+                                  </p>
+                                  <div className="flex gap-2">
+                                    <button 
+                                      onClick={() => {
+                                        setOwnedStudioPacks([...ownedStudioPacks, showUpgradePrompt]);
+                                        setShowUpgradePrompt('');
+                                      }}
+                                      className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700"
+                                    >
+                                      Get {studioPacks[showUpgradePrompt as keyof typeof studioPacks].name} - ${studioPacks[showUpgradePrompt as keyof typeof studioPacks].price}
+                                    </button>
+                                    <button 
+                                      onClick={() => setShowUpgradePrompt('')}
+                                      className="px-3 py-1.5 border border-blue-300 text-blue-700 rounded text-sm font-medium hover:bg-blue-100"
+                                    >
+                                      Maybe Later
+                                    </button>
+                                  </div>
+                                </div>
+                              </div>
+                              <button 
+                                onClick={() => setShowUpgradePrompt('')}
+                                className="text-blue-400 hover:text-blue-600"
+                              >
+                                ×
+                              </button>
+                            </div>
+                          </div>
+                        )}
                       </div>
 
                       {/* Option Settings */}
@@ -533,6 +580,94 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                           </div>
                         </div>
                       </div>
+                      
+                      {/* Full Studio Pack Selector Modal */}
+                      {showPackSelector && (
+                        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
+                          <div className="bg-white rounded-xl max-w-3xl w-full max-h-[80vh] overflow-auto">
+                            <div className="p-6 border-b border-gray-200">
+                              <div className="flex items-center justify-between">
+                                <h3 className="text-lg font-semibold">Choose Style Pack</h3>
+                                <button 
+                                  onClick={() => setShowPackSelector(false)}
+                                  className="text-gray-400 hover:text-gray-600"
+                                >
+                                  ×
+                                </button>
+                              </div>
+                              <p className="text-sm text-gray-600 mt-1">Style packs provide themed assets for all customization categories</p>
+                            </div>
+                            <div className="p-6">
+                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                {Object.entries(studioPacks).map(([key, pack]) => {
+                                  const isOwned = ownedStudioPacks.includes(key);
+                                  const isSelected = selectedSubTemplate === key;
+                                  return (
+                                    <div
+                                      key={key}
+                                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                                        isSelected 
+                                          ? 'border-black bg-gray-50' 
+                                          : 'border-gray-200 hover:border-gray-300'
+                                      } ${!isOwned && 'opacity-75'}`}
+                                      onClick={() => {
+                                        if (isOwned) {
+                                          setSelectedSubTemplate(key);
+                                          setShowPackSelector(false);
+                                        }
+                                      }}
+                                    >
+                                      <div className="flex items-start justify-between">
+                                        <div className="flex items-center gap-3">
+                                          <span className="text-2xl">{pack.icon}</span>
+                                          <div>
+                                            <h4 className="font-medium flex items-center gap-2">
+                                              {pack.name}
+                                              {!isOwned && <Lock size={14} className="text-gray-400" />}
+                                            </h4>
+                                            <p className="text-sm text-gray-600">{pack.description}</p>
+                                            <p className="text-xs text-gray-500 mt-1">
+                                              {Object.values(pack.assets).reduce((total, category) => 
+                                                total + Object.values(category).reduce((catTotal, subCat) => 
+                                                  catTotal + subCat.length, 0), 0
+                                              )} total assets
+                                            </p>
+                                          </div>
+                                        </div>
+                                        <div className="text-right">
+                                          {pack.price === 0 ? (
+                                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                                              INCLUDED
+                                            </span>
+                                          ) : (
+                                            <div>
+                                              <p className="font-semibold">${pack.price}</p>
+                                              {!isOwned && (
+                                                <button 
+                                                  onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    setOwnedStudioPacks([...ownedStudioPacks, key]);
+                                                  }}
+                                                  className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 mt-1 w-full"
+                                                >
+                                                  Purchase
+                                                </button>
+                                              )}
+                                              {isOwned && (
+                                                <span className="text-xs text-green-600">✓ Owned</span>
+                                              )}
+                                            </div>
+                                          )}
+                                        </div>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </div>
+                        </div>
+                      )}
                     </div>
                   )}
                   

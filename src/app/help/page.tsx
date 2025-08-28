@@ -6,6 +6,7 @@ import {
   ExternalLink, Mail, Phone, Clock, CheckCircle, ArrowLeft
 } from 'lucide-react';
 import Link from 'next/link';
+import Sidebar from '@/components/Sidebar';
 
 type HelpCategory = 'getting-started' | 'bots' | 'marketplace' | 'billing' | 'integrations' | 'troubleshooting';
 
@@ -120,8 +121,11 @@ export default function HelpPage() {
     : currentFaqs;
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="container max-w-7xl mx-auto p-4 lg:p-8">
+    <div className="flex min-h-screen bg-gray-50">
+      <Sidebar />
+      
+      <main className="flex-1 lg:ml-16">
+        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
         {/* Header */}
         <div className="mb-8">
           <Link 
@@ -338,7 +342,8 @@ export default function HelpPage() {
             </div>
           </div>
         </div>
-      </div>
+        </div>
+      </main>
     </div>
   );
 }

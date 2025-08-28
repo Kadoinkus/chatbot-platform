@@ -15,7 +15,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
   const { totalItems, toggleCart } = useCart();
   
   const navItems = [
-    { icon: Home, label: 'Dashboard', href: clientId ? `/app/${clientId}` : '/app' },
+    { icon: Home, label: 'Dashboard', href: clientId ? `/app/${clientId}/home` : '/app' },
     { icon: Bot, label: 'Bots', href: clientId ? `/app/${clientId}` : '/app' },
     { icon: Store, label: 'Marketplace', href: clientId ? `/app/${clientId}/marketplace` : '/app' },
     { icon: MessageSquare, label: 'Conversations', href: clientId ? `/app/${clientId}/conversations` : '/app' },

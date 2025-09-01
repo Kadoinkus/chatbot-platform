@@ -57,6 +57,12 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   const [dateRange, setDateRange] = useState(30); // days
   const [showFilters, setShowFilters] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
+  const [customDateRange, setCustomDateRange] = useState<{start: string; end: string}>({
+    start: '',
+    end: ''
+  });
+  const [useCustomRange, setUseCustomRange] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
 
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
@@ -90,9 +96,16 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   useEffect(() => {
     async function loadData() {
       try {
-        const endDate = new Date();
-        const startDate = new Date();
-        startDate.setDate(startDate.getDate() - dateRange);
+        let startDate: Date, endDate: Date;
+
+        if (useCustomRange && customDateRange.start && customDateRange.end) {
+          startDate = new Date(customDateRange.start);
+          endDate = new Date(customDateRange.end);
+        } else {
+          endDate = new Date();
+          startDate = new Date();
+          startDate.setDate(startDate.getDate() - dateRange);
+        }
 
         const [clientData, botData, sessionData] = await Promise.all([
           getClientById(params.clientId),
@@ -111,7 +124,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
       }
     }
     loadData();
-  }, [params.clientId, params.botId, dateRange]);
+  }, [params.clientId, params.botId, dateRange, useCustomRange, customDateRange]);
 
   // Calculate comprehensive KPIs
   const kpis = useMemo(() => {
@@ -672,18 +685,176 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
             </div>
 
             {/* Date Range Filter */}
-            <div className="flex items-center gap-4">
-              <Calendar size={16} className="text-gray-500" />
-              <select 
-                value={dateRange}
-                onChange={(e) => setDateRange(Number(e.target.value))}
-                className="px-3 py-1 border border-gray-200 rounded-lg"
-              >
-                <option value={7}>Last 7 days</option>
-                <option value={30}>Last 30 days</option>
-                <option value={90}>Last 90 days</option>
-              </select>
+            <div className="flex items-center justify-between flex-wrap gap-4">
+              <div className="flex items-center gap-4">
+                <Calendar size={16} className="text-gray-500" />
+                <span className="text-sm font-medium text-gray-700">Time Period:</span>
+                
+                {/* Quick Select Buttons */}
+                <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
+                  <button 
+                    onClick={() => {setUseCustomRange(false); setDateRange(7);}}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                      !useCustomRange && dateRange === 7 
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                    style={!useCustomRange && dateRange === 7 ? { 
+                      backgroundColor: 'white',
+                      color: brandColor,
+                      boxShadow: `0 0 0 1px ${brandColor}20`
+                    } : {}}
+                  >
+                    Last 7 days
+                  </button>
+                  <button 
+                    onClick={() => {setUseCustomRange(false); setDateRange(30);}}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                      !useCustomRange && dateRange === 30 
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                    style={!useCustomRange && dateRange === 30 ? { 
+                      backgroundColor: 'white',
+                      color: brandColor,
+                      boxShadow: `0 0 0 1px ${brandColor}20`
+                    } : {}}
+                  >
+                    Last 30 days
+                  </button>
+                  <button 
+                    onClick={() => {setUseCustomRange(false); setDateRange(90);}}
+                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
+                      !useCustomRange && dateRange === 90 
+                        ? 'bg-white text-gray-900 shadow-sm' 
+                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                    }`}
+                    style={!useCustomRange && dateRange === 90 ? { 
+                      backgroundColor: 'white',
+                      color: brandColor,
+                      boxShadow: `0 0 0 1px ${brandColor}20`
+                    } : {}}
+                  >
+                    Last 90 days
+                  </button>
+                </div>
+
+                <button 
+                  onClick={() => setShowDatePicker(!showDatePicker)}
+                  className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
+                    useCustomRange || showDatePicker 
+                      ? 'text-white shadow-sm' 
+                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                  }`}
+                  style={useCustomRange || showDatePicker ? { 
+                    backgroundColor: brandColor,
+                    borderColor: brandColor 
+                  } : {}}
+                >
+                  Custom Range
+                </button>
+              </div>
+
+              {/* Current Range Display */}
+              <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
+                <BarChart3 size={14} className="text-gray-400" />
+                {useCustomRange && customDateRange.start && customDateRange.end 
+                  ? `${new Date(customDateRange.start).toLocaleDateString()} - ${new Date(customDateRange.end).toLocaleDateString()}`
+                  : `Showing last ${dateRange} days`}
+              </div>
             </div>
+
+            {/* Custom Date Picker */}
+            {showDatePicker && (
+              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 mt-4">
+                <h4 className="font-medium mb-3">Select Custom Date Range</h4>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">Start Date</label>
+                    <input
+                      type="date"
+                      value={customDateRange.start}
+                      onChange={(e) => setCustomDateRange(prev => ({...prev, start: e.target.value}))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                      max={customDateRange.end || new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm text-gray-600 mb-1">End Date</label>
+                    <input
+                      type="date"
+                      value={customDateRange.end}
+                      onChange={(e) => setCustomDateRange(prev => ({...prev, end: e.target.value}))}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                      min={customDateRange.start}
+                      max={new Date().toISOString().split('T')[0]}
+                    />
+                  </div>
+                </div>
+                <div className="flex justify-between items-center mt-4">
+                  <div className="flex gap-2">
+                    {/* Quick Presets */}
+                    <button
+                      onClick={() => {
+                        const end = new Date().toISOString().split('T')[0];
+                        const start = new Date();
+                        start.setDate(start.getDate() - 7);
+                        setCustomDateRange({start: start.toISOString().split('T')[0], end});
+                      }}
+                      className="px-2 py-1 text-xs bg-white border rounded hover:bg-gray-50"
+                    >
+                      Last Week
+                    </button>
+                    <button
+                      onClick={() => {
+                        const end = new Date().toISOString().split('T')[0];
+                        const start = new Date();
+                        start.setMonth(start.getMonth() - 1);
+                        setCustomDateRange({start: start.toISOString().split('T')[0], end});
+                      }}
+                      className="px-2 py-1 text-xs bg-white border rounded hover:bg-gray-50"
+                    >
+                      Last Month
+                    </button>
+                    <button
+                      onClick={() => {
+                        const end = new Date().toISOString().split('T')[0];
+                        const start = new Date();
+                        start.setMonth(start.getMonth() - 3);
+                        setCustomDateRange({start: start.toISOString().split('T')[0], end});
+                      }}
+                      className="px-2 py-1 text-xs bg-white border rounded hover:bg-gray-50"
+                    >
+                      Last Quarter
+                    </button>
+                  </div>
+                  <div className="flex gap-2">
+                    <button
+                      onClick={() => {
+                        setShowDatePicker(false);
+                        setUseCustomRange(false);
+                      }}
+                      className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      onClick={() => {
+                        if (customDateRange.start && customDateRange.end) {
+                          setUseCustomRange(true);
+                          setShowDatePicker(false);
+                        }
+                      }}
+                      disabled={!customDateRange.start || !customDateRange.end}
+                      className="px-3 py-1 text-sm rounded text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
+                      style={{ backgroundColor: customDateRange.start && customDateRange.end ? brandColor : '#9CA3AF' }}
+                    >
+                      Apply Range
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Tab Navigation */}

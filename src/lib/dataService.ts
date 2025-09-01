@@ -137,6 +137,20 @@ export type BotSession = {
   questions: string[];
   user_rating: number;
   summary: string;
+  // Enterprise analytics fields
+  intent_confidence: number;
+  resolution_type: 'self_service' | 'escalated' | 'partial' | 'unresolved';
+  completion_status: 'completed' | 'incomplete' | 'escalated' | 'partial';
+  user_type: 'new' | 'returning' | 'existing';
+  channel: 'webchat' | 'whatsapp' | 'facebook' | 'telegram';
+  device_type: 'desktop' | 'mobile' | 'tablet';
+  browser: string;
+  session_steps: number;
+  goal_achieved: boolean;
+  error_occurred: boolean;
+  bot_handoff: boolean;
+  human_cost_equivalent: number;
+  automation_saving: number;
 };
 
 export type Session = {

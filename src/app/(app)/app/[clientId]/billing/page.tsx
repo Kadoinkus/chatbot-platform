@@ -6,7 +6,7 @@ import Sidebar from '@/components/Sidebar';
 import { 
   CreditCard, TrendingUp, AlertCircle, CheckCircle, ChevronDown, ChevronUp,
   Download, Plus, Wallet, Package, Activity, Users, Sparkles,
-  DollarSign, Calendar, Bot as BotIcon, BarChart3, Settings, Check, X,
+  Euro, Calendar, Bot as BotIcon, BarChart3, Settings, Check, X,
   MessageCircle, Server, Eye, Info, ArrowUpRight, AlertTriangle,
   Star, Shield, Zap, Crown, Gift, ShoppingBag, Building2
 } from 'lucide-react';
@@ -119,8 +119,8 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
 
   const getPlanConfig = (plan: string) => {
     const configs = {
-      starter: { name: 'Starter', icon: Package, color: 'text-gray-600', price: 99, currency: 'USD' },
-      basic: { name: 'Basic', icon: Zap, color: 'text-blue-600', price: 299, currency: 'USD' },
+      starter: { name: 'Starter', icon: Package, color: 'text-gray-600', price: 99, currency: 'EUR' },
+      basic: { name: 'Basic', icon: Zap, color: 'text-blue-600', price: 299, currency: 'EUR' },
       premium: { name: 'Premium', icon: Crown, color: 'text-purple-600', price: 2499, currency: 'EUR' },
       enterprise: { name: 'Enterprise', icon: Shield, color: 'text-orange-600', price: 0, currency: 'EUR' }
     };
@@ -154,9 +154,9 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
             <div className="bg-white rounded-xl border border-gray-200 p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600">Monthly Total</span>
-                <DollarSign size={16} className="text-gray-400" />
+                <Euro size={16} className="text-gray-400" />
               </div>
-              <p className="text-2xl font-bold">${getTotalMonthlyFee().toFixed(2)}</p>
+              <p className="text-2xl font-bold">€{getTotalMonthlyFee().toLocaleString()}</p>
               <p className="text-xs text-gray-500 mt-1">
                 Across {workspaces.length} workspaces
               </p>
@@ -167,7 +167,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                 <span className="text-sm text-gray-600">Total Credits</span>
                 <Wallet size={16} className="text-orange-400" />
               </div>
-              <p className="text-2xl font-bold">${getTotalCredits().toFixed(2)}</p>
+              <p className="text-2xl font-bold">€{getTotalCredits().toFixed(2)}</p>
               <p className="text-xs text-gray-500 mt-1">Available for overages</p>
             </div>
 
@@ -284,82 +284,56 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                         <p className="text-sm text-gray-500">Monthly Cost</p>
                         <p className="text-lg font-semibold">
                           {getPlanConfig(workspace.plan).price === 0 ? 'On Request' : 
-                           `${getPlanConfig(workspace.plan).currency === 'EUR' ? '€' : '$'}${getPlanConfig(workspace.plan).price.toLocaleString()}`}
+                           `€${getPlanConfig(workspace.plan).price.toLocaleString()}`}
                         </p>
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-500">Credits</p>
-                        <p className="text-lg font-semibold">${workspace.walletCredits.toFixed(2)}</p>
+                        <p className="text-lg font-semibold">€{workspace.walletCredits.toFixed(2)}</p>
                       </div>
                       {isExpanded ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
                     </div>
                   </div>
 
-                  {/* Quick Usage Summary */}
-                  <div className="grid grid-cols-3 gap-6">
+                  {/* Bot Summary */}
+                  {bots.length > 0 ? (
                     <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-gray-600 flex items-center gap-1">
-                          <Server size={14} className="text-blue-600" />
-                          Bundle Loads
-                        </span>
-                        <span className="text-sm font-medium">
-                          {Math.round(bundleUsagePercent)}% used
-                        </span>
+                      <div className="flex items-center justify-between mb-3">
+                        <p className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                          <BotIcon size={14} />
+                          {bots.filter(b => b.status === 'Live').length} active of {bots.length} bots
+                        </p>
+                        <span className="text-xs text-gray-500">Click to expand</span>
                       </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full transition-all ${
-                            bundleUsagePercent > 90 ? 'bg-red-500' : 
-                            bundleUsagePercent > 70 ? 'bg-yellow-500' : 'bg-blue-500'
-                          }`}
-                          style={{ width: `${Math.min(100, bundleUsagePercent)}%` }}
-                        />
+                      <div className="flex items-center gap-2 overflow-hidden">
+                        {bots.slice(0, 4).map(bot => (
+                          <div key={bot.id} className="relative flex-shrink-0">
+                            <img 
+                              src={bot.image} 
+                              alt={bot.name}
+                              className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                              title={`${bot.name} - ${bot.status}`}
+                            />
+                            <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
+                              bot.status === 'Live' ? 'bg-green-500' : 
+                              bot.status === 'Paused' ? 'bg-yellow-500' : 'bg-red-500'
+                            }`} />
+                          </div>
+                        ))}
+                        {bots.length > 4 && (
+                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-xs text-gray-600 font-medium">
+                            +{bots.length - 4}
+                          </div>
+                        )}
                       </div>
                     </div>
-                    
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-gray-600 flex items-center gap-1">
-                          <MessageCircle size={14} className="text-purple-600" />
-                          Messages
-                        </span>
-                        <span className="text-sm font-medium">
-                          {Math.round(messageUsagePercent)}% used
-                        </span>
-                      </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full transition-all ${
-                            messageUsagePercent > 90 ? 'bg-red-500' : 
-                            messageUsagePercent > 70 ? 'bg-yellow-500' : 'bg-purple-500'
-                          }`}
-                          style={{ width: `${Math.min(100, messageUsagePercent)}%` }}
-                        />
-                      </div>
+                  ) : (
+                    <div className="text-center py-3">
+                      <BotIcon size={16} className="text-gray-400 mx-auto mb-1" />
+                      <p className="text-sm text-gray-500">No bots in this workspace</p>
+                      <button className="text-xs text-blue-600 hover:text-blue-700 mt-1">+ Add first bot</button>
                     </div>
-                    
-                    <div>
-                      <div className="flex justify-between items-center mb-2">
-                        <span className="text-sm text-gray-600 flex items-center gap-1">
-                          <Activity size={14} className="text-green-600" />
-                          API Calls
-                        </span>
-                        <span className="text-sm font-medium">
-                          {Math.round(apiUsagePercent)}% used
-                        </span>
-                      </div>
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
-                        <div 
-                          className={`h-full transition-all ${
-                            apiUsagePercent > 90 ? 'bg-red-500' : 
-                            apiUsagePercent > 70 ? 'bg-yellow-500' : 'bg-green-500'
-                          }`}
-                          style={{ width: `${Math.min(100, apiUsagePercent)}%` }}
-                        />
-                      </div>
-                    </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Detailed Expanded View */}
@@ -393,7 +367,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                               />
                             </div>
                             <p className="text-xs text-gray-500">
-                              ${workspace.overageRates.bundleLoads}/load overage • {workspace.bundleLoads.remaining.toLocaleString()} remaining
+                              €{workspace.overageRates.bundleLoads}/load overage • {workspace.bundleLoads.remaining.toLocaleString()} remaining
                             </p>
                           </div>
 
@@ -417,7 +391,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                               />
                             </div>
                             <p className="text-xs text-gray-500">
-                              ${workspace.overageRates.messages}/message overage • {workspace.messages.remaining.toLocaleString()} remaining
+                              €{workspace.overageRates.messages}/message overage • {workspace.messages.remaining.toLocaleString()} remaining
                             </p>
                           </div>
 
@@ -441,7 +415,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                               />
                             </div>
                             <p className="text-xs text-gray-500">
-                              ${workspace.overageRates.apiCalls}/call overage • {workspace.apiCalls.remaining.toLocaleString()} remaining
+                              €{workspace.overageRates.apiCalls}/call overage • {workspace.apiCalls.remaining.toLocaleString()} remaining
                             </p>
                           </div>
                         </div>
@@ -532,7 +506,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                     </div>
                     <span className="font-semibold">
                       {planConfig.price === 0 ? 'On Request' : 
-                       `${planConfig.currency === 'EUR' ? '€' : '$'}${planConfig.price.toLocaleString()}`}
+                       `€${planConfig.price.toLocaleString()}`}
                     </span>
                   </div>
                 );
@@ -540,10 +514,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
               <div className="border-t pt-3 mt-4 flex justify-between items-center font-semibold text-lg">
                 <span>Total Monthly Cost</span>
                 <span className="text-green-600">
-                  ${getTotalMonthlyFee().toLocaleString()}
-                  <span className="text-sm text-gray-500 font-normal ml-1">
-                    ({workspaces.filter(ws => getPlanConfig(ws.plan).currency === 'EUR').length > 0 ? 'mixed currencies' : 'USD'})
-                  </span>
+                  €{getTotalMonthlyFee().toLocaleString()}
                 </span>
               </div>
             </div>

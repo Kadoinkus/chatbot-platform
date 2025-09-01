@@ -79,7 +79,7 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
                 tier: 'starter',
                 name: 'Starter',
                 price: 99,
-                currency: 'USD',
+                currency: 'EUR',
                 mascotSlots: 1,
                 sharedLimits: {
                   bundleLoads: 1000,
@@ -102,7 +102,7 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
                 tier: 'basic',
                 name: 'Basic',
                 price: 299,
-                currency: 'USD',
+                currency: 'EUR',
                 mascotSlots: 2,
                 sharedLimits: {
                   bundleLoads: 5000,
@@ -195,7 +195,7 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
                       <span className="text-2xl">Price on Request</span>
                     ) : (
                       <>
-                        {planConfig.currency === 'EUR' ? '€' : '$'}{planConfig.price}
+                        €{planConfig.price}
                         <span className="text-lg text-gray-600 font-normal">/month</span>
                       </>
                     )}

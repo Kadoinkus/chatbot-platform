@@ -1,10 +1,11 @@
 'use client';
 import { getClientById, getBotById } from '@/lib/dataService';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Brain, Sliders, BookOpen, MessageSquare, Zap, Shield, Sparkles, GitBranch, Plus, Play, Users, ShoppingCart, GraduationCap, Briefcase, User, ChevronRight, Settings, Copy, Trash2, Edit2, Link2, ExternalLink, CheckCircle, AlertCircle, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
+import { getClientBrandColor } from '@/lib/brandColors';
 import type { Client, Bot } from '@/lib/dataService';
 
 export default function BrainStudioPage({ params }: { params: { clientId: string; botId: string } }) {
@@ -107,6 +108,10 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
     { id: 3, title: 'Company Policies', items: 34, status: 'active', lastUpdated: '3 days ago' },
     { id: 4, title: 'Technical Support', items: 156, status: 'draft', lastUpdated: '1 week ago' }
   ]);
+
+  const brandColor = useMemo(() => {
+    return bot ? getClientBrandColor(bot.clientId) : '#6B7280';
+  }, [bot]);
 
   useEffect(() => {
     async function loadData() {
@@ -341,7 +346,8 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                 <img 
                   src={bot.image} 
                   alt={bot.name}
-                  className="w-16 h-16 rounded-full bg-gray-100"
+                  className="w-16 h-16 rounded-full"
+                  style={{ backgroundColor: brandColor }}
                 />
                 <div>
                   <div className="flex items-center gap-3 mb-1">

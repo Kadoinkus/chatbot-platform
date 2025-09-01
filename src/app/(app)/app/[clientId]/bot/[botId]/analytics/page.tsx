@@ -1,11 +1,12 @@
 'use client';
 import { getClientById, getBotById, getBotMetrics } from '@/lib/dataService';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import StatusBadge from '@/components/StatusBadge';
 import { UsageLine, IntentBars } from '@/components/Charts';
 import { ArrowLeft, MessageSquare, Clock, TrendingUp, Star } from 'lucide-react';
 import Link from 'next/link';
+import { getClientBrandColor } from '@/lib/brandColors';
 import type { Client, Bot } from '@/lib/dataService';
 
 export default function BotAnalyticsPage({ params }: { params: { clientId: string; botId: string } }) {
@@ -13,6 +14,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   const [bot, setBot] = useState<Bot | undefined>();
   const [metrics, setMetrics] = useState<any>();
   const [loading, setLoading] = useState(true);
+
+  const brandColor = useMemo(() => {
+    return bot ? getClientBrandColor(bot.clientId) : '#6B7280';
+  }, [bot]);
 
   useEffect(() => {
     async function loadData() {
@@ -62,7 +67,8 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 <img 
                   src={bot.image} 
                   alt={bot.name}
-                  className="w-24 h-24 rounded-full bg-gray-100"
+                  className="w-24 h-24 rounded-full"
+                  style={{ backgroundColor: brandColor }}
                 />
                 <div>
                   <div className="flex items-center gap-3 mb-2">

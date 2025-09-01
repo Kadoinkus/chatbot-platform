@@ -249,7 +249,8 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                 <img 
                   src={bot.image} 
                   alt={bot.name}
-                  className="w-16 h-16 rounded-full bg-gray-100"
+                  className="w-16 h-16 rounded-full"
+                  style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
                 />
                 <div>
                   <div className="flex items-center gap-3 mb-1">

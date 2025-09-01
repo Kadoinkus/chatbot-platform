@@ -615,20 +615,23 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                         <p className="text-sm text-gray-600 mb-4">Adjust the personality balance to perfectly match your needs.</p>
                         
                         <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                          <div className="space-y-5">
-                            {Object.entries(personalitySpectrums).map(([spectrumKey, spectrum], index) => (
-                              <div key={spectrumKey} className={index !== Object.entries(personalitySpectrums).length - 1 ? "pb-5 border-b border-gray-200" : ""}>
-                                <div className="mb-3">
-                                  <label className="text-sm font-medium">{spectrum.name}</label>
-                                </div>
-
-                                {/* Clear left/right labels above slider */}
-                                <div className="flex justify-between text-xs font-medium text-gray-600 mb-2">
-                                  <span>← {spectrum.left.label}</span>
-                                  <span>{spectrum.right.label} →</span>
+                          <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
+                            {Object.entries(personalitySpectrums).map(([spectrumKey, spectrum]) => (
+                              <div key={spectrumKey} className="space-y-2">
+                                {/* Compact title with percentage */}
+                                <div className="flex items-center justify-between">
+                                  <label className="text-sm font-semibold text-gray-900">{spectrum.name}</label>
+                                  <span className="text-xs font-medium text-gray-600 bg-white px-2 py-0.5 rounded">
+                                    {Math.round(personality[spectrumKey as keyof typeof personality] || 50)}%
+                                  </span>
                                 </div>
                                 
-                                <div className="relative mb-3">
+                                {/* Slider with inline labels */}
+                                <div className="relative">
+                                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                                    <span>{spectrum.left.label}</span>
+                                    <span>{spectrum.right.label}</span>
+                                  </div>
                                   <input
                                     type="range"
                                     min="0"
@@ -640,16 +643,6 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                                       background: `linear-gradient(to right, #000 0%, #000 ${personality[spectrumKey as keyof typeof personality] || 50}%, #e5e7eb ${personality[spectrumKey as keyof typeof personality] || 50}%, #e5e7eb 100%)`
                                     }}
                                   />
-                                </div>
-                                
-                                {/* Description text below slider */}
-                                <div className="flex justify-between text-xs text-gray-500">
-                                  <div className="text-left max-w-[45%]">
-                                    <span className="text-gray-600">{spectrum.left.description}</span>
-                                  </div>
-                                  <div className="text-right max-w-[45%]">
-                                    <span className="text-gray-600">{spectrum.right.description}</span>
-                                  </div>
                                 </div>
                               </div>
                             ))}

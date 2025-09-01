@@ -142,82 +142,121 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
               const usagePercentage = workspace.messages ? (workspace.messages.used / workspace.messages.limit) * 100 : 0;
               
               return (
-                <div key={workspace.id} className="bg-white rounded-xl border border-gray-200 p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-lg font-semibold">{workspace.name}</h3>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${planColors[workspace.plan]}`}>
-                          {workspace.plan.toUpperCase()}
-                        </span>
-                      </div>
-                      <p className="text-sm text-gray-600 mb-3">{workspace.description}</p>
-                      
-                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Bots</p>
-                          <p className="text-lg font-semibold">{bots.length}</p>
-                          <p className="text-xs text-gray-500">
-                            {bots.filter(b => b.status === 'Live').length} active
-                          </p>
+                <div key={workspace.id} className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 overflow-hidden">
+                  {/* Header Section */}
+                  <div className="p-6 pb-4 border-b border-gray-100">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          <h3 className="text-xl font-bold text-gray-900">{workspace.name}</h3>
+                          <span className={`px-3 py-1 rounded-full text-xs font-semibold uppercase tracking-wider ${planColors[workspace.plan]}`}>
+                            {workspace.plan}
+                          </span>
                         </div>
-                        
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Usage</p>
-                          <p className="text-lg font-semibold">
-                            {workspace.messages?.used?.toLocaleString() || '0'}
-                          </p>
-                          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
-                            <div 
-                              className={`${
-                                usagePercentage > 90 ? 'bg-red-500' : 
-                                usagePercentage > 70 ? 'bg-yellow-500' : 'bg-green-500'
-                              } rounded-full h-1.5`}
-                              style={{ width: `${Math.min(100, usagePercentage)}%` }}
-                            />
+                        <p className="text-gray-600 leading-relaxed">{workspace.description}</p>
+                      </div>
+                      <Link
+                        href={`/app/${client.id}/workspace/${workspace.id}`}
+                        className="ml-4 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2 text-sm font-medium transition-colors duration-150"
+                      >
+                        Manage
+                        <ChevronRight size={14} />
+                      </Link>
+                    </div>
+                  </div>
+
+                  {/* Stats Section */}
+                  <div className="p-6 pt-4">
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                      <div className="text-center md:text-left">
+                        <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                          <div className="w-8 h-8 bg-blue-100 rounded-lg flex items-center justify-center">
+                            <BotIcon size={16} className="text-blue-600" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-gray-900">{bots.length}</p>
+                            <p className="text-xs text-gray-500 uppercase tracking-wide">Bots</p>
                           </div>
                         </div>
-                        
-                        <div>
-                          <p className="text-xs text-gray-500 mb-1">Credits</p>
-                          <p className="text-lg font-semibold">€{workspace.walletCredits?.toFixed(2) || '0.00'}</p>
-                          <p className="text-xs text-gray-500">Available</p>
+                        <p className="text-sm text-gray-600">
+                          {bots.filter(b => b.status === 'Live').length} active, {bots.filter(b => b.status === 'Paused').length} paused
+                        </p>
+                      </div>
+                      
+                      <div className="text-center md:text-left">
+                        <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                          <div className="w-8 h-8 bg-green-100 rounded-lg flex items-center justify-center">
+                            <Activity size={16} className="text-green-600" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-gray-900">
+                              {workspace.messages?.used?.toLocaleString() || '0'}
+                            </p>
+                            <p className="text-xs text-gray-500 uppercase tracking-wide">Usage</p>
+                          </div>
                         </div>
-                        
-                        <div className="flex items-center justify-end">
-                          <Link
-                            href={`/app/${client.id}/workspace/${workspace.id}`}
-                            className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2 text-sm"
-                          >
-                            Manage
-                            <ChevronRight size={14} />
-                          </Link>
+                        <div className="w-full bg-gray-200 rounded-full h-2 mt-1">
+                          <div 
+                            className={`${
+                              usagePercentage > 90 ? 'bg-red-500' : 
+                              usagePercentage > 70 ? 'bg-yellow-500' : 'bg-green-500'
+                            } rounded-full h-2 transition-all duration-300`}
+                            style={{ width: `${Math.min(100, usagePercentage)}%` }}
+                          />
                         </div>
+                        <p className="text-xs text-gray-500 mt-1">
+                          {workspace.messages?.limit ? `${Math.round(usagePercentage)}% of ${workspace.messages.limit.toLocaleString()}` : 'Unlimited'}
+                        </p>
+                      </div>
+                      
+                      <div className="text-center md:text-left">
+                        <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
+                          <div className="w-8 h-8 bg-purple-100 rounded-lg flex items-center justify-center">
+                            <CreditCard size={16} className="text-purple-600" />
+                          </div>
+                          <div>
+                            <p className="text-2xl font-bold text-gray-900">€{workspace.walletCredits?.toFixed(2) || '0.00'}</p>
+                            <p className="text-xs text-gray-500 uppercase tracking-wide">Credits</p>
+                          </div>
+                        </div>
+                        <p className="text-sm text-gray-600">Available balance</p>
                       </div>
                     </div>
                   </div>
                   
                   {/* Bot Preview */}
                   {bots.length > 0 && (
-                    <div className="border-t border-gray-100 pt-4">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Bots in this workspace:</p>
-                      <div className="flex flex-wrap gap-2">
+                    <div className="border-t border-gray-100 px-6 py-4 bg-gray-50">
+                      <div className="flex items-center justify-between mb-3">
+                        <h4 className="text-sm font-semibold text-gray-900 uppercase tracking-wide">Active Bots</h4>
+                        <Link 
+                          href={`/app/${client.id}/workspace/${workspace.id}`}
+                          className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                        >
+                          View all →
+                        </Link>
+                      </div>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {bots.slice(0, 4).map(bot => (
-                          <div key={bot.id} className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg text-sm">
+                          <div key={bot.id} className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-200 text-sm hover:border-gray-300 transition-colors">
                             <img 
                               src={bot.image} 
                               alt={bot.name}
-                              className="w-6 h-6 rounded-full"
+                              className="w-7 h-7 rounded-full flex-shrink-0"
                             />
-                            <span className="font-medium">{bot.name}</span>
-                            <span className={`w-2 h-2 rounded-full ${
-                              bot.status === 'Live' ? 'bg-green-500' : 
-                              bot.status === 'Paused' ? 'bg-yellow-500' : 'bg-red-500'
-                            }`} />
+                            <div className="flex-1 min-w-0">
+                              <span className="font-medium text-gray-900 truncate block">{bot.name}</span>
+                              <span className={`text-xs capitalize ${
+                                bot.status === 'Live' ? 'text-green-600' : 
+                                bot.status === 'Paused' ? 'text-yellow-600' : 'text-red-600'
+                              }`}>
+                                {bot.status.toLowerCase()}
+                              </span>
+                            </div>
                           </div>
                         ))}
                         {bots.length > 4 && (
-                          <div className="flex items-center px-3 py-1.5 bg-gray-100 rounded-lg text-sm text-gray-600">
+                          <div className="flex items-center justify-center px-3 py-2 bg-gray-200 rounded-lg text-sm text-gray-600 font-medium">
                             +{bots.length - 4} more
                           </div>
                         )}

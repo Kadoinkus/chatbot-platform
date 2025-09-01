@@ -1,493 +1,250 @@
 [
   {
-    "id": "session1",
-    "userId": "user1",
-    "userName": "Alex Johnson",
-    "clientId": "c1",
-    "startedAt": "2025-08-27T14:28:00Z",
-    "endedAt": "2025-08-27T14:40:00Z",
-    "lastActivity": "2025-08-27T14:35:00Z",
-    "device": "Desktop",
-    "browser": "Chrome 127.0.0",
-    "location": "Amsterdam, NL",
-    "ip": "192.168.1.45",
-    "status": "ended",
-    "actions": [
-      {
-        "type": "page_view",
-        "timestamp": "2025-08-27T14:28:00Z",
-        "page": "/",
-        "duration": 30
-      },
-      {
-        "type": "chat_started",
-        "timestamp": "2025-08-27T14:30:00Z",
-        "botId": "m1"
-      },
-      {
-        "type": "message_sent",
-        "timestamp": "2025-08-27T14:30:00Z",
-        "conversationId": "conv1"
-      },
-      {
-        "type": "chat_ended",
-        "timestamp": "2025-08-27T14:35:00Z",
-        "satisfaction": 5
-      }
-    ]
+    "session_id": "650cf799-9203-4d43-b8ad-dd98813e32ad",
+    "bot_id": "m1",
+    "client_id": "c1",
+    "start_time": "2025-08-29 21:26:44",
+    "end_time": "2025-08-29 21:27:23",
+    "ip_address": "9f15588084b21f40404cb473fdcec0b2",
+    "country": "NL",
+    "language": "nl",
+    "messages_sent": 8,
+    "sentiment": "positive",
+    "escalated": "No",
+    "forwarded_hr": "No",
+    "full_transcript": "https://proto.notso.ai/jumbo/chats/650cf799-9203-4d43-b8ad-dd98813e32ad.txt",
+    "avg_response_time": 3122,
+    "tokens": 35359,
+    "tokens_eur": 0.005,
+    "category": "Unrecognized / Other",
+    "questions": [],
+    "user_rating": 0,
+    "summary": "The user and assistant engaged in a light-hearted conversation about jokes, where the user shared a funny riddle. The assistant responded positively and encouraged further interaction."
   },
   {
-    "id": "session2",
-    "userId": "user2",
-    "userName": "Maria Santos",
-    "clientId": "c1",
-    "startedAt": "2025-08-27T15:40:00Z",
-    "lastActivity": "2025-08-27T15:46:00Z",
-    "device": "Mobile",
-    "browser": "Safari 16.6",
-    "location": "Rotterdam, NL",
-    "ip": "192.168.1.67",
-    "status": "active",
-    "actions": [
-      {
-        "type": "page_view",
-        "timestamp": "2025-08-27T15:40:00Z",
-        "page": "/products",
-        "duration": 120
-      },
-      {
-        "type": "search",
-        "timestamp": "2025-08-27T15:42:00Z",
-        "query": "blender return policy"
-      },
-      {
-        "type": "chat_started",
-        "timestamp": "2025-08-27T15:45:00Z",
-        "botId": "m1"
-      },
-      {
-        "type": "message_sent",
-        "timestamp": "2025-08-27T15:45:00Z",
-        "conversationId": "conv2"
-      }
-    ]
+    "session_id": "7fdfe5a7-08e8-48b4-94f8-2ae7545ca3e3",
+    "bot_id": "m1",
+    "client_id": "c1",
+    "start_time": "2025-08-31 16:03:47",
+    "end_time": "2025-08-31 16:04:32",
+    "ip_address": "9f15588084b21f40404cb473fdcec0b2",
+    "country": "NL",
+    "language": "nl",
+    "messages_sent": 4,
+    "sentiment": "neutral",
+    "escalated": "No",
+    "forwarded_hr": "No",
+    "full_transcript": "https://proto.notso.ai/jumbo/chats/7fdfe5a7-08e8-48b4-94f8-2ae7545ca3e3.txt",
+    "avg_response_time": 2558,
+    "tokens": 17578,
+    "tokens_eur": 0.0025,
+    "category": "Unrecognized / Other",
+    "questions": ["What will the weather be like tomorrow?"],
+    "user_rating": 0,
+    "summary": "The user inquired about the weather forecast for tomorrow, but the assistant was unable to provide that information and suggested checking a weather website or app instead."
   },
   {
-    "id": "session3",
-    "userId": "user3",
-    "userName": "David Chen",
-    "clientId": "c1",
-    "startedAt": "2025-08-27T13:15:00Z",
-    "endedAt": "2025-08-27T13:35:00Z",
-    "lastActivity": "2025-08-27T13:30:00Z",
-    "device": "Desktop",
-    "browser": "Firefox 116.0",
-    "location": "The Hague, NL",
-    "ip": "192.168.1.89",
-    "status": "ended",
-    "actions": [
-      {
-        "type": "page_view",
-        "timestamp": "2025-08-27T13:15:00Z",
-        "page": "/account/login",
-        "duration": 180
-      },
-      {
-        "type": "login_attempt",
-        "timestamp": "2025-08-27T13:18:00Z",
-        "success": false
-      },
-      {
-        "type": "password_reset",
-        "timestamp": "2025-08-27T13:19:00Z",
-        "success": false
-      },
-      {
-        "type": "chat_started",
-        "timestamp": "2025-08-27T13:20:00Z",
-        "botId": "m2"
-      },
-      {
-        "type": "escalation",
-        "timestamp": "2025-08-27T13:25:00Z",
-        "reason": "account_locked"
-      }
-    ]
+    "session_id": "733dd50b-b460-4b7e-89b6-a992f8560c82",
+    "bot_id": "m1",
+    "client_id": "c1",
+    "start_time": "2025-08-02 8:03:36",
+    "end_time": "2025-08-02 8:04:11",
+    "ip_address": "337bf7df0f9fa867b6129bb1abb0da9f",
+    "country": "NL",
+    "language": "nl",
+    "messages_sent": 4,
+    "sentiment": "positive",
+    "escalated": "No",
+    "forwarded_hr": "No",
+    "full_transcript": "https://proto.notso.ai/jumbo/chats/733dd50b-b460-4b7e-89b6-a992f8560c82.txt",
+    "avg_response_time": 3492,
+    "tokens": 17805,
+    "tokens_eur": 0.0026,
+    "category": "Workwear & Staff Pass",
+    "questions": ["When will I receive my work clothing?"],
+    "user_rating": 0,
+    "summary": "The user inquired about the timing of receiving their work clothing and received a positive confirmation that it would be available on the first workday."
   },
   {
-    "id": "session4",
-    "userId": "user4",
-    "userName": "Sophie Miller",
-    "clientId": "c1",
-    "startedAt": "2025-08-27T11:10:00Z",
-    "endedAt": "2025-08-27T11:25:00Z",
-    "lastActivity": "2025-08-27T11:22:00Z",
-    "device": "Tablet",
-    "browser": "Chrome 127.0.0",
-    "location": "Utrecht, NL",
-    "ip": "192.168.1.123",
-    "status": "ended",
-    "actions": [
-      {
-        "type": "page_view",
-        "timestamp": "2025-08-27T11:10:00Z",
-        "page": "/store-locator",
-        "duration": 90
-      },
-      {
-        "type": "store_search",
-        "timestamp": "2025-08-27T11:12:00Z",
-        "location": "Utrecht centrum"
-      },
-      {
-        "type": "chat_started",
-        "timestamp": "2025-08-27T11:15:00Z",
-        "botId": "m1"
-      },
-      {
-        "type": "message_sent",
-        "timestamp": "2025-08-27T11:15:00Z",
-        "conversationId": "conv4"
-      },
-      {
-        "type": "chat_ended",
-        "timestamp": "2025-08-27T11:22:00Z",
-        "satisfaction": 4
-      }
-    ]
+    "session_id": "7ef77e68-7ad7-4f90-8dac-6061eec4c6d7",
+    "bot_id": "m1",
+    "client_id": "c1",
+    "start_time": "2025-08-03 7:30:48",
+    "end_time": "2025-08-03 7:31:17",
+    "ip_address": "c23133a2cdf619a209030bc05fea3cba",
+    "country": "BA",
+    "language": "en",
+    "messages_sent": 4,
+    "sentiment": "positive",
+    "escalated": "No",
+    "forwarded_hr": "No",
+    "full_transcript": "https://proto.notso.ai/jumbo/chats/7ef77e68-7ad7-4f90-8dac-6061eec4c6d7.txt",
+    "avg_response_time": 2665,
+    "tokens": 17584,
+    "tokens_eur": 0.0025,
+    "category": "Unrecognized / Other",
+    "questions": ["Can you meditate?", "Can you do it in English?"],
+    "user_rating": 0,
+    "summary": "The user requested the assistant to meditate and switched the language to English when the assistant responded in another language. The assistant confirmed to meditate together positively."
   },
   {
-    "id": "session5",
-    "userId": "user8",
-    "userName": "Lisa Anderson",
-    "clientId": "c2",
-    "startedAt": "2025-08-27T10:40:00Z",
-    "endedAt": "2025-08-27T10:55:00Z",
-    "lastActivity": "2025-08-27T10:52:00Z",
-    "device": "Desktop",
-    "browser": "Edge 116.0.0",
-    "location": "Berlin, DE",
-    "ip": "192.168.2.45",
-    "status": "ended",
-    "actions": [
-      {
-        "type": "page_view",
-        "timestamp": "2025-08-27T10:40:00Z",
-        "page": "/services/vhs-conversion",
-        "duration": 240
-      },
-      {
-        "type": "price_calculator",
-        "timestamp": "2025-08-27T10:43:00Z",
-        "tapes": 50,
-        "format": "VHS"
-      },
-      {
-        "type": "chat_started",
-        "timestamp": "2025-08-27T10:45:00Z",
-        "botId": "m3"
-      },
-      {
-        "type": "message_sent",
-        "timestamp": "2025-08-27T10:45:00Z",
-        "conversationId": "conv8"
-      },
-      {
-        "type": "chat_ended",
-        "timestamp": "2025-08-27T10:52:00Z",
-        "satisfaction": 5
-      },
-      {
-        "type": "quote_requested",
-        "timestamp": "2025-08-27T10:53:00Z",
-        "email": "lisa.anderson@email.com"
-      }
-    ]
+    "session_id": "2c1ea660-2916-41ef-a982-f129639f39ca",
+    "bot_id": "m1",
+    "client_id": "c1",
+    "start_time": "2025-08-03 7:33:28",
+    "end_time": "2025-08-03 7:34:31",
+    "ip_address": "7bd1291c34e4a3e51aad91587515dcc1",
+    "country": "BA",
+    "language": "en",
+    "messages_sent": 12,
+    "sentiment": "positive",
+    "escalated": "No",
+    "forwarded_hr": "No",
+    "full_transcript": "https://proto.notso.ai/jumbo/chats/2c1ea660-2916-41ef-a982-f129639f39ca.txt",
+    "avg_response_time": 2933,
+    "tokens": 54789,
+    "tokens_eur": 0.0079,
+    "category": "Unrecognized / Other",
+    "questions": ["How are you?", "Are you ok?", "Are you angry?", "Lets meditiate"],
+    "user_rating": 0,
+    "summary": "The user engaged in a friendly and positive conversation with the assistant, asking about its well-being and suggesting to meditate together."
   },
   {
-    "id": "session6",
-    "userId": "user9",
-    "userName": "Michael Davis",
-    "clientId": "c2",
-    "startedAt": "2025-08-27T14:15:00Z",
-    "endedAt": "2025-08-27T14:40:00Z",
-    "lastActivity": "2025-08-27T14:35:00Z",
-    "device": "Mobile",
-    "browser": "Chrome 127.0.0",
-    "location": "Munich, DE",
-    "ip": "192.168.2.78",
-    "status": "ended",
-    "actions": [
-      {
-        "type": "page_view",
-        "timestamp": "2025-08-27T14:15:00Z",
-        "page": "/shipping-info",
-        "duration": 150
-      },
-      {
-        "type": "region_select",
-        "timestamp": "2025-08-27T14:18:00Z",
-        "region": "Europe"
-      },
-      {
-        "type": "chat_started",
-        "timestamp": "2025-08-27T14:20:00Z",
-        "botId": "m3"
-      },
-      {
-        "type": "message_sent",
-        "timestamp": "2025-08-27T14:20:00Z",
-        "conversationId": "conv9"
-      },
-      {
-        "type": "chat_ended",
-        "timestamp": "2025-08-27T14:35:00Z",
-        "satisfaction": 4
-      }
-    ]
+    "session_id": "6c2dee2a-3cf1-4c33-94b9-5156900a7459",
+    "bot_id": "m1",
+    "client_id": "c1",
+    "start_time": "2025-08-03 7:53:55",
+    "end_time": "2025-08-03 7:54:30",
+    "ip_address": "7bd1291c34e4a3e51aad91587515dcc1",
+    "country": "BA",
+    "language": "en",
+    "messages_sent": 6,
+    "sentiment": "neutral",
+    "escalated": "No",
+    "forwarded_hr": "No",
+    "full_transcript": "https://proto.notso.ai/jumbo/chats/6c2dee2a-3cf1-4c33-94b9-5156900a7459.txt",
+    "avg_response_time": 3236,
+    "tokens": 26864,
+    "tokens_eur": 0.0039,
+    "category": "Personal Questions",
+    "questions": ["Can we meditate?", "How can I reduce stress?", "Is there a way to relax together?"],
+    "user_rating": 0,
+    "summary": "The user expressed stress multiple times and the assistant suggested meditating together. The assistant provided calming responses and attempted to facilitate relaxation."
   },
   {
-    "id": "session7",
-    "userId": "user10",
-    "userName": "Anna Garcia",
-    "clientId": "c2",
-    "startedAt": "2025-08-27T16:10:00Z",
-    "lastActivity": "2025-08-27T16:20:00Z",
-    "device": "Desktop",
-    "browser": "Chrome 127.0.0",
-    "location": "Madrid, ES",
-    "ip": "192.168.3.34",
-    "status": "active",
-    "actions": [
-      {
-        "type": "page_view",
-        "timestamp": "2025-08-27T16:10:00Z",
-        "page": "/formats-supported",
-        "duration": 180
-      },
-      {
-        "type": "format_filter",
-        "timestamp": "2025-08-27T16:13:00Z",
-        "filter": "4K video"
-      },
-      {
-        "type": "chat_started",
-        "timestamp": "2025-08-27T16:15:00Z",
-        "botId": "m3"
-      },
-      {
-        "type": "message_sent",
-        "timestamp": "2025-08-27T16:15:00Z",
-        "conversationId": "conv10"
-      }
-    ]
+    "session_id": "cb8dfd65-f3c9-4983-9691-63dd074240ba",
+    "bot_id": "m1",
+    "client_id": "c1",
+    "start_time": "2025-08-03 7:57:31",
+    "end_time": "2025-08-03 8:03:23",
+    "ip_address": "7bd1291c34e4a3e51aad91587515dcc1",
+    "country": "BA",
+    "language": "en",
+    "messages_sent": 18,
+    "sentiment": "positive",
+    "escalated": "Yes",
+    "forwarded_hr": "No",
+    "full_transcript": "https://proto.notso.ai/jumbo/chats/cb8dfd65-f3c9-4983-9691-63dd074240ba.txt",
+    "avg_response_time": 2195,
+    "tokens": 81154,
+    "tokens_eur": 0.0118,
+    "category": "Unrecognized / Other",
+    "questions": ["Can we meditate?", "I'm feeling stressed, can we meditate?", "Hello, how are you?", "You seem great!"],
+    "user_rating": 0,
+    "summary": "The user expressed a desire to meditate several times due to stress and engaged in a positive conversation with the assistant about how they are feeling."
   },
   {
-    "id": "session8",
-    "userId": "user13",
-    "userName": "Tom Martinez",
-    "clientId": "c3",
-    "startedAt": "2025-08-27T11:25:00Z",
-    "endedAt": "2025-08-27T11:50:00Z",
-    "lastActivity": "2025-08-27T11:45:00Z",
-    "device": "Desktop",
-    "browser": "Safari 16.6",
-    "location": "Barcelona, ES",
-    "ip": "192.168.3.67",
-    "status": "ended",
-    "actions": [
-      {
-        "type": "page_view",
-        "timestamp": "2025-08-27T11:25:00Z",
-        "page": "/workshops/leadership",
-        "duration": 210
-      },
-      {
-        "type": "course_details",
-        "timestamp": "2025-08-27T11:28:00Z",
-        "course": "leadership-essentials"
-      },
-      {
-        "type": "chat_started",
-        "timestamp": "2025-08-27T11:30:00Z",
-        "botId": "m5"
-      },
-      {
-        "type": "message_sent",
-        "timestamp": "2025-08-27T11:30:00Z",
-        "conversationId": "conv13"
-      },
-      {
-        "type": "chat_ended",
-        "timestamp": "2025-08-27T11:45:00Z",
-        "satisfaction": 4
-      },
-      {
-        "type": "interest_registered",
-        "timestamp": "2025-08-27T11:47:00Z",
-        "workshop": "leadership-essentials"
-      }
-    ]
+    "session_id": "bee0f8aa-605d-4161-af11-71ee7324ead1",
+    "bot_id": "m1",
+    "client_id": "c1",
+    "start_time": "2025-08-03 8:33:01",
+    "end_time": "2025-08-03 8:33:01",
+    "ip_address": "c23133a2cdf619a209030bc05fea3cba",
+    "country": "BA",
+    "language": "nl",
+    "messages_sent": 2,
+    "sentiment": "positive",
+    "escalated": "No",
+    "forwarded_hr": "No",
+    "full_transcript": "https://proto.notso.ai/jumbo/chats/bee0f8aa-605d-4161-af11-71ee7324ead1.txt",
+    "avg_response_time": 3186,
+    "tokens": 8816,
+    "tokens_eur": 0.0013,
+    "category": "Unrecognized / Other",
+    "questions": ["Can you please meditate?"],
+    "user_rating": 0,
+    "summary": "The user asked for meditation, and the assistant agreed to meditate, encouraging the user to relax and enjoy silence."
   },
   {
-    "id": "session9",
-    "userId": "user14",
-    "userName": "Jennifer White",
-    "clientId": "c3",
-    "startedAt": "2025-08-27T13:40:00Z",
-    "endedAt": "2025-08-27T14:05:00Z",
-    "lastActivity": "2025-08-27T14:00:00Z",
-    "device": "Desktop",
-    "browser": "Firefox 116.0",
-    "location": "Lisbon, PT",
-    "ip": "192.168.3.89",
-    "status": "ended",
-    "actions": [
-      {
-        "type": "page_view",
-        "timestamp": "2025-08-27T13:40:00Z",
-        "page": "/team-building",
-        "duration": 240
-      },
-      {
-        "type": "group_size_select",
-        "timestamp": "2025-08-27T13:43:00Z",
-        "size": "10-20 people"
-      },
-      {
-        "type": "chat_started",
-        "timestamp": "2025-08-27T13:45:00Z",
-        "botId": "m6"
-      },
-      {
-        "type": "message_sent",
-        "timestamp": "2025-08-27T13:45:00Z",
-        "conversationId": "conv14"
-      },
-      {
-        "type": "chat_ended",
-        "timestamp": "2025-08-27T14:00:00Z",
-        "satisfaction": 5
-      },
-      {
-        "type": "booking_started",
-        "timestamp": "2025-08-27T14:02:00Z",
-        "session_type": "team-building-collaborative"
-      }
-    ]
+    "session_id": "fab02a05-915f-4e8a-a244-64ff3462a2af",
+    "bot_id": "m1",
+    "client_id": "c1",
+    "start_time": "2025-08-03 8:35:47",
+    "end_time": "2025-08-03 8:36:22",
+    "ip_address": "7bd1291c34e4a3e51aad91587515dcc1",
+    "country": "BA",
+    "language": "nl",
+    "messages_sent": 4,
+    "sentiment": "positive",
+    "escalated": "No",
+    "forwarded_hr": "No",
+    "full_transcript": "https://proto.notso.ai/jumbo/chats/fab02a05-915f-4e8a-a244-64ff3462a2af.txt",
+    "avg_response_time": 2258,
+    "tokens": 17764,
+    "tokens_eur": 0.0026,
+    "category": "Social Questions",
+    "questions": ["Can you meditate?", "Can you meditate?"],
+    "user_rating": 0,
+    "summary": "The user asked the assistant if it could meditate, and the assistant responded positively with encouragement to meditate together."
   },
   {
-    "id": "session10",
-    "userId": "user15",
-    "userName": "Daniel Rodriguez",
-    "clientId": "c3",
-    "startedAt": "2025-08-27T14:55:00Z",
-    "lastActivity": "2025-08-27T15:05:00Z",
-    "device": "Mobile",
-    "browser": "Chrome 127.0.0",
-    "location": "Valencia, ES",
-    "ip": "192.168.3.112",
-    "status": "active",
-    "actions": [
-      {
-        "type": "page_view",
-        "timestamp": "2025-08-27T14:55:00Z",
-        "page": "/case-studies",
-        "duration": 180
-      },
-      {
-        "type": "case_study_view",
-        "timestamp": "2025-08-27T14:58:00Z",
-        "study": "tech-company-transformation"
-      },
-      {
-        "type": "chat_started",
-        "timestamp": "2025-08-27T15:00:00Z",
-        "botId": "m6"
-      },
-      {
-        "type": "message_sent",
-        "timestamp": "2025-08-27T15:00:00Z",
-        "conversationId": "conv15"
-      }
-    ]
+    "session_id": "5f8fb5ad-1256-4859-8273-71b228afd610",
+    "bot_id": "m1",
+    "client_id": "c1",
+    "start_time": "2025-08-03 9:32:46",
+    "end_time": "2025-08-03 9:35:29",
+    "ip_address": "9f15588084b21f40404cb473fdcec0b2",
+    "country": "NL",
+    "language": "nl",
+    "messages_sent": 22,
+    "sentiment": "positive",
+    "escalated": "Yes",
+    "forwarded_hr": "No",
+    "full_transcript": "https://proto.notso.ai/jumbo/chats/5f8fb5ad-1256-4859-8273-71b228afd610.txt",
+    "avg_response_time": 2196,
+    "tokens": 106061,
+    "tokens_eur": 0.0154,
+    "category": "Onboarding",
+    "questions": [
+      "Can you help me with the onboarding process?",
+      "What are the next steps for my onboarding?",
+      "Which location will I be working at?",
+      "What department do I want to work in?",
+      "Can you tell me a joke?"
+    ],
+    "user_rating": 0,
+    "summary": "The user is excited about onboarding at Jumbo, discussing department choices and filling out necessary documents. The conversation also includes a light-hearted exchange of jokes and a brief meditation."
   },
   {
-    "id": "session11",
-    "userId": "user7",
-    "userName": "James Brown",
-    "clientId": "c1",
-    "startedAt": "2025-08-27T17:25:00Z",
-    "lastActivity": "2025-08-27T17:32:00Z",
-    "device": "Mobile",
-    "browser": "Safari 16.6",
-    "location": "Eindhoven, NL",
-    "ip": "192.168.1.234",
-    "status": "active",
-    "actions": [
-      {
-        "type": "page_view",
-        "timestamp": "2025-08-27T17:25:00Z",
-        "page": "/careers",
-        "duration": 240
-      },
-      {
-        "type": "job_search",
-        "timestamp": "2025-08-27T17:28:00Z",
-        "keywords": "part-time cashier"
-      },
-      {
-        "type": "chat_started",
-        "timestamp": "2025-08-27T17:30:00Z",
-        "botId": "m2"
-      },
-      {
-        "type": "message_sent",
-        "timestamp": "2025-08-27T17:30:00Z",
-        "conversationId": "conv7"
-      }
-    ]
-  },
-  {
-    "id": "session12",
-    "userId": "user12",
-    "userName": "Sarah Thompson",
-    "clientId": "c2",
-    "startedAt": "2025-08-27T08:25:00Z",
-    "endedAt": "2025-08-27T08:45:00Z",
-    "lastActivity": "2025-08-27T08:40:00Z",
-    "device": "Desktop",
-    "browser": "Edge 116.0.0",
-    "location": "Hamburg, DE",
-    "ip": "192.168.2.156",
-    "status": "ended",
-    "actions": [
-      {
-        "type": "page_view",
-        "timestamp": "2025-08-27T08:25:00Z",
-        "page": "/business-account",
-        "duration": 300
-      },
-      {
-        "type": "account_creation_attempt",
-        "timestamp": "2025-08-27T08:28:00Z",
-        "success": false
-      },
-      {
-        "type": "chat_started",
-        "timestamp": "2025-08-27T08:30:00Z",
-        "botId": "m4"
-      },
-      {
-        "type": "message_sent",
-        "timestamp": "2025-08-27T08:30:00Z",
-        "conversationId": "conv12"
-      },
-      {
-        "type": "escalation",
-        "timestamp": "2025-08-27T08:35:00Z",
-        "reason": "account_setup_issues"
-      }
-    ]
+    "session_id": "84d1dafc-adf0-4957-92d6-eac0a6923480",
+    "bot_id": "m1",
+    "client_id": "c1",
+    "start_time": "2025-08-03 10:59:09",
+    "end_time": "2025-08-03 11:28:48",
+    "ip_address": "2473267ba1fcb2b66d382285fa9d68c3",
+    "country": "BA",
+    "language": "en",
+    "messages_sent": 34,
+    "sentiment": "positive",
+    "escalated": "No",
+    "forwarded_hr": "No",
+    "full_transcript": "https://proto.notso.ai/jumbo/chats/84d1dafc-adf0-4957-92d6-eac0a6923480.txt",
+    "avg_response_time": 484,
+    "tokens": 172444,
+    "tokens_eur": 0.0251,
+    "category": "Onboarding",
+    "questions": ["Can you speak in English?", "How should I start?", "Why don't skeletons fight each other?", "Can I tell you a joke?"],
+    "user_rating": 0,
+    "summary": "The user, feeling stressed about starting their new position, engaged in a light-hearted and humorous conversation with the assistant while seeking help with onboarding tasks. The assistant offered support and provided necessary links for documents the user needed to fill out."
   }
 ]

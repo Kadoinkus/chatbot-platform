@@ -116,6 +116,29 @@ export type Conversation = {
   preview: string;
 };
 
+export type BotSession = {
+  session_id: string;
+  bot_id: string;
+  client_id: string;
+  start_time: string;
+  end_time: string;
+  ip_address: string;
+  country: string;
+  language: string;
+  messages_sent: number;
+  sentiment: 'positive' | 'neutral' | 'negative';
+  escalated: 'Yes' | 'No';
+  forwarded_hr: 'Yes' | 'No';
+  full_transcript: string;
+  avg_response_time: number;
+  tokens: number;
+  tokens_eur: number;
+  category: string;
+  questions: string[];
+  user_rating: number;
+  summary: string;
+};
+
 export type Session = {
   id: string;
   userId: string;
@@ -153,6 +176,7 @@ let usersData: User[] | null = null;
 let metricsData: MetricsData | null = null;
 let conversationsData: Conversation[] | null = null;
 let sessionsData: Session[] | null = null;
+let botSessionsData: BotSession[] | null = null;
 let messagesData: Message[] | null = null;
 
 export async function loadClients(): Promise<Client[]> {
@@ -209,6 +233,14 @@ export async function loadSessions(): Promise<Session[]> {
   const response = await fetch('/data/sessions.json');
   sessionsData = await response.json();
   return sessionsData!;
+}
+
+export async function loadBotSessions(): Promise<BotSession[]> {
+  if (botSessionsData) return botSessionsData;
+  
+  const response = await fetch('/data/sessions.json');
+  botSessionsData = await response.json();
+  return botSessionsData!;
 }
 
 export async function loadMessages(): Promise<Message[]> {
@@ -306,6 +338,34 @@ export async function getSessionsByClientId(clientId: string): Promise<Session[]
 export async function getActiveSessionsByClientId(clientId: string): Promise<Session[]> {
   const sessions = await loadSessions();
   return sessions.filter(s => s.clientId === clientId && s.status === 'active');
+}
+
+export async function getBotSessionsByBotId(botId: string, dateRange?: { start: Date; end: Date }): Promise<BotSession[]> {
+  const sessions = await loadBotSessions();
+  let filtered = sessions.filter(s => s.bot_id === botId);
+  
+  if (dateRange) {
+    filtered = filtered.filter(s => {
+      const sessionDate = new Date(s.start_time);
+      return sessionDate >= dateRange.start && sessionDate <= dateRange.end;
+    });
+  }
+  
+  return filtered;
+}
+
+export async function getBotSessionsByClientId(clientId: string, dateRange?: { start: Date; end: Date }): Promise<BotSession[]> {
+  const sessions = await loadBotSessions();
+  let filtered = sessions.filter(s => s.client_id === clientId);
+  
+  if (dateRange) {
+    filtered = filtered.filter(s => {
+      const sessionDate = new Date(s.start_time);
+      return sessionDate >= dateRange.start && sessionDate <= dateRange.end;
+    });
+  }
+  
+  return filtered;
 }
 
 // Legacy compatibility - reconstructed client objects with nested bots and metrics

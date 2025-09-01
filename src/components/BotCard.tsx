@@ -7,9 +7,10 @@ import type { Mascot } from '@/lib/data';
 interface BotCardProps {
   bot: Mascot;
   clientId: string;
+  workspaceName?: string;
 }
 
-export default function BotCard({ bot, clientId }: BotCardProps) {
+export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) {
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [showModeWarning, setShowModeWarning] = useState(false);
@@ -131,7 +132,13 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
                 <h3 className="font-semibold text-2xl">{bot.name}</h3>
                 <StatusBadge status={bot.status} />
               </div>
-              <p className="text-sm text-gray-600 mt-1">{bot.description}</p>
+              <div className="h-10 flex items-start mt-1">
+                <p className="text-sm text-gray-600 leading-5 overflow-hidden" style={{
+                  display: '-webkit-box',
+                  WebkitLineClamp: 2,
+                  WebkitBoxOrient: 'vertical'
+                }}>{bot.description}</p>
+              </div>
               <div className="mt-2">
                 <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium border transition-all duration-200 hover:scale-105 ${getBillingBadgeStyle(randomPlan, randomBillingType)}`}>
                   {randomBillingType === 'prepaid' ? 'Prepaid Credits' : randomPlan}
@@ -247,10 +254,15 @@ export default function BotCard({ bot, clientId }: BotCardProps) {
         
         {/* Additional Info */}
         {bot.status === 'Live' && (
-          <div className="mt-4">
+          <div className="mt-4 flex justify-between items-center">
             <span className="text-xs text-gray-500">
               {bot.conversations} conversations today
             </span>
+            {workspaceName && (
+              <span className="text-xs text-gray-400">
+                {workspaceName}
+              </span>
+            )}
           </div>
         )}
       </div>

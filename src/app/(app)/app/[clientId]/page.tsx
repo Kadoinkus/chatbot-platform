@@ -174,17 +174,12 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
           {/* Bot Cards Grid */}
           <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
             {filteredBots.map(bot => (
-              <div key={bot.id} className="relative">
-                {/* Workspace Badge */}
-                <div className="absolute top-4 right-4 z-10">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getWorkspaceBadgeColor(bot.workspaceId)}`}>
-                    {bot.workspaceName}
-                  </span>
-                </div>
-                
-                {/* Bot Card */}
-                <BotCard bot={bot} clientId={client.id} />
-              </div>
+              <BotCard 
+                key={bot.id} 
+                bot={bot} 
+                clientId={client.id} 
+                workspaceName={bot.workspaceName}
+              />
             ))}
           </div>
           

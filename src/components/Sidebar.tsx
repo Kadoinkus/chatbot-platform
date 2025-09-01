@@ -45,7 +45,9 @@ export default function Sidebar({ clientId }: SidebarProps) {
       <div className="hidden lg:flex fixed left-0 top-0 h-full w-16 bg-black flex-col items-center py-4 z-40">
       <div className="mb-8">
         <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-          <Bot className="w-6 h-6 text-black" />
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 595.28 595.28" width="24" height="24" className="text-black">
+            <path d="M188.63,447.14h-85.83c-16.82,0-30.55-13.4-31-30.22-.75-27.61-.24-68.5,7.16-98,12.21-48.62,47.21-109.73,109.35-142.66,52.76-27.97,105.14-29.01,142.87-30.07,17.5-.49,31.83,13.7,31.74,31.21-.09,16.39-.43,55.47.37,73.93,1.66,37.96,31.63,46.31,46.37,46.31,38.09,0,54.52-3.7,85.4-1.33,16.18,1.24,28.67,14.7,28.67,30.92v90.86c0,17.13-13.88,31.01-31.01,31.01h-90.06c-17.29,0-31.25-14.13-31.01-31.42.27-19.36.33-42.56-.65-53.79-2.01-23.01-11.59-65.84-64.59-66.04-53-.2-76.05,23.06-82.72,48.27-3.4,12.86-4.07,45.34-4.05,70.02.02,17.13-13.88,31.01-31.01,31.01Z" fill="currentColor"/>
+          </svg>
         </div>
       </div>
       
@@ -113,9 +115,11 @@ export default function Sidebar({ clientId }: SidebarProps) {
             <div className="flex items-center justify-between mb-8">
               <div className="flex items-center gap-3">
                 <div className="w-10 h-10 bg-white rounded-lg flex items-center justify-center">
-                  <Bot className="w-6 h-6 text-black" />
+                  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 595.28 595.28" width="24" height="24" className="text-black">
+                    <path d="M188.63,447.14h-85.83c-16.82,0-30.55-13.4-31-30.22-.75-27.61-.24-68.5,7.16-98,12.21-48.62,47.21-109.73,109.35-142.66,52.76-27.97,105.14-29.01,142.87-30.07,17.5-.49,31.83,13.7,31.74,31.21-.09,16.39-.43,55.47.37,73.93,1.66,37.96,31.63,46.31,46.37,46.31,38.09,0,54.52-3.7,85.4-1.33,16.18,1.24,28.67,14.7,28.67,30.92v90.86c0,17.13-13.88,31.01-31.01,31.01h-90.06c-17.29,0-31.25-14.13-31.01-31.42.27-19.36.33-42.56-.65-53.79-2.01-23.01-11.59-65.84-64.59-66.04-53-.2-76.05,23.06-82.72,48.27-3.4,12.86-4.07,45.34-4.05,70.02.02,17.13-13.88,31.01-31.01,31.01Z" fill="currentColor"/>
+                  </svg>
                 </div>
-                <span className="text-white font-semibold">ChatBot Platform</span>
+                <span className="text-white font-semibold">notso.ai</span>
               </div>
               <button
                 onClick={() => setIsMobileOpen(false)}

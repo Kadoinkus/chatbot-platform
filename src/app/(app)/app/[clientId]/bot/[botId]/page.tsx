@@ -7,6 +7,7 @@ import { UsageLine, IntentBars } from '@/components/Charts';
 import { ArrowLeft, MessageSquare, Clock, TrendingUp, Star } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, Bot } from '@/lib/dataService';
+import { getClientBrandColor } from '@/lib/brandColors';
 
 export default function BotAnalyticsPage({ params }: { params: { clientId: string; botId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
@@ -42,6 +43,8 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     return <div className="p-6">Bot not found</div>;
   }
 
+  const brandColor = getClientBrandColor(bot.clientId);
+
   return (
     <div className="flex min-h-screen bg-gray-50">
       <Sidebar clientId={client.id} />
@@ -59,11 +62,16 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           <div className="bg-white rounded-xl border border-gray-200 p-8 mb-6">
             <div className="flex items-start justify-between mb-8">
               <div className="flex items-center gap-6">
-                <img 
-                  src={bot.image} 
-                  alt={bot.name}
-                  className="w-24 h-24 rounded-full bg-gray-100"
-                />
+                <div 
+                  className="w-24 h-24 rounded-full flex items-center justify-center p-2"
+                  style={{ backgroundColor: brandColor }}
+                >
+                  <img 
+                    src={bot.image} 
+                    alt={bot.name}
+                    className="w-20 h-20 object-contain"
+                  />
+                </div>
                 <div>
                   <div className="flex items-center gap-3 mb-2">
                     <h1 className="text-3xl font-bold">{bot.name}</h1>

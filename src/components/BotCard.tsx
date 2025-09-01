@@ -102,6 +102,8 @@ export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) 
     return 'bg-gray-100 text-gray-700 border-gray-200';
   };
 
+
+
   return (
     <div className="bg-white rounded-xl border border-gray-200 hover:border-gray-300 hover:shadow-md transition-all duration-200 group relative flex flex-col">
       {/* Header Section */}
@@ -205,13 +207,18 @@ export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) 
                 {bundleLoads.percentage}%
               </span>
             </div>
-            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden relative">
               <div 
-                className={`h-2 rounded-full transition-all duration-500 ease-out ${
-                  bundleLoads.percentage < 70 ? 'bg-gray-900' :
-                  bundleLoads.percentage < 90 ? 'bg-yellow-600' : 'bg-red-600'
-                }`}
-                style={{ width: `${bundleLoads.percentage}%` }}
+                className="absolute inset-0 h-2 rounded-full"
+                style={{ 
+                  background: 'linear-gradient(to right, #22c55e 0%, #eab308 70%, #ef4444 100%)'
+                }}
+              />
+              <div 
+                className="absolute inset-0 h-2 rounded-full bg-gray-100 transition-all duration-500 ease-out"
+                style={{ 
+                  left: `${bundleLoads.percentage}%`
+                }}
               />
             </div>
             <div className="flex justify-between items-center mt-1">
@@ -238,13 +245,18 @@ export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) 
                 {chatUsage.percentage}%
               </span>
             </div>
-            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-gray-100 rounded-full h-2 overflow-hidden relative">
               <div 
-                className={`h-2 rounded-full transition-all duration-500 ease-out ${
-                  chatUsage.percentage < 70 ? 'bg-gray-900' :
-                  chatUsage.percentage < 90 ? 'bg-yellow-600' : 'bg-red-600'
-                }`}
-                style={{ width: `${chatUsage.percentage}%` }}
+                className="absolute inset-0 h-2 rounded-full"
+                style={{ 
+                  background: 'linear-gradient(to right, #22c55e 0%, #eab308 70%, #ef4444 100%)'
+                }}
+              />
+              <div 
+                className="absolute inset-0 h-2 rounded-full bg-gray-100 transition-all duration-500 ease-out"
+                style={{ 
+                  left: `${chatUsage.percentage}%`
+                }}
               />
             </div>
             <div className="flex justify-between items-center mt-1">

@@ -4,6 +4,30 @@
 
 html, body { height: 100%; }
 body { @apply bg-white text-neutral-900 antialiased; }
+
+/* Force scrollbar to always be visible to prevent layout jumps */
+html {
+  overflow-y: scroll;
+}
+
+/* Optional: Style the scrollbar for webkit browsers */
+::-webkit-scrollbar {
+  width: 12px;
+}
+
+::-webkit-scrollbar-track {
+  background: #f1f1f1;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #888;
+  border-radius: 6px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: #555;
+}
+
 .container { @apply mx-auto px-4 sm:px-6 lg:px-8; }
 .card { @apply rounded-2xl border bg-white shadow-sm; }
 .badge { @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium; }

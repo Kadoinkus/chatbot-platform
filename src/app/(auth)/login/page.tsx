@@ -132,23 +132,6 @@ export default function LoginPage() {
             )}
           </div>
           
-          {isLogin && (
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <p className="text-xs text-gray-500 text-center mb-4">Demo Credentials:</p>
-              <div className="space-y-3">
-                {clients.map(c => (
-                  <div key={c.id} className="text-xs bg-gray-50 rounded-lg p-3 text-center">
-                    <div className="font-semibold text-gray-700 mb-1">{c.name}</div>
-                    <div className="text-gray-500">
-                      <span className="font-mono">{c.login.email}</span> • 
-                      <span className="font-mono ml-1">{c.login.password}</span>
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
-          
           {!isLogin && (
             <div className="mt-8 pt-6 border-t border-gray-200">
               <p className="text-xs text-gray-500 text-center">

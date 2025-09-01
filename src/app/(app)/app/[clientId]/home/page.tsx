@@ -238,22 +238,26 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
                       </div>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {bots.slice(0, 4).map(bot => (
-                          <div key={bot.id} className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-200 text-sm hover:border-gray-300 transition-colors">
+                          <Link
+                            key={bot.id}
+                            href={`/app/${client.id}/workspace/${workspace.id}`}
+                            className="flex items-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-200 text-sm hover:border-gray-400 hover:shadow-sm hover:scale-[1.02] transition-all duration-200 cursor-pointer group"
+                          >
                             <img 
                               src={bot.image} 
                               alt={bot.name}
-                              className="w-7 h-7 rounded-full flex-shrink-0"
+                              className="w-7 h-7 rounded-full flex-shrink-0 group-hover:scale-110 transition-transform duration-200"
                             />
                             <div className="flex-1 min-w-0">
-                              <span className="font-medium text-gray-900 truncate block">{bot.name}</span>
-                              <span className={`text-xs capitalize ${
-                                bot.status === 'Live' ? 'text-green-600' : 
-                                bot.status === 'Paused' ? 'text-yellow-600' : 'text-red-600'
+                              <span className="font-medium text-gray-900 truncate block group-hover:text-gray-700 transition-colors">{bot.name}</span>
+                              <span className={`text-xs capitalize transition-colors ${
+                                bot.status === 'Live' ? 'text-green-600 group-hover:text-green-700' : 
+                                bot.status === 'Paused' ? 'text-yellow-600 group-hover:text-yellow-700' : 'text-red-600 group-hover:text-red-700'
                               }`}>
                                 {bot.status.toLowerCase()}
                               </span>
                             </div>
-                          </div>
+                          </Link>
                         ))}
                         {bots.length > 4 && (
                           <div className="flex items-center justify-center px-3 py-2 bg-gray-200 rounded-lg text-sm text-gray-600 font-medium">

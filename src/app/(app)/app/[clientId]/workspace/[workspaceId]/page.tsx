@@ -78,7 +78,7 @@ export default function WorkspaceDetailPage({
       <main className="flex-1 lg:ml-16">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
           <Link 
-            href={`/app/${client.id}`}
+            href={`/app/${client.id}/home`}
             className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
           >
             <ArrowLeft size={16} />

@@ -3,20 +3,21 @@ import { useState, useEffect } from 'react';
 import { getClientById } from '@/lib/dataService';
 import { useCart } from '@/contexts/CartContext';
 import Sidebar from '@/components/Sidebar';
-import { Star, Zap, MessageCircle, Gamepad, Heart, ShoppingCart, CheckCircle, Plus } from 'lucide-react';
+import { Star, Zap, MessageCircle, Gamepad, Heart, ShoppingCart, CheckCircle, Plus, Search } from 'lucide-react';
 import Link from 'next/link';
 import type { Client } from '@/lib/dataService';
 
 type BotTemplate = {
   id: string;
   name: string;
-  category: string;
+  appearance: string;
+  studio: string;
   description: string;
   image: string;
   rating: number;
   reviews: number;
   animations: number;
-  minigames: number;
+  expressions: number;
   features: string[];
   price: 'Free' | number;
   popular: boolean;
@@ -26,142 +27,168 @@ type BotTemplate = {
 const botTemplates: BotTemplate[] = [
   {
     id: 'template-1',
-    name: 'Customer Support Pro',
-    category: 'Customer Service',
-    description: 'Professional customer support bot with advanced problem-solving capabilities',
-    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=CustomerPro&backgroundColor=3B82F6',
+    name: 'Maya Professional',
+    appearance: 'Humanoid',
+    studio: 'Notso (In-house)',
+    description: 'Elegant humanoid mascot with professional business attire and warm expressions',
+    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Maya&backgroundColor=3B82F6',
     rating: 4.8,
     reviews: 2847,
     animations: 35,
-    minigames: 2,
-    features: ['24/7 Support', 'Multilingual', 'Escalation Flow', 'Analytics'],
-    price: 29,
+    expressions: 24,
+    features: ['Business Attire', '24 Expressions', 'Hand Gestures', '4K Textures'],
+    price: 'Free',
     popular: true,
     new: false
   },
   {
     id: 'template-2',
-    name: 'Sales Assistant',
-    category: 'Sales & Marketing',
-    description: 'Boost your sales with this intelligent sales assistant bot',
-    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=SalesBot&backgroundColor=10B981',
+    name: 'Zara Blob Companion',
+    appearance: 'Blob',
+    studio: 'Berlin Studio',
+    description: 'Friendly blob mascot with smooth morphing animations and playful expressions',
+    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=ZaraBlob&backgroundColor=10B981',
     rating: 4.9,
     reviews: 1923,
     animations: 28,
-    minigames: 1,
-    features: ['Lead Generation', 'Product Recommendations', 'Booking System', 'CRM Integration'],
+    expressions: 16,
+    features: ['Morphing Animations', 'Bounce Physics', 'Color Shifting', 'Cute Expressions'],
     price: 39,
     popular: true,
     new: false
   },
   {
     id: 'template-3',
-    name: 'E-commerce Helper',
-    category: 'E-commerce',
-    description: 'Perfect for online stores with order tracking and product assistance',
-    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=EcommerceBot&backgroundColor=F59E0B',
+    name: 'Geometric Navigator',
+    appearance: 'Geometric',
+    studio: 'Notso (In-house)',
+    description: 'Abstract geometric mascot with crystalline structure and dynamic transformations',
+    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=GeometricNav&backgroundColor=F59E0B',
     rating: 4.7,
     reviews: 3421,
     animations: 42,
-    minigames: 3,
-    features: ['Order Tracking', 'Product Search', 'Cart Recovery', 'Payment Help'],
+    expressions: 12,
+    features: ['Crystal Transforms', 'Light Refraction', 'Faceted Design', 'Holographic Effects'],
     price: 'Free',
     popular: false,
     new: false
   },
   {
     id: 'template-4',
-    name: 'HR Assistant',
-    category: 'Human Resources',
-    description: 'Streamline HR processes with automated employee assistance',
-    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=HRBot&backgroundColor=8B5CF6',
+    name: 'Rex the Retriever',
+    appearance: 'Animal (4-legged)',
+    studio: 'Animation Works',
+    description: 'Adorable golden retriever mascot with realistic fur and tail wagging animations',
+    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=RexRetriever&backgroundColor=8B5CF6',
     rating: 4.6,
     reviews: 892,
     animations: 22,
-    minigames: 0,
-    features: ['Employee Onboarding', 'Policy Q&A', 'Leave Management', 'Training'],
+    expressions: 18,
+    features: ['Fur Physics', 'Tail Wagging', 'Panting Animation', 'Playful Gestures'],
     price: 25,
     popular: false,
     new: true
   },
   {
     id: 'template-5',
-    name: 'Healthcare Guide',
-    category: 'Healthcare',
-    description: 'Provide medical information and appointment scheduling',
-    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=HealthBot&backgroundColor=EF4444',
+    name: 'Phoenix the Firebird',
+    appearance: 'Fantasy',
+    studio: 'Pixel Dreams',
+    description: 'Majestic phoenix with flame particles and soaring flight animations',
+    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=PhoenixFire&backgroundColor=EF4444',
     rating: 4.9,
     reviews: 1567,
     animations: 31,
-    minigames: 1,
-    features: ['Symptom Checker', 'Appointment Booking', 'Medicine Reminders', 'Health Tips'],
+    expressions: 20,
+    features: ['Particle Effects', 'Wing Flapping', 'Fire Trails', 'Mythical Presence'],
     price: 49,
     popular: false,
     new: true
   },
   {
     id: 'template-6',
-    name: 'Education Tutor',
-    category: 'Education',
-    description: 'Interactive learning companion with gamified education',
-    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=EduBot&backgroundColor=06B6D4',
+    name: 'Pip the Penguin',
+    appearance: 'Animal (2-legged)',
+    studio: 'Creative Labs',
+    description: 'Cheerful penguin mascot with sliding animations and winter-themed expressions',
+    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=PipPenguin&backgroundColor=06B6D4',
     rating: 4.8,
     reviews: 2156,
     animations: 45,
-    minigames: 5,
-    features: ['Interactive Lessons', 'Quiz Games', 'Progress Tracking', 'Certificates'],
+    expressions: 26,
+    features: ['Ice Sliding', 'Flipper Gestures', 'Snow Effects', 'Waddle Walk'],
     price: 35,
     popular: true,
     new: false
   },
   {
     id: 'template-7',
-    name: 'Restaurant Host',
-    category: 'Food & Dining',
-    description: 'Perfect for restaurants with menu assistance and reservations',
-    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=RestaurantBot&backgroundColor=F97316',
+    name: 'Orion Mech Unit',
+    appearance: 'Robot/Mech',
+    studio: 'Digital Mascots Co',
+    description: 'Futuristic robot mascot with LED displays and mechanical transformation sequences',
+    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=OrionMech&backgroundColor=F97316',
     rating: 4.5,
     reviews: 743,
     animations: 26,
-    minigames: 2,
-    features: ['Menu Display', 'Table Booking', 'Order Taking', 'Dietary Info'],
+    expressions: 14,
+    features: ['LED Displays', 'Mechanical Sounds', 'Transformation', 'Holographic UI'],
     price: 19,
     popular: false,
     new: false
   },
   {
     id: 'template-8',
-    name: 'Travel Companion',
-    category: 'Travel & Tourism',
-    description: 'Your ultimate travel guide with booking and recommendations',
-    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=TravelBot&backgroundColor=EC4899',
+    name: 'Flux Abstract Form',
+    appearance: 'Abstract',
+    studio: 'Berlin Studio',
+    description: 'Flowing abstract mascot with liquid-like movements and color-shifting properties',
+    image: 'https://api.dicebear.com/7.x/avataaars/svg?seed=FluxAbstract&backgroundColor=EC4899',
     rating: 4.7,
     reviews: 1834,
     animations: 38,
-    minigames: 4,
-    features: ['Trip Planning', 'Hotel Booking', 'Local Guides', 'Weather Updates'],
+    expressions: 10,
+    features: ['Fluid Dynamics', 'Color Morphing', 'Abstract Forms', 'Particle Systems'],
     price: 32,
     popular: false,
     new: true
   }
 ];
 
-const categories = [
-  'All Categories',
-  'Customer Service',
-  'Sales & Marketing', 
-  'E-commerce',
-  'Human Resources',
-  'Healthcare',
-  'Education',
-  'Food & Dining',
-  'Travel & Tourism'
+const appearanceTypes = [
+  'All Types',
+  'Humanoid',
+  'Blob',
+  'Abstract', 
+  'Animal (4-legged)',
+  'Animal (2-legged)',
+  'Robot/Mech',
+  'Fantasy',
+  'Geometric'
+];
+
+const studioFilters = [
+  'All Studios',
+  'Notso (In-house)',
+  'Berlin Studio',
+  'Animation Works',
+  'Pixel Dreams',
+  'Creative Labs',
+  'Digital Mascots Co'
+];
+
+const pricingFilters = [
+  'All Pricing',
+  'Free',
+  'Premium'
 ];
 
 export default function MarketplacePage({ params }: { params: { clientId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
   const [loading, setLoading] = useState(true);
-  const [selectedCategory, setSelectedCategory] = useState('All Categories');
+  const [selectedAppearance, setSelectedAppearance] = useState('All Types');
+  const [selectedStudio, setSelectedStudio] = useState('All Studios');
+  const [selectedPricing, setSelectedPricing] = useState('All Pricing');
   const [searchQuery, setSearchQuery] = useState('');
   const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
   
@@ -182,10 +209,14 @@ export default function MarketplacePage({ params }: { params: { clientId: string
   }, [params.clientId]);
 
   const filteredTemplates = botTemplates.filter(template => {
-    const matchesCategory = selectedCategory === 'All Categories' || template.category === selectedCategory;
+    const matchesAppearance = selectedAppearance === 'All Types' || template.appearance === selectedAppearance;
+    const matchesStudio = selectedStudio === 'All Studios' || template.studio === selectedStudio;
+    const matchesPricing = selectedPricing === 'All Pricing' || 
+      (selectedPricing === 'Free' && template.price === 'Free') ||
+      (selectedPricing === 'Premium' && template.price !== 'Free');
     const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
                          template.description.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesCategory && matchesSearch;
+    return matchesAppearance && matchesStudio && matchesPricing && matchesSearch;
   });
 
   if (loading) {
@@ -203,36 +234,86 @@ export default function MarketplacePage({ params }: { params: { clientId: string
       <main className="flex-1 lg:ml-16">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
           <div className="mb-6 lg:mb-8">
-            <h1 className="text-2xl lg:text-3xl font-bold mb-2">Bot Marketplace</h1>
-            <p className="text-gray-600">Choose from our collection of pre-built bot templates</p>
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2">3D Mascot Marketplace</h1>
+            <p className="text-gray-600">Choose from our collection of animated 3D mascots for your chatbots</p>
           </div>
 
           {/* Search and Filters */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4 lg:p-6 mb-6 lg:mb-8">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
+          <div className="space-y-4 mb-6">
+            {/* Search Bar */}
+            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+              <div className="relative flex-1 max-w-md">
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
                 <input
                   type="text"
-                  placeholder="Search bot templates..."
+                  placeholder="Search 3D mascot templates..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-gray-900 placeholder-gray-500 bg-white"
                 />
               </div>
-              <div className="flex gap-2 flex-wrap">
-                {categories.map(category => (
-                  <button
-                    key={category}
-                    onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      selectedCategory === category
-                        ? 'bg-black text-white'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                    }`}
-                  >
-                    {category}
-                  </button>
-                ))}
+            </div>
+
+            {/* Filter Categories */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              {/* Appearance Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Appearance</label>
+                <div className="flex gap-2 flex-wrap">
+                  {appearanceTypes.map(type => (
+                    <button
+                      key={type}
+                      onClick={() => setSelectedAppearance(type)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        selectedAppearance === type
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {type}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Studio Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Studio</label>
+                <div className="flex gap-2 flex-wrap">
+                  {studioFilters.map(studio => (
+                    <button
+                      key={studio}
+                      onClick={() => setSelectedStudio(studio)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        selectedStudio === studio
+                          ? 'bg-green-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {studio}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Pricing Filter */}
+              <div>
+                <label className="block text-sm font-medium text-gray-700 mb-2">Pricing</label>
+                <div className="flex gap-2 flex-wrap">
+                  {pricingFilters.map(pricing => (
+                    <button
+                      key={pricing}
+                      onClick={() => setSelectedPricing(pricing)}
+                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        selectedPricing === pricing
+                          ? 'bg-purple-600 text-white'
+                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                      }`}
+                    >
+                      {pricing}
+                    </button>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
@@ -240,10 +321,10 @@ export default function MarketplacePage({ params }: { params: { clientId: string
           {/* Template Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
             {filteredTemplates.map(template => (
-              <div key={template.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:scale-105">
+              <div key={template.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:scale-105 flex flex-col h-full">
                 {/* Header with badges */}
                 <div className="relative">
-                  <div className="absolute top-3 left-3 flex gap-2">
+                  <div className="absolute top-3 left-3 flex gap-2 z-10">
                     {template.popular && (
                       <span className="bg-gradient-to-r from-orange-400 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-medium">
                         🔥 Popular
@@ -257,8 +338,8 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                   </div>
                   
                   {/* Large Avatar */}
-                  <div className="p-6 lg:p-8 pt-10 lg:pt-12">
-                    <div className="w-24 h-24 lg:w-32 lg:h-32 mx-auto mb-4">
+                  <div className="p-6 pt-10">
+                    <div className="w-20 h-20 mx-auto">
                       <img 
                         src={template.image}
                         alt={template.name}
@@ -269,68 +350,74 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                 </div>
 
                 {/* Content */}
-                <div className="p-4 lg:p-6 pt-0">
-                  <div className="text-center mb-4">
-                    <h3 className="font-bold text-lg mb-1">{template.name}</h3>
-                    <p className="text-sm text-gray-500 mb-2">{template.category}</p>
-                    <p className="text-sm text-gray-600 line-clamp-2">{template.description}</p>
+                <div className="p-4 pt-2 flex-1 flex flex-col">
+                  {/* Top Content */}
+                  <div className="flex-1">
+                    <div className="text-center mb-3">
+                      <h3 className="font-bold text-lg mb-1">{template.name}</h3>
+                      <div className="flex items-center justify-center gap-2 mb-2">
+                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">{template.appearance}</span>
+                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">{template.studio}</span>
+                      </div>
+                      <p className="text-sm text-gray-600 line-clamp-2">{template.description}</p>
+                    </div>
+
+                    {/* Rating */}
+                    <div className="flex items-center justify-center gap-1 mb-3">
+                      <div className="flex">
+                        {[...Array(5)].map((_, i) => (
+                          <Star 
+                            key={i} 
+                            size={12} 
+                            className={`${
+                              i < Math.floor(template.rating) 
+                                ? 'text-yellow-400 fill-current' 
+                                : 'text-gray-300'
+                            }`}
+                          />
+                        ))}
+                      </div>
+                      <span className="text-sm font-medium">{template.rating}</span>
+                      <span className="text-xs text-gray-500">({template.reviews.toLocaleString()})</span>
+                    </div>
+
+                    {/* Stats */}
+                    <div className="grid grid-cols-2 gap-2 mb-3">
+                      <div className="flex items-center gap-1 text-xs">
+                        <Zap size={12} className="text-blue-500" />
+                        <span className="text-gray-600">{template.animations} animations</span>
+                      </div>
+                      <div className="flex items-center gap-1 text-xs">
+                        <Heart size={12} className="text-pink-500" />
+                        <span className="text-gray-600">{template.expressions} expressions</span>
+                      </div>
+                    </div>
+
+                    {/* Features */}
+                    <div className="mb-3">
+                      <div className="flex flex-wrap gap-1">
+                        {template.features.slice(0, 2).map(feature => (
+                          <span key={feature} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                            {feature}
+                          </span>
+                        ))}
+                        {template.features.length > 2 && (
+                          <span className="text-xs text-gray-500">
+                            +{template.features.length - 2} more
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
 
-                  {/* Rating */}
-                  <div className="flex items-center justify-center gap-1 mb-4">
-                    <div className="flex">
-                      {[...Array(5)].map((_, i) => (
-                        <Star 
-                          key={i} 
-                          size={14} 
-                          className={`${
-                            i < Math.floor(template.rating) 
-                              ? 'text-yellow-400 fill-current' 
-                              : 'text-gray-300'
-                          }`}
-                        />
-                      ))}
-                    </div>
-                    <span className="text-sm font-medium">{template.rating}</span>
-                    <span className="text-xs text-gray-500">({template.reviews.toLocaleString()})</span>
-                  </div>
-
-                  {/* Stats */}
-                  <div className="grid grid-cols-2 gap-3 mb-4">
-                    <div className="flex items-center gap-2 text-sm">
-                      <Zap size={14} className="text-blue-500" />
-                      <span className="text-gray-600">{template.animations}+ animations</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-sm">
-                      <Gamepad size={14} className="text-purple-500" />
-                      <span className="text-gray-600">{template.minigames} mini games</span>
-                    </div>
-                  </div>
-
-                  {/* Features */}
-                  <div className="mb-4">
-                    <div className="flex flex-wrap gap-1">
-                      {template.features.slice(0, 2).map(feature => (
-                        <span key={feature} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
-                          {feature}
-                        </span>
-                      ))}
-                      {template.features.length > 2 && (
-                        <span className="text-xs text-gray-500">
-                          +{template.features.length - 2} more
-                        </span>
-                      )}
-                    </div>
-                  </div>
-
-                  {/* Price and Action */}
-                  <div className="flex items-center justify-between">
+                  {/* Price and Action - Always at bottom */}
+                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
                     <div>
                       {template.price === 'Free' ? (
                         <span className="text-lg font-bold text-green-600">Free</span>
                       ) : (
                         <div className="flex items-center gap-1">
-                          <span className="text-lg font-bold">${template.price}</span>
+                          <span className="text-lg font-bold">€{template.price}</span>
                           <span className="text-sm text-gray-500">/month</span>
                         </div>
                       )}
@@ -351,7 +438,8 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                             description: template.description,
                             price: template.price,
                             image: template.image,
-                            category: template.category,
+                            appearance: template.appearance,
+                            studio: template.studio,
                             originalData: template
                           });
                           setAddedItems(prev => new Set(prev).add(template.id));

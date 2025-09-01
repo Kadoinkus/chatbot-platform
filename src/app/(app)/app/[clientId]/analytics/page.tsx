@@ -1,6 +1,7 @@
 'use client';
 import { useState, useMemo, useEffect, useRef } from 'react';
 import { clients } from '@/lib/data';
+import { getClientBrandColor } from '@/lib/brandColors';
 import Sidebar from '@/components/Sidebar';
 import { UsageLine, IntentBars } from '@/components/Charts';
 import { Calendar, Download, Filter, TrendingUp, MessageSquare, Clock, Star, Users, AlertTriangle, CheckCircle, ChevronDown, X } from 'lucide-react';
@@ -147,7 +148,12 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                               className="rounded border-gray-300 text-black focus:ring-black"
                               disabled={selectedBots.includes('all')}
                             />
-                            <img src={bot.image} alt={bot.name} className="w-6 h-6 rounded-full" />
+                            <img 
+                              src={bot.image} 
+                              alt={bot.name} 
+                              className="w-6 h-6 rounded-full" 
+                              style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                            />
                             <div className="flex-1">
                               <span className="text-sm font-medium">{bot.name}</span>
                               <div className="text-xs text-gray-500">{bot.conversations} conversations</div>
@@ -196,7 +202,12 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                     if (!bot) return null;
                     return (
                       <div key={botId} className="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm">
-                        <img src={bot.image} alt={bot.name} className="w-4 h-4 rounded-full" />
+                        <img 
+                          src={bot.image} 
+                          alt={bot.name} 
+                          className="w-4 h-4 rounded-full" 
+                          style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                        />
                         <span>{bot.name}</span>
                         <button 
                           onClick={() => handleBotToggle(botId)}
@@ -399,7 +410,12 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                     <tr key={bot.id} className="border-b hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <img src={bot.image} alt={bot.name} className="w-8 h-8 rounded-full" />
+                          <img 
+                            src={bot.image} 
+                            alt={bot.name} 
+                            className="w-8 h-8 rounded-full" 
+                            style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                          />
                           <span className="font-medium">{bot.name}</span>
                         </div>
                       </td>
@@ -456,7 +472,12 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                     <tr key={bot.id} className="border-b hover:bg-gray-50">
                       <td className="px-6 py-4">
                         <div className="flex items-center gap-3">
-                          <img src={bot.image} alt={bot.name} className="w-8 h-8 rounded-full" />
+                          <img 
+                            src={bot.image} 
+                            alt={bot.name} 
+                            className="w-8 h-8 rounded-full" 
+                            style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                          />
                           <span className="font-medium">{bot.name}</span>
                         </div>
                       </td>

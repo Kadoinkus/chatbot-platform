@@ -1,6 +1,7 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
 import { clients } from '@/lib/data';
+import { getClientBrandColor } from '@/lib/brandColors';
 import Sidebar from '@/components/Sidebar';
 import { ArrowLeft, Send, Paperclip, MoreVertical, Phone, Video, Info, Smile, Mic } from 'lucide-react';
 import Link from 'next/link';
@@ -121,6 +122,7 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
                 src={bot.image} 
                 alt={bot.name}
                 className="w-10 h-10 rounded-full"
+                style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
               />
               <div>
                 <h1 className="font-semibold">{bot.name}</h1>
@@ -154,7 +156,12 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
               >
                 <div className={`flex gap-3 max-w-lg ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}>
                   {message.sender === 'bot' && (
-                    <img src={bot.image} alt={bot.name} className="w-8 h-8 rounded-full flex-shrink-0" />
+                    <img 
+                      src={bot.image} 
+                      alt={bot.name} 
+                      className="w-8 h-8 rounded-full flex-shrink-0" 
+                      style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                    />
                   )}
                   {message.sender === 'agent' && (
                     <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center text-white text-xs flex-shrink-0">
@@ -201,7 +208,12 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
             {isTyping && (
               <div className="flex justify-start">
                 <div className="flex gap-3 max-w-lg">
-                  <img src={bot.image} alt={bot.name} className="w-8 h-8 rounded-full" />
+                  <div 
+                    className="w-8 h-8 rounded-full flex items-center justify-center p-0.5"
+                    style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                  >
+                    <img src={bot.image} alt={bot.name} className="w-7 h-7 object-contain" />
+                  </div>
                   <div className="bg-gray-100 rounded-lg px-4 py-2">
                     <div className="flex gap-1">
                       <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />

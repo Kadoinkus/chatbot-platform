@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { getClientById, getWorkspacesByClientId, getBotsByWorkspaceId } from '@/lib/dataService';
 import type { Client, Workspace, Bot } from '@/lib/dataService';
+import { getClientBrandColor } from '@/lib/brandColors';
 import Sidebar from '@/components/Sidebar';
 import { 
   CreditCard, TrendingUp, AlertCircle, CheckCircle, ChevronDown, ChevronUp,
@@ -356,6 +357,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                               src={bot.image} 
                               alt={bot.name}
                               className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                              style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
                               title={`${bot.name} - ${bot.status}`}
                             />
                             <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
@@ -484,6 +486,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                                     src={bot.image} 
                                     alt={bot.name}
                                     className="w-10 h-10 rounded-full"
+                                    style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
                                   />
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-1">

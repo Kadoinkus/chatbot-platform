@@ -2,6 +2,7 @@
 import { useState, useEffect } from 'react';
 import { getClientById, getWorkspacesByClientId, getBotsByWorkspaceId } from '@/lib/dataService';
 import type { Client, Workspace, Bot } from '@/lib/dataService';
+import { getClientBrandColor } from '@/lib/brandColors';
 import Sidebar from '@/components/Sidebar';
 import AuthGuard from '@/components/AuthGuard';
 import { Plus, Search, Building2, Activity, CreditCard, ChevronRight, Bot as BotIcon } from 'lucide-react';
@@ -247,6 +248,7 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
                               src={bot.image} 
                               alt={bot.name}
                               className="w-7 h-7 rounded-full flex-shrink-0 group-hover:scale-110 transition-transform duration-200"
+                              style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
                             />
                             <div className="flex-1 min-w-0">
                               <span className="font-medium text-gray-900 truncate block group-hover:text-gray-700 transition-colors">{bot.name}</span>

@@ -3,6 +3,7 @@ import { useState, useRef, useEffect } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, MessageCircle, AlertTriangle, MoreVertical, Settings, Trash2, Copy, Box, Square } from 'lucide-react';
 import type { Mascot } from '@/lib/data';
+import { getClientBrandColor } from '@/lib/brandColors';
 
 interface BotCardProps {
   bot: Mascot;
@@ -11,6 +12,7 @@ interface BotCardProps {
 }
 
 export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) {
+  const brandColor = getClientBrandColor(bot.clientId);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
   const [showModeWarning, setShowModeWarning] = useState(false);
@@ -110,7 +112,8 @@ export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) 
               <img 
                 src={bot.image} 
                 alt={bot.name}
-                className="w-24 h-24 rounded-full bg-gray-100 group-hover:scale-105 transition-transform duration-300"
+                className="w-24 h-24 rounded-full group-hover:scale-105 transition-transform duration-300"
+                style={{ backgroundColor: brandColor }}
               />
               {/* 2D/3D Mode Indicator */}
               <button 

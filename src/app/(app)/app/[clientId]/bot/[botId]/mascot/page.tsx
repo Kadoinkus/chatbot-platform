@@ -6,6 +6,7 @@ import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Palette, Sparkles, Image, Type, Monitor, Smartphone, User, Eye, Smile, ShirtIcon as Shirt, HardHat, ShoppingCart, Lock, Crown, Zap, Package } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, Bot } from '@/lib/dataService';
+import { getClientBrandColor } from '@/lib/brandColors';
 import { useCart } from '@/contexts/CartContext';
 
 export default function MascotStudioPage({ params }: { params: { clientId: string; botId: string } }) {

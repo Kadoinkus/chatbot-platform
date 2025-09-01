@@ -53,23 +53,23 @@ export default function WorkspaceDetailPage({
   const planDetails = {
     starter: {
       color: 'bg-gray-100 text-gray-700',
-      features: ['1,000 conversations/month', '1 bot', 'Basic analytics', 'Email support']
+      features: ['25,000 messages/month', '1,000 bundle loads', 'Basic analytics', 'Email support']
     },
-    growth: {
+    basic: {
       color: 'bg-blue-100 text-blue-700',
-      features: ['5,000 conversations/month', '3 bots', 'Advanced analytics', 'Priority support']
+      features: ['100,000 messages/month', '5,000 bundle loads', 'Advanced analytics', 'Priority support']
     },
     premium: {
       color: 'bg-purple-100 text-purple-700',
-      features: ['10,000 conversations/month', '5 bots', 'Full analytics', '24/7 support', 'API access']
+      features: ['500,000 messages/month', '25,000 bundle loads', 'Full analytics', '24/7 support', 'API access']
     },
     enterprise: {
       color: 'bg-orange-100 text-orange-700',
-      features: ['50,000+ conversations/month', 'Unlimited bots', 'Custom analytics', 'Dedicated support', 'SLA']
+      features: ['2M+ messages/month', '100,000 bundle loads', 'Custom analytics', 'Dedicated support', 'SLA']
     }
   };
 
-  const usagePercentage = (workspace.currentUsage / workspace.monthlyLimit) * 100;
+  const usagePercentage = workspace.messages ? (workspace.messages.used / workspace.messages.limit) * 100 : 0;
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -121,11 +121,11 @@ export default function WorkspaceDetailPage({
                 <span className="text-sm text-gray-600">Usage This Month</span>
                 <Activity size={18} className="text-gray-400" />
               </div>
-              <p className="text-2xl font-bold">{workspace.currentUsage.toLocaleString()}</p>
+              <p className="text-2xl font-bold">{workspace.messages?.used?.toLocaleString() || '0'}</p>
               <div className="mt-2">
                 <div className="flex justify-between text-xs text-gray-500 mb-1">
                   <span>{Math.round(usagePercentage)}% used</span>
-                  <span>{workspace.remainingUsage.toLocaleString()} left</span>
+                  <span>{workspace.messages?.remaining?.toLocaleString() || '0'} left</span>
                 </div>
                 <div className="w-full bg-gray-200 rounded-full h-2">
                   <div 
@@ -144,7 +144,7 @@ export default function WorkspaceDetailPage({
                 <span className="text-sm text-gray-600">Wallet Balance</span>
                 <CreditCard size={18} className="text-gray-400" />
               </div>
-              <p className="text-2xl font-bold">€{workspace.walletCredits.toFixed(2)}</p>
+              <p className="text-2xl font-bold">€{workspace.walletCredits?.toFixed(2) || '0.00'}</p>
               <button className="text-xs text-blue-600 hover:text-blue-700 mt-1">
                 + Add credits
               </button>
@@ -293,7 +293,7 @@ export default function WorkspaceDetailPage({
                       </div>
                       <div className="flex justify-between py-2 border-b border-gray-100">
                         <span className="text-gray-600">Overage Rate</span>
-                        <span className="font-medium">€{workspace.overageRate}/message</span>
+                        <span className="font-medium">€{workspace.overageRates?.messages || '0'}/message</span>
                       </div>
                       <div className="flex justify-between py-2">
                         <span className="text-gray-600">Workspace Created</span>
@@ -309,7 +309,7 @@ export default function WorkspaceDetailPage({
                     <div className="bg-gray-50 rounded-lg p-4">
                       <div className="flex items-center justify-between mb-4">
                         <div>
-                          <p className="text-2xl font-bold">€{workspace.walletCredits.toFixed(2)}</p>
+                          <p className="text-2xl font-bold">€{workspace.walletCredits?.toFixed(2) || '0.00'}</p>
                           <p className="text-sm text-gray-600">Available balance</p>
                         </div>
                         <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
@@ -317,7 +317,7 @@ export default function WorkspaceDetailPage({
                         </button>
                       </div>
                       <p className="text-xs text-gray-500">
-                        Credits are used when you exceed your monthly conversation limit at €{workspace.overageRate} per message.
+                        Credits are used when you exceed your monthly conversation limit at €{workspace.overageRates?.messages || '0'} per message.
                       </p>
                     </div>
                   </div>

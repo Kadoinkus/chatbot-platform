@@ -15,15 +15,35 @@ export type Workspace = {
   name: string;
   description?: string;
   plan: PlanType;
-  monthlyLimit: number;
-  currentUsage: number;
-  remainingUsage: number;
+  // Bundle loads (expensive 3D avatar rendering)
+  bundleLoads: {
+    limit: number;
+    used: number;
+    remaining: number;
+  };
+  // Messages (cheaper OpenAI costs)
+  messages: {
+    limit: number;
+    used: number;
+    remaining: number;
+  };
+  // API calls
+  apiCalls: {
+    limit: number;
+    used: number;
+    remaining: number;
+  };
   walletCredits: number;
-  overageRate: number;
+  overageRates: {
+    bundleLoads: number; // per bundle load
+    messages: number;    // per message
+    apiCalls: number;    // per API call
+  };
   status: 'active' | 'suspended' | 'trial';
   createdAt: string;
   billingCycle: 'monthly' | 'quarterly' | 'annual';
   nextBillingDate: string;
+  monthlyFee: number;
 };
 
 export type Bot = {

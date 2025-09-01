@@ -60,13 +60,13 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
 
   const planColors = {
     starter: 'bg-gray-100 text-gray-700',
-    growth: 'bg-blue-100 text-blue-700',
+    basic: 'bg-blue-100 text-blue-700',
     premium: 'bg-purple-100 text-purple-700',
     enterprise: 'bg-orange-100 text-orange-700'
   };
 
   const getTotalUsage = () => {
-    return workspaces.reduce((total, ws) => total + ws.currentUsage, 0);
+    return workspaces.reduce((total, ws) => total + (ws.messages?.used || 0), 0);
   };
 
   const getTotalBots = () => {
@@ -139,7 +139,7 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
           <div className="space-y-4">
             {filteredWorkspaces.map(workspace => {
               const bots = workspaceBots[workspace.id] || [];
-              const usagePercentage = (workspace.currentUsage / workspace.monthlyLimit) * 100;
+              const usagePercentage = workspace.messages ? (workspace.messages.used / workspace.messages.limit) * 100 : 0;
               
               return (
                 <div key={workspace.id} className="bg-white rounded-xl border border-gray-200 p-6">
@@ -165,7 +165,7 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
                         <div>
                           <p className="text-xs text-gray-500 mb-1">Usage</p>
                           <p className="text-lg font-semibold">
-                            {workspace.currentUsage.toLocaleString()}
+                            {workspace.messages?.used?.toLocaleString() || '0'}
                           </p>
                           <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
                             <div 
@@ -180,7 +180,7 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
                         
                         <div>
                           <p className="text-xs text-gray-500 mb-1">Credits</p>
-                          <p className="text-lg font-semibold">€{workspace.walletCredits.toFixed(2)}</p>
+                          <p className="text-lg font-semibold">€{workspace.walletCredits?.toFixed(2) || '0.00'}</p>
                           <p className="text-xs text-gray-500">Available</p>
                         </div>
                         

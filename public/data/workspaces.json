@@ -5,31 +5,65 @@
     "name": "Customer Service",
     "description": "Main customer support workspace",
     "plan": "premium",
-    "monthlyLimit": 10000,
-    "currentUsage": 7234,
-    "remainingUsage": 2766,
+    "bundleLoads": {
+      "limit": 25000,
+      "used": 18500,
+      "remaining": 6500
+    },
+    "messages": {
+      "limit": 500000,
+      "used": 234000,
+      "remaining": 266000
+    },
+    "apiCalls": {
+      "limit": 1000000,
+      "used": 445000,
+      "remaining": 555000
+    },
     "walletCredits": 50.00,
-    "overageRate": 0.01,
+    "overageRates": {
+      "bundleLoads": 0.25,
+      "messages": 0.0015,
+      "apiCalls": 0.0001
+    },
     "status": "active",
     "createdAt": "2024-01-01",
     "billingCycle": "monthly",
-    "nextBillingDate": "2024-02-01"
+    "nextBillingDate": "2024-02-01",
+    "monthlyFee": 2499.00
   },
   {
     "id": "ws_jumbo_hr",
     "clientId": "c1",
     "name": "HR Support",
     "description": "Internal employee assistance",
-    "plan": "growth",
-    "monthlyLimit": 5000,
-    "currentUsage": 1234,
-    "remainingUsage": 3766,
+    "plan": "basic",
+    "bundleLoads": {
+      "limit": 5000,
+      "used": 1200,
+      "remaining": 3800
+    },
+    "messages": {
+      "limit": 100000,
+      "used": 28000,
+      "remaining": 72000
+    },
+    "apiCalls": {
+      "limit": 250000,
+      "used": 65000,
+      "remaining": 185000
+    },
     "walletCredits": 25.00,
-    "overageRate": 0.015,
+    "overageRates": {
+      "bundleLoads": 0.30,
+      "messages": 0.002,
+      "apiCalls": 0.00015
+    },
     "status": "active",
     "createdAt": "2024-01-15",
     "billingCycle": "monthly",
-    "nextBillingDate": "2024-02-15"
+    "nextBillingDate": "2024-02-15",
+    "monthlyFee": 299.00
   },
   {
     "id": "ws_jumbo_store",
@@ -37,31 +71,65 @@
     "name": "Store Locator",
     "description": "Simple store information bot",
     "plan": "starter",
-    "monthlyLimit": 1000,
-    "currentUsage": 456,
-    "remainingUsage": 544,
+    "bundleLoads": {
+      "limit": 1000,
+      "used": 890,
+      "remaining": 110
+    },
+    "messages": {
+      "limit": 25000,
+      "used": 12000,
+      "remaining": 13000
+    },
+    "apiCalls": {
+      "limit": 50000,
+      "used": 18000,
+      "remaining": 32000
+    },
     "walletCredits": 0,
-    "overageRate": 0.02,
+    "overageRates": {
+      "bundleLoads": 0.35,
+      "messages": 0.0025,
+      "apiCalls": 0.0002
+    },
     "status": "active",
     "createdAt": "2024-01-20",
     "billingCycle": "monthly",
-    "nextBillingDate": "2024-02-20"
+    "nextBillingDate": "2024-02-20",
+    "monthlyFee": 99.00
   },
   {
     "id": "ws_techstart_main",
     "clientId": "c2",
     "name": "Main Workspace",
     "description": "All company operations",
-    "plan": "growth",
-    "monthlyLimit": 5000,
-    "currentUsage": 3456,
-    "remainingUsage": 1544,
+    "plan": "basic",
+    "bundleLoads": {
+      "limit": 5000,
+      "used": 3200,
+      "remaining": 1800
+    },
+    "messages": {
+      "limit": 100000,
+      "used": 56000,
+      "remaining": 44000
+    },
+    "apiCalls": {
+      "limit": 250000,
+      "used": 123000,
+      "remaining": 127000
+    },
     "walletCredits": 100.00,
-    "overageRate": 0.015,
+    "overageRates": {
+      "bundleLoads": 0.30,
+      "messages": 0.002,
+      "apiCalls": 0.00015
+    },
     "status": "active",
     "createdAt": "2024-01-01",
     "billingCycle": "quarterly",
-    "nextBillingDate": "2024-04-01"
+    "nextBillingDate": "2024-04-01",
+    "monthlyFee": 299.00
   },
   {
     "id": "ws_fashionhub_sales",
@@ -69,15 +137,32 @@
     "name": "Sales & Support",
     "description": "Customer sales and support",
     "plan": "premium",
-    "monthlyLimit": 10000,
-    "currentUsage": 8900,
-    "remainingUsage": 1100,
+    "bundleLoads": {
+      "limit": 25000,
+      "used": 22000,
+      "remaining": 3000
+    },
+    "messages": {
+      "limit": 500000,
+      "used": 389000,
+      "remaining": 111000
+    },
+    "apiCalls": {
+      "limit": 1000000,
+      "used": 687000,
+      "remaining": 313000
+    },
     "walletCredits": 75.50,
-    "overageRate": 0.01,
+    "overageRates": {
+      "bundleLoads": 0.25,
+      "messages": 0.0015,
+      "apiCalls": 0.0001
+    },
     "status": "active",
     "createdAt": "2024-01-05",
     "billingCycle": "annual",
-    "nextBillingDate": "2025-01-05"
+    "nextBillingDate": "2025-01-05",
+    "monthlyFee": 2499.00
   },
   {
     "id": "ws_fashionhub_personal",
@@ -85,14 +170,31 @@
     "name": "Personal Shopper",
     "description": "VIP customer styling service",
     "plan": "enterprise",
-    "monthlyLimit": 50000,
-    "currentUsage": 12340,
-    "remainingUsage": 37660,
+    "bundleLoads": {
+      "limit": 100000,
+      "used": 45000,
+      "remaining": 55000
+    },
+    "messages": {
+      "limit": 2000000,
+      "used": 890000,
+      "remaining": 1110000
+    },
+    "apiCalls": {
+      "limit": 5000000,
+      "used": 1560000,
+      "remaining": 3440000
+    },
     "walletCredits": 500.00,
-    "overageRate": 0.008,
+    "overageRates": {
+      "bundleLoads": 0.20,
+      "messages": 0.001,
+      "apiCalls": 0.00008
+    },
     "status": "active",
     "createdAt": "2024-01-10",
     "billingCycle": "annual",
-    "nextBillingDate": "2025-01-10"
+    "nextBillingDate": "2025-01-10",
+    "monthlyFee": 0
   }
 ]

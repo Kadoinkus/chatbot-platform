@@ -1,0 +1,112 @@
+3D MASCOT TEMPLATES - NOTSO.AI MARKETPLACE
+============================================
+
+Available 3D mascot templates in the platform:
+
+1. MAYA PROFESSIONAL
+   - Type: Humanoid
+   - Studio: Notso (In-house)
+   - Description: Elegant humanoid mascot with professional business attire and warm expressions
+   - Features: Business Attire, 24 Expressions, Hand Gestures, 4K Textures
+   - Animations: 35
+   - Expressions: 24
+   - Price: Free
+   - Status: Popular
+   - Rating: 4.8/5 (2,847 reviews)
+
+2. ZARA BLOB COMPANION
+   - Type: Blob
+   - Studio: Berlin Studio
+   - Description: Friendly blob mascot with smooth morphing animations and playful expressions
+   - Features: Morphing Animations, Bounce Physics, Color Shifting, Cute Expressions
+   - Animations: 28
+   - Expressions: 16
+   - Price: $39
+   - Status: Popular
+   - Rating: 4.9/5 (1,923 reviews)
+
+3. GEOMETRIC NAVIGATOR
+   - Type: Geometric
+   - Studio: Notso (In-house)
+   - Description: Abstract geometric mascot with crystalline structure and dynamic transformations
+   - Features: Crystal Transforms, Light Refraction, Faceted Design, Holographic Effects
+   - Animations: 42
+   - Expressions: 12
+   - Price: Free
+   - Rating: 4.7/5 (3,421 reviews)
+
+4. REX THE RETRIEVER
+   - Type: Animal (4-legged)
+   - Studio: Animation Works
+   - Description: Adorable golden retriever mascot with realistic fur and tail wagging animations
+   - Features: Fur Physics, Tail Wagging, Panting Animation, Playful Gestures
+   - Animations: 22
+   - Expressions: 18
+   - Price: $25
+   - Status: New
+   - Rating: 4.6/5 (892 reviews)
+
+5. PHOENIX THE FIREBIRD
+   - Type: Fantasy
+   - Studio: Pixel Dreams
+   - Description: Majestic phoenix with flame particles and soaring flight animations
+   - Features: Particle Effects, Wing Flapping, Fire Trails, Mythical Presence
+   - Animations: 31
+   - Expressions: 20
+   - Price: $49
+   - Status: New
+   - Rating: 4.9/5 (1,567 reviews)
+
+6. PIP THE PENGUIN
+   - Type: Animal (2-legged)
+   - Studio: Creative Labs
+   - Description: Cheerful penguin mascot with sliding animations and winter-themed expressions
+   - Features: Ice Sliding, Flipper Gestures, Snow Effects, Waddle Walk
+   - Animations: 45
+   - Expressions: 26
+   - Price: $35
+   - Status: Popular
+   - Rating: 4.8/5 (2,156 reviews)
+
+7. ORION MECH UNIT
+   - Type: Robot/Mech
+   - Studio: Digital Mascots Co
+   - Description: Futuristic robot mascot with LED displays and mechanical transformation sequences
+   - Features: LED Displays, Mechanical Sounds, Transformation, Holographic UI
+   - Animations: 26
+   - Expressions: 14
+   - Price: $19
+   - Rating: 4.5/5 (743 reviews)
+
+8. FLUX ABSTRACT FORM
+   - Type: Abstract
+   - Studio: Berlin Studio
+   - Description: Flowing abstract mascot with liquid-like movements and color-shifting properties
+   - Features: Fluid Dynamics, Color Morphing, Abstract Forms, Particle Systems
+   - Animations: 38
+   - Expressions: 10
+   - Price: $32
+   - Status: New
+   - Rating: 4.7/5 (1,834 reviews)
+
+============================================
+MASCOT TYPES AVAILABLE:
+- Humanoid
+- Blob
+- Abstract
+- Animal (4-legged)
+- Animal (2-legged)
+- Robot/Mech
+- Fantasy
+- Geometric
+
+PARTNER STUDIOS:
+- Notso (In-house)
+- Berlin Studio
+- Animation Works
+- Pixel Dreams
+- Creative Labs
+- Digital Mascots Co
+
+============================================
+Note: These templates are available in the Marketplace section of the platform.

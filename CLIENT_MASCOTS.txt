@@ -1,0 +1,119 @@
+EXISTING CLIENT MASCOTS - NOTSO.AI PLATFORM
+============================================
+
+JUMBO (Client ID: c1)
+----------------------
+Company Colors: Yellow (#FFD700)
+
+1. LIZA
+   - Workspace: Customer Service
+   - Status: Live
+   - Description: Customer service bot for general inquiries
+   - Total Conversations: 482
+   - Performance Metrics:
+     * Response Time: 1.2s
+     * Resolution Rate: 82%
+     * Customer Satisfaction: 4.5/5
+
+2. REMCO
+   - Workspace: Customer Service
+   - Status: Live
+   - Description: Technical support specialist bot
+   - Total Conversations: 324
+   - Performance Metrics:
+     * Response Time: 0.8s
+     * Resolution Rate: 88%
+     * Customer Satisfaction: 4.7/5
+
+3. SARAH
+   - Workspace: HR
+   - Status: Live
+   - Description: HR assistant for internal queries
+   - Total Conversations: 156
+   - Performance Metrics:
+     * Response Time: 1.0s
+     * Resolution Rate: 80%
+     * Customer Satisfaction: 4.6/5
+
+4. MAX
+   - Workspace: Store
+   - Status: Live
+   - Description: Store information and locator bot
+   - Total Conversations: 89
+   - Performance Metrics:
+     * Response Time: 0.5s
+     * Resolution Rate: 95%
+     * Customer Satisfaction: 4.9/5
+
+============================================
+
+HITAPES (Client ID: c2)
+------------------------
+Company Colors: Blue (#0EA5E9)
+
+1. VINNY
+   - Workspace: Main
+   - Status: Live
+   - Description: Sales assistant and product recommendations
+   - Total Conversations: 322
+   - Performance Metrics:
+     * Response Time: 0.9s
+     * Resolution Rate: 85%
+     * Customer Satisfaction: 4.8/5
+
+2. TECH
+   - Workspace: Main
+   - Status: Paused
+   - Description: Technical support and troubleshooting
+   - Total Conversations: 0
+   - Performance Metrics:
+     * Response Time: N/A
+     * Resolution Rate: N/A
+     * Customer Satisfaction: N/A
+
+============================================
+
+HAPPINESSBUREAU (Client ID: c3)
+--------------------------------
+Company Colors: Red (#EF4444)
+
+1. STELLA
+   - Workspace: Sales
+   - Status: Live
+   - Description: Fashion advisor and sales assistant
+   - Total Conversations: 567
+   - Performance Metrics:
+     * Response Time: 1.1s
+     * Resolution Rate: 83%
+     * Customer Satisfaction: 4.7/5
+
+2. JOY
+   - Workspace: Personal
+   - Status: Live
+   - Description: Personal styling consultant for VIP customers
+   - Total Conversations: 234
+   - Performance Metrics:
+     * Response Time: 0.7s
+     * Resolution Rate: 92%
+     * Customer Satisfaction: 4.9/5
+
+============================================
+
+SUMMARY
+-------
+Total Active Mascots: 7
+Total Paused Mascots: 1
+Total Mascots: 8
+
+By Client:
+- Jumbo: 4 mascots (all active)
+- HiTapes: 2 mascots (1 active, 1 paused)
+- Happinessbureau: 2 mascots (all active)
+
+Best Performing Mascots:
+- Highest Resolution Rate: Max (Jumbo) - 95%
+- Fastest Response Time: Max (Jumbo) - 0.5s
+- Highest Customer Satisfaction: Max (Jumbo) & Joy (Happinessbureau) - 4.9/5
+
+============================================
+Note: These are the currently deployed mascots for each client organization.

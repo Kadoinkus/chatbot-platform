@@ -91,7 +91,9 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
   const getTotalMonthlyFee = () => {
     return workspaces.reduce((total, ws) => {
       const planConfig = getPlanConfig(ws.plan);
-      return total + (planConfig.price === 0 ? 0 : planConfig.price);
+      const planCost = planConfig.price === 0 ? 0 : planConfig.price;
+      const mascotCost = getWorkspaceMascotTotal(ws.id, ws.plan);
+      return total + planCost + mascotCost;
     }, 0);
   };
 
@@ -125,6 +127,38 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
       enterprise: { name: 'Enterprise', icon: Shield, color: 'text-orange-600', price: 0, currency: 'EUR' }
     };
     return configs[plan as keyof typeof configs] || configs.starter;
+  };
+
+  // Mock mascot pricing data (in real app, this would come from bot data)
+  const getMascotPricing = (botId: string) => {
+    const mascotPricing = {
+      'm1': { type: 'notso-pro', studioPrice: 0, studioName: 'Notso AI' },
+      'm2': { type: 'notso-standard', studioPrice: 0, studioName: 'Notso AI' },
+      'm3': { type: 'third-party', studioPrice: 45, studioName: 'Animation Studio X' },
+      'm4': { type: 'third-party', studioPrice: 25, studioName: 'Creative Mascots Co' },
+      'm5': { type: 'notso-standard', studioPrice: 0, studioName: 'Notso AI' },
+      'm6': { type: 'notso-pro', studioPrice: 0, studioName: 'Notso AI' },
+      'm7': { type: 'third-party', studioPrice: 35, studioName: 'Digital Arts Studio' },
+      'm8': { type: 'third-party', studioPrice: 60, studioName: 'Premium Animations' }
+    };
+    return mascotPricing[botId as keyof typeof mascotPricing] || { type: 'notso-standard', studioPrice: 0, studioName: 'Notso AI' };
+  };
+
+  const getMascotCost = (botId: string, workspacePlan: string) => {
+    const mascot = getMascotPricing(botId);
+    
+    if (mascot.type === 'notso-standard') return 0;
+    
+    if (mascot.type === 'notso-pro') {
+      return workspacePlan === 'starter' ? 30 : 0; // Free for Basic+
+    }
+    
+    return mascot.studioPrice; // Third-party price
+  };
+
+  const getWorkspaceMascotTotal = (workspaceId: string, plan: string) => {
+    const bots = workspaceBots[workspaceId] || [];
+    return bots.reduce((total, bot) => total + getMascotCost(bot.id, plan), 0);
   };
 
   return (
@@ -282,10 +316,20 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                     <div className="flex items-center gap-6">
                       <div className="text-right">
                         <p className="text-sm text-gray-500">Monthly Cost</p>
-                        <p className="text-lg font-semibold">
-                          {getPlanConfig(workspace.plan).price === 0 ? 'On Request' : 
-                           `€${getPlanConfig(workspace.plan).price.toLocaleString()}`}
-                        </p>
+                        {getPlanConfig(workspace.plan).price === 0 ? (
+                          <p className="text-lg font-semibold">On Request</p>
+                        ) : (
+                          <div>
+                            <p className="text-lg font-semibold">
+                              €{(getPlanConfig(workspace.plan).price + getWorkspaceMascotTotal(workspace.id, workspace.plan)).toLocaleString()}
+                            </p>
+                            {getWorkspaceMascotTotal(workspace.id, workspace.plan) > 0 && (
+                              <p className="text-xs text-gray-500">
+                                Plan: €{getPlanConfig(workspace.plan).price.toLocaleString()} + Mascots: €{getWorkspaceMascotTotal(workspace.id, workspace.plan)}
+                              </p>
+                            )}
+                          </div>
+                        )}
                       </div>
                       <div className="text-right">
                         <p className="text-sm text-gray-500">Credits</p>
@@ -429,31 +473,78 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                         </h4>
                         {bots.length > 0 ? (
                           <div className="space-y-2 mb-6">
-                            {bots.map(bot => (
-                              <div key={bot.id} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
-                                <img 
-                                  src={bot.image} 
-                                  alt={bot.name}
-                                  className="w-10 h-10 rounded-full"
-                                />
-                                <div className="flex-1">
-                                  <p className="text-sm font-medium">{bot.name}</p>
-                                  <p className="text-xs text-gray-500">{bot.description}</p>
+                            {bots.map(bot => {
+                              const mascotInfo = getMascotPricing(bot.id);
+                              const mascotCost = getMascotCost(bot.id, workspace.plan);
+                              const isIncluded = mascotInfo.type === 'notso-pro' && workspace.plan !== 'starter';
+                              
+                              return (
+                                <div key={bot.id} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
+                                  <img 
+                                    src={bot.image} 
+                                    alt={bot.name}
+                                    className="w-10 h-10 rounded-full"
+                                  />
+                                  <div className="flex-1">
+                                    <div className="flex items-center gap-2 mb-1">
+                                      <p className="text-sm font-medium">{bot.name}</p>
+                                      <span className={`w-2 h-2 rounded-full ${
+                                        bot.status === 'Live' ? 'bg-green-500' : 
+                                        bot.status === 'Paused' ? 'bg-yellow-500' : 'bg-red-500'
+                                      }`} />
+                                    </div>
+                                    <p className="text-xs text-gray-500 mb-1">{bot.description}</p>
+                                    <div className="flex items-center gap-2">
+                                      <span className="text-xs text-gray-600">{mascotInfo.studioName}</span>
+                                      {mascotInfo.type === 'notso-pro' && (
+                                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">Pro</span>
+                                      )}
+                                      {mascotInfo.type === 'third-party' && (
+                                        <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">3rd Party</span>
+                                      )}
+                                    </div>
+                                  </div>
+                                  <div className="text-right">
+                                    {mascotCost === 0 ? (
+                                      <span className="text-sm font-medium text-green-600">
+                                        {isIncluded ? 'Included' : 'Free'}
+                                      </span>
+                                    ) : (
+                                      <span className="text-sm font-medium text-gray-900">€{mascotCost}/mo</span>
+                                    )}
+                                  </div>
                                 </div>
-                                <div className="flex items-center gap-2">
-                                  <span className={`w-2 h-2 rounded-full ${
-                                    bot.status === 'Live' ? 'bg-green-500' : 
-                                    bot.status === 'Paused' ? 'bg-yellow-500' : 'bg-red-500'
-                                  }`} />
-                                  <span className="text-xs text-gray-500">{bot.status}</span>
-                                </div>
-                              </div>
-                            ))}
+                              );
+                            })}
                           </div>
                         ) : (
                           <div className="bg-white rounded-lg border border-gray-200 p-6 text-center mb-6">
                             <BotIcon size={32} className="text-gray-400 mx-auto mb-2" />
                             <p className="text-sm text-gray-500">No bots in this workspace</p>
+                          </div>
+                        )}
+
+                        {/* Mascot Cost Summary */}
+                        {bots.length > 0 && (
+                          <div className="bg-gray-100 rounded-lg p-4 mb-6">
+                            <div className="flex justify-between items-center mb-2">
+                              <span className="text-sm font-medium text-gray-700">Mascot Costs</span>
+                              <span className="text-sm font-bold text-gray-900">
+                                €{getWorkspaceMascotTotal(workspace.id, workspace.plan)}/mo
+                              </span>
+                            </div>
+                            <div className="text-xs text-gray-600 space-y-1">
+                              {bots.filter(bot => getMascotCost(bot.id, workspace.plan) > 0).length > 0 ? (
+                                bots.filter(bot => getMascotCost(bot.id, workspace.plan) > 0).map(bot => (
+                                  <div key={bot.id} className="flex justify-between">
+                                    <span>{bot.name} ({getMascotPricing(bot.id).studioName})</span>
+                                    <span>€{getMascotCost(bot.id, workspace.plan)}</span>
+                                  </div>
+                                ))
+                              ) : (
+                                <span className="text-green-600">All mascots included in plan or free</span>
+                              )}
+                            </div>
                           </div>
                         )}
 
@@ -495,19 +586,28 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
             <div className="space-y-3">
               {workspaces.map(workspace => {
                 const planConfig = getPlanConfig(workspace.plan);
+                const mascotCost = getWorkspaceMascotTotal(workspace.id, workspace.plan);
+                const totalCost = planConfig.price + mascotCost;
+                
                 return (
-                  <div key={workspace.id} className="flex justify-between items-center py-2 border-b border-gray-100 last:border-b-0">
-                    <div className="flex items-center gap-3">
-                      <planConfig.icon size={16} className={planConfig.color} />
-                      <span className="font-medium">{workspace.name}</span>
-                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${planColors[workspace.plan]}`}>
-                        {planConfig.name}
+                  <div key={workspace.id} className="py-3 border-b border-gray-100 last:border-b-0">
+                    <div className="flex justify-between items-center">
+                      <div className="flex items-center gap-3">
+                        <planConfig.icon size={16} className={planConfig.color} />
+                        <span className="font-medium">{workspace.name}</span>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${planColors[workspace.plan]}`}>
+                          {planConfig.name}
+                        </span>
+                      </div>
+                      <span className="font-semibold">
+                        {planConfig.price === 0 ? 'On Request' : `€${totalCost.toLocaleString()}`}
                       </span>
                     </div>
-                    <span className="font-semibold">
-                      {planConfig.price === 0 ? 'On Request' : 
-                       `€${planConfig.price.toLocaleString()}`}
-                    </span>
+                    {planConfig.price > 0 && mascotCost > 0 && (
+                      <div className="flex justify-between items-center text-xs text-gray-500 mt-1 pl-8">
+                        <span>Plan: €{planConfig.price.toLocaleString()} + Mascots: €{mascotCost}</span>
+                      </div>
+                    )}
                   </div>
                 );
               })}

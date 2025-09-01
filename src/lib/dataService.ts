@@ -7,9 +7,29 @@ export type BotMetrics = {
   csat: number;
 };
 
+export type PlanType = 'starter' | 'growth' | 'premium' | 'enterprise';
+
+export type Workspace = {
+  id: string;
+  clientId: string;
+  name: string;
+  description?: string;
+  plan: PlanType;
+  monthlyLimit: number;
+  currentUsage: number;
+  remainingUsage: number;
+  walletCredits: number;
+  overageRate: number;
+  status: 'active' | 'suspended' | 'trial';
+  createdAt: string;
+  billingCycle: 'monthly' | 'quarterly' | 'annual';
+  nextBillingDate: string;
+};
+
 export type Bot = {
   id: string;
   clientId: string;
+  workspaceId: string;
   name: string;
   image: string;
   status: 'Live' | 'Paused' | 'Needs finalization';
@@ -24,6 +44,7 @@ export type Client = {
   slug: string;
   palette: Palette;
   login: { email: string; password: string };
+  defaultWorkspaceId?: string;
 };
 
 export type User = {
@@ -107,6 +128,7 @@ export type Message = {
 // Data loading functions
 let clientsData: Client[] | null = null;
 let botsData: Bot[] | null = null;
+let workspacesData: Workspace[] | null = null;
 let usersData: User[] | null = null;
 let metricsData: MetricsData | null = null;
 let conversationsData: Conversation[] | null = null;
@@ -127,6 +149,14 @@ export async function loadBots(): Promise<Bot[]> {
   const response = await fetch('/data/bots.json');
   botsData = await response.json();
   return botsData!;
+}
+
+export async function loadWorkspaces(): Promise<Workspace[]> {
+  if (workspacesData) return workspacesData;
+  
+  const response = await fetch('/data/workspaces.json');
+  workspacesData = await response.json();
+  return workspacesData!;
 }
 
 export async function loadUsers(): Promise<User[]> {
@@ -182,6 +212,21 @@ export async function getClientById(id: string): Promise<Client | undefined> {
 export async function getBotsByClientId(clientId: string): Promise<Bot[]> {
   const bots = await loadBots();
   return bots.filter(b => b.clientId === clientId);
+}
+
+export async function getBotsByWorkspaceId(workspaceId: string): Promise<Bot[]> {
+  const bots = await loadBots();
+  return bots.filter(b => b.workspaceId === workspaceId);
+}
+
+export async function getWorkspacesByClientId(clientId: string): Promise<Workspace[]> {
+  const workspaces = await loadWorkspaces();
+  return workspaces.filter(w => w.clientId === clientId);
+}
+
+export async function getWorkspaceById(id: string): Promise<Workspace | undefined> {
+  const workspaces = await loadWorkspaces();
+  return workspaces.find(w => w.id === id);
 }
 
 export async function getBotById(id: string): Promise<Bot | undefined> {

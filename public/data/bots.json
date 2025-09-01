@@ -2,6 +2,7 @@
   {
     "id": "m1",
     "clientId": "c1",
+    "workspaceId": "ws_jumbo_customer_service",
     "name": "Liza",
     "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Liza&backgroundColor=FFD700",
     "status": "Live",
@@ -16,6 +17,7 @@
   {
     "id": "m2",
     "clientId": "c1",
+    "workspaceId": "ws_jumbo_customer_service",
     "name": "Remco",
     "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Remco&backgroundColor=FFD700",
     "status": "Live",
@@ -29,7 +31,38 @@
   },
   {
     "id": "m3",
+    "clientId": "c1",
+    "workspaceId": "ws_jumbo_hr",
+    "name": "Sarah",
+    "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah&backgroundColor=FFD700",
+    "status": "Live",
+    "conversations": 156,
+    "description": "HR assistant for internal queries",
+    "metrics": {
+      "responseTime": 1.0,
+      "resolutionRate": 80,
+      "csat": 4.6
+    }
+  },
+  {
+    "id": "m4",
+    "clientId": "c1",
+    "workspaceId": "ws_jumbo_store",
+    "name": "Max",
+    "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Max&backgroundColor=FFD700",
+    "status": "Live",
+    "conversations": 89,
+    "description": "Store information and locator bot",
+    "metrics": {
+      "responseTime": 0.5,
+      "resolutionRate": 95,
+      "csat": 4.9
+    }
+  },
+  {
+    "id": "m5",
     "clientId": "c2",
+    "workspaceId": "ws_techstart_main",
     "name": "Vinny",
     "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Vinny&backgroundColor=0EA5E9",
     "status": "Live",
@@ -42,13 +75,14 @@
     }
   },
   {
-    "id": "m4",
+    "id": "m6",
     "clientId": "c2",
-    "name": "Max",
-    "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Max&backgroundColor=0EA5E9",
+    "workspaceId": "ws_techstart_main",
+    "name": "Tech",
+    "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Tech&backgroundColor=0EA5E9",
     "status": "Paused",
     "conversations": 0,
-    "description": "Onboarding specialist for new customers",
+    "description": "Technical support and troubleshooting",
     "metrics": {
       "responseTime": 0,
       "resolutionRate": 0,
@@ -56,31 +90,33 @@
     }
   },
   {
-    "id": "m5",
+    "id": "m7",
     "clientId": "c3",
-    "name": "HappyBot",
-    "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=HappyBot&backgroundColor=EF4444",
-    "status": "Needs finalization",
-    "conversations": 0,
-    "description": "Workshop coordinator and event management",
+    "workspaceId": "ws_fashionhub_sales",
+    "name": "Stella",
+    "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Stella&backgroundColor=EF4444",
+    "status": "Live",
+    "conversations": 567,
+    "description": "Fashion advisor and sales assistant",
     "metrics": {
-      "responseTime": 1.5,
-      "resolutionRate": 75,
-      "csat": 4.4
+      "responseTime": 1.1,
+      "resolutionRate": 83,
+      "csat": 4.7
     }
   },
   {
-    "id": "m6",
+    "id": "m8",
     "clientId": "c3",
+    "workspaceId": "ws_fashionhub_personal",
     "name": "Joy",
     "image": "https://api.dicebear.com/7.x/avataaars/svg?seed=Joy&backgroundColor=EF4444",
     "status": "Live",
-    "conversations": 156,
-    "description": "HR assistant for internal queries",
+    "conversations": 234,
+    "description": "Personal styling consultant for VIP customers",
     "metrics": {
-      "responseTime": 1.0,
-      "resolutionRate": 80,
-      "csat": 4.6
+      "responseTime": 0.7,
+      "resolutionRate": 92,
+      "csat": 4.9
     }
   }
 ]

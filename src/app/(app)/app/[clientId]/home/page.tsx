@@ -1,43 +1,40 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { getClientById } from '@/lib/dataService';
+import { getClientById, getWorkspacesByClientId, getBotsByWorkspaceId } from '@/lib/dataService';
+import type { Client, Workspace, Bot } from '@/lib/dataService';
 import Sidebar from '@/components/Sidebar';
-import { 
-  Bot, MessageSquare, Users, TrendingUp, Plus, Store, 
-  ArrowRight, Activity, Clock, CheckCircle, Zap
-} from 'lucide-react';
+import AuthGuard from '@/components/AuthGuard';
+import { Plus, Search, Building2, Activity, CreditCard, ChevronRight, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
-import type { Client } from '@/lib/dataService';
 
 export default function HomePage({ params }: { params: { clientId: string } }) {
+  const [searchTerm, setSearchTerm] = useState('');
   const [client, setClient] = useState<Client | undefined>();
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [workspaceBots, setWorkspaceBots] = useState<Record<string, Bot[]>>({});
   const [loading, setLoading] = useState(true);
-
-  const [dashboardStats] = useState({
-    totalBots: 3,
-    totalConversations: 12847,
-    activeUsers: 2156,
-    responseRate: 94.2,
-    recentActivity: [
-      { type: 'conversation', user: 'John D.', bot: 'Customer Support', time: '2 min ago' },
-      { type: 'bot_created', user: 'You', bot: 'Sales Assistant', time: '1 hour ago' },
-      { type: 'conversation', user: 'Sarah M.', bot: 'FAQ Bot', time: '3 hours ago' },
-      { type: 'user_joined', user: 'Mike R.', time: '5 hours ago' },
-    ],
-    topBots: [
-      { name: 'Customer Support', conversations: 8234, growth: '+12%' },
-      { name: 'Sales Assistant', conversations: 3421, growth: '+8%' },
-      { name: 'FAQ Bot', conversations: 1192, growth: '+24%' },
-    ]
-  });
-
+  
   useEffect(() => {
     async function loadData() {
       try {
-        const clientData = await getClientById(params.clientId);
+        const [clientData, workspacesData] = await Promise.all([
+          getClientById(params.clientId),
+          getWorkspacesByClientId(params.clientId)
+        ]);
+        
         setClient(clientData);
+        setWorkspaces(workspacesData || []);
+        
+        // Load bots for each workspace
+        const botsData: Record<string, Bot[]> = {};
+        for (const workspace of workspacesData || []) {
+          const bots = await getBotsByWorkspaceId(workspace.id);
+          botsData[workspace.id] = bots || [];
+        }
+        setWorkspaceBots(botsData);
+        
       } catch (error) {
-        console.error('Error loading client:', error);
+        console.error('Error loading data:', error);
       } finally {
         setLoading(false);
       }
@@ -48,236 +45,210 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
   if (loading) {
     return <div className="p-6">Loading...</div>;
   }
-
+  
   if (!client) {
     return <div className="p-6">Client not found</div>;
   }
+  
+  const filteredWorkspaces = workspaces.filter(workspace =>
+    workspace.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    workspace.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    (workspaceBots[workspace.id] || []).some(bot => 
+      bot.name.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+  );
+
+  const planColors = {
+    starter: 'bg-gray-100 text-gray-700',
+    growth: 'bg-blue-100 text-blue-700',
+    premium: 'bg-purple-100 text-purple-700',
+    enterprise: 'bg-orange-100 text-orange-700'
+  };
+
+  const getTotalUsage = () => {
+    return workspaces.reduce((total, ws) => total + ws.currentUsage, 0);
+  };
+
+  const getTotalBots = () => {
+    return Object.values(workspaceBots).reduce((total, bots) => total + bots.length, 0);
+  };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar clientId={client.id} />
+    <AuthGuard clientId={params.clientId}>
+      <div className="flex min-h-screen bg-gray-50">
+        <Sidebar clientId={client.id} />
       
-      <main className="flex-1 lg:ml-16">
+      <main className="flex-1 lg:ml-16 min-h-screen">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          {/* Welcome Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Welcome back!</h1>
-            <p className="text-gray-600">Here's what's happening with your chatbots today.</p>
+          <div className="mb-6 lg:mb-8">
+            <h1 className="text-2xl lg:text-3xl font-bold mb-2">Dashboard</h1>
+            <p className="text-gray-600">Manage your workspaces and AI assistants for {client.name}</p>
           </div>
 
-          {/* Key Stats */}
-          <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
+          {/* Quick Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
+              <div className="flex items-center justify-between mb-2">
+                <span className="text-sm text-gray-600">Total Workspaces</span>
+                <Building2 size={18} className="text-gray-400" />
+              </div>
+              <p className="text-2xl font-bold">{workspaces.length}</p>
+              <p className="text-xs text-gray-500 mt-1">
+                {workspaces.filter(ws => ws.status === 'active').length} active
+              </p>
+            </div>
+
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-gray-600">Total Bots</span>
-                <Bot size={16} className="text-gray-400" />
+                <BotIcon size={18} className="text-gray-400" />
               </div>
-              <p className="text-3xl font-bold">{dashboardStats.totalBots}</p>
+              <p className="text-2xl font-bold">{getTotalBots()}</p>
+              <p className="text-xs text-gray-500 mt-1">Across all workspaces</p>
             </div>
-            
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
+
+            <div className="bg-white rounded-xl border border-gray-200 p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Conversations</span>
-                <MessageSquare size={16} className="text-blue-400" />
+                <span className="text-sm text-gray-600">This Month</span>
+                <Activity size={18} className="text-gray-400" />
               </div>
-              <p className="text-3xl font-bold">{dashboardStats.totalConversations.toLocaleString()}</p>
-            </div>
-            
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Active Users</span>
-                <Users size={16} className="text-green-400" />
-              </div>
-              <p className="text-3xl font-bold">{dashboardStats.activeUsers.toLocaleString()}</p>
-            </div>
-            
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Response Rate</span>
-                <TrendingUp size={16} className="text-purple-400" />
-              </div>
-              <p className="text-3xl font-bold">{dashboardStats.responseRate}%</p>
+              <p className="text-2xl font-bold">{getTotalUsage().toLocaleString()}</p>
+              <p className="text-xs text-gray-500 mt-1">Conversations handled</p>
             </div>
           </div>
-
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-            {/* Quick Actions */}
-            <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-                <h3 className="font-semibold mb-4">Quick Actions</h3>
-                <div className="space-y-3">
-                  <Link
-                    href={`/app/${client.id}?create=true`}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-black text-white rounded-lg flex items-center justify-center">
-                        <Plus size={18} />
-                      </div>
-                      <div>
-                        <p className="font-medium">Create New Bot</p>
-                        <p className="text-sm text-gray-600">Start from scratch</p>
-                      </div>
-                    </div>
-                    <ArrowRight size={16} className="text-gray-400" />
-                  </Link>
-                  
-                  <Link
-                    href={`/app/${client.id}/marketplace`}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-blue-100 text-blue-600 rounded-lg flex items-center justify-center">
-                        <Store size={18} />
-                      </div>
-                      <div>
-                        <p className="font-medium">Browse Templates</p>
-                        <p className="text-sm text-gray-600">Pre-built solutions</p>
-                      </div>
-                    </div>
-                    <ArrowRight size={16} className="text-gray-400" />
-                  </Link>
-                  
-                  <Link
-                    href={`/app/${client.id}/analytics`}
-                    className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50 transition-colors"
-                  >
-                    <div className="flex items-center gap-3">
-                      <div className="w-10 h-10 bg-green-100 text-green-600 rounded-lg flex items-center justify-center">
-                        <Activity size={18} />
-                      </div>
-                      <div>
-                        <p className="font-medium">View Analytics</p>
-                        <p className="text-sm text-gray-600">Performance insights</p>
-                      </div>
-                    </div>
-                    <ArrowRight size={16} className="text-gray-400" />
-                  </Link>
-                </div>
-              </div>
-
-              {/* Top Performing Bots */}
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold">Top Performing Bots</h3>
-                  <Link href={`/app/${client.id}`} className="text-sm text-gray-600 hover:text-gray-900">
-                    View all
-                  </Link>
-                </div>
-                <div className="space-y-3">
-                  {dashboardStats.topBots.map((bot, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center">
-                          <Bot size={16} className="text-gray-600" />
-                        </div>
-                        <div>
-                          <p className="font-medium text-sm">{bot.name}</p>
-                          <p className="text-xs text-gray-600">{bot.conversations} conversations</p>
-                        </div>
-                      </div>
-                      <span className="text-xs font-medium text-green-600">{bot.growth}</span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+          
+          <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6 mb-6">
+            <div className="relative flex-1 max-w-md">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <input
+                type="text"
+                placeholder="Search workspaces and bots..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+              />
             </div>
-
-            {/* Recent Activity */}
-            <div className="lg:col-span-2">
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
-                <div className="flex items-center justify-between mb-6">
-                  <h3 className="font-semibold">Recent Activity</h3>
-                  <Link href={`/app/${client.id}/conversations`} className="text-sm text-gray-600 hover:text-gray-900">
-                    View all
-                  </Link>
-                </div>
-                
-                <div className="space-y-4">
-                  {dashboardStats.recentActivity.map((activity, index) => (
-                    <div key={index} className="flex items-start gap-4 p-4 border border-gray-100 rounded-lg">
-                      <div className="flex-shrink-0">
-                        {activity.type === 'conversation' && (
-                          <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                            <MessageSquare size={16} className="text-blue-600" />
-                          </div>
-                        )}
-                        {activity.type === 'bot_created' && (
-                          <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                            <Bot size={16} className="text-green-600" />
-                          </div>
-                        )}
-                        {activity.type === 'user_joined' && (
-                          <div className="w-10 h-10 bg-purple-100 rounded-full flex items-center justify-center">
-                            <Users size={16} className="text-purple-600" />
-                          </div>
-                        )}
-                      </div>
-                      
-                      <div className="flex-1">
-                        <div className="flex items-center justify-between">
-                          <div>
-                            {activity.type === 'conversation' && (
-                              <p className="font-medium">
-                                <span className="text-gray-900">{activity.user}</span> started a conversation with{' '}
-                                <span className="text-gray-900">{activity.bot}</span>
-                              </p>
-                            )}
-                            {activity.type === 'bot_created' && (
-                              <p className="font-medium">
-                                <span className="text-gray-900">{activity.user}</span> created{' '}
-                                <span className="text-gray-900">{activity.bot}</span>
-                              </p>
-                            )}
-                            {activity.type === 'user_joined' && (
-                              <p className="font-medium">
-                                <span className="text-gray-900">{activity.user}</span> joined your team
-                              </p>
-                            )}
-                          </div>
-                          <span className="text-sm text-gray-500 flex items-center gap-1">
-                            <Clock size={12} />
-                            {activity.time}
-                          </span>
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-
-                {/* Getting Started for New Users */}
-                <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl border border-blue-100">
-                  <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-blue-600 rounded-full flex items-center justify-center flex-shrink-0">
-                      <Zap size={20} className="text-white" />
-                    </div>
+            
+            <button className="flex items-center justify-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors">
+              <Plus size={20} />
+              New Workspace
+            </button>
+          </div>
+          
+          {/* Workspace Cards */}
+          <div className="space-y-4">
+            {filteredWorkspaces.map(workspace => {
+              const bots = workspaceBots[workspace.id] || [];
+              const usagePercentage = (workspace.currentUsage / workspace.monthlyLimit) * 100;
+              
+              return (
+                <div key={workspace.id} className="bg-white rounded-xl border border-gray-200 p-6">
+                  <div className="flex items-start justify-between mb-4">
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-900 mb-2">Ready to supercharge your customer support?</h4>
-                      <p className="text-gray-600 mb-4">
-                        Get started by creating your first bot or browse our marketplace for ready-to-use templates.
-                      </p>
-                      <div className="flex gap-3">
-                        <Link
-                          href={`/app/${client.id}/marketplace`}
-                          className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 text-sm font-medium"
-                        >
-                          Browse Templates
-                        </Link>
-                        <Link
-                          href="/help"
-                          className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-white text-sm font-medium"
-                        >
-                          View Guide
-                        </Link>
+                      <div className="flex items-center gap-3 mb-2">
+                        <h3 className="text-lg font-semibold">{workspace.name}</h3>
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${planColors[workspace.plan]}`}>
+                          {workspace.plan.toUpperCase()}
+                        </span>
+                      </div>
+                      <p className="text-sm text-gray-600 mb-3">{workspace.description}</p>
+                      
+                      <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Bots</p>
+                          <p className="text-lg font-semibold">{bots.length}</p>
+                          <p className="text-xs text-gray-500">
+                            {bots.filter(b => b.status === 'Live').length} active
+                          </p>
+                        </div>
+                        
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Usage</p>
+                          <p className="text-lg font-semibold">
+                            {workspace.currentUsage.toLocaleString()}
+                          </p>
+                          <div className="w-full bg-gray-200 rounded-full h-1.5 mt-1">
+                            <div 
+                              className={`${
+                                usagePercentage > 90 ? 'bg-red-500' : 
+                                usagePercentage > 70 ? 'bg-yellow-500' : 'bg-green-500'
+                              } rounded-full h-1.5`}
+                              style={{ width: `${Math.min(100, usagePercentage)}%` }}
+                            />
+                          </div>
+                        </div>
+                        
+                        <div>
+                          <p className="text-xs text-gray-500 mb-1">Credits</p>
+                          <p className="text-lg font-semibold">€{workspace.walletCredits.toFixed(2)}</p>
+                          <p className="text-xs text-gray-500">Available</p>
+                        </div>
+                        
+                        <div className="flex items-center justify-end">
+                          <Link
+                            href={`/app/${client.id}/workspace/${workspace.id}`}
+                            className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2 text-sm"
+                          >
+                            Manage
+                            <ChevronRight size={14} />
+                          </Link>
+                        </div>
                       </div>
                     </div>
                   </div>
+                  
+                  {/* Bot Preview */}
+                  {bots.length > 0 && (
+                    <div className="border-t border-gray-100 pt-4">
+                      <p className="text-sm font-medium text-gray-700 mb-2">Bots in this workspace:</p>
+                      <div className="flex flex-wrap gap-2">
+                        {bots.slice(0, 4).map(bot => (
+                          <div key={bot.id} className="flex items-center gap-2 px-3 py-1.5 bg-gray-50 rounded-lg text-sm">
+                            <img 
+                              src={bot.image} 
+                              alt={bot.name}
+                              className="w-6 h-6 rounded-full"
+                            />
+                            <span className="font-medium">{bot.name}</span>
+                            <span className={`w-2 h-2 rounded-full ${
+                              bot.status === 'Live' ? 'bg-green-500' : 
+                              bot.status === 'Paused' ? 'bg-yellow-500' : 'bg-red-500'
+                            }`} />
+                          </div>
+                        ))}
+                        {bots.length > 4 && (
+                          <div className="flex items-center px-3 py-1.5 bg-gray-100 rounded-lg text-sm text-gray-600">
+                            +{bots.length - 4} more
+                          </div>
+                        )}
+                      </div>
+                    </div>
+                  )}
                 </div>
-              </div>
-            </div>
+              );
+            })}
           </div>
+          
+          {filteredWorkspaces.length === 0 && workspaces.length === 0 && (
+            <div className="text-center py-12">
+              <Building2 size={48} className="mx-auto text-gray-400 mb-4" />
+              <h3 className="text-lg font-semibold mb-2">No workspaces yet</h3>
+              <p className="text-gray-600 mb-6">Create your first workspace to organize your bots and manage resources.</p>
+              <button className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
+                <Plus size={20} />
+                Create First Workspace
+              </button>
+            </div>
+          )}
+
+          {filteredWorkspaces.length === 0 && workspaces.length > 0 && (
+            <div className="text-center py-12">
+              <p className="text-gray-500">No workspaces found matching your search.</p>
+            </div>
+          )}
         </div>
       </main>
     </div>
+    </AuthGuard>
   );
 }

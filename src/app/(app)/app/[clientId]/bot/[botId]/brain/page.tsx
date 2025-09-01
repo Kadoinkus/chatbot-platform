@@ -614,44 +614,46 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                         </h3>
                         <p className="text-sm text-gray-600 mb-4">Adjust the personality balance to perfectly match your needs.</p>
                         
-                        <div className="space-y-6">
-                          {Object.entries(personalitySpectrums).map(([spectrumKey, spectrum]) => (
-                            <div key={spectrumKey} className="bg-gray-50 p-4 rounded-lg border border-gray-200">
-                              <div className="mb-3">
-                                <label className="text-sm font-medium">{spectrum.name}</label>
-                              </div>
+                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                          <div className="space-y-5">
+                            {Object.entries(personalitySpectrums).map(([spectrumKey, spectrum], index) => (
+                              <div key={spectrumKey} className={index !== Object.entries(personalitySpectrums).length - 1 ? "pb-5 border-b border-gray-200" : ""}>
+                                <div className="mb-3">
+                                  <label className="text-sm font-medium">{spectrum.name}</label>
+                                </div>
 
-                              {/* Clear left/right labels above slider */}
-                              <div className="flex justify-between text-xs font-medium text-gray-600 mb-2">
-                                <span>← {spectrum.left.label}</span>
-                                <span>{spectrum.right.label} →</span>
-                              </div>
-                              
-                              <div className="relative mb-3">
-                                <input
-                                  type="range"
-                                  min="0"
-                                  max="100"
-                                  value={personality[spectrumKey as keyof typeof personality] || 50}
-                                  onChange={(e) => handleSliderChange(spectrumKey, Number(e.target.value))}
-                                  className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                                  style={{
-                                    background: `linear-gradient(to right, #000 0%, #000 ${personality[spectrumKey as keyof typeof personality] || 50}%, #e5e7eb ${personality[spectrumKey as keyof typeof personality] || 50}%, #e5e7eb 100%)`
-                                  }}
-                                />
-                              </div>
-                              
-                              {/* Description text below slider */}
-                              <div className="flex justify-between text-xs text-gray-500">
-                                <div className="text-left max-w-[45%]">
-                                  <span className="text-gray-600">{spectrum.left.description}</span>
+                                {/* Clear left/right labels above slider */}
+                                <div className="flex justify-between text-xs font-medium text-gray-600 mb-2">
+                                  <span>← {spectrum.left.label}</span>
+                                  <span>{spectrum.right.label} →</span>
                                 </div>
-                                <div className="text-right max-w-[45%]">
-                                  <span className="text-gray-600">{spectrum.right.description}</span>
+                                
+                                <div className="relative mb-3">
+                                  <input
+                                    type="range"
+                                    min="0"
+                                    max="100"
+                                    value={personality[spectrumKey as keyof typeof personality] || 50}
+                                    onChange={(e) => handleSliderChange(spectrumKey, Number(e.target.value))}
+                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                    style={{
+                                      background: `linear-gradient(to right, #000 0%, #000 ${personality[spectrumKey as keyof typeof personality] || 50}%, #e5e7eb ${personality[spectrumKey as keyof typeof personality] || 50}%, #e5e7eb 100%)`
+                                    }}
+                                  />
+                                </div>
+                                
+                                {/* Description text below slider */}
+                                <div className="flex justify-between text-xs text-gray-500">
+                                  <div className="text-left max-w-[45%]">
+                                    <span className="text-gray-600">{spectrum.left.description}</span>
+                                  </div>
+                                  <div className="text-right max-w-[45%]">
+                                    <span className="text-gray-600">{spectrum.right.description}</span>
+                                  </div>
                                 </div>
                               </div>
-                            </div>
-                          ))}
+                            ))}
+                          </div>
                         </div>
                         
                         {/* Save Custom Personality */}

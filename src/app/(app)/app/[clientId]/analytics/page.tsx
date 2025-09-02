@@ -4,8 +4,8 @@ import { getClientById, getBotsByClientId, getBotSessionsByClientId, getWorkspac
 import type { Client, Bot, BotSession, Workspace } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import Sidebar from '@/components/Sidebar';
-import { UsageLine, IntentBars } from '@/components/Charts';
-import { Calendar, Download, Filter, TrendingUp, MessageSquare, Clock, Star, Users, AlertTriangle, CheckCircle, ChevronDown, X } from 'lucide-react';
+import { UsageLine, IntentBars, MultiLineChart } from '@/components/Charts';
+import { Calendar, Download, Filter, TrendingUp, MessageSquare, Clock, Star, Users, AlertTriangle, CheckCircle, ChevronDown, X, BarChart3, Target, Settings, FileText } from 'lucide-react';
 
 export default function AnalyticsDashboardPage({ params }: { params: { clientId: string } }) {
   const [client, setClient] = useState<Client | null>(null);
@@ -18,6 +18,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
   const [selectedBots, setSelectedBots] = useState<string[]>(['all']);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [metric, setMetric] = useState('conversations');
+  const [activeTab, setActiveTab] = useState('overview');
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   // Load data
@@ -256,6 +257,16 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
     return weeklyData;
   }, [filteredSessions]);
 
+  // Tab configuration
+  const tabs = [
+    { id: 'overview', label: 'Overview', icon: BarChart3 },
+    { id: 'performance', label: 'Performance', icon: TrendingUp },
+    { id: 'user-journey', label: 'User Journey', icon: Users },
+    { id: 'business-impact', label: 'Business Impact', icon: Target },
+    { id: 'operations', label: 'Operations', icon: Settings },
+    { id: 'reports', label: 'Reports', icon: FileText }
+  ];
+
   if (loading) {
     return <div className="p-6">Loading...</div>;
   }
@@ -436,353 +447,565 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
             </div>
           </div>
 
-          {/* Key Metrics Cards */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6 lg:mb-8">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-blue-100 rounded-lg">
-                  <MessageSquare size={24} className="text-blue-600" />
-                </div>
-                <span className="text-sm text-green-600 font-medium">+12%</span>
-              </div>
-              <h3 className="text-2xl font-bold">{metrics.totalConversations.toLocaleString()}</h3>
-              <p className="text-gray-600 text-sm">Total Conversations</p>
-            </div>
-
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-green-100 rounded-lg">
-                  <CheckCircle size={24} className="text-green-600" />
-                </div>
-                <span className="text-sm text-green-600 font-medium">+5%</span>
-              </div>
-              <h3 className="text-2xl font-bold">{metrics.avgResolutionRate.toFixed(0)}%</h3>
-              <p className="text-gray-600 text-sm">Resolution Rate</p>
-            </div>
-
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-yellow-100 rounded-lg">
-                  <Clock size={24} className="text-yellow-600" />
-                </div>
-                <span className="text-sm text-red-600 font-medium">-0.2s</span>
-              </div>
-              <h3 className="text-2xl font-bold">{metrics.avgResponseTime.toFixed(1)}s</h3>
-              <p className="text-gray-600 text-sm">Avg Response Time</p>
-            </div>
-
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-4">
-                <div className="p-3 bg-purple-100 rounded-lg">
-                  <Star size={24} className="text-purple-600" />
-                </div>
-                <span className="text-sm text-green-600 font-medium">+0.3</span>
-              </div>
-              <h3 className="text-2xl font-bold">{metrics.avgCsat.toFixed(1)}</h3>
-              <p className="text-gray-600 text-sm">Customer Satisfaction</p>
+          {/* Tab Navigation */}
+          <div className="mb-6">
+            <div className="border-b border-gray-200">
+              <nav className="-mb-px flex space-x-8">
+                {tabs.map((tab) => {
+                  const Icon = tab.icon;
+                  return (
+                    <button
+                      key={tab.id}
+                      onClick={() => setActiveTab(tab.id)}
+                      className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
+                        activeTab === tab.id
+                          ? 'border-black text-black'
+                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      }`}
+                    >
+                      <Icon 
+                        size={20} 
+                        className={`mr-2 ${
+                          activeTab === tab.id ? 'text-black' : 'text-gray-400 group-hover:text-gray-500'
+                        }`} 
+                      />
+                      {tab.label}
+                    </button>
+                  );
+                })}
+              </nav>
             </div>
           </div>
 
-          {/* Charts Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6 lg:mb-8">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <div className="flex items-center justify-between mb-6">
-                <h2 className="text-xl font-semibold">Conversation Volume</h2>
-                <select
-                  value={metric}
-                  onChange={(e) => setMetric(e.target.value)}
-                  className="px-3 py-1 border border-gray-200 rounded-lg text-sm"
-                >
-                  <option value="conversations">Conversations</option>
-                  <option value="resolved">Resolved</option>
-                  <option value="escalated">Escalated</option>
-                </select>
-              </div>
-              <UsageLine data={filteredSessions.length > 0 ? [{ date: '2025-09-01', conversations: filteredSessions.length, resolved: filteredSessions.filter(s => s.resolution_type === 'self_service').length }] : []} />
+          {/* Tab Content */}
+          {activeTab === 'overview' && renderOverviewTab()}
+          {activeTab === 'performance' && renderPerformanceTab()}
+          {activeTab === 'user-journey' && renderUserJourneyTab()}
+          {activeTab === 'business-impact' && renderBusinessImpactTab()}
+          {activeTab === 'operations' && renderOperationsTab()}
+          {activeTab === 'reports' && renderReportsTab()}
+
+          {/* Always Visible: Selected Bots Comparison Table */}
+          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8">
+            <div className="p-6 border-b">
+              <h2 className="text-xl font-semibold">Selected Bots Comparison</h2>
+              <p className="text-sm text-gray-600 mt-1">
+                {filteredBots.length === 0 ? 'No bots selected' : 
+                 selectedBots.includes('all') || selectedBots.length === 0 ? `All ${filteredBots.length} bots` : 
+                 `Comparing ${filteredBots.length} selected bots`}
+              </p>
             </div>
-
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="text-xl font-semibold mb-6">Top Intents</h2>
-              <IntentBars data={filteredSessions.length > 0 ? Object.entries(filteredSessions.reduce((acc, s) => { acc[s.category] = (acc[s.category] || 0) + 1; return acc; }, {} as Record<string, number>)).map(([intent, count]) => ({ intent, count })).slice(0, 5) : []} />
-            </div>
-          </div>
-
-          {/* Advanced Analytics */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6 lg:mb-8">
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold mb-4">Bot Performance</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Containment Rate</span>
-                  <span className="font-semibold">{advancedMetrics.containmentRate}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-green-500 h-2 rounded-full" 
-                    style={{ width: `${advancedMetrics.containmentRate}%` }}
-                  ></div>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-600">Handoff Rate</span>
-                  <span className="font-semibold">{advancedMetrics.handoffRate}%</span>
-                </div>
-                <div className="w-full bg-gray-200 rounded-full h-2">
-                  <div 
-                    className="bg-orange-500 h-2 rounded-full" 
-                    style={{ width: `${advancedMetrics.handoffRate}%` }}
-                  ></div>
-                </div>
-
-                <div className="pt-2 border-t">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Avg Conversation Length</span>
-                    <span className="font-semibold">{advancedMetrics.avgConversationLength} msgs</span>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold mb-4">Channel Distribution</h3>
-              <div className="space-y-4">
-                {advancedMetrics.topChannels.map(channel => (
-                  <div key={channel.name}>
-                    <div className="flex justify-between mb-2">
-                      <span className="text-gray-600">{channel.name}</span>
-                      <span className="font-semibold">{channel.percentage}%</span>
-                    </div>
-                    <div className="w-full bg-gray-200 rounded-full h-2 mb-1">
-                      <div 
-                        className="bg-blue-500 h-2 rounded-full" 
-                        style={{ width: `${channel.percentage}%` }}
-                      ></div>
-                    </div>
-                    <p className="text-xs text-gray-500">{channel.count.toLocaleString()} conversations</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h3 className="text-lg font-semibold mb-4">Sentiment Analysis</h3>
-              <div className="space-y-4">
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                    <span className="text-gray-600">Positive</span>
-                  </div>
-                  <span className="font-semibold">{advancedMetrics.sentimentAnalysis.positive}%</span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-gray-400 rounded-full"></div>
-                    <span className="text-gray-600">Neutral</span>
-                  </div>
-                  <span className="font-semibold">{advancedMetrics.sentimentAnalysis.neutral}%</span>
-                </div>
-                
-                <div className="flex justify-between items-center">
-                  <div className="flex items-center gap-2">
-                    <div className="w-3 h-3 bg-red-500 rounded-full"></div>
-                    <span className="text-gray-600">Negative</span>
-                  </div>
-                  <span className="font-semibold">{advancedMetrics.sentimentAnalysis.negative}%</span>
-                </div>
-
-                <div className="pt-2 border-t">
-                  <p className="text-sm text-gray-600">Peak Hours</p>
-                  <p className="font-semibold">{advancedMetrics.peakHours.join(', ')}</p>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Bot Comparison Table - Only show selected bots */}
-          {!selectedBots.includes('all') && filteredBots.length > 1 && (
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8">
-              <div className="p-6 border-b">
-                <h2 className="text-xl font-semibold">Selected Bots Comparison</h2>
-                <p className="text-sm text-gray-600 mt-1">Comparing {filteredBots.length} selected bots</p>
-              </div>
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Bot</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Status</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Conversations</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Response Time</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Resolution Rate</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">CSAT</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Trend</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredBots.map(bot => {
-                    const botSessions = sessions.filter(s => s.bot_id === bot.id);
-                    const botMetrics = {
-                      conversations: botSessions.length,
-                      avgResponseTime: botSessions.length > 0 ? (botSessions.reduce((sum, s) => sum + s.avg_response_time, 0) / botSessions.length / 1000) : 0,
-                      resolutionRate: botSessions.length > 0 ? ((botSessions.filter(s => s.resolution_type === 'self_service' || s.completion_status === 'completed').length / botSessions.length) * 100) : 0,
-                      csat: botSessions.length > 0 ? (botSessions.reduce((sum, s) => sum + s.user_rating, 0) / botSessions.length) : 0
-                    };
-                    
-                    return (
-                      <tr key={bot.id} className="border-b hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <img 
-                              src={bot.image} 
-                              alt={bot.name} 
-                              className="w-8 h-8 rounded-full" 
-                              style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                            />
-                            <span className="font-medium">{bot.name}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            bot.status === 'Live' ? 'bg-green-100 text-green-700' :
-                            bot.status === 'Paused' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-red-100 text-red-700'
-                          }`}>
-                            {bot.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 font-medium">{botMetrics.conversations}</td>
-                        <td className="px-6 py-4">{botMetrics.avgResponseTime.toFixed(1)}s</td>
-                        <td className="px-6 py-4">{botMetrics.resolutionRate.toFixed(0)}%</td>
-                        <td className="px-6 py-4 flex items-center gap-1">
-                          <span>{botMetrics.csat.toFixed(1)}</span>
-                          <Star size={14} className="text-yellow-500" />
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-1 text-green-600">
-                            <TrendingUp size={14} />
-                            <span className="text-sm">+8%</span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* All Bots Overview Table - Show when 'All Bots' is selected */}
-          {selectedBots.includes('all') && (
-            <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8">
-              <div className="p-6 border-b">
-                <h2 className="text-xl font-semibold">All Bots Performance</h2>
-                <p className="text-sm text-gray-600 mt-1">Overview of all {bots.length} bots</p>
-              </div>
-              <table className="w-full">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Bot</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Status</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Conversations</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Response Time</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Resolution Rate</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">CSAT</th>
-                    <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Trend</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {bots.map(bot => {
-                    const botSessions = sessions.filter(s => s.bot_id === bot.id);
-                    const botMetrics = {
-                      conversations: botSessions.length,
-                      avgResponseTime: botSessions.length > 0 ? (botSessions.reduce((sum, s) => sum + s.avg_response_time, 0) / botSessions.length / 1000) : 0,
-                      resolutionRate: botSessions.length > 0 ? ((botSessions.filter(s => s.resolution_type === 'self_service' || s.completion_status === 'completed').length / botSessions.length) * 100) : 0,
-                      csat: botSessions.length > 0 ? (botSessions.reduce((sum, s) => sum + s.user_rating, 0) / botSessions.length) : 0
-                    };
-                    
-                    return (
-                      <tr key={bot.id} className="border-b hover:bg-gray-50">
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-3">
-                            <img 
-                              src={bot.image} 
-                              alt={bot.name} 
-                              className="w-8 h-8 rounded-full" 
-                              style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                            />
-                            <span className="font-medium">{bot.name}</span>
-                          </div>
-                        </td>
-                        <td className="px-6 py-4">
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            bot.status === 'Live' ? 'bg-green-100 text-green-700' :
-                            bot.status === 'Paused' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-red-100 text-red-700'
-                          }`}>
-                            {bot.status}
-                          </span>
-                        </td>
-                        <td className="px-6 py-4 font-medium">{botMetrics.conversations}</td>
-                        <td className="px-6 py-4">{botMetrics.avgResponseTime.toFixed(1)}s</td>
-                        <td className="px-6 py-4">{botMetrics.resolutionRate.toFixed(0)}%</td>
-                        <td className="px-6 py-4 flex items-center gap-1">
-                          <span>{botMetrics.csat.toFixed(1)}</span>
-                          <Star size={14} className="text-yellow-500" />
-                        </td>
-                        <td className="px-6 py-4">
-                          <div className="flex items-center gap-1 text-green-600">
-                            <TrendingUp size={14} />
-                            <span className="text-sm">+8%</span>
-                          </div>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-          )}
-
-          {/* Weekly Comparison */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="text-xl font-semibold mb-6">Weekly Comparison</h2>
-            <div className="overflow-x-auto">
-              <table className="w-full">
-                <thead>
-                  <tr className="border-b">
-                    <th className="text-left py-3 text-sm font-medium text-gray-700">Period</th>
-                    <th className="text-left py-3 text-sm font-medium text-gray-700">Conversations</th>
-                    <th className="text-left py-3 text-sm font-medium text-gray-700">Resolved</th>
-                    <th className="text-left py-3 text-sm font-medium text-gray-700">Resolution Rate</th>
-                    <th className="text-left py-3 text-sm font-medium text-gray-700">CSAT</th>
-                    <th className="text-left py-3 text-sm font-medium text-gray-700">Change</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {weeklyComparison.map((week, idx) => (
-                    <tr key={week.period} className="border-b hover:bg-gray-50">
-                      <td className="py-3 font-medium">{week.period}</td>
-                      <td className="py-3">{week.conversations.toLocaleString()}</td>
-                      <td className="py-3">{week.resolved.toLocaleString()}</td>
-                      <td className="py-3">{Math.round((week.resolved / week.conversations) * 100)}%</td>
-                      <td className="py-3">{week.csat}</td>
-                      <td className="py-3">
-                        {idx === 0 ? (
-                          <span className="text-green-600 text-sm">Current</span>
-                        ) : (
-                          <span className="text-gray-500 text-sm">
-                            {idx === 1 ? '+9%' : idx === 2 ? '+18%' : '+23%'}
-                          </span>
-                        )}
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Bot</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Status</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Sessions</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Response Time</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Resolution Rate</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">CSAT</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Trend</th>
+                </tr>
+              </thead>
+              <tbody>
+                {filteredBots.map(bot => {
+                  const botSessions = sessions.filter(s => s.bot_id === bot.id);
+                  const botMetrics = {
+                    conversations: botSessions.length,
+                    avgResponseTime: botSessions.length > 0 ? (botSessions.reduce((sum, s) => sum + s.avg_response_time, 0) / botSessions.length / 1000) : 0,
+                    resolutionRate: botSessions.length > 0 ? ((botSessions.filter(s => s.resolution_type === 'self_service' || s.completion_status === 'completed').length / botSessions.length) * 100) : 0,
+                    csat: botSessions.length > 0 ? (botSessions.reduce((sum, s) => sum + s.user_rating, 0) / botSessions.length) : 0
+                  };
+                  
+                  return (
+                    <tr key={bot.id} className="border-b hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={bot.image} 
+                            alt={bot.name} 
+                            className="w-8 h-8 rounded-full" 
+                            style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                          />
+                          <span className="font-medium">{bot.name}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                          bot.status === 'Live' ? 'bg-green-100 text-green-700' :
+                          bot.status === 'Paused' ? 'bg-yellow-100 text-yellow-700' :
+                          'bg-red-100 text-red-700'
+                        }`}>
+                          {bot.status}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4 font-medium">{botMetrics.conversations}</td>
+                      <td className="px-6 py-4">{botMetrics.avgResponseTime.toFixed(1)}s</td>
+                      <td className="px-6 py-4">{botMetrics.resolutionRate.toFixed(0)}%</td>
+                      <td className="px-6 py-4 flex items-center gap-1">
+                        <span>{botMetrics.csat.toFixed(1)}</span>
+                        <Star size={14} className="text-yellow-500" />
+                      </td>
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-1 text-green-600">
+                          <TrendingUp size={14} />
+                          <span className="text-sm">+8%</span>
+                        </div>
                       </td>
                     </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
+                  );
+                })}
+              </tbody>
+            </table>
           </div>
         </div>
       </main>
     </div>
   );
+
+  // Tab render functions
+  function renderOverviewTab() {
+    return (
+      <div className="space-y-6">
+        {/* Key Metrics Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <MessageSquare size={24} className="text-blue-600" />
+              </div>
+              <span className="text-sm text-green-600 font-medium">+12%</span>
+            </div>
+            <h3 className="text-2xl font-bold">{metrics.totalConversations.toLocaleString()}</h3>
+            <p className="text-gray-600 text-sm">Total Sessions</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-green-100 rounded-lg">
+                <CheckCircle size={24} className="text-green-600" />
+              </div>
+              <span className="text-sm text-green-600 font-medium">+5%</span>
+            </div>
+            <h3 className="text-2xl font-bold">{metrics.avgResolutionRate.toFixed(0)}%</h3>
+            <p className="text-gray-600 text-sm">Resolution Rate</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-yellow-100 rounded-lg">
+                <Clock size={24} className="text-yellow-600" />
+              </div>
+              <span className="text-sm text-red-600 font-medium">-0.2s</span>
+            </div>
+            <h3 className="text-2xl font-bold">{metrics.avgResponseTime.toFixed(1)}s</h3>
+            <p className="text-gray-600 text-sm">Avg Response Time</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <Star size={24} className="text-purple-600" />
+              </div>
+              <span className="text-sm text-green-600 font-medium">+0.3</span>
+            </div>
+            <h3 className="text-2xl font-bold">{metrics.avgCsat.toFixed(1)}</h3>
+            <p className="text-gray-600 text-sm">Customer Satisfaction</p>
+          </div>
+        </div>
+
+        {/* Overview Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">Bot Performance Ranking</h2>
+            <div className="space-y-4">
+              {filteredBots.map((bot, index) => {
+                const botSessions = sessions.filter(s => s.bot_id === bot.id);
+                const resolutionRate = botSessions.length > 0 
+                  ? ((botSessions.filter(s => s.resolution_type === 'self_service' || s.completion_status === 'completed').length / botSessions.length) * 100)
+                  : 0;
+                
+                return (
+                  <div key={bot.id} className="flex items-center gap-4 p-4 bg-gray-50 rounded-lg">
+                    <div className="text-2xl font-bold text-gray-400">#{index + 1}</div>
+                    <img 
+                      src={bot.image} 
+                      alt={bot.name} 
+                      className="w-10 h-10 rounded-full" 
+                      style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                    />
+                    <div className="flex-1">
+                      <div className="font-semibold">{bot.name}</div>
+                      <div className="text-sm text-gray-600">{botSessions.length} sessions</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-semibold text-green-600">{resolutionRate.toFixed(0)}%</div>
+                      <div className="text-sm text-gray-600">Resolution</div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">Sessions by Bot</h2>
+            <div className="space-y-3">
+              {filteredBots.map(bot => {
+                const botSessions = sessions.filter(s => s.bot_id === bot.id);
+                const percentage = sessions.length > 0 ? (botSessions.length / filteredSessions.length) * 100 : 0;
+                
+                return (
+                  <div key={bot.id} className="flex items-center gap-3">
+                    <img 
+                      src={bot.image} 
+                      alt={bot.name} 
+                      className="w-6 h-6 rounded-full" 
+                      style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                    />
+                    <div className="flex-1">
+                      <div className="flex justify-between mb-1">
+                        <span className="text-sm font-medium">{bot.name}</span>
+                        <span className="text-sm text-gray-600">{botSessions.length} ({percentage.toFixed(0)}%)</span>
+                      </div>
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div 
+                          className="bg-blue-500 h-2 rounded-full" 
+                          style={{ width: `${percentage}%` }}
+                        ></div>
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderPerformanceTab() {
+    // Calculate performance metrics for each bot
+    const botPerformanceData = filteredBots.map(bot => {
+      const botSessions = sessions.filter(s => s.bot_id === bot.id);
+      if (botSessions.length === 0) return null;
+      
+      const avgResponseTime = botSessions.reduce((sum, s) => sum + s.avg_response_time, 0) / botSessions.length / 1000;
+      const resolutionRate = (botSessions.filter(s => s.resolution_type === 'self_service' || s.completion_status === 'completed').length / botSessions.length) * 100;
+      const csat = botSessions.reduce((sum, s) => sum + s.user_rating, 0) / botSessions.length;
+      const handoffRate = (botSessions.filter(s => s.bot_handoff === true).length / botSessions.length) * 100;
+      
+      return {
+        botName: bot.name,
+        botImage: bot.image,
+        botId: bot.id,
+        avgResponseTime,
+        resolutionRate,
+        csat,
+        handoffRate,
+        totalSessions: botSessions.length
+      };
+    }).filter(Boolean);
+
+    // Generate time-series data for trends (last 30 days)
+    const generateTrendData = () => {
+      const days = [];
+      const now = new Date();
+      
+      // Generate last 30 days
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(now.getDate() - i);
+        days.push({
+          date: date.toISOString().split('T')[0],
+          displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        });
+      }
+
+      // Build data structure for charts - each day has all bot metrics
+      const chartData = days.map(day => {
+        const dayData: any = { date: day.displayDate };
+        
+        filteredBots.forEach(bot => {
+          const botSessions = sessions.filter(s => {
+            const sessionDate = new Date(s.start_time).toISOString().split('T')[0];
+            return s.bot_id === bot.id && sessionDate === day.date;
+          });
+
+          if (botSessions.length === 0) {
+            dayData[`${bot.name}_resolutionRate`] = null;
+            dayData[`${bot.name}_responseTime`] = null;
+            dayData[`${bot.name}_csat`] = null;
+            dayData[`${bot.name}_handoffRate`] = null;
+          } else {
+            // Resolution Rate
+            const resolved = botSessions.filter(s => 
+              s.resolution_type === 'self_service' || s.completion_status === 'completed'
+            ).length;
+            dayData[`${bot.name}_resolutionRate`] = Math.round((resolved / botSessions.length) * 100);
+
+            // Response Time
+            const avgTime = botSessions.reduce((sum, s) => sum + s.avg_response_time, 0) / botSessions.length / 1000;
+            dayData[`${bot.name}_responseTime`] = parseFloat(avgTime.toFixed(1));
+
+            // CSAT
+            const avgCsat = botSessions.reduce((sum, s) => sum + s.user_rating, 0) / botSessions.length;
+            dayData[`${bot.name}_csat`] = parseFloat(avgCsat.toFixed(1));
+
+            // Handoff Rate
+            const handoffs = botSessions.filter(s => s.bot_handoff === true).length;
+            dayData[`${bot.name}_handoffRate`] = Math.round((handoffs / botSessions.length) * 100);
+          }
+        });
+
+        return dayData;
+      });
+
+      // Create series configurations for each metric
+      const seriesConfig = {
+        resolutionRate: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_resolutionRate` })),
+        responseTime: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_responseTime` })),
+        csat: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_csat` })),
+        handoffRate: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_handoffRate` }))
+      };
+
+      return { chartData, seriesConfig };
+    };
+
+    const { chartData, seriesConfig } = generateTrendData();
+
+    return (
+      <div className="space-y-6">
+        {/* Performance Metrics Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Clock size={24} className="text-blue-600" />
+              </div>
+              <span className="text-sm text-green-600 font-medium">-0.2s</span>
+            </div>
+            <h3 className="text-2xl font-bold">{metrics.avgResponseTime.toFixed(1)}s</h3>
+            <p className="text-gray-600 text-sm">Avg Response Time</p>
+            <p className="text-xs text-gray-500 mt-1">Across all selected bots</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-green-100 rounded-lg">
+                <CheckCircle size={24} className="text-green-600" />
+              </div>
+              <span className="text-sm text-green-600 font-medium">+3%</span>
+            </div>
+            <h3 className="text-2xl font-bold">{metrics.avgResolutionRate.toFixed(0)}%</h3>
+            <p className="text-gray-600 text-sm">Resolution Rate</p>
+            <p className="text-xs text-gray-500 mt-1">Average across bots</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <Star size={24} className="text-purple-600" />
+              </div>
+              <span className="text-sm text-green-600 font-medium">+0.2</span>
+            </div>
+            <h3 className="text-2xl font-bold">{metrics.avgCsat.toFixed(1)}</h3>
+            <p className="text-gray-600 text-sm">Customer Satisfaction</p>
+            <p className="text-xs text-gray-500 mt-1">Average CSAT score</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <AlertTriangle size={24} className="text-orange-600" />
+              </div>
+              <span className="text-sm text-red-600 font-medium">+1.2%</span>
+            </div>
+            <h3 className="text-2xl font-bold">{advancedMetrics.handoffRate}%</h3>
+            <p className="text-gray-600 text-sm">Handoff Rate</p>
+            <p className="text-xs text-gray-500 mt-1">Escalated to humans</p>
+          </div>
+        </div>
+
+        {/* Performance Trend Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">Resolution Rate Trends (30 Days)</h2>
+            <div className="h-80">
+              <MultiLineChart
+                data={chartData}
+                series={seriesConfig.resolutionRate}
+                xAxisKey="date"
+                yAxisLabel="Resolution Rate (%)"
+                height={300}
+              />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">Response Time Trends (30 Days)</h2>
+            <div className="h-80">
+              <MultiLineChart
+                data={chartData}
+                series={seriesConfig.responseTime}
+                xAxisKey="date"
+                yAxisLabel="Response Time (s)"
+                height={300}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* CSAT and Handoff Rate Trend Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">CSAT Score Trends (30 Days)</h2>
+            <div className="h-80">
+              <MultiLineChart
+                data={chartData}
+                series={seriesConfig.csat}
+                xAxisKey="date"
+                yAxisLabel="CSAT Score"
+                height={300}
+              />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">Handoff Rate Trends (30 Days)</h2>
+            <div className="h-80">
+              <MultiLineChart
+                data={chartData}
+                series={seriesConfig.handoffRate}
+                xAxisKey="date"
+                yAxisLabel="Handoff Rate (%)"
+                height={300}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Performance Trends */}
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold mb-6">Performance Leaderboard</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Rank</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Bot</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Overall Score</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Response Time</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Resolution</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">CSAT</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Sessions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {botPerformanceData
+                  .sort((a, b) => {
+                    // Calculate overall score based on multiple factors
+                    const scoreA = (a.resolutionRate * 0.4) + (a.csat * 20 * 0.3) + ((5 - Math.min(a.avgResponseTime, 5)) * 20 * 0.2) + ((100 - a.handoffRate) * 0.1);
+                    const scoreB = (b.resolutionRate * 0.4) + (b.csat * 20 * 0.3) + ((5 - Math.min(b.avgResponseTime, 5)) * 20 * 0.2) + ((100 - b.handoffRate) * 0.1);
+                    return scoreB - scoreA;
+                  })
+                  .map((bot, index) => {
+                    const overallScore = (bot.resolutionRate * 0.4) + (bot.csat * 20 * 0.3) + ((5 - Math.min(bot.avgResponseTime, 5)) * 20 * 0.2) + ((100 - bot.handoffRate) * 0.1);
+                    
+                    return (
+                      <tr key={bot.botId} className="border-b hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold ${
+                              index === 0 ? 'bg-yellow-500' : 
+                              index === 1 ? 'bg-gray-400' : 
+                              index === 2 ? 'bg-orange-600' : 'bg-gray-300'
+                            }`}>
+                              {index + 1}
+                            </div>
+                            {index === 0 && <span className="text-xs text-yellow-600 font-medium">Best</span>}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <img 
+                              src={bot.botImage} 
+                              alt={bot.botName} 
+                              className="w-8 h-8 rounded-full" 
+                              style={{ backgroundColor: getClientBrandColor(client.id) }}
+                            />
+                            <span className="font-medium">{bot.botName}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="font-semibold">{overallScore.toFixed(0)}/100</span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`${bot.avgResponseTime <= 1 ? 'text-green-600' : bot.avgResponseTime <= 2 ? 'text-yellow-600' : 'text-red-600'}`}>
+                            {bot.avgResponseTime.toFixed(1)}s
+                          </span>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className="text-green-600">{bot.resolutionRate.toFixed(0)}%</span>
+                        </td>
+                        <td className="px-6 py-4 flex items-center gap-1">
+                          <span>{bot.csat.toFixed(1)}</span>
+                          <Star size={14} className="text-yellow-500" />
+                        </td>
+                        <td className="px-6 py-4 text-gray-600">{bot.totalSessions}</td>
+                      </tr>
+                    );
+                  })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  function renderUserJourneyTab() {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold mb-6">User Journey Analysis Coming Soon</h2>
+          <p className="text-gray-600">User journey comparison across selected bots will be implemented here.</p>
+        </div>
+      </div>
+    );
+  }
+
+  function renderBusinessImpactTab() {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold mb-6">Business Impact Analysis Coming Soon</h2>
+          <p className="text-gray-600">ROI and business impact comparison will be implemented here.</p>
+        </div>
+      </div>
+    );
+  }
+
+  function renderOperationsTab() {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold mb-6">Operations Analytics Coming Soon</h2>
+          <p className="text-gray-600">Operational efficiency comparison will be implemented here.</p>
+        </div>
+      </div>
+    );
+  }
+
+  function renderReportsTab() {
+    return (
+      <div className="space-y-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6">
+          <h2 className="text-xl font-semibold mb-6">Reports & Export Coming Soon</h2>
+          <p className="text-gray-600">Advanced reporting and export features will be implemented here.</p>
+        </div>
+      </div>
+    );
+  }
 }

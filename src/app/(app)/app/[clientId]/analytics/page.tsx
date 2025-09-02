@@ -966,22 +966,663 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
   }
 
   function renderUserJourneyTab() {
+    // Calculate user journey metrics for each bot
+    const botJourneyData = filteredBots.map(bot => {
+      const botSessions = sessions.filter(s => s.bot_id === bot.id);
+      if (botSessions.length === 0) return null;
+
+      // Journey completion analysis
+      const completedJourneys = botSessions.filter(s => s.completion_status === 'completed').length;
+      const partialJourneys = botSessions.filter(s => s.completion_status === 'partial').length;
+      const escalatedJourneys = botSessions.filter(s => s.completion_status === 'escalated').length;
+      const incompleteJourneys = botSessions.filter(s => s.completion_status === 'incomplete').length;
+
+      // Journey step analysis
+      const avgSteps = botSessions.reduce((sum, s) => sum + s.session_steps, 0) / botSessions.length;
+      const avgMessages = botSessions.reduce((sum, s) => sum + s.messages_sent, 0) / botSessions.length;
+
+      // User type analysis
+      const newUsers = botSessions.filter(s => s.user_type === 'new').length;
+      const returningUsers = botSessions.filter(s => s.user_type === 'returning').length;
+      const existingUsers = botSessions.filter(s => s.user_type === 'existing').length;
+
+      // Goal achievement
+      const goalsAchieved = botSessions.filter(s => s.goal_achieved === true).length;
+      const goalAchievementRate = (goalsAchieved / botSessions.length) * 100;
+
+      return {
+        botName: bot.name,
+        botImage: bot.image,
+        botId: bot.id,
+        totalSessions: botSessions.length,
+        completionRates: {
+          completed: Math.round((completedJourneys / botSessions.length) * 100),
+          partial: Math.round((partialJourneys / botSessions.length) * 100),
+          escalated: Math.round((escalatedJourneys / botSessions.length) * 100),
+          incomplete: Math.round((incompleteJourneys / botSessions.length) * 100)
+        },
+        avgSteps: parseFloat(avgSteps.toFixed(1)),
+        avgMessages: parseFloat(avgMessages.toFixed(1)),
+        userTypes: {
+          new: Math.round((newUsers / botSessions.length) * 100),
+          returning: Math.round((returningUsers / botSessions.length) * 100),
+          existing: Math.round((existingUsers / botSessions.length) * 100)
+        },
+        goalAchievementRate: Math.round(goalAchievementRate)
+      };
+    }).filter(Boolean);
+
+    // Generate journey flow data (completion funnel)
+    const generateJourneyFlowData = () => {
+      const flowData = filteredBots.map(bot => {
+        const botSessions = sessions.filter(s => s.bot_id === bot.id);
+        if (botSessions.length === 0) return null;
+
+        return {
+          botName: bot.name,
+          started: botSessions.length,
+          engaged: botSessions.filter(s => s.messages_sent >= 3).length,
+          progressed: botSessions.filter(s => s.session_steps >= 5).length,
+          completed: botSessions.filter(s => s.completion_status === 'completed').length,
+          goalAchieved: botSessions.filter(s => s.goal_achieved === true).length
+        };
+      }).filter(Boolean);
+
+      return flowData;
+    };
+
+    // Generate user journey time-series data
+    const generateJourneyTrends = () => {
+      const days = [];
+      const now = new Date();
+      
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(now.getDate() - i);
+        days.push({
+          date: date.toISOString().split('T')[0],
+          displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        });
+      }
+
+      const chartData = days.map(day => {
+        const dayData: any = { date: day.displayDate };
+        
+        filteredBots.forEach(bot => {
+          const botSessions = sessions.filter(s => {
+            const sessionDate = new Date(s.start_time).toISOString().split('T')[0];
+            return s.bot_id === bot.id && sessionDate === day.date;
+          });
+
+          if (botSessions.length === 0) {
+            dayData[`${bot.name}_completion`] = null;
+            dayData[`${bot.name}_avgSteps`] = null;
+            dayData[`${bot.name}_goalAchievement`] = null;
+          } else {
+            const completed = botSessions.filter(s => s.completion_status === 'completed').length;
+            dayData[`${bot.name}_completion`] = Math.round((completed / botSessions.length) * 100);
+
+            const avgSteps = botSessions.reduce((sum, s) => sum + s.session_steps, 0) / botSessions.length;
+            dayData[`${bot.name}_avgSteps`] = parseFloat(avgSteps.toFixed(1));
+
+            const goalAchieved = botSessions.filter(s => s.goal_achieved === true).length;
+            dayData[`${bot.name}_goalAchievement`] = Math.round((goalAchieved / botSessions.length) * 100);
+          }
+        });
+
+        return dayData;
+      });
+
+      const seriesConfig = {
+        completion: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_completion` })),
+        avgSteps: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_avgSteps` })),
+        goalAchievement: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_goalAchievement` }))
+      };
+
+      return { chartData, seriesConfig };
+    };
+
+    const journeyFlowData = generateJourneyFlowData();
+    const { chartData: journeyChartData, seriesConfig: journeySeriesConfig } = generateJourneyTrends();
+
     return (
       <div className="space-y-6">
+        {/* Journey Metrics Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Users size={24} className="text-blue-600" />
+              </div>
+              <span className="text-sm text-green-600 font-medium">+5%</span>
+            </div>
+            <h3 className="text-2xl font-bold">
+              {Math.round(botJourneyData.reduce((sum, bot) => sum + bot.completionRates.completed, 0) / botJourneyData.length)}%
+            </h3>
+            <p className="text-gray-600 text-sm">Avg Completion Rate</p>
+            <p className="text-xs text-gray-500 mt-1">Across selected bots</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-green-100 rounded-lg">
+                <Target size={24} className="text-green-600" />
+              </div>
+              <span className="text-sm text-green-600 font-medium">+8%</span>
+            </div>
+            <h3 className="text-2xl font-bold">
+              {Math.round(botJourneyData.reduce((sum, bot) => sum + bot.goalAchievementRate, 0) / botJourneyData.length)}%
+            </h3>
+            <p className="text-gray-600 text-sm">Goal Achievement</p>
+            <p className="text-xs text-gray-500 mt-1">Users reaching their goal</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <MessageSquare size={24} className="text-purple-600" />
+              </div>
+              <span className="text-sm text-red-600 font-medium">+0.3</span>
+            </div>
+            <h3 className="text-2xl font-bold">
+              {(botJourneyData.reduce((sum, bot) => sum + bot.avgSteps, 0) / botJourneyData.length).toFixed(1)}
+            </h3>
+            <p className="text-gray-600 text-sm">Avg Journey Steps</p>
+            <p className="text-xs text-gray-500 mt-1">Steps per session</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <TrendingUp size={24} className="text-orange-600" />
+              </div>
+              <span className="text-sm text-red-600 font-medium">+2%</span>
+            </div>
+            <h3 className="text-2xl font-bold">
+              {Math.round(botJourneyData.reduce((sum, bot) => sum + bot.completionRates.escalated, 0) / botJourneyData.length)}%
+            </h3>
+            <p className="text-gray-600 text-sm">Escalation Rate</p>
+            <p className="text-xs text-gray-500 mt-1">Journeys escalated</p>
+          </div>
+        </div>
+
+        {/* Journey Completion Trends */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">Journey Completion Trends (30 Days)</h2>
+            <div className="h-80">
+              <MultiLineChart
+                data={journeyChartData}
+                series={journeySeriesConfig.completion}
+                xAxisKey="date"
+                yAxisLabel="Completion Rate (%)"
+                height={300}
+              />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">Goal Achievement Trends (30 Days)</h2>
+            <div className="h-80">
+              <MultiLineChart
+                data={journeyChartData}
+                series={journeySeriesConfig.goalAchievement}
+                xAxisKey="date"
+                yAxisLabel="Goal Achievement (%)"
+                height={300}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Journey Flow Analysis */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold mb-6">User Journey Analysis Coming Soon</h2>
-          <p className="text-gray-600">User journey comparison across selected bots will be implemented here.</p>
+          <h2 className="text-xl font-semibold mb-6">User Journey Funnel Comparison</h2>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Bot</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Started</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Engaged (3+ msgs)</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Progressed (5+ steps)</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Completed</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Goal Achieved</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Conversion Rate</th>
+                </tr>
+              </thead>
+              <tbody>
+                {journeyFlowData.map(flow => {
+                  const conversionRate = Math.round((flow.goalAchieved / flow.started) * 100);
+                  return (
+                    <tr key={flow.botName} className="border-b hover:bg-gray-50">
+                      <td className="px-6 py-4 font-medium">{flow.botName}</td>
+                      <td className="px-6 py-4">{flow.started.toLocaleString()}</td>
+                      <td className="px-6 py-4">
+                        <span className="text-blue-600">{flow.engaged.toLocaleString()}</span>
+                        <span className="text-xs text-gray-500 ml-1">
+                          ({Math.round((flow.engaged / flow.started) * 100)}%)
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-purple-600">{flow.progressed.toLocaleString()}</span>
+                        <span className="text-xs text-gray-500 ml-1">
+                          ({Math.round((flow.progressed / flow.started) * 100)}%)
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-green-600">{flow.completed.toLocaleString()}</span>
+                        <span className="text-xs text-gray-500 ml-1">
+                          ({Math.round((flow.completed / flow.started) * 100)}%)
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className="text-orange-600 font-semibold">{flow.goalAchieved.toLocaleString()}</span>
+                        <span className="text-xs text-gray-500 ml-1">
+                          ({Math.round((flow.goalAchieved / flow.started) * 100)}%)
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`font-semibold ${
+                          conversionRate >= 80 ? 'text-green-600' :
+                          conversionRate >= 60 ? 'text-yellow-600' : 'text-red-600'
+                        }`}>
+                          {conversionRate}%
+                        </span>
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* User Type Distribution */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">User Type Distribution</h2>
+            <div className="space-y-4">
+              {botJourneyData.map(bot => (
+                <div key={bot.botId} className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <img 
+                      src={bot.botImage} 
+                      alt={bot.botName} 
+                      className="w-6 h-6 rounded-full" 
+                      style={{ backgroundColor: getClientBrandColor(client.id) }}
+                    />
+                    <span className="font-medium">{bot.botName}</span>
+                  </div>
+                  <div className="flex gap-2">
+                    <div className="flex-1 bg-gray-200 rounded-full h-3 overflow-hidden">
+                      <div className="flex h-full">
+                        <div 
+                          className="bg-green-500" 
+                          style={{ width: `${bot.userTypes.new}%` }}
+                          title={`New Users: ${bot.userTypes.new}%`}
+                        />
+                        <div 
+                          className="bg-blue-500" 
+                          style={{ width: `${bot.userTypes.returning}%` }}
+                          title={`Returning Users: ${bot.userTypes.returning}%`}
+                        />
+                        <div 
+                          className="bg-purple-500" 
+                          style={{ width: `${bot.userTypes.existing}%` }}
+                          title={`Existing Users: ${bot.userTypes.existing}%`}
+                        />
+                      </div>
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-600">
+                    <span>New: {bot.userTypes.new}%</span>
+                    <span>Returning: {bot.userTypes.returning}%</span>
+                    <span>Existing: {bot.userTypes.existing}%</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">Journey Complexity</h2>
+            <div className="h-80">
+              <MultiLineChart
+                data={journeyChartData}
+                series={journeySeriesConfig.avgSteps}
+                xAxisKey="date"
+                yAxisLabel="Average Steps"
+                height={300}
+              />
+            </div>
+          </div>
         </div>
       </div>
     );
   }
 
   function renderBusinessImpactTab() {
+    // Calculate business impact metrics for each bot
+    const botBusinessData = filteredBots.map(bot => {
+      const botSessions = sessions.filter(s => s.bot_id === bot.id);
+      if (botSessions.length === 0) return null;
+
+      // Cost savings calculation
+      const totalSessions = botSessions.length;
+      const automationSavings = botSessions.reduce((sum, s) => sum + s.automation_saving, 0);
+      const humanCostEquivalent = botSessions.reduce((sum, s) => sum + s.human_cost_equivalent, 0);
+      const tokensCost = botSessions.reduce((sum, s) => sum + s.tokens_eur, 0);
+
+      // ROI calculation
+      const operationalCost = tokensCost + (totalSessions * 0.05); // Estimate operational costs
+      const roi = ((automationSavings - operationalCost) / operationalCost) * 100;
+
+      // Efficiency metrics
+      const avgAutomationSaving = automationSavings / totalSessions;
+      const costPerSession = operationalCost / totalSessions;
+      const savingsPerSession = automationSavings / totalSessions;
+
+      // Volume metrics
+      const completedSessions = botSessions.filter(s => s.completion_status === 'completed').length;
+      const escalatedSessions = botSessions.filter(s => s.completion_status === 'escalated').length;
+      const containmentRate = ((totalSessions - escalatedSessions) / totalSessions) * 100;
+
+      return {
+        botName: bot.name,
+        botImage: bot.image,
+        botId: bot.id,
+        totalSessions,
+        automationSavings: Math.round(automationSavings),
+        humanCostEquivalent: Math.round(humanCostEquivalent),
+        operationalCost: Math.round(operationalCost),
+        netSavings: Math.round(automationSavings - operationalCost),
+        roi: Math.round(roi),
+        avgAutomationSaving: parseFloat(avgAutomationSaving.toFixed(2)),
+        costPerSession: parseFloat(costPerSession.toFixed(2)),
+        savingsPerSession: parseFloat(savingsPerSession.toFixed(2)),
+        containmentRate: Math.round(containmentRate),
+        completedSessions,
+        escalatedSessions
+      };
+    }).filter(Boolean);
+
+    // Generate business impact time-series data
+    const generateBusinessTrends = () => {
+      const days = [];
+      const now = new Date();
+      
+      for (let i = 29; i >= 0; i--) {
+        const date = new Date(now);
+        date.setDate(now.getDate() - i);
+        days.push({
+          date: date.toISOString().split('T')[0],
+          displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+        });
+      }
+
+      const chartData = days.map(day => {
+        const dayData: any = { date: day.displayDate };
+        
+        filteredBots.forEach(bot => {
+          const botSessions = sessions.filter(s => {
+            const sessionDate = new Date(s.start_time).toISOString().split('T')[0];
+            return s.bot_id === bot.id && sessionDate === day.date;
+          });
+
+          if (botSessions.length === 0) {
+            dayData[`${bot.name}_savings`] = null;
+            dayData[`${bot.name}_cost`] = null;
+            dayData[`${bot.name}_roi`] = null;
+            dayData[`${bot.name}_volume`] = null;
+          } else {
+            const dailySavings = botSessions.reduce((sum, s) => sum + s.automation_saving, 0);
+            const dailyCost = botSessions.reduce((sum, s) => sum + s.tokens_eur, 0) + (botSessions.length * 0.05);
+            const dailyROI = dailyCost > 0 ? ((dailySavings - dailyCost) / dailyCost) * 100 : 0;
+
+            dayData[`${bot.name}_savings`] = Math.round(dailySavings);
+            dayData[`${bot.name}_cost`] = Math.round(dailyCost);
+            dayData[`${bot.name}_roi`] = Math.round(dailyROI);
+            dayData[`${bot.name}_volume`] = botSessions.length;
+          }
+        });
+
+        return dayData;
+      });
+
+      const seriesConfig = {
+        savings: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_savings` })),
+        cost: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_cost` })),
+        roi: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_roi` })),
+        volume: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_volume` }))
+      };
+
+      return { chartData, seriesConfig };
+    };
+
+    const { chartData: businessChartData, seriesConfig: businessSeriesConfig } = generateBusinessTrends();
+
+    // Calculate totals across all bots
+    const totalMetrics = {
+      totalSavings: botBusinessData.reduce((sum, bot) => sum + bot.automationSavings, 0),
+      totalCost: botBusinessData.reduce((sum, bot) => sum + bot.operationalCost, 0),
+      totalSessions: botBusinessData.reduce((sum, bot) => sum + bot.totalSessions, 0),
+      avgROI: botBusinessData.reduce((sum, bot) => sum + bot.roi, 0) / botBusinessData.length
+    };
+
     return (
       <div className="space-y-6">
+        {/* Business Impact Metrics Cards */}
+        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-green-100 rounded-lg">
+                <TrendingUp size={24} className="text-green-600" />
+              </div>
+              <span className="text-sm text-green-600 font-medium">+15%</span>
+            </div>
+            <h3 className="text-2xl font-bold">€{totalMetrics.totalSavings.toLocaleString()}</h3>
+            <p className="text-gray-600 text-sm">Total Cost Savings</p>
+            <p className="text-xs text-gray-500 mt-1">Automation benefits</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-blue-100 rounded-lg">
+                <Target size={24} className="text-blue-600" />
+              </div>
+              <span className="text-sm text-green-600 font-medium">+{Math.round(totalMetrics.avgROI)}%</span>
+            </div>
+            <h3 className="text-2xl font-bold">{Math.round(totalMetrics.avgROI)}%</h3>
+            <p className="text-gray-600 text-sm">Average ROI</p>
+            <p className="text-xs text-gray-500 mt-1">Return on investment</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-purple-100 rounded-lg">
+                <MessageSquare size={24} className="text-purple-600" />
+              </div>
+              <span className="text-sm text-red-600 font-medium">€{totalMetrics.totalCost.toLocaleString()}</span>
+            </div>
+            <h3 className="text-2xl font-bold">€{(totalMetrics.totalSavings - totalMetrics.totalCost).toLocaleString()}</h3>
+            <p className="text-gray-600 text-sm">Net Profit</p>
+            <p className="text-xs text-gray-500 mt-1">Savings minus costs</p>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <div className="flex items-center justify-between mb-4">
+              <div className="p-3 bg-orange-100 rounded-lg">
+                <Users size={24} className="text-orange-600" />
+              </div>
+              <span className="text-sm text-green-600 font-medium">+12%</span>
+            </div>
+            <h3 className="text-2xl font-bold">{totalMetrics.totalSessions.toLocaleString()}</h3>
+            <p className="text-gray-600 text-sm">Total Sessions</p>
+            <p className="text-xs text-gray-500 mt-1">Automated interactions</p>
+          </div>
+        </div>
+
+        {/* Business Impact Trends */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">Daily Cost Savings (30 Days)</h2>
+            <div className="h-80">
+              <MultiLineChart
+                data={businessChartData}
+                series={businessSeriesConfig.savings}
+                xAxisKey="date"
+                yAxisLabel="Savings (€)"
+                height={300}
+              />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">ROI Trends (30 Days)</h2>
+            <div className="h-80">
+              <MultiLineChart
+                data={businessChartData}
+                series={businessSeriesConfig.roi}
+                xAxisKey="date"
+                yAxisLabel="ROI (%)"
+                height={300}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Cost vs Savings Analysis */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">Operational Cost Trends (30 Days)</h2>
+            <div className="h-80">
+              <MultiLineChart
+                data={businessChartData}
+                series={businessSeriesConfig.cost}
+                xAxisKey="date"
+                yAxisLabel="Cost (€)"
+                height={300}
+              />
+            </div>
+          </div>
+
+          <div className="bg-white rounded-xl border border-gray-200 p-6">
+            <h2 className="text-xl font-semibold mb-6">Session Volume Trends (30 Days)</h2>
+            <div className="h-80">
+              <MultiLineChart
+                data={businessChartData}
+                series={businessSeriesConfig.volume}
+                xAxisKey="date"
+                yAxisLabel="Daily Sessions"
+                height={300}
+              />
+            </div>
+          </div>
+        </div>
+
+        {/* Business Impact Comparison Table */}
+        <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+          <div className="p-6 border-b">
+            <h2 className="text-xl font-semibold">Business Impact Comparison</h2>
+            <p className="text-sm text-gray-600 mt-1">Financial performance across selected bots</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Bot</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Sessions</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Cost Savings</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Operational Cost</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Net Profit</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">ROI</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Cost/Session</th>
+                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Containment</th>
+                </tr>
+              </thead>
+              <tbody>
+                {botBusinessData
+                  .sort((a, b) => b.netSavings - a.netSavings)
+                  .map(bot => (
+                    <tr key={bot.botId} className="border-b hover:bg-gray-50">
+                      <td className="px-6 py-4">
+                        <div className="flex items-center gap-3">
+                          <img 
+                            src={bot.botImage} 
+                            alt={bot.botName} 
+                            className="w-8 h-8 rounded-full" 
+                            style={{ backgroundColor: getClientBrandColor(client.id) }}
+                          />
+                          <span className="font-medium">{bot.botName}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4">{bot.totalSessions.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-green-600 font-semibold">€{bot.automationSavings.toLocaleString()}</td>
+                      <td className="px-6 py-4 text-red-600">€{bot.operationalCost.toLocaleString()}</td>
+                      <td className="px-6 py-4">
+                        <span className={`font-semibold ${bot.netSavings > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          €{bot.netSavings.toLocaleString()}
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">
+                        <span className={`font-semibold ${bot.roi > 0 ? 'text-green-600' : 'text-red-600'}`}>
+                          {bot.roi}%
+                        </span>
+                      </td>
+                      <td className="px-6 py-4">€{bot.costPerSession}</td>
+                      <td className="px-6 py-4">
+                        <span className={`${bot.containmentRate >= 80 ? 'text-green-600' : bot.containmentRate >= 60 ? 'text-yellow-600' : 'text-red-600'}`}>
+                          {bot.containmentRate}%
+                        </span>
+                      </td>
+                    </tr>
+                  ))}
+              </tbody>
+              <tfoot className="bg-gray-50 font-semibold">
+                <tr>
+                  <td className="px-6 py-4">Total</td>
+                  <td className="px-6 py-4">{totalMetrics.totalSessions.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-green-600">€{totalMetrics.totalSavings.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-red-600">€{totalMetrics.totalCost.toLocaleString()}</td>
+                  <td className="px-6 py-4 text-green-600">€{(totalMetrics.totalSavings - totalMetrics.totalCost).toLocaleString()}</td>
+                  <td className="px-6 py-4 text-green-600">{Math.round(totalMetrics.avgROI)}%</td>
+                  <td className="px-6 py-4">€{(totalMetrics.totalCost / totalMetrics.totalSessions).toFixed(2)}</td>
+                  <td className="px-6 py-4">-</td>
+                </tr>
+              </tfoot>
+            </table>
+          </div>
+        </div>
+
+        {/* Value Proposition Summary */}
         <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="text-xl font-semibold mb-6">Business Impact Analysis Coming Soon</h2>
-          <p className="text-gray-600">ROI and business impact comparison will be implemented here.</p>
+          <h2 className="text-xl font-semibold mb-6">Business Value Summary</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="text-center p-4 bg-green-50 rounded-lg">
+              <div className="text-3xl font-bold text-green-600 mb-2">
+                €{Math.round((totalMetrics.totalSavings - totalMetrics.totalCost) / totalMetrics.totalSessions * 365).toLocaleString()}
+              </div>
+              <div className="text-sm font-medium text-green-700">Annual Projected Savings</div>
+              <div className="text-xs text-gray-600 mt-1">Based on current performance</div>
+            </div>
+            
+            <div className="text-center p-4 bg-blue-50 rounded-lg">
+              <div className="text-3xl font-bold text-blue-600 mb-2">
+                {Math.round(totalMetrics.totalSessions * 365 / 30).toLocaleString()}
+              </div>
+              <div className="text-sm font-medium text-blue-700">Annual Sessions Projected</div>
+              <div className="text-xs text-gray-600 mt-1">Estimated yearly volume</div>
+            </div>
+            
+            <div className="text-center p-4 bg-purple-50 rounded-lg">
+              <div className="text-3xl font-bold text-purple-600 mb-2">
+                {Math.round(totalMetrics.totalSavings / totalMetrics.totalCost * 100) / 100}x
+              </div>
+              <div className="text-sm font-medium text-purple-700">Cost Efficiency Ratio</div>
+              <div className="text-xs text-gray-600 mt-1">Savings vs operational cost</div>
+            </div>
+          </div>
         </div>
       </div>
     );

@@ -1,18 +1,46 @@
 'use client';
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { clients } from '@/lib/data';
+import { getClientById, getBotsByClientId, getBotSessionsByClientId, getWorkspacesByClientId } from '@/lib/dataService';
+import type { Client, Bot, BotSession, Workspace } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import Sidebar from '@/components/Sidebar';
 import { UsageLine, IntentBars } from '@/components/Charts';
 import { Calendar, Download, Filter, TrendingUp, MessageSquare, Clock, Star, Users, AlertTriangle, CheckCircle, ChevronDown, X } from 'lucide-react';
 
 export default function AnalyticsDashboardPage({ params }: { params: { clientId: string } }) {
-  const client = clients.find(c => c.id === params.clientId);
+  const [client, setClient] = useState<Client | null>(null);
+  const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
+  const [bots, setBots] = useState<Bot[]>([]);
+  const [sessions, setSessions] = useState<BotSession[]>([]);
+  const [loading, setLoading] = useState(true);
   const [dateRange, setDateRange] = useState('7days');
+  const [selectedWorkspace, setSelectedWorkspace] = useState<string>('all');
   const [selectedBots, setSelectedBots] = useState<string[]>(['all']);
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const [metric, setMetric] = useState('conversations');
   const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Load data
+  useEffect(() => {
+    async function loadData() {
+      try {
+        const clientData = await getClientById(params.clientId);
+        const workspacesData = await getWorkspacesByClientId(params.clientId);
+        const botsData = await getBotsByClientId(params.clientId);
+        const sessionsData = await getBotSessionsByClientId(params.clientId);
+        
+        setClient(clientData || null);
+        setWorkspaces(workspacesData);
+        setBots(botsData);
+        setSessions(sessionsData);
+      } catch (error) {
+        console.error('Error loading data:', error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadData();
+  }, [params.clientId]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -25,77 +53,216 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filter bots based on selection
-  const filteredBots = useMemo(() => {
-    if (!client || selectedBots.includes('all')) {
-      return client?.mascots || [];
+  // Filter bots and sessions based on workspace and bot selection
+  const { filteredBots, filteredSessions } = useMemo(() => {
+    if (!bots.length) return { filteredBots: [], filteredSessions: [] };
+    
+    // First filter by workspace
+    const workspaceFilteredBots = selectedWorkspace === 'all' 
+      ? bots 
+      : bots.filter(bot => bot.workspaceId === selectedWorkspace);
+    
+    // Then filter by bot selection within workspace
+    const selectedBotsList = selectedBots.includes('all') || selectedBots.length === 0
+      ? workspaceFilteredBots 
+      : workspaceFilteredBots.filter(bot => selectedBots.includes(bot.id));
+    
+    const selectedBotIds = selectedBotsList.map(bot => bot.id);
+    const filteredSessionsList = sessions.filter(session => selectedBotIds.includes(session.bot_id));
+    
+    return { filteredBots: selectedBotsList, filteredSessions: filteredSessionsList };
+  }, [bots, sessions, selectedWorkspace, selectedBots]);
+
+  // Reset bot selection when workspace changes
+  useEffect(() => {
+    setSelectedBots(['all']);
+  }, [selectedWorkspace]);
+
+  // Calculate metrics from sessions
+  const metrics = useMemo(() => {
+    if (!filteredSessions.length) {
+      return {
+        totalConversations: 0,
+        avgResponseTime: 0,
+        avgResolutionRate: 0,
+        avgCsat: 0
+      };
     }
-    return client.mascots.filter(bot => selectedBots.includes(bot.id));
-  }, [client, selectedBots]);
 
-  if (!client) {
-    return <div className="p-6">Client not found</div>;
-  }
+    const totalConversations = filteredSessions.length;
+    const avgResponseTime = filteredSessions.reduce((sum, s) => sum + s.avg_response_time, 0) / filteredSessions.length / 1000; // Convert to seconds
+    const resolvedSessions = filteredSessions.filter(s => s.resolution_type === 'self_service' || s.completion_status === 'completed').length;
+    const avgResolutionRate = (resolvedSessions / totalConversations) * 100;
+    const avgCsat = filteredSessions.reduce((sum, s) => sum + s.user_rating, 0) / filteredSessions.length;
 
-  // Calculate metrics for selected bots
-  const totalConversations = filteredBots.reduce((acc, bot) => acc + bot.conversations, 0);
-  const avgResponseTime = filteredBots.length > 0 ? filteredBots.reduce((acc, bot) => acc + bot.metrics.responseTime, 0) / filteredBots.length : 0;
-  const avgResolutionRate = filteredBots.length > 0 ? filteredBots.reduce((acc, bot) => acc + bot.metrics.resolutionRate, 0) / filteredBots.length : 0;
-  const avgCsat = filteredBots.length > 0 ? filteredBots.reduce((acc, bot) => acc + bot.metrics.csat, 0) / filteredBots.length : 0;
+    return {
+      totalConversations,
+      avgResponseTime,
+      avgResolutionRate,
+      avgCsat
+    };
+  }, [filteredSessions]);
 
   // Bot selection handlers
   const handleBotToggle = (botId: string) => {
     if (botId === 'all') {
-      setSelectedBots(['all']);
+      // Toggle "All Bots" selection
+      if (selectedBots.includes('all') || selectedBots.length === 0) {
+        // If "All Bots" is currently selected, deselect it (go to no selection)
+        setSelectedBots([]);
+      } else {
+        // If individual bots are selected, switch to "All Bots"
+        setSelectedBots(['all']);
+      }
     } else {
       setSelectedBots(prev => {
-        const newSelection = prev.filter(id => id !== 'all');
+        // Remove 'all' if it's selected and we're selecting individual bots
+        const withoutAll = prev.filter(id => id !== 'all');
+        
         if (prev.includes(botId)) {
-          const filtered = newSelection.filter(id => id !== botId);
-          return filtered.length === 0 ? ['all'] : filtered;
+          // Deselect the bot
+          return withoutAll.filter(id => id !== botId);
         } else {
-          return [...newSelection, botId];
+          // Select the bot
+          return [...withoutAll, botId];
         }
       });
     }
   };
 
   const getSelectionLabel = () => {
-    if (selectedBots.includes('all')) {
+    const workspaceFilteredBots = bots.filter(bot => 
+      selectedWorkspace === 'all' || bot.workspaceId === selectedWorkspace
+    );
+      
+    if (selectedBots.includes('all') || selectedBots.length === 0) {
       return 'All Bots';
     }
     if (selectedBots.length === 1) {
-      const bot = client.mascots.find(b => b.id === selectedBots[0]);
+      const bot = workspaceFilteredBots.find(b => b.id === selectedBots[0]);
       return bot?.name || 'Select Bots';
     }
     return `${selectedBots.length} Bots Selected`;
   };
 
-  // Mock advanced metrics
-  const advancedMetrics = {
-    containmentRate: 78,
-    handoffRate: 22,
-    avgConversationLength: 4.2,
-    peakHours: ['9AM', '2PM', '7PM'],
-    topChannels: [
-      { name: 'Website', percentage: 65, count: 1243 },
-      { name: 'Mobile App', percentage: 28, count: 535 },
-      { name: 'Social Media', percentage: 7, count: 134 }
-    ],
-    sentimentAnalysis: {
-      positive: 68,
-      neutral: 25,
-      negative: 7
+  // Calculate real advanced metrics from session data
+  const advancedMetrics = useMemo(() => {
+    if (!filteredSessions.length) {
+      return {
+        containmentRate: 0,
+        handoffRate: 0,
+        avgConversationLength: 0,
+        peakHours: [],
+        topChannels: [],
+        sentimentAnalysis: { positive: 0, neutral: 0, negative: 0 }
+      };
     }
-  };
 
-  // Weekly comparison data
-  const weeklyComparison = [
-    { period: 'This Week', conversations: 850, resolved: 612, csat: 4.5 },
-    { period: 'Last Week', conversations: 780, resolved: 546, csat: 4.3 },
-    { period: '2 Weeks Ago', conversations: 720, resolved: 504, csat: 4.2 },
-    { period: '3 Weeks Ago', conversations: 690, resolved: 483, csat: 4.1 }
-  ];
+    // Containment rate (sessions NOT handed off to humans)
+    const handoffSessions = filteredSessions.filter(s => s.bot_handoff === true).length;
+    const containmentRate = Math.round(((filteredSessions.length - handoffSessions) / filteredSessions.length) * 100);
+    const handoffRate = Math.round((handoffSessions / filteredSessions.length) * 100);
+
+    // Average conversation length (messages per session)
+    const avgConversationLength = parseFloat((filteredSessions.reduce((sum, s) => sum + s.messages_sent, 0) / filteredSessions.length).toFixed(1));
+
+    // Peak hours analysis
+    const hourCounts = filteredSessions.reduce((acc, session) => {
+      const hour = new Date(session.start_time).getHours();
+      const timeSlot = hour < 12 ? `${hour}AM` : hour === 12 ? '12PM' : `${hour - 12}PM`;
+      acc[timeSlot] = (acc[timeSlot] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const peakHours = Object.entries(hourCounts)
+      .sort(([,a], [,b]) => b - a)
+      .slice(0, 3)
+      .map(([hour]) => hour);
+
+    // Channel distribution from real session data
+    const channelCounts = filteredSessions.reduce((acc, session) => {
+      const channel = session.channel || 'webchat';
+      acc[channel] = (acc[channel] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const totalSessions = filteredSessions.length;
+    const topChannels = Object.entries(channelCounts)
+      .map(([name, count]) => ({
+        name: name.charAt(0).toUpperCase() + name.slice(1),
+        percentage: Math.round((count / totalSessions) * 100),
+        count
+      }))
+      .sort((a, b) => b.count - a.count);
+
+    // Sentiment analysis from real session data
+    const sentimentCounts = filteredSessions.reduce((acc, session) => {
+      const sentiment = session.sentiment || 'neutral';
+      acc[sentiment] = (acc[sentiment] || 0) + 1;
+      return acc;
+    }, {} as Record<string, number>);
+    const sentimentAnalysis = {
+      positive: Math.round(((sentimentCounts.positive || 0) / totalSessions) * 100),
+      neutral: Math.round(((sentimentCounts.neutral || 0) / totalSessions) * 100),
+      negative: Math.round(((sentimentCounts.negative || 0) / totalSessions) * 100)
+    };
+
+    return {
+      containmentRate,
+      handoffRate,
+      avgConversationLength,
+      peakHours,
+      topChannels,
+      sentimentAnalysis
+    };
+  }, [filteredSessions]);
+
+  // Calculate weekly comparison from real session data
+  const weeklyComparison = useMemo(() => {
+    if (!filteredSessions.length) return [];
+
+    const now = new Date();
+    const weeklyData = [];
+
+    for (let weekOffset = 0; weekOffset < 4; weekOffset++) {
+      const weekStart = new Date(now);
+      weekStart.setDate(now.getDate() - (weekOffset * 7) - now.getDay());
+      const weekEnd = new Date(weekStart);
+      weekEnd.setDate(weekStart.getDate() + 6);
+
+      const weekSessions = filteredSessions.filter(session => {
+        const sessionDate = new Date(session.start_time);
+        return sessionDate >= weekStart && sessionDate <= weekEnd;
+      });
+
+      const resolvedSessions = weekSessions.filter(s => 
+        s.resolution_type === 'self_service' || s.completion_status === 'completed'
+      );
+
+      const avgCsat = weekSessions.length > 0 
+        ? parseFloat((weekSessions.reduce((sum, s) => sum + s.user_rating, 0) / weekSessions.length).toFixed(1))
+        : 0;
+
+      const periodLabel = weekOffset === 0 ? 'This Week' : 
+                         weekOffset === 1 ? 'Last Week' : 
+                         `${weekOffset} Weeks Ago`;
+
+      weeklyData.push({
+        period: periodLabel,
+        conversations: weekSessions.length,
+        resolved: resolvedSessions.length,
+        csat: avgCsat
+      });
+    }
+
+    return weeklyData;
+  }, [filteredSessions]);
+
+  if (loading) {
+    return <div className="p-6">Loading...</div>;
+  }
+
+  if (!client) {
+    return <div className="p-6">Client not found</div>;
+  }
 
   return (
     <div className="flex min-h-screen bg-gray-50">
@@ -107,10 +274,34 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
             <div className="flex items-center justify-between mb-4">
               <div>
                 <h1 className="text-2xl lg:text-3xl font-bold mb-2">Analytics Dashboard</h1>
-                <p className="text-gray-600">Comprehensive insights for {client.name}</p>
+                <p className="text-gray-600">
+                  {selectedWorkspace === 'all' 
+                    ? `Comprehensive insights for ${client.name}` 
+                    : `${workspaces.find(w => w.id === selectedWorkspace)?.name || 'Workspace'} - ${client.name}`
+                  }
+                </p>
               </div>
               <div className="flex gap-3 flex-wrap items-end">
-                {/* Bot Selection Dropdown - Most Prominent */}
+                {/* Workspace Selector */}
+                <div>
+                  <div className="flex items-center gap-2 mb-2">
+                    <span className="text-sm font-medium text-gray-700">Workspace:</span>
+                  </div>
+                  <select
+                    value={selectedWorkspace}
+                    onChange={(e) => setSelectedWorkspace(e.target.value)}
+                    className="px-4 py-2 border-2 border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-black min-w-[180px]"
+                  >
+                    <option value="all">All Workspaces</option>
+                    {workspaces.map(workspace => (
+                      <option key={workspace.id} value={workspace.id}>
+                        {workspace.name}
+                      </option>
+                    ))}
+                  </select>
+                </div>
+
+                {/* Bot Selection Dropdown */}
                 <div className="relative" ref={dropdownRef}>
                   <div className="flex items-center gap-2 mb-2">
                     <span className="text-sm font-medium text-gray-700">Bot Selection:</span>
@@ -132,41 +323,90 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                         <label className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer">
                           <input
                             type="checkbox"
-                            checked={selectedBots.includes('all')}
+                            checked={selectedBots.includes('all') || selectedBots.length === 0}
                             onChange={() => handleBotToggle('all')}
                             className="rounded border-gray-300 text-black focus:ring-black"
                           />
                           <span className="text-sm font-medium">All Bots</span>
                         </label>
                         <hr className="mx-3" />
-                        {client.mascots.map(bot => (
-                          <label key={bot.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer">
-                            <input
-                              type="checkbox"
-                              checked={selectedBots.includes(bot.id)}
-                              onChange={() => handleBotToggle(bot.id)}
-                              className="rounded border-gray-300 text-black focus:ring-black"
-                              disabled={selectedBots.includes('all')}
-                            />
-                            <img 
-                              src={bot.image} 
-                              alt={bot.name} 
-                              className="w-6 h-6 rounded-full" 
-                              style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                            />
-                            <div className="flex-1">
-                              <span className="text-sm font-medium">{bot.name}</span>
-                              <div className="text-xs text-gray-500">{bot.conversations} conversations</div>
-                            </div>
-                            <span className={`text-xs px-2 py-0.5 rounded-full ${
-                              bot.status === 'Live' ? 'bg-green-100 text-green-700' :
-                              bot.status === 'Paused' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-red-100 text-red-700'
-                            }`}>
-                              {bot.status}
-                            </span>
-                          </label>
-                        ))}
+                        {selectedWorkspace === 'all' ? (
+                          // Group by workspace when "All Workspaces" is selected
+                          workspaces.map(workspace => {
+                            const workspaceBots = bots.filter(bot => bot.workspaceId === workspace.id);
+                            if (workspaceBots.length === 0) return null;
+                            
+                            return (
+                              <div key={workspace.id}>
+                                <div className="px-3 py-2 text-xs font-medium text-gray-500 bg-gray-50 border-t">
+                                  {workspace.name}
+                                </div>
+                                {workspaceBots.map(bot => {
+                                  const botSessions = sessions.filter(s => s.bot_id === bot.id);
+                                  return (
+                                    <label key={bot.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer">
+                                      <input
+                                        type="checkbox"
+                                        checked={selectedBots.includes(bot.id)}
+                                        onChange={() => handleBotToggle(bot.id)}
+                                        className="rounded border-gray-300 text-black focus:ring-black"
+                                      />
+                                      <img 
+                                        src={bot.image} 
+                                        alt={bot.name} 
+                                        className="w-6 h-6 rounded-full" 
+                                        style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                                      />
+                                      <div className="flex-1">
+                                        <span className="text-sm font-medium">{bot.name}</span>
+                                        <div className="text-xs text-gray-500">{botSessions.length} sessions</div>
+                                      </div>
+                                      <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                        bot.status === 'Live' ? 'bg-green-100 text-green-700' :
+                                        bot.status === 'Paused' ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-red-100 text-red-700'
+                                      }`}>
+                                        {bot.status}
+                                      </span>
+                                    </label>
+                                  );
+                                })}
+                              </div>
+                            );
+                          })
+                        ) : (
+                          // Show bots from selected workspace only
+                          bots.filter(bot => bot.workspaceId === selectedWorkspace).map(bot => {
+                            const botSessions = sessions.filter(s => s.bot_id === bot.id);
+                            return (
+                              <label key={bot.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 cursor-pointer">
+                                <input
+                                  type="checkbox"
+                                  checked={selectedBots.includes(bot.id)}
+                                  onChange={() => handleBotToggle(bot.id)}
+                                  className="rounded border-gray-300 text-black focus:ring-black"
+                                />
+                                <img 
+                                  src={bot.image} 
+                                  alt={bot.name} 
+                                  className="w-6 h-6 rounded-full" 
+                                  style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                                />
+                                <div className="flex-1">
+                                  <span className="text-sm font-medium">{bot.name}</span>
+                                  <div className="text-xs text-gray-500">{botSessions.length} sessions</div>
+                                </div>
+                                <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                  bot.status === 'Live' ? 'bg-green-100 text-green-700' :
+                                  bot.status === 'Paused' ? 'bg-yellow-100 text-yellow-700' :
+                                  'bg-red-100 text-red-700'
+                                }`}>
+                                  {bot.status}
+                                </span>
+                              </label>
+                            );
+                          })
+                        )}
                       </div>
                     </div>
                   )}
@@ -193,33 +433,6 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                 </button>
               </div>
 
-              {/* Selected Bots Indicator */}
-              {!selectedBots.includes('all') && selectedBots.length > 0 && (
-                <div className="flex flex-wrap gap-2 mt-3">
-                  <span className="text-sm text-gray-600">Analyzing:</span>
-                  {selectedBots.map(botId => {
-                    const bot = client.mascots.find(b => b.id === botId);
-                    if (!bot) return null;
-                    return (
-                      <div key={botId} className="flex items-center gap-2 px-3 py-1 bg-blue-50 text-blue-700 rounded-lg text-sm">
-                        <img 
-                          src={bot.image} 
-                          alt={bot.name} 
-                          className="w-4 h-4 rounded-full" 
-                          style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                        />
-                        <span>{bot.name}</span>
-                        <button 
-                          onClick={() => handleBotToggle(botId)}
-                          className="hover:bg-blue-200 rounded-full p-0.5"
-                        >
-                          <X size={12} />
-                        </button>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
             </div>
           </div>
 
@@ -232,7 +445,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                 </div>
                 <span className="text-sm text-green-600 font-medium">+12%</span>
               </div>
-              <h3 className="text-2xl font-bold">{totalConversations.toLocaleString()}</h3>
+              <h3 className="text-2xl font-bold">{metrics.totalConversations.toLocaleString()}</h3>
               <p className="text-gray-600 text-sm">Total Conversations</p>
             </div>
 
@@ -243,7 +456,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                 </div>
                 <span className="text-sm text-green-600 font-medium">+5%</span>
               </div>
-              <h3 className="text-2xl font-bold">{avgResolutionRate.toFixed(0)}%</h3>
+              <h3 className="text-2xl font-bold">{metrics.avgResolutionRate.toFixed(0)}%</h3>
               <p className="text-gray-600 text-sm">Resolution Rate</p>
             </div>
 
@@ -254,7 +467,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                 </div>
                 <span className="text-sm text-red-600 font-medium">-0.2s</span>
               </div>
-              <h3 className="text-2xl font-bold">{avgResponseTime.toFixed(1)}s</h3>
+              <h3 className="text-2xl font-bold">{metrics.avgResponseTime.toFixed(1)}s</h3>
               <p className="text-gray-600 text-sm">Avg Response Time</p>
             </div>
 
@@ -265,7 +478,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                 </div>
                 <span className="text-sm text-green-600 font-medium">+0.3</span>
               </div>
-              <h3 className="text-2xl font-bold">{avgCsat.toFixed(1)}</h3>
+              <h3 className="text-2xl font-bold">{metrics.avgCsat.toFixed(1)}</h3>
               <p className="text-gray-600 text-sm">Customer Satisfaction</p>
             </div>
           </div>
@@ -285,12 +498,12 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                   <option value="escalated">Escalated</option>
                 </select>
               </div>
-              <UsageLine data={client.metrics.usageByDay} />
+              <UsageLine data={filteredSessions.length > 0 ? [{ date: '2025-09-01', conversations: filteredSessions.length, resolved: filteredSessions.filter(s => s.resolution_type === 'self_service').length }] : []} />
             </div>
 
             <div className="bg-white rounded-xl border border-gray-200 p-6">
               <h2 className="text-xl font-semibold mb-6">Top Intents</h2>
-              <IntentBars data={client.metrics.topIntents} />
+              <IntentBars data={filteredSessions.length > 0 ? Object.entries(filteredSessions.reduce((acc, s) => { acc[s.category] = (acc[s.category] || 0) + 1; return acc; }, {} as Record<string, number>)).map(([intent, count]) => ({ intent, count })).slice(0, 5) : []} />
             </div>
           </div>
 
@@ -406,43 +619,53 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                   </tr>
                 </thead>
                 <tbody>
-                  {filteredBots.map(bot => (
-                    <tr key={bot.id} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <img 
-                            src={bot.image} 
-                            alt={bot.name} 
-                            className="w-8 h-8 rounded-full" 
-                            style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                          />
-                          <span className="font-medium">{bot.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          bot.status === 'Live' ? 'bg-green-100 text-green-700' :
-                          bot.status === 'Paused' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
-                          {bot.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 font-medium">{bot.conversations}</td>
-                      <td className="px-6 py-4">{bot.metrics.responseTime}s</td>
-                      <td className="px-6 py-4">{bot.metrics.resolutionRate}%</td>
-                      <td className="px-6 py-4 flex items-center gap-1">
-                        <span>{bot.metrics.csat}</span>
-                        <Star size={14} className="text-yellow-500" />
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1 text-green-600">
-                          <TrendingUp size={14} />
-                          <span className="text-sm">+8%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {filteredBots.map(bot => {
+                    const botSessions = sessions.filter(s => s.bot_id === bot.id);
+                    const botMetrics = {
+                      conversations: botSessions.length,
+                      avgResponseTime: botSessions.length > 0 ? (botSessions.reduce((sum, s) => sum + s.avg_response_time, 0) / botSessions.length / 1000) : 0,
+                      resolutionRate: botSessions.length > 0 ? ((botSessions.filter(s => s.resolution_type === 'self_service' || s.completion_status === 'completed').length / botSessions.length) * 100) : 0,
+                      csat: botSessions.length > 0 ? (botSessions.reduce((sum, s) => sum + s.user_rating, 0) / botSessions.length) : 0
+                    };
+                    
+                    return (
+                      <tr key={bot.id} className="border-b hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <img 
+                              src={bot.image} 
+                              alt={bot.name} 
+                              className="w-8 h-8 rounded-full" 
+                              style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                            />
+                            <span className="font-medium">{bot.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            bot.status === 'Live' ? 'bg-green-100 text-green-700' :
+                            bot.status === 'Paused' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {bot.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 font-medium">{botMetrics.conversations}</td>
+                        <td className="px-6 py-4">{botMetrics.avgResponseTime.toFixed(1)}s</td>
+                        <td className="px-6 py-4">{botMetrics.resolutionRate.toFixed(0)}%</td>
+                        <td className="px-6 py-4 flex items-center gap-1">
+                          <span>{botMetrics.csat.toFixed(1)}</span>
+                          <Star size={14} className="text-yellow-500" />
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1 text-green-600">
+                            <TrendingUp size={14} />
+                            <span className="text-sm">+8%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>
@@ -453,7 +676,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
             <div className="bg-white rounded-xl border border-gray-200 overflow-hidden mb-8">
               <div className="p-6 border-b">
                 <h2 className="text-xl font-semibold">All Bots Performance</h2>
-                <p className="text-sm text-gray-600 mt-1">Overview of all {client.mascots.length} bots</p>
+                <p className="text-sm text-gray-600 mt-1">Overview of all {bots.length} bots</p>
               </div>
               <table className="w-full">
                 <thead className="bg-gray-50">
@@ -468,43 +691,53 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                   </tr>
                 </thead>
                 <tbody>
-                  {client.mascots.map(bot => (
-                    <tr key={bot.id} className="border-b hover:bg-gray-50">
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-3">
-                          <img 
-                            src={bot.image} 
-                            alt={bot.name} 
-                            className="w-8 h-8 rounded-full" 
-                            style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                          />
-                          <span className="font-medium">{bot.name}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4">
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                          bot.status === 'Live' ? 'bg-green-100 text-green-700' :
-                          bot.status === 'Paused' ? 'bg-yellow-100 text-yellow-700' :
-                          'bg-red-100 text-red-700'
-                        }`}>
-                          {bot.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 font-medium">{bot.conversations}</td>
-                      <td className="px-6 py-4">{bot.metrics.responseTime}s</td>
-                      <td className="px-6 py-4">{bot.metrics.resolutionRate}%</td>
-                      <td className="px-6 py-4 flex items-center gap-1">
-                        <span>{bot.metrics.csat}</span>
-                        <Star size={14} className="text-yellow-500" />
-                      </td>
-                      <td className="px-6 py-4">
-                        <div className="flex items-center gap-1 text-green-600">
-                          <TrendingUp size={14} />
-                          <span className="text-sm">+8%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
+                  {bots.map(bot => {
+                    const botSessions = sessions.filter(s => s.bot_id === bot.id);
+                    const botMetrics = {
+                      conversations: botSessions.length,
+                      avgResponseTime: botSessions.length > 0 ? (botSessions.reduce((sum, s) => sum + s.avg_response_time, 0) / botSessions.length / 1000) : 0,
+                      resolutionRate: botSessions.length > 0 ? ((botSessions.filter(s => s.resolution_type === 'self_service' || s.completion_status === 'completed').length / botSessions.length) * 100) : 0,
+                      csat: botSessions.length > 0 ? (botSessions.reduce((sum, s) => sum + s.user_rating, 0) / botSessions.length) : 0
+                    };
+                    
+                    return (
+                      <tr key={bot.id} className="border-b hover:bg-gray-50">
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-3">
+                            <img 
+                              src={bot.image} 
+                              alt={bot.name} 
+                              className="w-8 h-8 rounded-full" 
+                              style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                            />
+                            <span className="font-medium">{bot.name}</span>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4">
+                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                            bot.status === 'Live' ? 'bg-green-100 text-green-700' :
+                            bot.status === 'Paused' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-red-100 text-red-700'
+                          }`}>
+                            {bot.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 font-medium">{botMetrics.conversations}</td>
+                        <td className="px-6 py-4">{botMetrics.avgResponseTime.toFixed(1)}s</td>
+                        <td className="px-6 py-4">{botMetrics.resolutionRate.toFixed(0)}%</td>
+                        <td className="px-6 py-4 flex items-center gap-1">
+                          <span>{botMetrics.csat.toFixed(1)}</span>
+                          <Star size={14} className="text-yellow-500" />
+                        </td>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-1 text-green-600">
+                            <TrendingUp size={14} />
+                            <span className="text-sm">+8%</span>
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  })}
                 </tbody>
               </table>
             </div>

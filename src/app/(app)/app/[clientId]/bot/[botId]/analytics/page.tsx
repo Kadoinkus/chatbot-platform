@@ -938,7 +938,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 <DollarSign size={16} />
                 <span className="text-sm">Avg Session Cost</span>
               </div>
-              <p className="text-2xl font-bold">€{kpis.avgCost.toFixed(3)}</p>
+              <p className="text-2xl font-bold">€{kpis.avgCost.toFixed(2)}</p>
             </div>
           </div>
           
@@ -1465,7 +1465,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     return [{
       name: 'Cost Savings (€)',
       data: Object.entries(savingsByDay)
-        .map(([date, savings]) => ({ x: date, y: savings }))
+        .map(([date, savings]) => ({ x: date, y: parseFloat(savings.toFixed(2)) }))
         .sort((a, b) => new Date(a.x).getTime() - new Date(b.x).getTime())
     }];
   }
@@ -1490,7 +1490,12 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         labels: { style: { colors: '#64748b' } }
       },
       yaxis: {
-        labels: { style: { colors: '#64748b' } },
+        labels: { 
+          style: { colors: '#64748b' },
+          formatter: function (value: number) {
+            return Math.round(value).toString();
+          }
+        },
         title: { text: 'Euros (€)', style: { color: '#64748b' } }
       },
       grid: { borderColor: '#f1f5f9' }
@@ -1505,15 +1510,15 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     return [
       {
         name: 'Bot Cost',
-        data: [{ x: 'Total Cost', y: totalAutomationCost }]
+        data: [{ x: 'Total Cost', y: parseFloat(totalAutomationCost.toFixed(2)) }]
       },
       {
         name: 'Human Equivalent Cost',
-        data: [{ x: 'Total Cost', y: totalHumanCost }]
+        data: [{ x: 'Total Cost', y: parseFloat(totalHumanCost.toFixed(2)) }]
       },
       {
         name: 'Savings',
-        data: [{ x: 'Total Cost', y: totalSavings }]
+        data: [{ x: 'Total Cost', y: parseFloat(totalSavings.toFixed(2)) }]
       }
     ];
   }

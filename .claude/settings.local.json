@@ -2,7 +2,9 @@
   "permissions": {
     "allow": [
       "Bash(npm run lint)",
-      "Bash(touch:*)"
+      "Bash(touch:*)",
+      "Bash(for:*)",
+      "Bash(done)"
     ],
     "deny": [],
     "ask": []

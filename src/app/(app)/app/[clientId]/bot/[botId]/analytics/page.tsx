@@ -1350,7 +1350,12 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         labels: { style: { colors: '#64748b', fontSize: '12px' } }
       },
       yaxis: {
-        labels: { style: { colors: '#64748b', fontSize: '12px' } },
+        labels: { 
+          style: { colors: '#64748b', fontSize: '12px' },
+          formatter: function (value: number) {
+            return value.toFixed(2);
+          }
+        },
         title: { text: 'Seconds', style: { color: '#64748b' } }
       },
       grid: { borderColor: '#f1f5f9' }

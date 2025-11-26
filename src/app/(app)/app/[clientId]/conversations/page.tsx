@@ -30,7 +30,14 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   const [dateRange, setDateRange] = useState('7days');
 
   if (!client) {
-    return <div className="p-6">Client not found</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
+        <main className="flex-1 lg:ml-16 p-6">
+          <p className="text-foreground-secondary">Client not found</p>
+        </main>
+      </div>
+    );
   }
 
   // Mock conversation data
@@ -130,47 +137,48 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   const getStatusIcon = (status: string) => {
     switch (status) {
       case 'resolved':
-        return <CheckCircle size={16} className="text-green-600" />;
+        return <CheckCircle size={16} className="text-success-600 dark:text-success-500" />;
       case 'escalated':
-        return <AlertCircle size={16} className="text-orange-600" />;
+        return <AlertCircle size={16} className="text-warning-600 dark:text-warning-500" />;
       case 'pending':
-        return <Clock size={16} className="text-blue-600" />;
+        return <Clock size={16} className="text-info-600 dark:text-info-500" />;
       default:
         return null;
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <AuthGuard clientId={params.clientId}>
+    <div className="flex min-h-screen bg-background">
       <Sidebar clientId={client.id} />
-      
-      <main className="flex-1 lg:ml-16">
+
+      <main className="flex-1 lg:ml-16 min-h-screen">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
           <div className="mb-6 lg:mb-8">
-            <h1 className="text-2xl lg:text-3xl font-bold mb-2">Conversations</h1>
-            <p className="text-gray-600">View and manage all customer conversations</p>
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">Conversations</h1>
+            <p className="text-foreground-secondary">View and manage all customer conversations</p>
           </div>
 
           {/* Filters Bar */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
+          <div className="card p-4 mb-6">
             <div className="flex flex-wrap gap-4">
               <div className="flex-1 min-w-[300px]">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground-tertiary" size={20} />
                   <input
                     type="text"
                     placeholder="Search conversations..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                    className="input pl-10"
                   />
                 </div>
               </div>
-              
+
               <select
                 value={selectedBot}
                 onChange={(e) => setSelectedBot(e.target.value)}
-                className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                className="select"
               >
                 <option value="all">All Bots</option>
                 {client.mascots.map(bot => (
@@ -181,7 +189,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
               <select
                 value={selectedStatus}
                 onChange={(e) => setSelectedStatus(e.target.value)}
-                className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                className="select"
               >
                 <option value="all">All Status</option>
                 <option value="resolved">Resolved</option>
@@ -192,7 +200,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
               <select
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}
-                className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                className="select"
               >
                 <option value="today">Today</option>
                 <option value="7days">Last 7 days</option>
@@ -200,12 +208,12 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
                 <option value="custom">Custom range</option>
               </select>
 
-              <button className="flex items-center gap-2 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
+              <button className="btn-secondary px-4 py-2">
                 <Filter size={20} />
                 More filters
               </button>
 
-              <button className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
+              <button className="btn-primary px-4 py-2">
                 <Download size={20} />
                 Export
               </button>
@@ -214,100 +222,100 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
           {/* Stats Overview */}
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <p className="text-sm text-gray-600 mb-1">Total Conversations</p>
-              <p className="text-2xl font-bold">{conversations.length}</p>
-              <p className="text-xs text-green-600 mt-1">+12% from last period</p>
+            <div className="card p-4">
+              <p className="text-sm text-foreground-secondary mb-1">Total Conversations</p>
+              <p className="text-2xl font-bold text-foreground">{conversations.length}</p>
+              <p className="text-xs text-success-600 dark:text-success-500 mt-1">+12% from last period</p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <p className="text-sm text-gray-600 mb-1">Resolved</p>
-              <p className="text-2xl font-bold">{conversations.filter(c => c.status === 'resolved').length}</p>
-              <p className="text-xs text-gray-600 mt-1">60% resolution rate</p>
+            <div className="card p-4">
+              <p className="text-sm text-foreground-secondary mb-1">Resolved</p>
+              <p className="text-2xl font-bold text-foreground">{conversations.filter(c => c.status === 'resolved').length}</p>
+              <p className="text-xs text-foreground-tertiary mt-1">60% resolution rate</p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <p className="text-sm text-gray-600 mb-1">Avg Duration</p>
-              <p className="text-2xl font-bold">10.6 min</p>
-              <p className="text-xs text-gray-600 mt-1">-2 min from last week</p>
+            <div className="card p-4">
+              <p className="text-sm text-foreground-secondary mb-1">Avg Duration</p>
+              <p className="text-2xl font-bold text-foreground">10.6 min</p>
+              <p className="text-xs text-foreground-tertiary mt-1">-2 min from last week</p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <p className="text-sm text-gray-600 mb-1">Satisfaction</p>
-              <p className="text-2xl font-bold">4.5/5</p>
-              <p className="text-xs text-green-600 mt-1">Above average</p>
+            <div className="card p-4">
+              <p className="text-sm text-foreground-secondary mb-1">Satisfaction</p>
+              <p className="text-2xl font-bold text-foreground">4.5/5</p>
+              <p className="text-xs text-success-600 dark:text-success-500 mt-1">Above average</p>
             </div>
           </div>
 
           {/* Conversations Table */}
-          <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-            <table className="w-full">
-              <thead className="bg-gray-50 border-b">
+          <div className="card overflow-hidden">
+            <table className="data-table">
+              <thead>
                 <tr>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">User</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Bot</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Last Message</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Status</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Duration</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Time</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Rating</th>
-                  <th className="text-left px-6 py-3 text-sm font-medium text-gray-700">Actions</th>
+                  <th>User</th>
+                  <th>Bot</th>
+                  <th>Last Message</th>
+                  <th>Status</th>
+                  <th>Duration</th>
+                  <th>Time</th>
+                  <th>Rating</th>
+                  <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {filteredConversations.map((conv) => (
-                  <tr key={conv.id} className="border-b hover:bg-gray-50">
-                    <td className="px-6 py-4">
+                  <tr key={conv.id}>
+                    <td>
                       <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 bg-gray-300 rounded-full flex items-center justify-center">
-                          <User size={16} className="text-gray-600" />
+                        <div className="avatar-placeholder">
+                          <User size={16} className="text-foreground-tertiary" />
                         </div>
                         <div>
-                          <p className="font-medium text-sm">{conv.userName}</p>
-                          <p className="text-xs text-gray-500">ID: {conv.userId}</p>
+                          <p className="font-medium text-sm text-foreground">{conv.userName}</p>
+                          <p className="text-xs text-foreground-tertiary">ID: {conv.userId}</p>
                         </div>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm">{conv.botName}</p>
+                    <td>
+                      <p className="text-sm text-foreground">{conv.botName}</p>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm text-gray-700 truncate max-w-xs">{conv.lastMessage}</p>
+                    <td>
+                      <p className="text-sm text-foreground-secondary truncate max-w-xs">{conv.lastMessage}</p>
                       <div className="flex gap-1 mt-1">
                         {conv.tags.map(tag => (
-                          <span key={tag} className="text-xs bg-gray-100 px-2 py-0.5 rounded">
+                          <span key={tag} className="tag">
                             {tag}
                           </span>
                         ))}
                       </div>
                     </td>
-                    <td className="px-6 py-4">
+                    <td>
                       <div className="flex items-center gap-2">
                         {getStatusIcon(conv.status)}
-                        <span className="text-sm capitalize">{conv.status}</span>
+                        <span className="text-sm text-foreground capitalize">{conv.status}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm">{conv.duration} min</p>
-                      <p className="text-xs text-gray-500">{conv.messages} msgs</p>
+                    <td>
+                      <p className="text-sm text-foreground">{conv.duration} min</p>
+                      <p className="text-xs text-foreground-tertiary">{conv.messages} msgs</p>
                     </td>
-                    <td className="px-6 py-4">
-                      <p className="text-sm">{formatTimestamp(conv.timestamp)}</p>
+                    <td>
+                      <p className="text-sm text-foreground">{formatTimestamp(conv.timestamp)}</p>
                     </td>
-                    <td className="px-6 py-4">
+                    <td>
                       {conv.satisfaction && (
                         <div className="flex items-center gap-1">
-                          <span className="text-sm">{conv.satisfaction}</span>
-                          <span className="text-yellow-500">★</span>
+                          <span className="text-sm text-foreground">{conv.satisfaction}</span>
+                          <span className="text-warning-500">★</span>
                         </div>
                       )}
                     </td>
-                    <td className="px-6 py-4">
+                    <td>
                       <div className="flex gap-2">
                         <Link
                           href={`/app/${client.id}/conversations/${conv.id}`}
-                          className="text-sm text-blue-600 hover:text-blue-800"
+                          className="link text-sm"
                         >
                           View
                         </Link>
-                        <button className="text-sm text-gray-600 hover:text-gray-800">
+                        <button className="link-subtle text-sm">
                           Export
                         </button>
                       </div>
@@ -318,24 +326,24 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
             </table>
             
             {/* Pagination */}
-            <div className="px-6 py-4 flex items-center justify-between bg-gray-50">
-              <p className="text-sm text-gray-600">
+            <div className="px-6 py-4 flex items-center justify-between bg-background-secondary border-t border-border">
+              <p className="text-sm text-foreground-secondary">
                 Showing 1 to {filteredConversations.length} of {conversations.length} results
               </p>
-              <div className="flex gap-2">
-                <button className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-white">
+              <div className="pagination">
+                <button className="pagination-btn">
                   Previous
                 </button>
-                <button className="px-3 py-1 bg-black text-white rounded-lg text-sm">
+                <button className="pagination-btn-active">
                   1
                 </button>
-                <button className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-white">
+                <button className="pagination-btn">
                   2
                 </button>
-                <button className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-white">
+                <button className="pagination-btn">
                   3
                 </button>
-                <button className="px-3 py-1 border border-gray-300 rounded-lg text-sm hover:bg-white">
+                <button className="pagination-btn">
                   Next
                 </button>
               </div>
@@ -344,5 +352,6 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
         </div>
       </main>
     </div>
+    </AuthGuard>
   );
 }

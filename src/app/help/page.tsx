@@ -121,34 +121,34 @@ export default function HelpPage() {
     : currentFaqs;
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-background">
       <Sidebar />
-      
-      <main className="flex-1 lg:ml-16">
+
+      <main className="flex-1 lg:ml-16 min-h-screen">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
         {/* Header */}
         <div className="mb-8">
-          <Link 
+          <Link
             href="/app"
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+            className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-4 transition-colors"
           >
             <ArrowLeft size={16} />
             Back to Dashboard
           </Link>
-          
+
           <div className="text-center">
-            <h1 className="text-4xl font-bold mb-4">Help Center</h1>
-            <p className="text-xl text-gray-600 mb-8">Get answers to your questions and learn how to make the most of our platform</p>
-            
+            <h1 className="text-4xl font-bold text-foreground mb-4">Help Center</h1>
+            <p className="text-xl text-foreground-secondary mb-8">Get answers to your questions and learn how to make the most of our platform</p>
+
             {/* Search */}
             <div className="max-w-2xl mx-auto relative">
-              <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-foreground-tertiary" />
               <input
                 type="text"
                 placeholder="Search help articles..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 border border-gray-200 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 text-lg"
+                className="input w-full pl-12 py-4 text-lg"
               />
             </div>
           </div>
@@ -157,8 +157,8 @@ export default function HelpPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Categories Sidebar */}
           <div className="lg:col-span-1">
-            <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-6">
-              <h3 className="font-semibold mb-4">Categories</h3>
+            <div className="card p-6 sticky top-6">
+              <h3 className="font-semibold text-foreground mb-4">Categories</h3>
               <nav className="space-y-2">
                 {helpCategories.map((category) => {
                   const Icon = category.icon;
@@ -168,8 +168,8 @@ export default function HelpPage() {
                       onClick={() => setSelectedCategory(category.id)}
                       className={`w-full flex items-center gap-3 px-4 py-3 rounded-lg text-left transition-colors ${
                         selectedCategory === category.id
-                          ? 'bg-black text-white'
-                          : 'hover:bg-gray-50 text-gray-700'
+                          ? 'bg-interactive text-foreground-inverse'
+                          : 'hover:bg-background-hover text-foreground-secondary'
                       }`}
                     >
                       <Icon size={18} />
@@ -183,16 +183,16 @@ export default function HelpPage() {
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="bg-white rounded-xl border border-gray-200">
+            <div className="card">
               {/* Category Header */}
-              <div className="border-b border-gray-200 p-6">
+              <div className="border-b border-border p-6">
                 <div className="flex items-center gap-3">
                   {(() => {
                     const category = helpCategories.find(c => c.id === selectedCategory);
                     const Icon = category?.icon || HelpCircle;
-                    return <Icon size={24} />;
+                    return <Icon size={24} className="text-foreground" />;
                   })()}
-                  <h2 className="text-2xl font-bold">
+                  <h2 className="text-2xl font-bold text-foreground">
                     {helpCategories.find(c => c.id === selectedCategory)?.label}
                   </h2>
                 </div>
@@ -201,29 +201,31 @@ export default function HelpPage() {
               {/* FAQ Content */}
               <div className="p-6">
                 {filteredFaqs.length === 0 ? (
-                  <div className="text-center py-12">
-                    <HelpCircle size={48} className="mx-auto text-gray-300 mb-4" />
-                    <h3 className="text-lg font-medium text-gray-900 mb-2">No results found</h3>
-                    <p className="text-gray-600">Try adjusting your search or browse different categories</p>
+                  <div className="empty-state">
+                    <div className="empty-state-icon">
+                      <HelpCircle size={24} className="text-foreground-tertiary" />
+                    </div>
+                    <h3 className="empty-state-title">No results found</h3>
+                    <p className="empty-state-message">Try adjusting your search or browse different categories</p>
                   </div>
                 ) : (
                   <div className="space-y-4">
                     {filteredFaqs.map((faq, index) => (
-                      <div key={index} className="border border-gray-200 rounded-lg">
+                      <div key={index} className="border border-border rounded-lg">
                         <button
                           onClick={() => setExpandedFaq(expandedFaq === index ? null : index)}
-                          className="w-full flex items-center justify-between p-4 text-left hover:bg-gray-50"
+                          className="w-full flex items-center justify-between p-4 text-left hover:bg-background-hover transition-colors"
                         >
-                          <h3 className="font-medium pr-4">{faq.question}</h3>
+                          <h3 className="font-medium text-foreground pr-4">{faq.question}</h3>
                           {expandedFaq === index ? (
-                            <ChevronDown size={20} className="text-gray-400 flex-shrink-0" />
+                            <ChevronDown size={20} className="text-foreground-tertiary flex-shrink-0" />
                           ) : (
-                            <ChevronRight size={20} className="text-gray-400 flex-shrink-0" />
+                            <ChevronRight size={20} className="text-foreground-tertiary flex-shrink-0" />
                           )}
                         </button>
                         {expandedFaq === index && (
-                          <div className="px-4 pb-4 border-t border-gray-100">
-                            <p className="text-gray-600 pt-4">{faq.answer}</p>
+                          <div className="px-4 pb-4 border-t border-border">
+                            <p className="text-foreground-secondary pt-4">{faq.answer}</p>
                           </div>
                         )}
                       </div>
@@ -235,66 +237,66 @@ export default function HelpPage() {
 
             {/* Quick Actions */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="card p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-blue-100 rounded-full flex items-center justify-center">
-                    <MessageCircle size={24} className="text-blue-600" />
+                  <div className="w-12 h-12 bg-info-100 dark:bg-info-700/30 rounded-full flex items-center justify-center">
+                    <MessageCircle size={24} className="text-info-600 dark:text-info-500" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Contact Support</h3>
-                    <p className="text-sm text-gray-600">Get help from our team</p>
+                    <h3 className="font-semibold text-foreground">Contact Support</h3>
+                    <p className="text-sm text-foreground-secondary">Get help from our team</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <a 
-                    href="mailto:support@example.com" 
-                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                  <a
+                    href="mailto:support@example.com"
+                    className="flex items-center gap-2 text-foreground-secondary hover:text-foreground transition-colors"
                   >
                     <Mail size={16} />
                     support@example.com
                   </a>
-                  <a 
-                    href="tel:+1234567890" 
-                    className="flex items-center gap-2 text-gray-600 hover:text-gray-900 transition-colors"
+                  <a
+                    href="tel:+1234567890"
+                    className="flex items-center gap-2 text-foreground-secondary hover:text-foreground transition-colors"
                   >
                     <Phone size={16} />
                     +1 (234) 567-8900
                   </a>
-                  <div className="flex items-center gap-2 text-gray-600">
+                  <div className="flex items-center gap-2 text-foreground-secondary">
                     <Clock size={16} />
                     Mon-Fri 9AM-6PM EST
                   </div>
                 </div>
               </div>
 
-              <div className="bg-white rounded-xl border border-gray-200 p-6">
+              <div className="card p-6">
                 <div className="flex items-center gap-3 mb-4">
-                  <div className="w-12 h-12 bg-green-100 rounded-full flex items-center justify-center">
-                    <Book size={24} className="text-green-600" />
+                  <div className="w-12 h-12 bg-success-100 dark:bg-success-700/30 rounded-full flex items-center justify-center">
+                    <Book size={24} className="text-success-600 dark:text-success-500" />
                   </div>
                   <div>
-                    <h3 className="font-semibold">Documentation</h3>
-                    <p className="text-sm text-gray-600">Detailed guides and tutorials</p>
+                    <h3 className="font-semibold text-foreground">Documentation</h3>
+                    <p className="text-sm text-foreground-secondary">Detailed guides and tutorials</p>
                   </div>
                 </div>
                 <div className="space-y-3">
-                  <a 
-                    href="#" 
-                    className="flex items-center justify-between text-gray-600 hover:text-gray-900 transition-colors"
+                  <a
+                    href="#"
+                    className="flex items-center justify-between text-foreground-secondary hover:text-foreground transition-colors"
                   >
                     <span>API Documentation</span>
                     <ExternalLink size={16} />
                   </a>
-                  <a 
-                    href="#" 
-                    className="flex items-center justify-between text-gray-600 hover:text-gray-900 transition-colors"
+                  <a
+                    href="#"
+                    className="flex items-center justify-between text-foreground-secondary hover:text-foreground transition-colors"
                   >
                     <span>Integration Guides</span>
                     <ExternalLink size={16} />
                   </a>
-                  <a 
-                    href="#" 
-                    className="flex items-center justify-between text-gray-600 hover:text-gray-900 transition-colors"
+                  <a
+                    href="#"
+                    className="flex items-center justify-between text-foreground-secondary hover:text-foreground transition-colors"
                   >
                     <span>Video Tutorials</span>
                     <ExternalLink size={16} />
@@ -304,37 +306,37 @@ export default function HelpPage() {
             </div>
 
             {/* Status */}
-            <div className="mt-8 bg-white rounded-xl border border-gray-200 p-6">
+            <div className="card p-6 mt-8">
               <div className="flex items-center gap-3 mb-4">
-                <div className="w-3 h-3 bg-green-500 rounded-full"></div>
-                <h3 className="font-semibold">System Status</h3>
+                <div className="w-3 h-3 bg-success-500 rounded-full"></div>
+                <h3 className="font-semibold text-foreground">System Status</h3>
               </div>
               <div className="space-y-2">
                 <div className="flex items-center justify-between py-2">
-                  <span className="text-gray-600">API Services</span>
+                  <span className="text-foreground-secondary">API Services</span>
                   <div className="flex items-center gap-2">
-                    <CheckCircle size={16} className="text-green-500" />
-                    <span className="text-green-600 font-medium">Operational</span>
+                    <CheckCircle size={16} className="text-success-500" />
+                    <span className="text-success-600 dark:text-success-500 font-medium">Operational</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between py-2">
-                  <span className="text-gray-600">Chat Widgets</span>
+                  <span className="text-foreground-secondary">Chat Widgets</span>
                   <div className="flex items-center gap-2">
-                    <CheckCircle size={16} className="text-green-500" />
-                    <span className="text-green-600 font-medium">Operational</span>
+                    <CheckCircle size={16} className="text-success-500" />
+                    <span className="text-success-600 dark:text-success-500 font-medium">Operational</span>
                   </div>
                 </div>
                 <div className="flex items-center justify-between py-2">
-                  <span className="text-gray-600">Dashboard</span>
+                  <span className="text-foreground-secondary">Dashboard</span>
                   <div className="flex items-center gap-2">
-                    <CheckCircle size={16} className="text-green-500" />
-                    <span className="text-green-600 font-medium">Operational</span>
+                    <CheckCircle size={16} className="text-success-500" />
+                    <span className="text-success-600 dark:text-success-500 font-medium">Operational</span>
                   </div>
                 </div>
               </div>
-              <a 
-                href="#" 
-                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 mt-4 text-sm"
+              <a
+                href="#"
+                className="link inline-flex items-center gap-2 mt-4 text-sm"
               >
                 View detailed status
                 <ExternalLink size={14} />

@@ -41,7 +41,14 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
   });
 
   if (!client || !bot) {
-    return <div className="p-6">Bot not found</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
+        <main className="flex-1 lg:ml-16 p-6">
+          <p className="text-foreground-secondary">Bot not found</p>
+        </main>
+      </div>
+    );
   }
 
   const tabs = [
@@ -61,15 +68,15 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-background">
       <Sidebar clientId={client.id} />
-      
-      <main className="flex-1 ml-16">
-        <div className="container max-w-7xl mx-auto p-8">
+
+      <main className="flex-1 lg:ml-16 min-h-screen">
+        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
           <div className="mb-6">
-            <Link 
+            <Link
               href={`/app/${client.id}`}
-              className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-4"
+              className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-4 transition-colors"
             >
               <ArrowLeft size={16} />
               Back to bots
@@ -77,27 +84,27 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
           </div>
 
           {/* Bot Header */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <div className="card p-6 mb-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <img 
-                  src={bot.image} 
+                <img
+                  src={bot.image}
                   alt={bot.name}
-                  className="w-16 h-16 rounded-full bg-gray-100"
+                  className="w-16 h-16 rounded-full bg-background-tertiary"
                 />
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <h1 className="text-2xl font-bold">{bot.name}</h1>
+                    <h1 className="text-2xl font-bold text-foreground">{bot.name}</h1>
                     <StatusBadge status={bot.status} />
                   </div>
-                  <p className="text-gray-600 mb-1">Technical configuration and administration</p>
-                  <p className="text-sm text-gray-500">Client: {client.name}</p>
+                  <p className="text-foreground-secondary mb-1">Technical configuration and administration</p>
+                  <p className="text-sm text-foreground-tertiary">Client: {client.name}</p>
                 </div>
               </div>
               {hasChanges && (
                 <button
                   onClick={handleSave}
-                  className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                  className="btn-primary px-4 py-2"
                 >
                   <Save size={20} />
                   Save Changes

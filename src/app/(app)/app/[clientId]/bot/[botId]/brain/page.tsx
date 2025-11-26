@@ -133,11 +133,25 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
   }, [params.clientId, params.botId]);
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
+        <main className="flex-1 lg:ml-16 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
+        </main>
+      </div>
+    );
   }
-  
+
   if (!client || !bot) {
-    return <div className="p-6">Bot not found</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
+        <main className="flex-1 lg:ml-16 p-6">
+          <p className="text-foreground-secondary">Bot not found</p>
+        </main>
+      </div>
+    );
   }
 
   const handleSliderChange = (trait: string, value: number) => {
@@ -326,49 +340,49 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-background">
       <Sidebar clientId={client.id} />
-      
-      <main className="flex-1 lg:ml-16">
+
+      <main className="flex-1 lg:ml-16 min-h-screen">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <Link 
+          <Link
             href={`/app/${client.id}`}
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+            className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-6 transition-colors"
           >
             <ArrowLeft size={16} />
             Back to bots
           </Link>
-          
+
           {/* Bot Header */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <div className="card p-6 mb-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <img 
-                  src={bot.image} 
+                <img
+                  src={bot.image}
                   alt={bot.name}
                   className="w-16 h-16 rounded-full"
                   style={{ backgroundColor: brandColor }}
                 />
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <h1 className="text-2xl font-bold">{bot.name}</h1>
+                    <h1 className="text-2xl font-bold text-foreground">{bot.name}</h1>
                     <StatusBadge status={bot.status} />
                   </div>
-                  <p className="text-gray-600 mb-1">
-                    {integrationMode === 'builtin' 
-                      ? 'Configure personality and knowledge base' 
+                  <p className="text-foreground-secondary mb-1">
+                    {integrationMode === 'builtin'
+                      ? 'Configure personality and knowledge base'
                       : 'Connect to your existing chatbot provider'
                     }
                   </p>
-                  <p className="text-sm text-gray-500">Client: {client.name}</p>
+                  <p className="text-sm text-foreground-tertiary">Client: {client.name}</p>
                 </div>
               </div>
-              
+
               <div className="flex gap-3">
-                <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
+                <button className="btn-secondary px-4 py-2">
                   Test Responses
                 </button>
-                <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
+                <button className="btn-primary px-4 py-2">
                   Save Changes
                 </button>
               </div>
@@ -376,15 +390,15 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
           </div>
           
           {/* Mode Selector */}
-          <div className="mb-6 bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="font-semibold mb-4">Choose Configuration Mode</h3>
+          <div className="card p-6 mb-6">
+            <h3 className="font-semibold text-foreground mb-4">Choose Configuration Mode</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                integrationMode === 'builtin' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
+                integrationMode === 'builtin' ? 'border-interactive bg-background-secondary' : 'border-border hover:border-border-secondary'
               }`}>
-                <input 
-                  type="radio" 
-                  name="mode" 
+                <input
+                  type="radio"
+                  name="mode"
                   value="builtin"
                   checked={integrationMode === 'builtin'}
                   onChange={() => {
@@ -394,18 +408,18 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                   className="sr-only"
                 />
                 <div className="flex items-center gap-3 mb-2">
-                  <Brain size={20} />
-                  <p className="font-medium">Built-in AI</p>
+                  <Brain size={20} className="text-foreground" />
+                  <p className="font-medium text-foreground">Built-in AI</p>
                 </div>
-                <p className="text-sm text-gray-600">Configure personality, knowledge base, and chatflows using our platform</p>
+                <p className="text-sm text-foreground-secondary">Configure personality, knowledge base, and chatflows using our platform</p>
               </label>
-              
+
               <label className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
-                integrationMode === 'external' ? 'border-black bg-gray-50' : 'border-gray-200 hover:border-gray-300'
+                integrationMode === 'external' ? 'border-interactive bg-background-secondary' : 'border-border hover:border-border-secondary'
               }`}>
-                <input 
-                  type="radio" 
-                  name="mode" 
+                <input
+                  type="radio"
+                  name="mode"
                   value="external"
                   checked={integrationMode === 'external'}
                   onChange={() => {
@@ -415,17 +429,17 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                   className="sr-only"
                 />
                 <div className="flex items-center gap-3 mb-2">
-                  <Link2 size={20} />
-                  <p className="font-medium">External Provider</p>
+                  <Link2 size={20} className="text-foreground" />
+                  <p className="font-medium text-foreground">External Provider</p>
                 </div>
-                <p className="text-sm text-gray-600">Connect your existing chatbot and use our 3D mascot frontend only</p>
+                <p className="text-sm text-foreground-secondary">Connect your existing chatbot and use our 3D mascot frontend only</p>
               </label>
             </div>
-            
+
             {integrationMode === 'external' && (
-              <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>External mode:</strong> Your chatbot provider handles all AI logic. 
+              <div className="alert-info mt-4">
+                <p className="text-sm">
+                  <strong>External mode:</strong> Your chatbot provider handles all AI logic.
                   We only provide the 3D mascot interface and animations.
                 </p>
               </div>
@@ -434,7 +448,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-xl border border-gray-200">
+              <div className="card">
                 <div className="border-b border-gray-200">
                   <div className="flex gap-6 p-6 overflow-x-auto">
                     <button

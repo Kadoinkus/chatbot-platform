@@ -36,11 +36,11 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
         <main className="flex-1 lg:ml-16">
           <div className="flex items-center justify-center h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
           </div>
         </main>
       </div>
@@ -49,11 +49,11 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
 
   if (!client) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
         <main className="flex-1 lg:ml-16">
           <div className="text-center p-8">
-            <p className="text-gray-600">Client not found</p>
+            <p className="text-foreground-secondary">Client not found</p>
           </div>
         </main>
       </div>
@@ -61,15 +61,15 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-background">
       <Sidebar clientId={params.clientId} />
-      
+
       <main className="flex-1 lg:ml-16">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
           {/* Header */}
           <div className="mb-8">
-            <h1 className="text-3xl font-bold mb-2">Choose Your Plan</h1>
-            <p className="text-gray-600">Select the perfect plan for your workspace needs. Each workspace can have its own plan.</p>
+            <h1 className="text-3xl font-bold text-foreground mb-2">Choose Your Plan</h1>
+            <p className="text-foreground-secondary">Select the perfect plan for your workspace needs. Each workspace can have its own plan.</p>
           </div>
 
           {/* Plan Cards */}
@@ -168,12 +168,12 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
                 ]
               }
             ].map((planConfig) => (
-              <div 
-                key={planConfig.tier} 
-                className={`relative rounded-xl border-2 p-6 ${
+              <div
+                key={planConfig.tier}
+                className={`relative rounded-xl border-2 p-6 bg-surface-elevated ${
                   planConfig.tier === 'premium'
-                    ? 'border-purple-500 bg-gradient-to-b from-purple-50 to-white'
-                    : 'border-gray-200 hover:border-gray-300'
+                    ? 'border-plan-premium-border bg-plan-premium-bg'
+                    : 'border-border hover:border-border-secondary'
                 }`}
                 style={{
                   display: 'grid',
@@ -184,67 +184,67 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
                 {/* Header Section */}
                 <div className="text-center">
                   <div className="flex items-center justify-center mb-2">
-                    {planConfig.tier === 'starter' && <Package size={24} className="text-green-600" />}
-                    {planConfig.tier === 'basic' && <Zap size={24} className="text-blue-600" />}
-                    {planConfig.tier === 'premium' && <Crown size={24} className="text-purple-600" />}
-                    {planConfig.tier === 'enterprise' && <Shield size={24} className="text-gray-800" />}
+                    {planConfig.tier === 'starter' && <Package size={24} className="text-success-600 dark:text-success-500" />}
+                    {planConfig.tier === 'basic' && <Zap size={24} className="text-info-600 dark:text-info-500" />}
+                    {planConfig.tier === 'premium' && <Crown size={24} className="text-plan-premium-text" />}
+                    {planConfig.tier === 'enterprise' && <Shield size={24} className="text-foreground" />}
                   </div>
-                  <h4 className="text-xl font-bold mb-1">{planConfig.name}</h4>
-                  <div className="text-3xl font-bold mb-1">
+                  <h4 className="text-xl font-bold text-foreground mb-1">{planConfig.name}</h4>
+                  <div className="text-3xl font-bold text-foreground mb-1">
                     {planConfig.price === 0 ? (
                       <span className="text-2xl">Price on Request</span>
                     ) : (
                       <>
                         €{planConfig.price}
-                        <span className="text-lg text-gray-600 font-normal">/month</span>
+                        <span className="text-lg text-foreground-secondary font-normal">/month</span>
                       </>
                     )}
                   </div>
-                  <p className="text-sm text-gray-600">{planConfig.mascotSlots} mascot slot{planConfig.mascotSlots !== 1 ? 's' : ''}</p>
+                  <p className="text-sm text-foreground-secondary">{planConfig.mascotSlots} mascot slot{planConfig.mascotSlots !== 1 ? 's' : ''}</p>
                 </div>
 
                 {/* Resource Pool Section */}
                 <div className="mt-6">
-                  <p className="font-medium text-sm text-gray-700 mb-3">Shared Resource Pool:</p>
+                  <p className="font-medium text-sm text-foreground-secondary mb-3">Shared Resource Pool:</p>
                   <div className="grid grid-cols-2 gap-2">
-                    <div className="bg-blue-50 rounded-lg p-2 border border-blue-100">
+                    <div className="bg-info-100 dark:bg-info-700/30 rounded-lg p-2 border border-info-500/30">
                       <div className="flex items-center gap-2 mb-1">
-                        <Server size={12} className="text-blue-600" />
-                        <span className="text-xs text-blue-700 font-medium">Bundle Loads</span>
+                        <Server size={12} className="text-info-600 dark:text-info-500" />
+                        <span className="text-xs text-info-700 dark:text-info-500 font-medium">Bundle Loads</span>
                       </div>
-                      <span className="text-xs font-bold text-blue-900">{planConfig.sharedLimits.bundleLoads.toLocaleString()}</span>
+                      <span className="text-xs font-bold text-foreground">{planConfig.sharedLimits.bundleLoads.toLocaleString()}</span>
                     </div>
-                    <div className="bg-purple-50 rounded-lg p-2 border border-purple-100">
+                    <div className="bg-plan-premium-bg rounded-lg p-2 border border-plan-premium-border">
                       <div className="flex items-center gap-2 mb-1">
-                        <MessageCircle size={12} className="text-purple-600" />
-                        <span className="text-xs text-purple-700 font-medium">Messages</span>
+                        <MessageCircle size={12} className="text-plan-premium-text" />
+                        <span className="text-xs text-plan-premium-text font-medium">Messages</span>
                       </div>
-                      <span className="text-xs font-bold text-purple-900">{planConfig.sharedLimits.chatMessages.toLocaleString()}</span>
+                      <span className="text-xs font-bold text-foreground">{planConfig.sharedLimits.chatMessages.toLocaleString()}</span>
                     </div>
-                    <div className="bg-green-50 rounded-lg p-2 border border-green-100">
+                    <div className="bg-success-100 dark:bg-success-700/30 rounded-lg p-2 border border-success-500/30">
                       <div className="flex items-center gap-2 mb-1">
-                        <Activity size={12} className="text-green-600" />
-                        <span className="text-xs text-green-700 font-medium">API Calls</span>
+                        <Activity size={12} className="text-success-600 dark:text-success-500" />
+                        <span className="text-xs text-success-700 dark:text-success-500 font-medium">API Calls</span>
                       </div>
-                      <span className="text-xs font-bold text-green-900">{planConfig.sharedLimits.apiCalls.toLocaleString()}</span>
+                      <span className="text-xs font-bold text-foreground">{planConfig.sharedLimits.apiCalls.toLocaleString()}</span>
                     </div>
-                    <div className="bg-orange-50 rounded-lg p-2 border border-orange-100">
+                    <div className="bg-warning-100 dark:bg-warning-700/30 rounded-lg p-2 border border-warning-500/30">
                       <div className="flex items-center gap-2 mb-1">
-                        <Server size={12} className="text-orange-600" />
-                        <span className="text-xs text-orange-700 font-medium">Storage</span>
+                        <Server size={12} className="text-warning-600 dark:text-warning-500" />
+                        <span className="text-xs text-warning-700 dark:text-warning-500 font-medium">Storage</span>
                       </div>
-                      <span className="text-xs font-bold text-orange-900">{planConfig.sharedLimits.storage}</span>
+                      <span className="text-xs font-bold text-foreground">{planConfig.sharedLimits.storage}</span>
                     </div>
                   </div>
                 </div>
 
                 {/* Key Features */}
                 <div className="mt-6">
-                  <p className="font-medium text-sm text-gray-700 mb-2">Key Features:</p>
+                  <p className="font-medium text-sm text-foreground-secondary mb-2">Key Features:</p>
                   <ul className="space-y-1">
                     {planConfig.features.map((feature, i) => (
-                      <li key={i} className="flex items-start gap-2 text-sm">
-                        <CheckCircle size={14} className="text-green-500 mt-0.5 flex-shrink-0" />
+                      <li key={i} className="flex items-start gap-2 text-sm text-foreground">
+                        <CheckCircle size={14} className="text-success-500 mt-0.5 flex-shrink-0" />
                         <span>{feature}</span>
                       </li>
                     ))}
@@ -254,28 +254,28 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
                 {/* Buttons Section */}
                 <div className="mt-6 space-y-2">
                   {planConfig.tier === 'enterprise' ? (
-                    <button 
+                    <button
                       onClick={() => console.log('Contact sales for Enterprise')}
-                      className="w-full py-2 px-4 bg-gradient-to-r from-gray-800 to-black text-white rounded-lg font-medium hover:from-gray-900 hover:to-gray-800 transition-colors"
+                      className="btn-primary w-full py-2 px-4"
                     >
                       Contact Sales
                     </button>
                   ) : (
-                    <button 
+                    <button
                       onClick={() => console.log(`Assign ${planConfig.tier} to workspace`)}
                       className={`w-full py-2 px-4 rounded-lg font-medium transition-colors ${
                         planConfig.tier === 'basic'
-                          ? 'bg-blue-600 text-white hover:bg-blue-700'
+                          ? 'bg-info-600 text-white hover:bg-info-700'
                           : planConfig.tier === 'premium'
-                          ? 'bg-purple-600 text-white hover:bg-purple-700'
-                          : 'bg-black text-white hover:bg-gray-800'
+                          ? 'bg-plan-premium-text text-white hover:opacity-90'
+                          : 'btn-primary'
                       }`}
                     >
                       Assign to Workspace
                     </button>
                   )}
-                  
-                  <button className="w-full py-1 px-4 text-sm text-gray-600 hover:text-gray-900 transition-colors">
+
+                  <button className="w-full py-1 px-4 text-sm text-foreground-secondary hover:text-foreground transition-colors">
                     Learn More
                   </button>
                 </div>
@@ -284,147 +284,147 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
           </div>
 
           {/* Detailed Comparison Table */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 shadow-sm mb-8">
-            <h4 className="font-semibold mb-6 flex items-center gap-2 text-lg">
-              <Info size={20} className="text-blue-600" />
+          <div className="card p-6 mb-8">
+            <h4 className="font-semibold mb-6 flex items-center gap-2 text-lg text-foreground">
+              <Info size={20} className="text-info-600 dark:text-info-500" />
               Detailed Plan Comparison
             </h4>
-            
+
             <div className="overflow-x-auto">
-              <table className="w-full table-fixed">
+              <table className="data-table table-fixed">
                 <thead>
-                  <tr className="bg-gray-50 border-b-2 border-gray-200">
-                    <th className="text-left py-4 px-4 font-semibold text-gray-800 rounded-tl-lg w-2/5">Feature</th>
-                    <th className="text-center py-4 px-2 font-semibold text-gray-800 w-36">
+                  <tr>
+                    <th className="w-2/5">Feature</th>
+                    <th className="text-center w-36">
                       <div className="flex flex-col items-center gap-1">
-                        <Package size={16} className="text-green-600" />
+                        <Package size={16} className="text-success-600 dark:text-success-500" />
                         <span>Starter</span>
-                        <span className="text-xs font-normal text-gray-600">$99/mo</span>
+                        <span className="text-xs font-normal text-foreground-tertiary">$99/mo</span>
                       </div>
                     </th>
-                    <th className="text-center py-4 px-2 font-semibold text-gray-800 w-36">
+                    <th className="text-center w-36">
                       <div className="flex flex-col items-center gap-1">
-                        <Zap size={16} className="text-blue-600" />
+                        <Zap size={16} className="text-info-600 dark:text-info-500" />
                         <span>Basic</span>
-                        <span className="text-xs font-normal text-gray-600">$299/mo</span>
+                        <span className="text-xs font-normal text-foreground-tertiary">$299/mo</span>
                       </div>
                     </th>
-                    <th className="text-center py-4 px-2 font-semibold text-gray-800 w-36">
+                    <th className="text-center w-36">
                       <div className="flex flex-col items-center gap-1">
-                        <Crown size={16} className="text-purple-600" />
+                        <Crown size={16} className="text-plan-premium-text" />
                         <span>Premium</span>
-                        <span className="text-xs font-normal text-gray-600">€2499/mo</span>
+                        <span className="text-xs font-normal text-foreground-tertiary">€2499/mo</span>
                       </div>
                     </th>
-                    <th className="text-center py-4 px-2 font-semibold text-gray-800 rounded-tr-lg w-36">
+                    <th className="text-center w-36">
                       <div className="flex flex-col items-center gap-1">
-                        <Shield size={16} className="text-gray-700" />
+                        <Shield size={16} className="text-foreground-secondary" />
                         <span>Enterprise</span>
-                        <span className="text-xs font-normal text-gray-600">Custom</span>
+                        <span className="text-xs font-normal text-foreground-tertiary">Custom</span>
                       </div>
                     </th>
                   </tr>
                 </thead>
                 <tbody>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-medium text-gray-700">Mascot Slots</td>
-                    <td className="text-center py-4 px-2 text-gray-600">1</td>
-                    <td className="text-center py-4 px-2 text-gray-600">2</td>
-                    <td className="text-center py-4 px-2 text-gray-600">5</td>
-                    <td className="text-center py-4 px-2 text-gray-600">10</td>
+                  <tr>
+                    <td className="font-medium text-foreground-secondary">Mascot Slots</td>
+                    <td className="text-center text-foreground-secondary">1</td>
+                    <td className="text-center text-foreground-secondary">2</td>
+                    <td className="text-center text-foreground-secondary">5</td>
+                    <td className="text-center text-foreground-secondary">10</td>
                   </tr>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-medium text-gray-700">Bundle Loads (Shared)</td>
-                    <td className="text-center py-4 px-2 text-gray-600">1,000</td>
-                    <td className="text-center py-4 px-2 text-gray-600">5,000</td>
-                    <td className="text-center py-4 px-2 text-gray-600">25,000</td>
-                    <td className="text-center py-4 px-2 text-gray-600">100,000</td>
+                  <tr>
+                    <td className="font-medium text-foreground-secondary">Bundle Loads (Shared)</td>
+                    <td className="text-center text-foreground-secondary">1,000</td>
+                    <td className="text-center text-foreground-secondary">5,000</td>
+                    <td className="text-center text-foreground-secondary">25,000</td>
+                    <td className="text-center text-foreground-secondary">100,000</td>
                   </tr>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-medium text-gray-700">Chat Messages (Shared)</td>
-                    <td className="text-center py-4 px-2 text-gray-600">25,000</td>
-                    <td className="text-center py-4 px-2 text-gray-600">100,000</td>
-                    <td className="text-center py-4 px-2 text-gray-600">500,000</td>
-                    <td className="text-center py-4 px-2 text-gray-600">2,000,000</td>
+                  <tr>
+                    <td className="font-medium text-foreground-secondary">Chat Messages (Shared)</td>
+                    <td className="text-center text-foreground-secondary">25,000</td>
+                    <td className="text-center text-foreground-secondary">100,000</td>
+                    <td className="text-center text-foreground-secondary">500,000</td>
+                    <td className="text-center text-foreground-secondary">2,000,000</td>
                   </tr>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-medium text-gray-700">API Calls (Shared)</td>
-                    <td className="text-center py-4 px-2 text-gray-600">50,000</td>
-                    <td className="text-center py-4 px-2 text-gray-600">250,000</td>
-                    <td className="text-center py-4 px-2 text-gray-600">1,000,000</td>
-                    <td className="text-center py-4 px-2 text-gray-600">5,000,000</td>
+                  <tr>
+                    <td className="font-medium text-foreground-secondary">API Calls (Shared)</td>
+                    <td className="text-center text-foreground-secondary">50,000</td>
+                    <td className="text-center text-foreground-secondary">250,000</td>
+                    <td className="text-center text-foreground-secondary">1,000,000</td>
+                    <td className="text-center text-foreground-secondary">5,000,000</td>
                   </tr>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-medium text-gray-700">Storage</td>
-                    <td className="text-center py-4 px-2 text-gray-600">50MB</td>
-                    <td className="text-center py-4 px-2 text-gray-600">200MB</td>
-                    <td className="text-center py-4 px-2 text-gray-600">2GB</td>
-                    <td className="text-center py-4 px-2 text-gray-600">10GB</td>
+                  <tr>
+                    <td className="font-medium text-foreground-secondary">Storage</td>
+                    <td className="text-center text-foreground-secondary">50MB</td>
+                    <td className="text-center text-foreground-secondary">200MB</td>
+                    <td className="text-center text-foreground-secondary">2GB</td>
+                    <td className="text-center text-foreground-secondary">10GB</td>
                   </tr>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-medium text-gray-700">Knowledgebase Size</td>
-                    <td className="text-center py-4 px-2 text-gray-600">0.1MB</td>
-                    <td className="text-center py-4 px-2 text-gray-600">0.5MB</td>
-                    <td className="text-center py-4 px-2 text-gray-600">5MB</td>
-                    <td className="text-center py-4 px-2 text-gray-600">20MB</td>
+                  <tr>
+                    <td className="font-medium text-foreground-secondary">Knowledgebase Size</td>
+                    <td className="text-center text-foreground-secondary">0.1MB</td>
+                    <td className="text-center text-foreground-secondary">0.5MB</td>
+                    <td className="text-center text-foreground-secondary">5MB</td>
+                    <td className="text-center text-foreground-secondary">20MB</td>
                   </tr>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-medium text-gray-700">Chatflows</td>
-                    <td className="text-center py-4 px-2 text-gray-600">Basic Q&A</td>
-                    <td className="text-center py-4 px-2 text-gray-600">Templates</td>
-                    <td className="text-center py-4 px-2 text-gray-600">Advanced</td>
-                    <td className="text-center py-4 px-2 text-gray-600">Custom</td>
+                  <tr>
+                    <td className="font-medium text-foreground-secondary">Chatflows</td>
+                    <td className="text-center text-foreground-secondary">Basic Q&A</td>
+                    <td className="text-center text-foreground-secondary">Templates</td>
+                    <td className="text-center text-foreground-secondary">Advanced</td>
+                    <td className="text-center text-foreground-secondary">Custom</td>
                   </tr>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-medium text-gray-700">Templates Included</td>
-                    <td className="text-center py-4 px-2 text-gray-600">Basic only</td>
-                    <td className="text-center py-4 px-2 text-green-600 font-medium">Basic + Pro</td>
-                    <td className="text-center py-4 px-2 text-green-600 font-medium">Basic + Pro</td>
-                    <td className="text-center py-4 px-2 text-green-600 font-medium">Basic + Pro</td>
+                  <tr>
+                    <td className="font-medium text-foreground-secondary">Templates Included</td>
+                    <td className="text-center text-foreground-secondary">Basic only</td>
+                    <td className="text-center text-success-600 dark:text-success-500 font-medium">Basic + Pro</td>
+                    <td className="text-center text-success-600 dark:text-success-500 font-medium">Basic + Pro</td>
+                    <td className="text-center text-success-600 dark:text-success-500 font-medium">Basic + Pro</td>
                   </tr>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-medium text-gray-700">Marketplace Access</td>
-                    <td className="text-center py-4 px-2 text-green-600">
+                  <tr>
+                    <td className="font-medium text-foreground-secondary">Marketplace Access</td>
+                    <td className="text-center text-success-600 dark:text-success-500">
                       <Check size={16} className="mx-auto" />
                     </td>
-                    <td className="text-center py-4 px-2 text-green-600">
+                    <td className="text-center text-success-600 dark:text-success-500">
                       <Check size={16} className="mx-auto" />
                     </td>
-                    <td className="text-center py-4 px-2 text-green-600">
+                    <td className="text-center text-success-600 dark:text-success-500">
                       <Check size={16} className="mx-auto" />
                     </td>
-                    <td className="text-center py-4 px-2 text-green-600">
+                    <td className="text-center text-success-600 dark:text-success-500">
                       <Check size={16} className="mx-auto" />
                     </td>
                   </tr>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-medium text-gray-700">Custom Mascot Design</td>
-                    <td className="text-center py-4 px-2 text-red-500">
+                  <tr>
+                    <td className="font-medium text-foreground-secondary">Custom Mascot Design</td>
+                    <td className="text-center text-error-500">
                       <X size={16} className="mx-auto" />
                     </td>
-                    <td className="text-center py-4 px-2 text-red-500">
+                    <td className="text-center text-error-500">
                       <X size={16} className="mx-auto" />
                     </td>
-                    <td className="text-center py-4 px-2 text-red-500">
+                    <td className="text-center text-error-500">
                       <X size={16} className="mx-auto" />
                     </td>
-                    <td className="text-center py-4 px-2 text-green-600">
+                    <td className="text-center text-success-600 dark:text-success-500">
                       <Check size={16} className="mx-auto" />
                     </td>
                   </tr>
-                  <tr className="border-b border-gray-100 hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-medium text-gray-700">Security Level</td>
-                    <td className="text-center py-4 px-2 text-gray-600">Basic</td>
-                    <td className="text-center py-4 px-2 text-gray-600">Enhanced</td>
-                    <td className="text-center py-4 px-2 text-gray-600">Advanced</td>
-                    <td className="text-center py-4 px-2 text-gray-600">Enterprise</td>
+                  <tr>
+                    <td className="font-medium text-foreground-secondary">Security Level</td>
+                    <td className="text-center text-foreground-secondary">Basic</td>
+                    <td className="text-center text-foreground-secondary">Enhanced</td>
+                    <td className="text-center text-foreground-secondary">Advanced</td>
+                    <td className="text-center text-foreground-secondary">Enterprise</td>
                   </tr>
-                  <tr className="hover:bg-gray-50 transition-colors">
-                    <td className="py-4 px-4 font-medium text-gray-700">Support</td>
-                    <td className="text-center py-4 px-2 text-gray-600">Email</td>
-                    <td className="text-center py-4 px-2 text-gray-600">Priority</td>
-                    <td className="text-center py-4 px-2 text-gray-600">24/7 Phone</td>
-                    <td className="text-center py-4 px-2 text-gray-600">Dedicated Manager</td>
+                  <tr>
+                    <td className="font-medium text-foreground-secondary">Support</td>
+                    <td className="text-center text-foreground-secondary">Email</td>
+                    <td className="text-center text-foreground-secondary">Priority</td>
+                    <td className="text-center text-foreground-secondary">24/7 Phone</td>
+                    <td className="text-center text-foreground-secondary">Dedicated Manager</td>
                   </tr>
                 </tbody>
               </table>
@@ -432,18 +432,18 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
           </div>
 
           {/* Credit Pricing Info */}
-          <div className="bg-blue-50 rounded-xl p-6">
-            <h4 className="font-semibold mb-2 flex items-center gap-2">
-              <Zap size={20} className="text-blue-600" />
+          <div className="bg-info-100 dark:bg-info-700/30 rounded-xl p-6 border border-info-500/30">
+            <h4 className="font-semibold mb-2 flex items-center gap-2 text-foreground">
+              <Zap size={20} className="text-info-600 dark:text-info-500" />
               Need More Flexibility?
             </h4>
-            <p className="text-gray-700 mb-4">
+            <p className="text-foreground-secondary mb-4">
               You can always add credit-based mascots to any plan for overflow capacity or specialized use cases.
             </p>
             <div className="flex gap-4">
               <div className="text-sm">
-                <p className="font-medium">Credit Pricing:</p>
-                <p className="text-gray-600">Bundle Loads: $0.04 each • Messages: $0.0015 each • API Calls: $0.0001 each</p>
+                <p className="font-medium text-foreground">Credit Pricing:</p>
+                <p className="text-foreground-secondary">Bundle Loads: $0.04 each • Messages: $0.0015 each • API Calls: $0.0001 each</p>
               </div>
             </div>
           </div>

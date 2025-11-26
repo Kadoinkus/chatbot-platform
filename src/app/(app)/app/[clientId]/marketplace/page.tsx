@@ -220,22 +220,36 @@ export default function MarketplacePage({ params }: { params: { clientId: string
   });
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
+        <main className="flex-1 lg:ml-16 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
+        </main>
+      </div>
+    );
   }
 
   if (!client) {
-    return <div className="p-6">Client not found</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
+        <main className="flex-1 lg:ml-16 p-6">
+          <p className="text-foreground-secondary">Client not found</p>
+        </main>
+      </div>
+    );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-background">
       <Sidebar clientId={client.id} />
-      
-      <main className="flex-1 lg:ml-16">
+
+      <main className="flex-1 lg:ml-16 min-h-screen">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
           <div className="mb-6 lg:mb-8">
-            <h1 className="text-2xl lg:text-3xl font-bold mb-2">3D Mascot Marketplace</h1>
-            <p className="text-gray-600">Choose from our collection of animated 3D mascots for your chatbots</p>
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">3D Mascot Marketplace</h1>
+            <p className="text-foreground-secondary">Choose from our collection of animated 3D mascots for your chatbots</p>
           </div>
 
           {/* Search and Filters */}
@@ -243,13 +257,13 @@ export default function MarketplacePage({ params }: { params: { clientId: string
             {/* Search Bar */}
             <div className="flex flex-col lg:flex-row lg:items-center gap-4">
               <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground-tertiary" size={20} />
                 <input
                   type="text"
                   placeholder="Search 3D mascot templates..."
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black text-gray-900 placeholder-gray-500 bg-white"
+                  className="input pl-10"
                 />
               </div>
             </div>
@@ -258,7 +272,7 @@ export default function MarketplacePage({ params }: { params: { clientId: string
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
               {/* Appearance Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Appearance</label>
+                <label className="label">Appearance</label>
                 <div className="flex gap-2 flex-wrap">
                   {appearanceTypes.map(type => (
                     <button
@@ -266,8 +280,8 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                       onClick={() => setSelectedAppearance(type)}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         selectedAppearance === type
-                          ? 'bg-blue-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-info-600 text-white'
+                          : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
                       }`}
                     >
                       {type}
@@ -278,7 +292,7 @@ export default function MarketplacePage({ params }: { params: { clientId: string
 
               {/* Studio Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Studio</label>
+                <label className="label">Studio</label>
                 <div className="flex gap-2 flex-wrap">
                   {studioFilters.map(studio => (
                     <button
@@ -286,8 +300,8 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                       onClick={() => setSelectedStudio(studio)}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         selectedStudio === studio
-                          ? 'bg-green-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-success-600 text-white'
+                          : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
                       }`}
                     >
                       {studio}
@@ -298,7 +312,7 @@ export default function MarketplacePage({ params }: { params: { clientId: string
 
               {/* Pricing Filter */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Pricing</label>
+                <label className="label">Pricing</label>
                 <div className="flex gap-2 flex-wrap">
                   {pricingFilters.map(pricing => (
                     <button
@@ -306,8 +320,8 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                       onClick={() => setSelectedPricing(pricing)}
                       className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
                         selectedPricing === pricing
-                          ? 'bg-purple-600 text-white'
-                          : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                          ? 'bg-plan-premium-text text-white'
+                          : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
                       }`}
                     >
                       {pricing}
@@ -321,29 +335,29 @@ export default function MarketplacePage({ params }: { params: { clientId: string
           {/* Template Grid */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
             {filteredTemplates.map(template => (
-              <div key={template.id} className="bg-white rounded-xl border border-gray-200 overflow-hidden hover:shadow-lg transition-all duration-200 hover:scale-105 flex flex-col h-full">
+              <div key={template.id} className="card-hover overflow-hidden flex flex-col h-full">
                 {/* Header with badges */}
                 <div className="relative">
                   <div className="absolute top-3 left-3 flex gap-2 z-10">
                     {template.popular && (
-                      <span className="bg-gradient-to-r from-orange-400 to-pink-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                        🔥 Popular
+                      <span className="bg-gradient-to-r from-warning-500 to-error-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                        Popular
                       </span>
                     )}
                     {template.new && (
-                      <span className="bg-gradient-to-r from-green-400 to-blue-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                        ✨ New
+                      <span className="bg-gradient-to-r from-success-500 to-info-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                        New
                       </span>
                     )}
                   </div>
-                  
+
                   {/* Large Avatar */}
                   <div className="p-6 pt-10">
                     <div className="w-20 h-20 mx-auto">
-                      <img 
+                      <img
                         src={template.image}
                         alt={template.name}
-                        className="w-full h-full rounded-full bg-gray-100 border-4 border-white shadow-lg"
+                        className="w-full h-full rounded-full bg-background-tertiary border-4 border-surface-elevated shadow-lg"
                       />
                     </div>
                   </div>
@@ -354,42 +368,42 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                   {/* Top Content */}
                   <div className="flex-1">
                     <div className="text-center mb-3">
-                      <h3 className="font-bold text-lg mb-1">{template.name}</h3>
+                      <h3 className="font-bold text-lg text-foreground mb-1">{template.name}</h3>
                       <div className="flex items-center justify-center gap-2 mb-2">
-                        <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded">{template.appearance}</span>
-                        <span className="text-xs bg-green-100 text-green-700 px-2 py-1 rounded">{template.studio}</span>
+                        <span className="text-xs bg-info-100 dark:bg-info-700/30 text-info-700 dark:text-info-500 px-2 py-1 rounded">{template.appearance}</span>
+                        <span className="text-xs bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500 px-2 py-1 rounded">{template.studio}</span>
                       </div>
-                      <p className="text-sm text-gray-600 line-clamp-2">{template.description}</p>
+                      <p className="text-sm text-foreground-secondary line-clamp-2">{template.description}</p>
                     </div>
 
                     {/* Rating */}
                     <div className="flex items-center justify-center gap-1 mb-3">
                       <div className="flex">
                         {[...Array(5)].map((_, i) => (
-                          <Star 
-                            key={i} 
-                            size={12} 
+                          <Star
+                            key={i}
+                            size={12}
                             className={`${
-                              i < Math.floor(template.rating) 
-                                ? 'text-yellow-400 fill-current' 
-                                : 'text-gray-300'
+                              i < Math.floor(template.rating)
+                                ? 'text-warning-500 fill-current'
+                                : 'text-foreground-tertiary'
                             }`}
                           />
                         ))}
                       </div>
-                      <span className="text-sm font-medium">{template.rating}</span>
-                      <span className="text-xs text-gray-500">({template.reviews.toLocaleString()})</span>
+                      <span className="text-sm font-medium text-foreground">{template.rating}</span>
+                      <span className="text-xs text-foreground-tertiary">({template.reviews.toLocaleString()})</span>
                     </div>
 
                     {/* Stats */}
                     <div className="grid grid-cols-2 gap-2 mb-3">
                       <div className="flex items-center gap-1 text-xs">
-                        <Zap size={12} className="text-blue-500" />
-                        <span className="text-gray-600">{template.animations} animations</span>
+                        <Zap size={12} className="text-info-500" />
+                        <span className="text-foreground-secondary">{template.animations} animations</span>
                       </div>
                       <div className="flex items-center gap-1 text-xs">
-                        <Heart size={12} className="text-pink-500" />
-                        <span className="text-gray-600">{template.expressions} expressions</span>
+                        <Heart size={12} className="text-error-500" />
+                        <span className="text-foreground-secondary">{template.expressions} expressions</span>
                       </div>
                     </div>
 
@@ -397,12 +411,12 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                     <div className="mb-3">
                       <div className="flex flex-wrap gap-1">
                         {template.features.slice(0, 2).map(feature => (
-                          <span key={feature} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded">
+                          <span key={feature} className="tag">
                             {feature}
                           </span>
                         ))}
                         {template.features.length > 2 && (
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-foreground-tertiary">
                             +{template.features.length - 2} more
                           </span>
                         )}
@@ -411,25 +425,25 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                   </div>
 
                   {/* Price and Action - Always at bottom */}
-                  <div className="flex items-center justify-between pt-2 border-t border-gray-100">
+                  <div className="flex items-center justify-between pt-2 border-t border-border">
                     <div>
                       {template.price === 'Free' ? (
-                        <span className="text-lg font-bold text-green-600">Free</span>
+                        <span className="text-lg font-bold text-success-600 dark:text-success-500">Free</span>
                       ) : (
                         <div className="flex items-center gap-1">
-                          <span className="text-lg font-bold">€{template.price}</span>
-                          <span className="text-sm text-gray-500">/month</span>
+                          <span className="text-lg font-bold text-foreground">€{template.price}</span>
+                          <span className="text-sm text-foreground-tertiary">/month</span>
                         </div>
                       )}
                     </div>
                     {addedItems.has(template.id) ? (
-                      <button className="bg-green-600 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium flex items-center gap-2" disabled>
+                      <button className="bg-success-600 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium flex items-center gap-2" disabled>
                         <CheckCircle size={14} />
                         Added
                       </button>
                     ) : (
-                      <button 
-                        className="bg-black text-white px-4 py-2 rounded-lg hover:bg-gray-800 transition-colors text-sm font-medium flex items-center gap-2"
+                      <button
+                        className="btn-primary px-4 py-2 text-sm"
                         onClick={() => {
                           addItem({
                             id: template.id,
@@ -464,12 +478,12 @@ export default function MarketplacePage({ params }: { params: { clientId: string
           </div>
 
           {filteredTemplates.length === 0 && (
-            <div className="text-center py-12">
-              <div className="text-gray-400 mb-2">
-                <MessageCircle size={48} className="mx-auto mb-4" />
+            <div className="empty-state">
+              <div className="empty-state-icon">
+                <MessageCircle size={24} className="text-foreground-tertiary" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900 mb-2">No templates found</h3>
-              <p className="text-gray-600">Try adjusting your search or filter criteria</p>
+              <h3 className="empty-state-title">No templates found</h3>
+              <p className="empty-state-message">Try adjusting your search or filter criteria</p>
             </div>
           )}
         </div>

@@ -96,7 +96,14 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
   };
 
   if (!client || !bot) {
-    return <div className="p-6">Bot not found</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
+        <main className="flex-1 lg:ml-16 p-6">
+          <p className="text-foreground-secondary">Bot not found</p>
+        </main>
+      </div>
+    );
   }
 
   const formatTime = (date: Date) => {

@@ -37,7 +37,7 @@
     "clientId": "c1",
     "name": "HR Support",
     "description": "Internal employee assistance",
-    "plan": "basic",
+    "plan": "growth",
     "bundleLoads": {
       "limit": 5000,
       "used": 1200,
@@ -103,7 +103,7 @@
     "clientId": "c2",
     "name": "Main Workspace",
     "description": "All company operations",
-    "plan": "basic",
+    "plan": "growth",
     "bundleLoads": {
       "limit": 5000,
       "used": 3200,

@@ -59,9 +59,10 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
     )
   );
 
-  const planColors = {
+  const planColors: Record<string, string> = {
     starter: 'bg-gray-100 text-gray-700',
     basic: 'bg-blue-100 text-blue-700',
+    growth: 'bg-blue-100 text-blue-700',
     premium: 'bg-purple-100 text-purple-700',
     enterprise: 'bg-orange-100 text-orange-700'
   };

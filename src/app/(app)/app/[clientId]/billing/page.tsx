@@ -113,9 +113,10 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
     );
   };
 
-  const planColors = {
+  const planColors: Record<string, string> = {
     starter: 'bg-gray-100 text-gray-700',
     basic: 'bg-blue-100 text-blue-700',
+    growth: 'bg-blue-100 text-blue-700',
     premium: 'bg-purple-100 text-purple-700',
     enterprise: 'bg-orange-100 text-orange-700'
   };
@@ -123,10 +124,11 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
   const getPlanConfig = (plan: string) => {
     const configs = {
       starter: { name: 'Starter', icon: Package, color: 'text-gray-600', price: 99, currency: 'EUR' },
-      basic: { name: 'Basic', icon: Zap, color: 'text-blue-600', price: 299, currency: 'EUR' },
+      growth: { name: 'Growth', icon: Zap, color: 'text-blue-600', price: 299, currency: 'EUR' },
       premium: { name: 'Premium', icon: Crown, color: 'text-purple-600', price: 2499, currency: 'EUR' },
       enterprise: { name: 'Enterprise', icon: Shield, color: 'text-orange-600', price: 0, currency: 'EUR' }
     };
+    if (plan === 'basic') return configs.growth;
     return configs[plan as keyof typeof configs] || configs.starter;
   };
 

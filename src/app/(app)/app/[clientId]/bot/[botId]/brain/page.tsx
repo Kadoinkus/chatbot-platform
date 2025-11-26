@@ -122,7 +122,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
         ]);
         setClient(clientData);
         setBot(botData);
-        setBotName(botData.name || 'Assistant'); // Initialize with actual bot name or fallback
+        setBotName(botData?.name || 'Assistant'); // Initialize with actual bot name or fallback
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -147,7 +147,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
     const currentType = personalityTypes[selectedPersonality as keyof typeof personalityTypes] || customPersonalityTypes[selectedPersonality];
     if (currentType) {
       const newValues = { ...personality, [trait]: value };
-      const hasPersonalityChanges = Object.keys(newValues).some(key => newValues[key] !== currentType.values[key]);
+      const hasPersonalityChanges = Object.keys(newValues).some(key => newValues[key as keyof typeof newValues] !== currentType.values[key as keyof typeof currentType.values]);
       const hasResponseFreedomChanges = responseFreedom !== currentType.responseFreedom;
       setHasCustomChanges(hasPersonalityChanges || hasResponseFreedomChanges);
     }
@@ -159,7 +159,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
     // Check if response freedom differs from the selected personality type
     const currentType = personalityTypes[selectedPersonality as keyof typeof personalityTypes] || customPersonalityTypes[selectedPersonality];
     if (currentType) {
-      const hasPersonalityChanges = Object.keys(personality).some(key => personality[key as keyof typeof personality] !== currentType.values[key]);
+      const hasPersonalityChanges = Object.keys(personality).some(key => personality[key as keyof typeof personality] !== currentType.values[key as keyof typeof currentType.values]);
       const hasResponseFreedomChanges = value !== currentType.responseFreedom;
       setHasCustomChanges(hasPersonalityChanges || hasResponseFreedomChanges);
     }

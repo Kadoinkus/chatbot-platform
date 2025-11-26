@@ -4,7 +4,8 @@
       "Bash(npm run lint)",
       "Bash(touch:*)",
       "Bash(for:*)",
-      "Bash(done)"
+      "Bash(done)",
+      "Bash(npm run build:*)"
     ],
     "deny": [],
     "ask": []

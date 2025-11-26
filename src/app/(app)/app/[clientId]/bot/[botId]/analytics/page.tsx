@@ -27,6 +27,7 @@ import {
 import Link from 'next/link';
 import { getClientBrandColor } from '@/lib/brandColors';
 import type { Client, Bot, BotSession } from '@/lib/dataService';
+import type { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
 
 // Dynamically import ApexCharts to avoid SSR issues
@@ -211,14 +212,21 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
   // Prepare chart data and options
   const chartData = useMemo(() => {
-    if (!filteredSessions.length) return {
-      sessionsOverTime: { series: [], options: {} },
-      resolutionVsEscalation: { series: [], options: {} },
-      sentimentDistribution: { series: [], options: {} },
-      sessionsByCountry: { series: [], options: {} },
-      sessionsByCategory: { series: [], options: {} },
-      topQuestions: { series: [], options: {} }
-    };
+    const createEmptyChartData = () => ({
+      series: [] as { name: string; data: number[] }[],
+      options: {} as ApexOptions
+    });
+
+    if (!filteredSessions.length) {
+      return {
+        sessionsOverTime: createEmptyChartData(),
+        resolutionVsEscalation: createEmptyChartData(),
+        sentimentDistribution: createEmptyChartData(),
+        sessionsByCountry: createEmptyChartData(),
+        sessionsByCategory: createEmptyChartData(),
+        topQuestions: createEmptyChartData()
+      };
+    }
 
     // Base chart styling
     const baseOptions = {
@@ -281,7 +289,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         ...baseOptions,
         chart: {
           ...baseOptions.chart,
-          type: 'area',
+          type: 'area' as const,
           height: 280
         },
         stroke: {
@@ -314,7 +322,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
             style: { colors: '#64748b', fontSize: '12px' }
           }
         }
-      }
+      } as ApexOptions
     };
 
     // Resolution vs Escalation (Stacked Bar)
@@ -353,7 +361,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         ...baseOptions,
         chart: {
           ...baseOptions.chart,
-          type: 'bar',
+          type: 'bar' as const,
           height: 280,
           stacked: true
         },
@@ -385,7 +393,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           fontFamily: 'Inter, sans-serif',
           markers: { width: 8, height: 8, radius: 4 }
         }
-      }
+      } as ApexOptions
     };
 
     // Sentiment Distribution (Donut)
@@ -404,7 +412,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         ...baseOptions,
         chart: {
           ...baseOptions.chart,
-          type: 'donut',
+          type: 'donut' as const,
           height: 280
         },
         colors: [colorPalette.primary, colorPalette.black, colorPalette.grey300],
@@ -446,7 +454,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           fontFamily: 'Inter, sans-serif',
           markers: { width: 8, height: 8, radius: 4 }
         }
-      }
+      } as ApexOptions
     };
 
     // Sessions by Country (Bar)
@@ -468,7 +476,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         ...baseOptions,
         chart: {
           ...baseOptions.chart,
-          type: 'bar',
+          type: 'bar' as const,
           height: 280,
           events: {
             dataPointSelection: (event: any, chartContext: any, config: any) => {
@@ -501,7 +509,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         fill: {
           colors: [colorPalette.primary, colorPalette.black, colorPalette.grey200, colorPalette.grey300, colorPalette.grey400, colorPalette.grey500, colorPalette.grey600, colorPalette.grey700, colorPalette.grey900]
         }
-      }
+      } as ApexOptions
     };
 
     // Sessions by Category (Horizontal Bar)
@@ -526,7 +534,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         ...baseOptions,
         chart: {
           ...baseOptions.chart,
-          type: 'bar',
+          type: 'bar' as const,
           height: 300,
           events: {
             dataPointSelection: (event: any, chartContext: any, config: any) => {
@@ -556,7 +564,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         fill: {
           colors: [colorPalette.primary, colorPalette.black, colorPalette.grey200, colorPalette.grey300, colorPalette.grey400, colorPalette.grey500, colorPalette.grey600, colorPalette.grey700]
         }
-      }
+      } as ApexOptions
     };
 
     // Top 5 Questions (Horizontal Bar)
@@ -587,7 +595,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         ...baseOptions,
         chart: {
           ...baseOptions.chart,
-          type: 'bar',
+          type: 'bar' as const,
           height: 240
         },
         plotOptions: {
@@ -611,7 +619,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         fill: {
           colors: [colorPalette.primary, colorPalette.black, colorPalette.grey200, colorPalette.grey300, colorPalette.grey400]
         }
-      }
+      } as ApexOptions
     };
 
     return {
@@ -1329,9 +1337,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     }];
   }
 
-  function getResponseTimeTrendsChart() {
+  function getResponseTimeTrendsChart(): ApexOptions {
     return {
-      chart: { type: 'line', height: 280, toolbar: { show: false } },
+      chart: { type: 'line' as const, height: 280, toolbar: { show: false } },
       colors: [colorPalette.primary],
       stroke: { curve: 'smooth', width: 3 },
       fill: {
@@ -1379,9 +1387,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     }];
   }
 
-  function getIntentConfidenceChart() {
+  function getIntentConfidenceChart(): ApexOptions {
     return {
-      chart: { type: 'bar', height: 280, toolbar: { show: false } },
+      chart: { type: 'bar' as const, height: 280, toolbar: { show: false } },
       colors: [colorPalette.primary, colorPalette.black, colorPalette.grey400, colorPalette.grey600],
       fill: { colors: [colorPalette.primary, colorPalette.black, colorPalette.grey400, colorPalette.grey600] },
       plotOptions: {
@@ -1413,9 +1421,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     }];
   }
 
-  function getUserJourneyFunnelChart() {
+  function getUserJourneyFunnelChart(): ApexOptions {
     return {
-      chart: { type: 'bar', height: 280, toolbar: { show: false } },
+      chart: { type: 'bar' as const, height: 280, toolbar: { show: false } },
       colors: [colorPalette.primary, colorPalette.black, colorPalette.grey300, colorPalette.grey500, colorPalette.grey600],
       fill: { colors: [colorPalette.primary, colorPalette.black, colorPalette.grey300, colorPalette.grey500, colorPalette.grey600] },
       plotOptions: { bar: { horizontal: true, borderRadius: 6 } },
@@ -1434,14 +1442,14 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     return Object.values(channelCounts);
   }
 
-  function getChannelPerformanceChart() {
+  function getChannelPerformanceChart(): ApexOptions {
     const channelCounts = filteredSessions.reduce((acc, session) => {
       acc[session.channel] = (acc[session.channel] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
 
     return {
-      chart: { type: 'donut', height: 280 },
+      chart: { type: 'donut' as const, height: 280 },
       colors: [colorPalette.primary, colorPalette.black, colorPalette.grey400, colorPalette.grey600],
       labels: Object.keys(channelCounts).map(channel => channel.charAt(0).toUpperCase() + channel.slice(1)),
       plotOptions: {
@@ -1475,9 +1483,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     }];
   }
 
-  function getCostSavingsChart() {
+  function getCostSavingsChart(): ApexOptions {
     return {
-      chart: { type: 'area', height: 280, toolbar: { show: false } },
+      chart: { type: 'area' as const, height: 280, toolbar: { show: false } },
       colors: [colorPalette.primary],
       stroke: { curve: 'smooth', width: 3 },
       fill: {
@@ -1528,9 +1536,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     ];
   }
 
-  function getAutomationVsHumanChart() {
+  function getAutomationVsHumanChart(): ApexOptions {
     return {
-      chart: { type: 'bar', height: 280, toolbar: { show: false } },
+      chart: { type: 'bar' as const, height: 280, toolbar: { show: false } },
       colors: [colorPalette.primary, colorPalette.grey500, colorPalette.black],
       plotOptions: {
         bar: { horizontal: false, borderRadius: 6 }

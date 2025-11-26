@@ -706,7 +706,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
         handoffRate,
         totalSessions: botSessions.length
       };
-    }).filter(Boolean);
+    }).filter((item): item is NonNullable<typeof item> => item !== null);
 
     // Generate time-series data for trends (last 30 days)
     const generateTrendData = () => {
@@ -933,7 +933,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                               src={bot.botImage} 
                               alt={bot.botName} 
                               className="w-8 h-8 rounded-full" 
-                              style={{ backgroundColor: getClientBrandColor(client.id) }}
+                              style={{ backgroundColor: getClientBrandColor(client?.id ?? '') }}
                             />
                             <span className="font-medium">{bot.botName}</span>
                           </div>
@@ -1010,7 +1010,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
         },
         goalAchievementRate: Math.round(goalAchievementRate)
       };
-    }).filter(Boolean);
+    }).filter((item): item is NonNullable<typeof item> => item !== null);
 
     // Generate journey flow data (completion funnel)
     const generateJourneyFlowData = () => {
@@ -1026,7 +1026,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
           completed: botSessions.filter(s => s.completion_status === 'completed').length,
           goalAchieved: botSessions.filter(s => s.goal_achieved === true).length
         };
-      }).filter(Boolean);
+      }).filter((item): item is NonNullable<typeof item> => item !== null);
 
       return flowData;
     };
@@ -1250,7 +1250,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                       src={bot.botImage} 
                       alt={bot.botName} 
                       className="w-6 h-6 rounded-full" 
-                      style={{ backgroundColor: getClientBrandColor(client.id) }}
+                      style={{ backgroundColor: getClientBrandColor(client?.id ?? '') }}
                     />
                     <span className="font-medium">{bot.botName}</span>
                   </div>
@@ -1345,7 +1345,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
         completedSessions,
         escalatedSessions
       };
-    }).filter(Boolean);
+    }).filter((item): item is NonNullable<typeof item> => item !== null);
 
     // Generate business impact time-series data
     const generateBusinessTrends = () => {
@@ -1552,7 +1552,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                             src={bot.botImage} 
                             alt={bot.botName} 
                             className="w-8 h-8 rounded-full" 
-                            style={{ backgroundColor: getClientBrandColor(client.id) }}
+                            style={{ backgroundColor: getClientBrandColor(client?.id ?? '') }}
                           />
                           <span className="font-medium">{bot.botName}</span>
                         </div>

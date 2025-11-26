@@ -192,13 +192,17 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
   };
 
   const handleSettingChange = (category: string, setting: string, value: any) => {
-    setOptionSettings(prev => ({
-      ...prev,
-      [`${category}_${selectedOptions[category as keyof typeof selectedOptions]}`]: {
-        ...prev[`${category}_${selectedOptions[category as keyof typeof selectedOptions]}` as keyof typeof prev],
-        [setting]: value
-      }
-    }));
+    setOptionSettings(prev => {
+      const key = `${category}_${selectedOptions[category as keyof typeof selectedOptions]}`;
+      const existing = prev[key as keyof typeof prev] || {};
+      return {
+        ...prev,
+        [key]: {
+          ...(typeof existing === 'object' ? existing : {}),
+          [setting]: value
+        }
+      };
+    });
   };
 
   const handlePurchaseStudioPack = (packKey: string) => {
@@ -441,7 +445,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                         <h4 className="font-medium mb-3">Choose Style</h4>
                         <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
                           {(() => {
-                            const availableOptions = [];
+                            const availableOptions: { option: string; pack: string }[] = [];
                             // Get options from owned packs
                             ownedStudioPacks.forEach(packKey => {
                               const pack = studioPacks[packKey as keyof typeof studioPacks];

@@ -438,8 +438,6 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                             description: template.description,
                             price: template.price,
                             image: template.image,
-                            appearance: template.appearance,
-                            studio: template.studio,
                             originalData: template
                           });
                           setAddedItems(prev => new Set(prev).add(template.id));

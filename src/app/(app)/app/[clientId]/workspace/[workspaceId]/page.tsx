@@ -50,12 +50,16 @@ export default function WorkspaceDetailPage({
     return <div className="p-6">Workspace not found</div>;
   }
 
-  const planDetails = {
+  const planDetails: Record<string, { color: string; features: string[] }> = {
     starter: {
       color: 'bg-gray-100 text-gray-700',
       features: ['25,000 messages/month', '1,000 bundle loads', 'Basic analytics', 'Email support']
     },
     basic: {
+      color: 'bg-blue-100 text-blue-700',
+      features: ['100,000 messages/month', '5,000 bundle loads', 'Advanced analytics', 'Priority support']
+    },
+    growth: {
       color: 'bg-blue-100 text-blue-700',
       features: ['100,000 messages/month', '5,000 bundle loads', 'Advanced analytics', 'Priority support']
     },

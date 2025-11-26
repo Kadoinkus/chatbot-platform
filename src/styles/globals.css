@@ -2,33 +2,587 @@
 @tailwind components;
 @tailwind utilities;
 
-html, body { height: 100%; }
-body { @apply bg-white text-neutral-900 antialiased; }
+/* ============================================================================
+   CSS VARIABLES - LIGHT THEME (DEFAULT)
+   ============================================================================ */
+:root {
+  /* Color scheme for system detection */
+  color-scheme: light;
 
-/* Force scrollbar to always be visible to prevent layout jumps */
+  /* Background Colors */
+  --bg-primary: #FFFFFF;
+  --bg-secondary: #F9FAFB;
+  --bg-tertiary: #F3F4F6;
+  --bg-inverse: #111827;
+  --bg-hover: #F3F4F6;
+  --bg-active: #E5E7EB;
+
+  /* Text Colors */
+  --text-primary: #111827;
+  --text-secondary: #4B5563;
+  --text-tertiary: #6B7280;
+  --text-inverse: #FFFFFF;
+  --text-disabled: #9CA3AF;
+
+  /* Border Colors */
+  --border-primary: #E5E7EB;
+  --border-secondary: #D1D5DB;
+  --border-focus: #111827;
+
+  /* Interactive Elements */
+  --interactive-primary: #111827;
+  --interactive-primary-hover: #374151;
+  --interactive-secondary: #F3F4F6;
+  --interactive-secondary-hover: #E5E7EB;
+
+  /* Surface Colors */
+  --surface-elevated: #FFFFFF;
+  --surface-overlay: rgba(0, 0, 0, 0.5);
+
+  /* Sidebar Colors */
+  --sidebar-bg: #111827;
+  --sidebar-text: #9CA3AF;
+  --sidebar-text-hover: #FFFFFF;
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-item-hover: rgba(255, 255, 255, 0.05);
+  --sidebar-item-active: rgba(255, 255, 255, 0.1);
+  --sidebar-border: #1F2937;
+
+  /* Plan Colors */
+  --plan-starter-bg: #F3F4F6;
+  --plan-starter-text: #374151;
+  --plan-starter-border: #E5E7EB;
+
+  --plan-growth-bg: #DBEAFE;
+  --plan-growth-text: #1D4ED8;
+  --plan-growth-border: #BFDBFE;
+
+  --plan-premium-bg: #F3E8FF;
+  --plan-premium-text: #7C3AED;
+  --plan-premium-border: #DDD6FE;
+
+  --plan-enterprise-bg: #FFEDD5;
+  --plan-enterprise-text: #C2410C;
+  --plan-enterprise-border: #FED7AA;
+
+  /* Shadows */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+  --shadow-default: 0 1px 3px 0 rgb(0 0 0 / 0.1), 0 1px 2px -1px rgb(0 0 0 / 0.1);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.25);
+
+  /* Scrollbar */
+  --scrollbar-track: #F3F4F6;
+  --scrollbar-thumb: #9CA3AF;
+  --scrollbar-thumb-hover: #6B7280;
+}
+
+/* ============================================================================
+   CSS VARIABLES - DARK THEME
+   ============================================================================ */
+.dark {
+  color-scheme: dark;
+
+  /* Background Colors */
+  --bg-primary: #111827;
+  --bg-secondary: #1F2937;
+  --bg-tertiary: #374151;
+  --bg-inverse: #FFFFFF;
+  --bg-hover: #1F2937;
+  --bg-active: #374151;
+
+  /* Text Colors */
+  --text-primary: #F9FAFB;
+  --text-secondary: #9CA3AF;
+  --text-tertiary: #6B7280;
+  --text-inverse: #111827;
+  --text-disabled: #4B5563;
+
+  /* Border Colors */
+  --border-primary: #374151;
+  --border-secondary: #4B5563;
+  --border-focus: #9CA3AF;
+
+  /* Interactive Elements */
+  --interactive-primary: #FFFFFF;
+  --interactive-primary-hover: #E5E7EB;
+  --interactive-secondary: #1F2937;
+  --interactive-secondary-hover: #374151;
+
+  /* Surface Colors */
+  --surface-elevated: #1F2937;
+  --surface-overlay: rgba(0, 0, 0, 0.7);
+
+  /* Sidebar Colors (stays dark) */
+  --sidebar-bg: #030712;
+  --sidebar-text: #9CA3AF;
+  --sidebar-text-hover: #FFFFFF;
+  --sidebar-text-active: #FFFFFF;
+  --sidebar-item-hover: rgba(255, 255, 255, 0.05);
+  --sidebar-item-active: rgba(255, 255, 255, 0.1);
+  --sidebar-border: #1F2937;
+
+  /* Plan Colors (slightly adjusted for dark mode visibility) */
+  --plan-starter-bg: #374151;
+  --plan-starter-text: #E5E7EB;
+  --plan-starter-border: #4B5563;
+
+  --plan-growth-bg: #1E3A5F;
+  --plan-growth-text: #93C5FD;
+  --plan-growth-border: #2563EB;
+
+  --plan-premium-bg: #4C1D95;
+  --plan-premium-text: #C4B5FD;
+  --plan-premium-border: #7C3AED;
+
+  --plan-enterprise-bg: #7C2D12;
+  --plan-enterprise-text: #FDBA74;
+  --plan-enterprise-border: #C2410C;
+
+  /* Shadows (more visible in dark mode) */
+  --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
+  --shadow-default: 0 1px 3px 0 rgb(0 0 0 / 0.4), 0 1px 2px -1px rgb(0 0 0 / 0.4);
+  --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.4), 0 2px 4px -2px rgb(0 0 0 / 0.4);
+  --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.4), 0 4px 6px -4px rgb(0 0 0 / 0.4);
+  --shadow-xl: 0 20px 25px -5px rgb(0 0 0 / 0.4), 0 8px 10px -6px rgb(0 0 0 / 0.4);
+  --shadow-2xl: 0 25px 50px -12px rgb(0 0 0 / 0.5);
+
+  /* Scrollbar */
+  --scrollbar-track: #1F2937;
+  --scrollbar-thumb: #4B5563;
+  --scrollbar-thumb-hover: #6B7280;
+}
+
+/* ============================================================================
+   BASE STYLES
+   ============================================================================ */
+html, body {
+  height: 100%;
+}
+
 html {
   overflow-y: scroll;
 }
 
-/* Optional: Style the scrollbar for webkit browsers */
+body {
+  @apply bg-background text-foreground antialiased;
+  transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+/* ============================================================================
+   SCROLLBAR STYLES
+   ============================================================================ */
 ::-webkit-scrollbar {
-  width: 12px;
+  width: 10px;
+  height: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  background: #f1f1f1;
+  background: var(--scrollbar-track);
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #888;
-  border-radius: 6px;
+  background: var(--scrollbar-thumb);
+  border-radius: 5px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #555;
+  background: var(--scrollbar-thumb-hover);
 }
 
-.container { @apply mx-auto px-4 sm:px-6 lg:px-8; }
-.card { @apply rounded-2xl border bg-white shadow-sm; }
-.badge { @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium; }
-.status-dot { @apply inline-block h-2 w-2 rounded-full mr-1; }
+/* Firefox scrollbar */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--scrollbar-thumb) var(--scrollbar-track);
+}
+
+/* ============================================================================
+   UTILITY CLASSES
+   ============================================================================ */
+@layer components {
+  /* Container */
+  .container {
+    @apply mx-auto px-4 sm:px-6 lg:px-8;
+  }
+
+  /* Card - Now theme-aware */
+  .card {
+    @apply rounded-2xl border border-border bg-surface-elevated shadow-sm;
+    transition: background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .card-hover {
+    @apply card hover:shadow-md hover:border-border-secondary;
+    transition: all 0.2s ease;
+  }
+
+  /* Badge */
+  .badge {
+    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+  }
+
+  /* Status dot */
+  .status-dot {
+    @apply inline-block h-2 w-2 rounded-full mr-1;
+  }
+
+  /* Plan badges */
+  .badge-plan-starter {
+    background-color: var(--plan-starter-bg);
+    color: var(--plan-starter-text);
+    border: 1px solid var(--plan-starter-border);
+  }
+
+  .badge-plan-growth {
+    background-color: var(--plan-growth-bg);
+    color: var(--plan-growth-text);
+    border: 1px solid var(--plan-growth-border);
+  }
+
+  .badge-plan-premium {
+    background-color: var(--plan-premium-bg);
+    color: var(--plan-premium-text);
+    border: 1px solid var(--plan-premium-border);
+  }
+
+  .badge-plan-enterprise {
+    background-color: var(--plan-enterprise-bg);
+    color: var(--plan-enterprise-text);
+    border: 1px solid var(--plan-enterprise-border);
+  }
+
+  /* Button base */
+  .btn {
+    @apply inline-flex items-center justify-center rounded-lg font-medium transition-colors duration-fast;
+    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  }
+
+  .btn-primary {
+    @apply btn bg-interactive text-foreground-inverse;
+    @apply hover:bg-interactive-primary-hover;
+    @apply focus:ring-interactive;
+  }
+
+  .btn-secondary {
+    @apply btn bg-interactive-secondary text-foreground border border-border;
+    @apply hover:bg-interactive-secondary-hover;
+    @apply focus:ring-border-focus;
+  }
+
+  .btn-ghost {
+    @apply btn bg-transparent text-foreground-secondary;
+    @apply hover:bg-background-hover hover:text-foreground;
+  }
+
+  .btn-danger {
+    @apply btn bg-error-600 text-white;
+    @apply hover:bg-error-700;
+    @apply focus:ring-error-500;
+  }
+
+  /* Link styles */
+  .link {
+    @apply text-accent hover:text-accent-hover transition-colors duration-fast;
+  }
+
+  .link-subtle {
+    @apply text-foreground-secondary hover:text-foreground transition-colors duration-fast;
+  }
+
+  /* Input base */
+  .input {
+    @apply w-full rounded-xl border border-border bg-background px-4 py-3;
+    @apply text-foreground placeholder:text-foreground-tertiary;
+    @apply focus:ring-2 focus:ring-interactive focus:border-transparent;
+    @apply transition-all duration-fast;
+  }
+
+  /* Select base */
+  .select {
+    @apply input appearance-none cursor-pointer;
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 0.5rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 2.5rem;
+  }
+
+  /* Textarea */
+  .textarea {
+    @apply input resize-none;
+    min-height: 100px;
+  }
+
+  /* Tab styles */
+  .tab {
+    @apply pb-2 px-1 font-medium transition-colors relative;
+    @apply text-foreground-secondary hover:text-foreground;
+  }
+
+  .tab-active {
+    @apply tab text-foreground border-b-2 border-foreground;
+  }
+
+  /* Alert/Banner styles */
+  .alert {
+    @apply p-4 rounded-lg flex items-start gap-3;
+  }
+
+  .alert-info {
+    @apply alert border;
+    background-color: rgb(239 246 255); /* blue-50 */
+    border-color: rgb(191 219 254); /* blue-200 */
+  }
+  .dark .alert-info {
+    background-color: rgb(30 58 138 / 0.2); /* blue-900/20 */
+    border-color: rgb(30 64 175); /* blue-800 */
+  }
+
+  .alert-info .alert-icon { @apply text-info-600; }
+  .dark .alert-info .alert-icon { @apply text-info-500; }
+
+  .alert-info .alert-title { @apply font-medium text-info-700; }
+  .dark .alert-info .alert-title { @apply text-info-500; }
+
+  .alert-info .alert-message { @apply text-sm text-info-600; }
+  .dark .alert-info .alert-message { @apply text-info-500; }
+
+  .alert-success {
+    @apply alert bg-success-50 border border-success-100;
+  }
+  .dark .alert-success {
+    @apply bg-success-700/20 border-success-700;
+  }
+
+  .alert-success .alert-icon { @apply text-success-600; }
+  .dark .alert-success .alert-icon { @apply text-success-500; }
+
+  .alert-success .alert-title { @apply font-medium text-success-700; }
+  .dark .alert-success .alert-title { @apply text-success-500; }
+
+  .alert-success .alert-message { @apply text-sm text-success-600; }
+  .dark .alert-success .alert-message { @apply text-success-500; }
+
+  .alert-warning {
+    @apply alert bg-warning-50 border border-warning-100;
+  }
+  .dark .alert-warning {
+    @apply bg-warning-700/20 border-warning-700;
+  }
+
+  .alert-warning .alert-icon { @apply text-warning-600; }
+  .dark .alert-warning .alert-icon { @apply text-warning-500; }
+
+  .alert-warning .alert-title { @apply font-medium text-warning-700; }
+  .dark .alert-warning .alert-title { @apply text-warning-500; }
+
+  .alert-warning .alert-message { @apply text-sm text-warning-600; }
+  .dark .alert-warning .alert-message { @apply text-warning-500; }
+
+  .alert-error {
+    @apply alert bg-error-50 border border-error-100;
+  }
+  .dark .alert-error {
+    @apply bg-error-700/20 border-error-700;
+  }
+
+  .alert-error .alert-icon { @apply text-error-600; }
+  .dark .alert-error .alert-icon { @apply text-error-500; }
+
+  .alert-error .alert-title { @apply font-medium text-error-700; }
+  .dark .alert-error .alert-title { @apply text-error-500; }
+
+  .alert-error .alert-message { @apply text-sm text-error-600; }
+  .dark .alert-error .alert-message { @apply text-error-500; }
+
+  /* Table styles */
+  .table-header {
+    @apply bg-background-secondary text-foreground-secondary text-sm font-medium;
+  }
+
+  .table-row {
+    @apply border-b border-border hover:bg-background-hover transition-colors;
+  }
+
+  .table-cell {
+    @apply px-6 py-4 text-foreground;
+  }
+
+  /* Label styles */
+  .label {
+    @apply block text-sm font-medium text-foreground mb-2;
+  }
+
+  /* Section heading */
+  .section-title {
+    @apply text-lg font-semibold text-foreground mb-4;
+  }
+
+  /* Empty state */
+  .empty-state {
+    @apply text-center py-12;
+  }
+
+  .empty-state-icon {
+    @apply w-16 h-16 mx-auto mb-4 bg-background-tertiary rounded-full flex items-center justify-center;
+  }
+
+  .empty-state-title {
+    @apply text-lg font-semibold text-foreground mb-2;
+  }
+
+  .empty-state-message {
+    @apply text-foreground-secondary mb-4;
+  }
+
+  /* Toggle/Switch component */
+  .toggle {
+    @apply relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer;
+    @apply bg-background-tertiary;
+  }
+
+  .toggle[data-state="checked"],
+  .toggle.toggle-active {
+    @apply bg-interactive;
+  }
+
+  .toggle-thumb {
+    @apply inline-block h-4 w-4 transform rounded-full bg-white transition-transform;
+    @apply translate-x-1;
+  }
+
+  .toggle[data-state="checked"] .toggle-thumb,
+  .toggle.toggle-active .toggle-thumb {
+    @apply translate-x-6;
+  }
+
+  /* Checkbox styling */
+  .checkbox {
+    @apply w-5 h-5 rounded border-border text-interactive focus:ring-interactive;
+  }
+
+  /* Settings panel */
+  .settings-panel {
+    @apply card p-4 lg:p-6;
+  }
+
+  .settings-title {
+    @apply text-lg lg:text-xl font-semibold text-foreground mb-4 lg:mb-6;
+  }
+
+  .settings-section {
+    @apply text-base font-medium text-foreground mb-4;
+  }
+
+  /* Form group with description */
+  .form-group {
+    @apply flex items-start gap-3;
+  }
+
+  .form-group-content {
+    @apply flex-1;
+  }
+
+  .form-group-label {
+    @apply font-medium text-foreground;
+  }
+
+  .form-group-desc {
+    @apply text-sm text-foreground-secondary;
+  }
+
+  /* Settings row (for toggles/switches) */
+  .settings-row {
+    @apply p-4 border border-border rounded-lg flex items-center justify-between;
+  }
+
+  .settings-row-content {
+    @apply flex-1;
+  }
+
+  .settings-row-title {
+    @apply font-medium text-foreground;
+  }
+
+  .settings-row-desc {
+    @apply text-sm text-foreground-secondary;
+  }
+
+  /* Nav list item (for sidebar navigation) */
+  .nav-item {
+    @apply w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors;
+    @apply text-foreground-secondary hover:bg-background-hover;
+  }
+
+  .nav-item-active {
+    @apply nav-item bg-interactive text-foreground-inverse;
+  }
+
+  .nav-item-active:hover {
+    @apply bg-interactive-primary-hover;
+  }
+}
+
+/* ============================================================================
+   ANIMATION UTILITIES
+   ============================================================================ */
+@layer utilities {
+  .animate-fade-in {
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .animate-slide-up {
+    animation: slideUp 0.3s ease-out;
+  }
+
+  .animate-slide-down {
+    animation: slideDown 0.3s ease-out;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; }
+    to { opacity: 1; }
+  }
+
+  @keyframes slideUp {
+    from { transform: translateY(10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+
+  @keyframes slideDown {
+    from { transform: translateY(-10px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+  }
+}
+
+/* ============================================================================
+   DARK MODE SPECIFIC OVERRIDES
+   ============================================================================ */
+.dark {
+  /* Images and media can be slightly dimmed in dark mode */
+  img:not([data-no-dim]) {
+    filter: brightness(0.95);
+  }
+
+  /* Reduce harshness of pure white text */
+  ::selection {
+    background: rgba(99, 102, 241, 0.4);
+  }
+}
+
+/* ============================================================================
+   PRINT STYLES
+   ============================================================================ */
+@media print {
+  :root {
+    --bg-primary: #FFFFFF;
+    --text-primary: #000000;
+  }
+
+  .dark {
+    --bg-primary: #FFFFFF;
+    --text-primary: #000000;
+  }
+}

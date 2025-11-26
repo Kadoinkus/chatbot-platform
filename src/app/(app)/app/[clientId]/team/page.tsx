@@ -2,6 +2,7 @@
 import { useState } from 'react';
 import { clients } from '@/lib/data';
 import Sidebar from '@/components/Sidebar';
+import AuthGuard from '@/components/AuthGuard';
 import { Plus, Search, Mail, Shield, Clock, MoreVertical, UserPlus, Settings, Trash2, Key, Activity } from 'lucide-react';
 
 interface TeamMember {
@@ -82,10 +83,10 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
   ]);
 
   const roleConfig = {
-    owner: { label: 'Owner', color: 'bg-purple-100 text-purple-700', icon: Shield },
-    admin: { label: 'Admin', color: 'bg-blue-100 text-blue-700', icon: Settings },
-    agent: { label: 'Agent', color: 'bg-green-100 text-green-700', icon: Activity },
-    viewer: { label: 'Viewer', color: 'bg-gray-100 text-gray-700', icon: Activity }
+    owner: { label: 'Owner', color: 'badge-plan-premium', icon: Shield },
+    admin: { label: 'Admin', color: 'badge-plan-growth', icon: Settings },
+    agent: { label: 'Agent', color: 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500', icon: Activity },
+    viewer: { label: 'Viewer', color: 'badge-plan-starter', icon: Activity }
   };
 
   const filteredMembers = teamMembers.filter(member => {
@@ -96,7 +97,14 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
   });
 
   if (!client) {
-    return <div className="p-6">Client not found</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
+        <main className="flex-1 lg:ml-16 p-6">
+          <p className="text-foreground-secondary">Client not found</p>
+        </main>
+      </div>
+    );
   }
 
   const formatLastActive = (date: Date) => {
@@ -112,20 +120,21 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <AuthGuard clientId={params.clientId}>
+    <div className="flex min-h-screen bg-background">
       <Sidebar clientId={client.id} />
-      
-      <main className="flex-1 ml-16">
-        <div className="container max-w-7xl mx-auto p-8">
-          <div className="mb-8">
-            <div className="flex items-center justify-between mb-2">
+
+      <main className="flex-1 lg:ml-16 min-h-screen">
+        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
+          <div className="mb-6 lg:mb-8">
+            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-2">
               <div>
-                <h1 className="text-3xl font-bold mb-2">Team Members</h1>
-                <p className="text-gray-600">Manage your team and their permissions</p>
+                <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">Team Members</h1>
+                <p className="text-foreground-secondary">Manage your team and their permissions</p>
               </div>
               <button
                 onClick={() => setShowInviteModal(true)}
-                className="flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                className="btn-primary px-4 py-2"
               >
                 <UserPlus size={20} />
                 Invite Member
@@ -134,49 +143,49 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
           </div>
 
           {/* Stats Cards */}
-          <div className="grid grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <p className="text-sm text-gray-600 mb-1">Total Members</p>
-              <p className="text-2xl font-bold">{teamMembers.length}</p>
-              <p className="text-xs text-gray-500 mt-1">2 seats available</p>
+          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="card p-4">
+              <p className="text-sm text-foreground-secondary mb-1">Total Members</p>
+              <p className="text-2xl font-bold text-foreground">{teamMembers.length}</p>
+              <p className="text-xs text-foreground-tertiary mt-1">2 seats available</p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <p className="text-sm text-gray-600 mb-1">Active Now</p>
-              <p className="text-2xl font-bold">{teamMembers.filter(m => m.status === 'active').length}</p>
-              <p className="text-xs text-green-600 mt-1">All systems operational</p>
+            <div className="card p-4">
+              <p className="text-sm text-foreground-secondary mb-1">Active Now</p>
+              <p className="text-2xl font-bold text-foreground">{teamMembers.filter(m => m.status === 'active').length}</p>
+              <p className="text-xs text-success-600 dark:text-success-500 mt-1">All systems operational</p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <p className="text-sm text-gray-600 mb-1">Pending Invites</p>
-              <p className="text-2xl font-bold">{teamMembers.filter(m => m.status === 'invited').length}</p>
-              <p className="text-xs text-orange-600 mt-1">Awaiting acceptance</p>
+            <div className="card p-4">
+              <p className="text-sm text-foreground-secondary mb-1">Pending Invites</p>
+              <p className="text-2xl font-bold text-foreground">{teamMembers.filter(m => m.status === 'invited').length}</p>
+              <p className="text-xs text-warning-600 dark:text-warning-500 mt-1">Awaiting acceptance</p>
             </div>
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <p className="text-sm text-gray-600 mb-1">Admins</p>
-              <p className="text-2xl font-bold">{teamMembers.filter(m => m.role === 'admin' || m.role === 'owner').length}</p>
-              <p className="text-xs text-gray-500 mt-1">Can manage settings</p>
+            <div className="card p-4">
+              <p className="text-sm text-foreground-secondary mb-1">Admins</p>
+              <p className="text-2xl font-bold text-foreground">{teamMembers.filter(m => m.role === 'admin' || m.role === 'owner').length}</p>
+              <p className="text-xs text-foreground-tertiary mt-1">Can manage settings</p>
             </div>
           </div>
 
           {/* Filters */}
-          <div className="bg-white rounded-xl border border-gray-200 p-4 mb-6">
-            <div className="flex gap-4">
+          <div className="card p-4 mb-6">
+            <div className="flex flex-col lg:flex-row gap-4">
               <div className="flex-1">
                 <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground-tertiary" size={20} />
                   <input
                     type="text"
                     placeholder="Search members..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                    className="input pl-10"
                   />
                 </div>
               </div>
-              <div className="flex gap-2">
+              <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedRole('all')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                    selectedRole === 'all' ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                    selectedRole === 'all' ? 'bg-interactive text-foreground-inverse' : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
                   }`}
                 >
                   All Roles
@@ -185,8 +194,8 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
                   <button
                     key={role}
                     onClick={() => setSelectedRole(role)}
-                    className={`px-4 py-2 rounded-lg text-sm font-medium ${
-                      selectedRole === role ? 'bg-black text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                      selectedRole === role ? 'bg-interactive text-foreground-inverse' : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
                     }`}
                   >
                     {config.label}s
@@ -201,67 +210,67 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
             {filteredMembers.map(member => {
               const config = roleConfig[member.role];
               const Icon = config.icon;
-              
+
               return (
-                <div key={member.id} className="bg-white rounded-xl border border-gray-200 p-6">
-                  <div className="flex items-center justify-between">
+                <div key={member.id} className="card p-6">
+                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
                     <div className="flex items-center gap-4">
-                      <img 
-                        src={member.avatar} 
+                      <img
+                        src={member.avatar}
                         alt={member.name}
                         className="w-12 h-12 rounded-full"
                       />
                       <div>
                         <div className="flex items-center gap-3">
-                          <h3 className="font-semibold text-lg">{member.name}</h3>
+                          <h3 className="font-semibold text-lg text-foreground">{member.name}</h3>
                           {member.status === 'invited' && (
-                            <span className="px-2 py-1 bg-orange-100 text-orange-700 rounded-full text-xs">
+                            <span className="badge bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500">
                               Pending Invite
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600">{member.email}</p>
+                        <p className="text-sm text-foreground-secondary">{member.email}</p>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-6">
+                    <div className="flex flex-wrap items-center gap-4 lg:gap-6">
                       <div className="text-right">
-                        <div className={`inline-flex items-center gap-2 px-3 py-1 rounded-lg text-sm font-medium ${config.color}`}>
+                        <div className={`badge inline-flex items-center gap-2 px-3 py-1 ${config.color}`}>
                           <Icon size={14} />
                           {config.label}
                         </div>
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-foreground-tertiary mt-1">
                           {member.role === 'owner' ? 'Full access' : `${member.permissions.length} permissions`}
                         </p>
                       </div>
 
                       <div className="text-right">
-                        <p className="text-sm text-gray-700">{formatLastActive(member.lastActive)}</p>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-sm text-foreground">{formatLastActive(member.lastActive)}</p>
+                        <p className="text-xs text-foreground-tertiary">
                           Joined {Math.floor((Date.now() - member.joinedDate.getTime()) / (24 * 60 * 60 * 1000))} days ago
                         </p>
                       </div>
 
                       <div className="flex gap-2">
-                        <button className="p-2 hover:bg-gray-100 rounded-lg">
-                          <Mail size={16} className="text-gray-600" />
+                        <button className="p-2 hover:bg-background-hover rounded-lg transition-colors">
+                          <Mail size={16} className="text-foreground-secondary" />
                         </button>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg">
-                          <Key size={16} className="text-gray-600" />
+                        <button className="p-2 hover:bg-background-hover rounded-lg transition-colors">
+                          <Key size={16} className="text-foreground-secondary" />
                         </button>
-                        <button className="p-2 hover:bg-gray-100 rounded-lg">
-                          <MoreVertical size={16} className="text-gray-600" />
+                        <button className="p-2 hover:bg-background-hover rounded-lg transition-colors">
+                          <MoreVertical size={16} className="text-foreground-secondary" />
                         </button>
                       </div>
                     </div>
                   </div>
 
                   {member.role !== 'owner' && (
-                    <div className="mt-4 pt-4 border-t">
-                      <p className="text-xs font-medium text-gray-700 mb-2">Permissions</p>
+                    <div className="mt-4 pt-4 border-t border-border">
+                      <p className="text-xs font-medium text-foreground mb-2">Permissions</p>
                       <div className="flex flex-wrap gap-2">
                         {member.permissions.map(permission => (
-                          <span key={permission} className="px-2 py-1 bg-gray-100 rounded text-xs">
+                          <span key={permission} className="badge bg-background-tertiary text-foreground-secondary">
                             {permission.replace(/_/g, ' ')}
                           </span>
                         ))}
@@ -275,23 +284,23 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
 
           {/* Invite Modal */}
           {showInviteModal && (
-            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-              <div className="bg-white rounded-xl p-6 w-full max-w-md">
-                <h2 className="text-xl font-semibold mb-4">Invite Team Member</h2>
-                
+            <div className="fixed inset-0 bg-surface-overlay flex items-center justify-center z-50">
+              <div className="bg-surface-elevated rounded-xl border border-border p-6 w-full max-w-md mx-4">
+                <h2 className="text-xl font-semibold text-foreground mb-4">Invite Team Member</h2>
+
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Email Address</label>
+                    <label className="label">Email Address</label>
                     <input
                       type="email"
                       placeholder="colleague@company.com"
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                      className="input"
                     />
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Role</label>
-                    <select className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black">
+                    <label className="label">Role</label>
+                    <select className="select">
                       <option value="admin">Admin - Manage bots and settings</option>
                       <option value="agent">Agent - Handle conversations</option>
                       <option value="viewer">Viewer - View analytics only</option>
@@ -299,21 +308,21 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
                   </div>
 
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Message (optional)</label>
+                    <label className="label">Message (optional)</label>
                     <textarea
                       rows={3}
                       placeholder="Add a personal message to the invitation..."
-                      className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                      className="textarea"
                     />
                   </div>
 
                   <div className="flex gap-3 pt-4">
-                    <button className="flex-1 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
+                    <button className="btn-primary flex-1 px-4 py-2">
                       Send Invitation
                     </button>
-                    <button 
+                    <button
                       onClick={() => setShowInviteModal(false)}
-                      className="flex-1 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+                      className="btn-secondary flex-1 px-4 py-2"
                     >
                       Cancel
                     </button>
@@ -325,5 +334,6 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
         </div>
       </main>
     </div>
+    </AuthGuard>
   );
 }

@@ -2,33 +2,44 @@
 import { useState } from 'react';
 import { signIn } from '@/lib/auth';
 import { clients } from '@/lib/data';
+import { useTheme } from '@/contexts/ThemeContext';
+import { Sun, Moon } from 'lucide-react';
 
 export default function LoginPage() {
   const [email, setEmail] = useState(clients[0].login.email);
   const [password, setPassword] = useState('');
   const [err, setErr] = useState<string | null>(null);
-  const [isLogin, setIsLogin] = useState(true); // true = Login, false = Sign up
-  
+  const [isLogin, setIsLogin] = useState(true);
+  const { toggleTheme, isDark } = useTheme();
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
     const session = signIn(email, password);
     if (!session) { setErr('Invalid credentials'); return; }
     window.location.href = '/app';
   }
-  
+
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 p-4">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4 transition-colors">
+      {/* Theme Toggle */}
+      <button
+        onClick={toggleTheme}
+        className="fixed top-4 right-4 p-3 rounded-lg bg-surface-elevated border border-border hover:bg-background-hover transition-colors"
+        title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
+      >
+        {isDark ? <Sun size={20} className="text-foreground" /> : <Moon size={20} className="text-foreground" />}
+      </button>
+
       <div className="w-full max-w-md">
-        
         {/* Toggle Tabs */}
-        <div className="bg-white rounded-2xl shadow-lg border border-gray-200 overflow-hidden">
-          <div className="flex border-b border-gray-200">
+        <div className="card overflow-hidden">
+          <div className="flex border-b border-border">
             <button
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-4 px-6 font-semibold transition-colors ${
-                isLogin 
-                  ? 'bg-black text-white' 
-                  : 'bg-white text-gray-600 hover:text-gray-900'
+                isLogin
+                  ? 'bg-interactive text-foreground-inverse'
+                  : 'bg-surface-elevated text-foreground-secondary hover:text-foreground'
               }`}
             >
               Log in
@@ -36,9 +47,9 @@ export default function LoginPage() {
             <button
               onClick={() => setIsLogin(false)}
               className={`flex-1 py-4 px-6 font-semibold transition-colors ${
-                !isLogin 
-                  ? 'bg-black text-white' 
-                  : 'bg-white text-gray-600 hover:text-gray-900'
+                !isLogin
+                  ? 'bg-interactive text-foreground-inverse'
+                  : 'bg-surface-elevated text-foreground-secondary hover:text-foreground'
               }`}
             >
               Sign up
@@ -47,27 +58,27 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="p-8 pb-2">
             <div className="text-center mb-6">
-              <h3 className="text-2xl font-bold text-gray-900">
+              <h3 className="text-2xl font-bold text-foreground">
                 {isLogin ? 'Welcome back' : 'Get started'}
               </h3>
-              <p className="text-gray-600 mt-1">
-                {isLogin 
-                  ? 'Choose a demo account to continue' 
+              <p className="text-foreground-secondary mt-1">
+                {isLogin
+                  ? 'Choose a demo account to continue'
                   : 'Create your account to start building bots'
                 }
               </p>
             </div>
-          
+
           <div className="space-y-6">
             {isLogin ? (
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-foreground-secondary mb-2">
                   Select Demo Account
                 </label>
-                <select 
-                  value={email} 
-                  onChange={e => setEmail(e.target.value)} 
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-black focus:border-transparent transition-all"
+                <select
+                  value={email}
+                  onChange={e => setEmail(e.target.value)}
+                  className="select"
                 >
                   {clients.map(c => (
                     <option key={c.id} value={c.login.email}>
@@ -78,57 +89,57 @@ export default function LoginPage() {
               </div>
             ) : (
               <div>
-                <label className="block text-sm font-semibold text-gray-700 mb-2">
+                <label className="block text-sm font-semibold text-foreground-secondary mb-2">
                   Email Address
                 </label>
-                <input 
-                  type="email" 
+                <input
+                  type="email"
                   value={email}
                   onChange={e => setEmail(e.target.value)}
-                  className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-black focus:border-transparent transition-all" 
+                  className="input"
                   placeholder="Enter your email"
                 />
               </div>
             )}
-            
+
             <div>
-              <label className="block text-sm font-semibold text-gray-700 mb-2">
+              <label className="block text-sm font-semibold text-foreground-secondary mb-2">
                 Password
               </label>
-              <input 
-                value={password} 
-                onChange={e => setPassword(e.target.value)} 
-                type="password" 
-                className="w-full rounded-xl border border-gray-300 px-4 py-3 focus:ring-2 focus:ring-black focus:border-transparent transition-all" 
+              <input
+                value={password}
+                onChange={e => setPassword(e.target.value)}
+                type="password"
+                className="input"
                 placeholder="Enter demo password"
               />
             </div>
-            
-            <button 
+
+            <button
               type="submit"
-              className="w-full bg-black hover:bg-gray-800 text-white font-semibold py-3 px-4 rounded-xl transition-colors duration-200"
+              className="btn-primary w-full py-3"
             >
               {isLogin ? 'Log in to Dashboard' : 'Create Account'}
             </button>
-            
+
             {err && (
-              <div className="p-3 bg-red-50 border border-red-200 rounded-xl">
-                <p className="text-sm text-red-600">{err}</p>
+              <div className="p-3 bg-error-50 dark:bg-error-700/20 border border-error-200 dark:border-error-700 rounded-xl">
+                <p className="text-sm text-error-600 dark:text-error-500">{err}</p>
               </div>
             )}
           </div>
-          
+
           {!isLogin && (
-            <div className="mt-8 pt-6 border-t border-gray-200">
-              <p className="text-xs text-gray-500 text-center">
+            <div className="mt-8 pt-6 border-t border-border">
+              <p className="text-xs text-foreground-tertiary text-center">
                 By signing up, you agree to our Terms of Service and Privacy Policy
               </p>
             </div>
           )}
-          
+
           {/* Logo at bottom */}
           <div className="mt-2 flex justify-center">
-            <svg viewBox="0 0 790.67 153.33" width="82" height="16" className="text-black">
+            <svg viewBox="0 0 790.67 153.33" width="82" height="16" className="text-foreground">
               <path d="M743.08,10.93h26.79v26.27h-26.79V10.93ZM743.73,57.64h25.5v80.05h-25.5V57.64Z" fill="currentColor"/>
               <path d="M292.43,88.21c0,7.77-1.22,14.86-3.66,21.26-2.44,6.41-5.94,11.89-10.49,16.46-4.56,4.57-10.06,8.09-16.52,10.58-6.46,2.49-13.67,3.73-21.63,3.73s-15.51-1.24-22-3.73c-6.49-2.49-12-6.01-16.52-10.58-4.52-4.56-7.98-10.05-10.38-16.46-2.4-6.41-3.6-13.49-3.6-21.26s1.22-14.86,3.66-21.26c2.44-6.41,5.94-11.89,10.49-16.46,4.55-4.56,10.06-8.09,16.52-10.58,6.46-2.49,13.67-3.73,21.63-3.73s15.51,1.24,22,3.73c6.49,2.49,12,6.02,16.52,10.58,4.52,4.57,7.98,10.05,10.38,16.46,2.4,6.41,3.6,13.49,3.6,21.26ZM266.07,88.21c0-5.25-.65-9.88-1.94-13.9-1.29-4.02-3.08-7.39-5.38-10.12-2.3-2.73-5.06-4.77-8.29-6.13-3.23-1.36-6.74-2.04-10.54-2.04s-7.19.68-10.38,2.04c-3.19,1.36-5.94,3.41-8.23,6.13-2.3,2.73-4.09,6.1-5.38,10.12-1.29,4.02-1.94,8.66-1.94,13.9s.65,9.88,1.94,13.9c1.29,4.02,3.1,7.38,5.43,10.07,2.33,2.69,5.09,4.74,8.29,6.13,3.19,1.4,6.69,2.1,10.49,2.1s7.28-.7,10.44-2.1c3.16-1.4,5.88-3.44,8.18-6.13,2.29-2.69,4.09-6.05,5.38-10.07,1.29-4.02,1.94-8.65,1.94-13.9Z" fill="currentColor"/>
               <path d="M373.4,137.59c-2.87.82-6.29,1.46-10.28,1.94-3.98.48-7.69.72-11.14.72-8.75,0-15.91-1.35-21.47-4.04-5.56-2.69-9.49-6.56-11.78-11.6-1.65-3.61-2.47-8.52-2.47-14.72v-51.32h-19.48v-19.93h19.48V10.93h25.5v27.7h30.13v19.93h-30.13v48.15c0,3.82.61,6.64,1.83,8.48,2.15,3.14,6.42,4.7,12.8,4.7,2.94,0,5.86-.22,8.77-.66,2.91-.44,5.65-1,8.23-1.69v20.04Z" fill="currentColor"/>

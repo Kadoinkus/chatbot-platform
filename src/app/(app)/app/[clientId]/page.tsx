@@ -15,7 +15,7 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [allBots, setAllBots] = useState<(Bot & { workspaceName: string })[]>([]);
   const [loading, setLoading] = useState(true);
-  
+
   useEffect(() => {
     async function loadData() {
       try {
@@ -23,10 +23,10 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
           getClientById(params.clientId),
           getWorkspacesByClientId(params.clientId)
         ]);
-        
+
         setClient(clientData);
         setWorkspaces(workspacesData || []);
-        
+
         // Load all bots from all workspaces
         const botsWithWorkspace: (Bot & { workspaceName: string })[] = [];
         for (const workspace of workspacesData || []) {
@@ -39,7 +39,7 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
           });
         }
         setAllBots(botsWithWorkspace);
-        
+
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -50,108 +50,122 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
   }, [params.clientId]);
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
+        <main className="flex-1 lg:ml-16 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
+        </main>
+      </div>
+    );
   }
-  
+
   if (!client) {
-    return <div className="p-6">Client not found</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
+        <main className="flex-1 lg:ml-16 p-6">
+          <p className="text-foreground-secondary">Client not found</p>
+        </main>
+      </div>
+    );
   }
-  
+
   // Filter bots based on search term and selected workspace
   const filteredBots = allBots.filter(bot => {
-    const matchesSearch = 
+    const matchesSearch =
       bot.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bot.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
       bot.workspaceName.toLowerCase().includes(searchTerm.toLowerCase());
-    
-    const matchesWorkspace = 
-      selectedWorkspace === 'all' || 
+
+    const matchesWorkspace =
+      selectedWorkspace === 'all' ||
       bot.workspaceId === selectedWorkspace;
-    
+
     return matchesSearch && matchesWorkspace;
   });
 
-  const planColors = {
-    starter: 'bg-gray-100 text-gray-700',
-    growth: 'bg-blue-100 text-blue-700',
-    premium: 'bg-purple-100 text-purple-700',
-    enterprise: 'bg-orange-100 text-orange-700'
+  const planColors: Record<string, string> = {
+    starter: 'badge-plan-starter',
+    growth: 'badge-plan-growth',
+    premium: 'badge-plan-premium',
+    enterprise: 'badge-plan-enterprise'
   };
 
   const getWorkspaceBadgeColor = (workspaceId: string) => {
     const workspace = workspaces.find(ws => ws.id === workspaceId);
-    return workspace ? planColors[workspace.plan] : 'bg-gray-100 text-gray-700';
+    return workspace ? planColors[workspace.plan] : 'badge-plan-starter';
   };
 
   return (
     <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-background">
         <Sidebar clientId={client.id} />
-      
+
       <main className="flex-1 lg:ml-16 min-h-screen">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
           <div className="mb-6 lg:mb-8">
-            <h1 className="text-2xl lg:text-3xl font-bold mb-2">All Bots</h1>
-            <p className="text-gray-600">Manage all your AI assistants across all workspaces for {client.name}</p>
+            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">All Bots</h1>
+            <p className="text-foreground-secondary">Manage all your AI assistants across all workspaces for {client.name}</p>
           </div>
 
           {/* Stats */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Total Bots</span>
+                <span className="text-sm text-foreground-secondary">Total Bots</span>
               </div>
-              <p className="text-2xl font-bold">{allBots.length}</p>
-              <p className="text-xs text-gray-500 mt-1">Across {workspaces.length} workspaces</p>
+              <p className="text-2xl font-bold text-foreground">{allBots.length}</p>
+              <p className="text-xs text-foreground-tertiary mt-1">Across {workspaces.length} workspaces</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Active Bots</span>
+                <span className="text-sm text-foreground-secondary">Active Bots</span>
               </div>
-              <p className="text-2xl font-bold">{allBots.filter(b => b.status === 'Live').length}</p>
-              <p className="text-xs text-gray-500 mt-1">Currently running</p>
+              <p className="text-2xl font-bold text-success-600 dark:text-success-500">{allBots.filter(b => b.status === 'Live').length}</p>
+              <p className="text-xs text-foreground-tertiary mt-1">Currently running</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Paused Bots</span>
+                <span className="text-sm text-foreground-secondary">Paused Bots</span>
               </div>
-              <p className="text-2xl font-bold">{allBots.filter(b => b.status === 'Paused').length}</p>
-              <p className="text-xs text-gray-500 mt-1">Temporarily inactive</p>
+              <p className="text-2xl font-bold text-warning-600 dark:text-warning-500">{allBots.filter(b => b.status === 'Paused').length}</p>
+              <p className="text-xs text-foreground-tertiary mt-1">Temporarily inactive</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Total Conversations</span>
+                <span className="text-sm text-foreground-secondary">Total Conversations</span>
               </div>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-foreground">
                 {allBots.reduce((total, bot) => total + bot.conversations, 0).toLocaleString()}
               </p>
-              <p className="text-xs text-gray-500 mt-1">All time</p>
+              <p className="text-xs text-foreground-tertiary mt-1">All time</p>
             </div>
           </div>
-          
+
           {/* Search and Filters */}
           <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6 mb-6">
             <div className="relative flex-1 max-w-md">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={20} />
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground-tertiary" size={20} />
               <input
                 type="text"
                 placeholder="Search bots and workspaces..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                className="input pl-10"
               />
             </div>
 
             {/* Workspace Filter */}
             <div className="relative">
-              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={16} />
+              <Filter className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground-tertiary z-10" size={16} />
               <select
                 value={selectedWorkspace}
                 onChange={(e) => setSelectedWorkspace(e.target.value)}
-                className="pl-10 pr-8 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black bg-white min-w-[180px]"
+                className="select pl-10 min-w-[180px]"
               >
                 <option value="all">All Workspaces</option>
                 {workspaces.map(workspace => (
@@ -161,10 +175,10 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
                 ))}
               </select>
             </div>
-            
-            <Link 
+
+            <Link
               href={`/app/${client.id}/marketplace`}
-              className="flex items-center justify-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 transition-colors"
+              className="btn-primary px-4 py-2"
             >
               <Plus size={20} />
               New Bot
@@ -186,14 +200,14 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
           {/* Empty States */}
           {filteredBots.length === 0 && allBots.length === 0 && (
             <div className="text-center py-12">
-              <div className="w-16 h-16 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                <Plus size={24} className="text-gray-400" />
+              <div className="w-16 h-16 mx-auto mb-4 bg-background-tertiary rounded-full flex items-center justify-center">
+                <Plus size={24} className="text-foreground-tertiary" />
               </div>
-              <h3 className="text-lg font-semibold mb-2">No bots yet</h3>
-              <p className="text-gray-600 mb-4">Create your first bot to get started with AI assistance.</p>
-              <Link 
+              <h3 className="text-lg font-semibold text-foreground mb-2">No bots yet</h3>
+              <p className="text-foreground-secondary mb-4">Create your first bot to get started with AI assistance.</p>
+              <Link
                 href={`/app/${client.id}/marketplace`}
-                className="inline-flex items-center gap-2 px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                className="btn-primary inline-flex items-center gap-2 px-4 py-2"
               >
                 <Plus size={20} />
                 Create First Bot
@@ -203,13 +217,13 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
 
           {filteredBots.length === 0 && allBots.length > 0 && (
             <div className="text-center py-12">
-              <p className="text-gray-500">No bots found matching your search criteria.</p>
-              <button 
+              <p className="text-foreground-secondary">No bots found matching your search criteria.</p>
+              <button
                 onClick={() => {
                   setSearchTerm('');
                   setSelectedWorkspace('all');
                 }}
-                className="mt-2 text-blue-600 hover:text-blue-700 text-sm"
+                className="mt-2 text-accent hover:text-accent-hover text-sm"
               >
                 Clear filters
               </button>

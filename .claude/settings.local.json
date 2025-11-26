@@ -5,7 +5,8 @@
       "Bash(touch:*)",
       "Bash(for:*)",
       "Bash(done)",
-      "Bash(npm run build:*)"
+      "Bash(npm run build:*)",
+      "Bash(dir \"C:\\Users\\31640\\Documents\\notsoAI-MVP\\chatbot-platform\")"
     ],
     "deny": [],
     "ask": []

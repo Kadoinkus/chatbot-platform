@@ -63,11 +63,11 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
         <main className="flex-1 lg:ml-16">
           <div className="flex items-center justify-center h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-gray-900"></div>
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
           </div>
         </main>
       </div>
@@ -76,12 +76,12 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
 
   if (!client) {
     return (
-      <div className="flex min-h-screen bg-gray-50">
+      <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
         <main className="flex-1 lg:ml-16">
           <div className="text-center p-8">
-            <AlertCircle size={48} className="text-gray-400 mx-auto mb-4" />
-            <p className="text-gray-600">No billing data found</p>
+            <AlertCircle size={48} className="text-foreground-tertiary mx-auto mb-4" />
+            <p className="text-foreground-secondary">No billing data found</p>
           </div>
         </main>
       </div>
@@ -114,11 +114,11 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
   };
 
   const planColors: Record<string, string> = {
-    starter: 'bg-gray-100 text-gray-700',
-    basic: 'bg-blue-100 text-blue-700',
-    growth: 'bg-blue-100 text-blue-700',
-    premium: 'bg-purple-100 text-purple-700',
-    enterprise: 'bg-orange-100 text-orange-700'
+    starter: 'badge-plan-starter',
+    basic: 'badge-plan-growth',
+    growth: 'badge-plan-growth',
+    premium: 'badge-plan-premium',
+    enterprise: 'badge-plan-enterprise'
   };
 
   const getPlanConfig = (plan: string) => {

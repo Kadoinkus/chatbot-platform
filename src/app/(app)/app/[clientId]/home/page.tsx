@@ -5,7 +5,7 @@ import type { Client, Workspace, Bot } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import Sidebar from '@/components/Sidebar';
 import AuthGuard from '@/components/AuthGuard';
-import { Plus, Search, Building2, Activity, CreditCard, ChevronRight, Bot as BotIcon } from 'lucide-react';
+import { Plus, Search, Building2, Activity, ChevronRight, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import {
   Page,
@@ -168,137 +168,77 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
               </Button>
             </div>
 
-            {/* Workspace Cards */}
-            <div className="space-y-4">
+            {/* Workspace Cards - 2 column grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {filteredWorkspaces.map(workspace => {
                 const bots = workspaceBots[workspace.id] || [];
-                const usagePercentage = workspace.messages ? (workspace.messages.used / workspace.messages.limit) * 100 : 0;
+                const activeBots = bots.filter(b => b.status === 'Live').length;
+                const pausedBots = bots.filter(b => b.status === 'Paused').length;
 
                 return (
                   <Card key={workspace.id} hover padding="none">
-                    {/* Header Section */}
-                    <div className="p-6 pb-4 border-b border-border">
-                      <div className="flex items-start justify-between">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-3 mb-2">
-                            <h3 className="text-xl font-bold text-foreground">{workspace.name}</h3>
-                            <Badge plan={getPlanBadge(workspace.plan)}>
-                              {workspace.plan}
-                            </Badge>
-                          </div>
-                          <p className="text-foreground-secondary leading-relaxed">{workspace.description}</p>
+                    {/* Header */}
+                    <div className="p-4">
+                      <div className="flex items-center justify-between mb-2">
+                        <div className="flex items-center gap-2 min-w-0">
+                          <h3 className="text-lg font-bold text-foreground truncate">{workspace.name}</h3>
+                          <Badge plan={getPlanBadge(workspace.plan)} className="flex-shrink-0">
+                            {workspace.plan}
+                          </Badge>
                         </div>
                         <Link href={`/app/${client.id}/workspace/${workspace.id}`}>
-                          <Button size="sm" iconRight={<ChevronRight size={14} />}>
+                          <Button size="sm" variant="ghost" iconRight={<ChevronRight size={14} />}>
                             Manage
                           </Button>
                         </Link>
                       </div>
+                      {workspace.description && (
+                        <p className="text-sm text-foreground-secondary line-clamp-1">{workspace.description}</p>
+                      )}
                     </div>
 
-                    {/* Stats Section */}
-                    <div className="p-6 pt-4">
-                      <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        <div className="text-center md:text-left">
-                          <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                            <div className="w-8 h-8 bg-info-100 dark:bg-info-700/30 rounded-lg flex items-center justify-center">
-                              <BotIcon size={16} className="text-info-600 dark:text-info-500" />
+                    {/* Bots Section */}
+                    <div className="border-t border-border px-4 py-3">
+                      {bots.length > 0 ? (
+                        <>
+                          <div className="flex items-center justify-between mb-2">
+                            <div className="flex items-center gap-1">
+                              {bots.slice(0, 5).map(bot => (
+                                <img
+                                  key={bot.id}
+                                  src={bot.image}
+                                  alt={bot.name}
+                                  title={bot.name}
+                                  className="w-8 h-8 rounded-full border-2 border-background -ml-2 first:ml-0"
+                                  style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                                />
+                              ))}
+                              {bots.length > 5 && (
+                                <span className="w-8 h-8 rounded-full border-2 border-background -ml-2 bg-background-tertiary flex items-center justify-center text-xs font-medium text-foreground-secondary">
+                                  +{bots.length - 5}
+                                </span>
+                              )}
                             </div>
-                            <div>
-                              <p className="text-2xl font-bold text-foreground">{bots.length}</p>
-                              <p className="text-xs text-foreground-tertiary uppercase tracking-wide">Bots</p>
-                            </div>
+                            <span className="text-xs text-foreground-tertiary">
+                              {activeBots > 0 && <span className="text-success-600 dark:text-success-500">{activeBots} active</span>}
+                              {activeBots > 0 && pausedBots > 0 && <span> · </span>}
+                              {pausedBots > 0 && <span className="text-warning-600 dark:text-warning-500">{pausedBots} paused</span>}
+                            </span>
                           </div>
-                          <p className="text-sm text-foreground-secondary">
-                            {bots.filter(b => b.status === 'Live').length} active, {bots.filter(b => b.status === 'Paused').length} paused
+                          <p className="text-xs text-foreground-tertiary">
+                            {bots.slice(0, 3).map(b => b.name).join(', ')}
+                            {bots.length > 3 && ` +${bots.length - 3} more`}
                           </p>
+                        </>
+                      ) : (
+                        <div className="flex items-center justify-between">
+                          <span className="text-sm text-foreground-tertiary">No bots assigned</span>
+                          <Button size="sm" variant="ghost" icon={<Plus size={14} />}>
+                            Add bot
+                          </Button>
                         </div>
-
-                        <div className="text-center md:text-left">
-                          <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                            <div className="w-8 h-8 bg-success-100 dark:bg-success-700/30 rounded-lg flex items-center justify-center">
-                              <Activity size={16} className="text-success-600 dark:text-success-500" />
-                            </div>
-                            <div>
-                              <p className="text-2xl font-bold text-foreground">
-                                {workspace.messages?.used?.toLocaleString() || '0'}
-                              </p>
-                              <p className="text-xs text-foreground-tertiary uppercase tracking-wide">Usage</p>
-                            </div>
-                          </div>
-                          <div className="w-full bg-background-tertiary rounded-full h-2 mt-1">
-                            <div
-                              className={`${
-                                usagePercentage > 90 ? 'bg-error-500' :
-                                usagePercentage > 70 ? 'bg-warning-500' : 'bg-success-500'
-                              } rounded-full h-2 transition-all duration-300`}
-                              style={{ width: `${Math.min(100, usagePercentage)}%` }}
-                            />
-                          </div>
-                          <p className="text-xs text-foreground-tertiary mt-1">
-                            {workspace.messages?.limit ? `${Math.round(usagePercentage)}% of ${workspace.messages.limit.toLocaleString()}` : 'Unlimited'}
-                          </p>
-                        </div>
-
-                        <div className="text-center md:text-left">
-                          <div className="flex items-center justify-center md:justify-start gap-2 mb-2">
-                            <div className="w-8 h-8 bg-plan-premium-bg rounded-lg flex items-center justify-center">
-                              <CreditCard size={16} className="text-plan-premium-text" />
-                            </div>
-                            <div>
-                              <p className="text-2xl font-bold text-foreground">{workspace.walletCredits?.toFixed(2) || '0.00'}</p>
-                              <p className="text-xs text-foreground-tertiary uppercase tracking-wide">Credits</p>
-                            </div>
-                          </div>
-                          <p className="text-sm text-foreground-secondary">Available balance</p>
-                        </div>
-                      </div>
+                      )}
                     </div>
-
-                    {/* Bot Preview */}
-                    {bots.length > 0 && (
-                      <div className="border-t border-border px-6 py-4 bg-background-secondary">
-                        <div className="flex items-center justify-between mb-3">
-                          <h4 className="text-sm font-semibold text-foreground uppercase tracking-wide">Active Bots</h4>
-                          <Link
-                            href={`/app/${client.id}/workspace/${workspace.id}`}
-                            className="text-xs text-info-600 hover:text-info-700 dark:text-info-500 dark:hover:text-info-400 font-medium"
-                          >
-                            View all
-                          </Link>
-                        </div>
-                        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                          {bots.slice(0, 4).map(bot => (
-                            <Link
-                              key={bot.id}
-                              href={`/app/${client.id}/workspace/${workspace.id}`}
-                              className="flex items-center gap-2 px-3 py-2 bg-surface-elevated rounded-lg border border-border text-sm hover:border-border-secondary hover:shadow-sm hover:scale-[1.02] transition-all duration-200 cursor-pointer group"
-                            >
-                              <img
-                                src={bot.image}
-                                alt={bot.name}
-                                className="w-7 h-7 rounded-full flex-shrink-0 group-hover:scale-110 transition-transform duration-200"
-                                style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                              />
-                              <div className="flex-1 min-w-0">
-                                <span className="font-medium text-foreground truncate block transition-colors">{bot.name}</span>
-                                <Badge
-                                  variant={bot.status === 'Live' ? 'success' : bot.status === 'Paused' ? 'warning' : 'error'}
-                                  className="text-xs px-1.5 py-0"
-                                >
-                                  {bot.status.toLowerCase()}
-                                </Badge>
-                              </div>
-                            </Link>
-                          ))}
-                          {bots.length > 4 && (
-                            <div className="flex items-center justify-center px-3 py-2 bg-background-tertiary rounded-lg text-sm text-foreground-secondary font-medium">
-                              +{bots.length - 4} more
-                            </div>
-                          )}
-                        </div>
-                      </div>
-                    )}
                   </Card>
                 );
               })}

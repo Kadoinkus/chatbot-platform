@@ -119,43 +119,6 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
               description={`Manage all your AI assistants across all workspaces for ${client.name}`}
             />
 
-            {/* Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-              <Card padding="sm">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-foreground-secondary">Total Bots</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{allBots.length}</p>
-                <p className="text-xs text-foreground-tertiary mt-1">Across {workspaces.length} workspaces</p>
-              </Card>
-
-              <Card padding="sm">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-foreground-secondary">Active Bots</span>
-                </div>
-                <p className="text-2xl font-bold text-success-600 dark:text-success-500">{allBots.filter(b => b.status === 'Live').length}</p>
-                <p className="text-xs text-foreground-tertiary mt-1">Currently running</p>
-              </Card>
-
-              <Card padding="sm">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-foreground-secondary">Paused Bots</span>
-                </div>
-                <p className="text-2xl font-bold text-warning-600 dark:text-warning-500">{allBots.filter(b => b.status === 'Paused').length}</p>
-                <p className="text-xs text-foreground-tertiary mt-1">Temporarily inactive</p>
-              </Card>
-
-              <Card padding="sm">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-foreground-secondary">Total Conversations</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">
-                  {allBots.reduce((total, bot) => total + bot.conversations, 0).toLocaleString()}
-                </p>
-                <p className="text-xs text-foreground-tertiary mt-1">All time</p>
-              </Card>
-            </div>
-
             {/* Search and Filters */}
             <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6 mb-6">
               <div className="flex-1 max-w-md">

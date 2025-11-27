@@ -5,7 +5,7 @@ import type { Client, Workspace, Bot } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import Sidebar from '@/components/Sidebar';
 import AuthGuard from '@/components/AuthGuard';
-import { Plus, Search, Building2, Activity, ChevronRight, Bot as BotIcon } from 'lucide-react';
+import { Plus, Search, Building2, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import {
   Page,
@@ -101,14 +101,6 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
     return planMap[plan] || 'starter';
   };
 
-  const getTotalUsage = () => {
-    return workspaces.reduce((total, ws) => total + (ws.messages?.used || 0), 0);
-  };
-
-  const getTotalBots = () => {
-    return Object.values(workspaceBots).reduce((total, bots) => total + bots.length, 0);
-  };
-
   return (
     <AuthGuard clientId={params.clientId}>
       <div className="flex min-h-screen bg-background">
@@ -120,38 +112,6 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
               title="Dashboard"
               description={`Manage your workspaces and AI assistants for ${client.name}`}
             />
-
-            {/* Quick Stats */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-8">
-              <Card padding="sm">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-foreground-secondary">Total Workspaces</span>
-                  <Building2 size={18} className="text-foreground-tertiary" />
-                </div>
-                <p className="text-2xl font-bold text-foreground">{workspaces.length}</p>
-                <p className="text-xs text-foreground-tertiary mt-1">
-                  {workspaces.filter(ws => ws.status === 'active').length} active
-                </p>
-              </Card>
-
-              <Card padding="sm">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-foreground-secondary">Total Bots</span>
-                  <BotIcon size={18} className="text-foreground-tertiary" />
-                </div>
-                <p className="text-2xl font-bold text-foreground">{getTotalBots()}</p>
-                <p className="text-xs text-foreground-tertiary mt-1">Across all workspaces</p>
-              </Card>
-
-              <Card padding="sm">
-                <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-foreground-secondary">This Month</span>
-                  <Activity size={18} className="text-foreground-tertiary" />
-                </div>
-                <p className="text-2xl font-bold text-foreground">{getTotalUsage().toLocaleString()}</p>
-                <p className="text-xs text-foreground-tertiary mt-1">Conversations handled</p>
-              </Card>
-            </div>
 
             <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6 mb-6">
               <div className="flex-1 max-w-md">

@@ -449,78 +449,78 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <div className="card">
-                <div className="border-b border-gray-200">
+                <div className="border-b border-border">
                   <div className="flex gap-6 p-6 overflow-x-auto">
                     <button
                       onClick={() => integrationMode === 'builtin' && setActiveTab('personality')}
                       disabled={integrationMode === 'external'}
                       className={`pb-2 px-1 font-medium transition-colors relative flex items-center gap-2 ${
-                        integrationMode === 'external' 
-                          ? 'text-gray-300 cursor-not-allowed' 
-                          : activeTab === 'personality' 
-                            ? 'text-black border-b-2 border-black' 
-                            : 'text-gray-600 hover:text-gray-900'
+                        integrationMode === 'external'
+                          ? 'text-foreground-disabled cursor-not-allowed'
+                          : activeTab === 'personality'
+                            ? 'text-foreground border-b-2 border-foreground'
+                            : 'text-foreground-secondary hover:text-foreground'
                       }`}
                     >
                       Personality
-                      {integrationMode === 'external' && <Shield size={14} className="text-gray-300" />}
+                      {integrationMode === 'external' && <Shield size={14} className="text-foreground-disabled" />}
                     </button>
                     <button
                       onClick={() => integrationMode === 'builtin' && setActiveTab('knowledge')}
                       disabled={integrationMode === 'external'}
                       className={`pb-2 px-1 font-medium transition-colors relative flex items-center gap-2 ${
-                        integrationMode === 'external' 
-                          ? 'text-gray-300 cursor-not-allowed' 
-                          : activeTab === 'knowledge' 
-                            ? 'text-black border-b-2 border-black' 
-                            : 'text-gray-600 hover:text-gray-900'
+                        integrationMode === 'external'
+                          ? 'text-foreground-disabled cursor-not-allowed'
+                          : activeTab === 'knowledge'
+                            ? 'text-foreground border-b-2 border-foreground'
+                            : 'text-foreground-secondary hover:text-foreground'
                       }`}
                     >
                       Knowledge Base
-                      {integrationMode === 'external' && <Shield size={14} className="text-gray-300" />}
+                      {integrationMode === 'external' && <Shield size={14} className="text-foreground-disabled" />}
                     </button>
                     <button
                       onClick={() => integrationMode === 'builtin' && setActiveTab('responses')}
                       disabled={integrationMode === 'external'}
                       className={`pb-2 px-1 font-medium transition-colors relative flex items-center gap-2 ${
-                        integrationMode === 'external' 
-                          ? 'text-gray-300 cursor-not-allowed' 
-                          : activeTab === 'responses' 
-                            ? 'text-black border-b-2 border-black' 
-                            : 'text-gray-600 hover:text-gray-900'
+                        integrationMode === 'external'
+                          ? 'text-foreground-disabled cursor-not-allowed'
+                          : activeTab === 'responses'
+                            ? 'text-foreground border-b-2 border-foreground'
+                            : 'text-foreground-secondary hover:text-foreground'
                       }`}
                     >
                       Response Templates
-                      {integrationMode === 'external' && <Shield size={14} className="text-gray-300" />}
+                      {integrationMode === 'external' && <Shield size={14} className="text-foreground-disabled" />}
                     </button>
                     <button
                       onClick={() => integrationMode === 'builtin' && setActiveTab('chatflows')}
                       disabled={integrationMode === 'external'}
                       className={`pb-2 px-1 font-medium transition-colors relative flex items-center gap-2 ${
-                        integrationMode === 'external' 
-                          ? 'text-gray-300 cursor-not-allowed' 
-                          : activeTab === 'chatflows' 
-                            ? 'text-black border-b-2 border-black' 
-                            : 'text-gray-600 hover:text-gray-900'
+                        integrationMode === 'external'
+                          ? 'text-foreground-disabled cursor-not-allowed'
+                          : activeTab === 'chatflows'
+                            ? 'text-foreground border-b-2 border-foreground'
+                            : 'text-foreground-secondary hover:text-foreground'
                       }`}
                     >
                       Chatflows
-                      {integrationMode === 'external' && <Shield size={14} className="text-gray-300" />}
+                      {integrationMode === 'external' && <Shield size={14} className="text-foreground-disabled" />}
                     </button>
                     <button
                       onClick={() => integrationMode === 'external' && setActiveTab('connect-api')}
                       disabled={integrationMode === 'builtin'}
                       className={`pb-2 px-1 font-medium transition-colors relative flex items-center gap-2 ${
-                        integrationMode === 'builtin' 
-                          ? 'text-gray-300 cursor-not-allowed' 
-                          : activeTab === 'connect-api' 
-                            ? 'text-black border-b-2 border-black' 
-                            : 'text-gray-600 hover:text-gray-900'
+                        integrationMode === 'builtin'
+                          ? 'text-foreground-disabled cursor-not-allowed'
+                          : activeTab === 'connect-api'
+                            ? 'text-foreground border-b-2 border-foreground'
+                            : 'text-foreground-secondary hover:text-foreground'
                       }`}
                     >
                       Connect API
-                      {integrationMode === 'external' && <CheckCircle size={14} className="text-green-500" />}
-                      {integrationMode === 'builtin' && <Shield size={14} className="text-gray-300" />}
+                      {integrationMode === 'external' && <CheckCircle size={14} className="text-success-500" />}
+                      {integrationMode === 'builtin' && <Shield size={14} className="text-foreground-disabled" />}
                     </button>
                   </div>
                 </div>
@@ -528,73 +528,73 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                 <div className="p-6">
                   {activeTab === 'personality' && integrationMode === 'external' && (
                     <div className="text-center py-12">
-                      <Shield size={48} className="mx-auto text-gray-300 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">Personality Managed Externally</h3>
-                      <p className="text-gray-600 mb-4">Your external chatbot provider handles personality configuration.</p>
-                      <p className="text-sm text-gray-500">Switch to "Built-in AI" mode to configure personality traits here.</p>
+                      <Shield size={48} className="mx-auto text-foreground-disabled mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">Personality Managed Externally</h3>
+                      <p className="text-foreground-secondary mb-4">Your external chatbot provider handles personality configuration.</p>
+                      <p className="text-sm text-foreground-tertiary">Switch to "Built-in AI" mode to configure personality traits here.</p>
                     </div>
                   )}
                   {activeTab === 'personality' && integrationMode === 'builtin' && (
                     <div className="space-y-6">
                       {/* Bot Identity */}
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <User size={18} />
                           Bot Identity
                         </h3>
-                        
+
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {/* Bot Name */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Bot Name</label>
+                            <label className="block text-sm font-medium text-foreground-secondary mb-2">Bot Name</label>
                             <input
                               type="text"
                               value={botName}
                               onChange={(e) => handleBotNameChange(e.target.value)}
                               placeholder="e.g., Alex, Sarah, Support Bot"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                              className="input"
                             />
                           </div>
 
                           {/* Age Group */}
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Age Group</label>
+                            <label className="block text-sm font-medium text-foreground-secondary mb-2">Age Group</label>
                             <select
                               value={botAgeGroup}
                               onChange={(e) => setBotAgeGroup(e.target.value)}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent"
+                              className="select"
                             >
                               {Object.entries(ageGroups).map(([key, group]) => (
                                 <option key={key} value={key}>{group.label}</option>
                               ))}
                             </select>
-                            <p className="text-xs text-gray-500 mt-1">{ageGroups[botAgeGroup as keyof typeof ageGroups]?.description}</p>
+                            <p className="text-xs text-foreground-tertiary mt-1">{ageGroups[botAgeGroup as keyof typeof ageGroups]?.description}</p>
                           </div>
                         </div>
 
                         {/* Backstory */}
                         <div className="mt-4">
-                          <label className="block text-sm font-medium text-gray-700 mb-2">Backstory & Role</label>
+                          <label className="block text-sm font-medium text-foreground-secondary mb-2">Backstory & Role</label>
                           <textarea
                             value={botBackstory}
                             onChange={(e) => setBotBackstory(e.target.value)}
                             placeholder="e.g., I am a customer service representative with 3 years of experience helping customers with technical issues. I work for TechCorp and specialize in software troubleshooting..."
                             rows={3}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent resize-none"
+                            className="input resize-none"
                           />
                         </div>
                       </div>
 
                       {/* Personality Type */}
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Sparkles size={18} />
                           Personality Type
                         </h3>
                         <select
                           value={selectedPersonality}
                           onChange={(e) => handlePersonalityTypeChange(e.target.value)}
-                          className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-black focus:border-transparent mb-2"
+                          className="select mb-2"
                         >
                           <optgroup label="Built-in Types">
                             {Object.entries(personalityTypes).map(([key, type]) => (
@@ -610,14 +610,14 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                           )}
                         </select>
                         <div className="flex items-center justify-between">
-                          <p className="text-sm text-gray-600">
-                            {personalityTypes[selectedPersonality as keyof typeof personalityTypes]?.description || 
+                          <p className="text-sm text-foreground-secondary">
+                            {personalityTypes[selectedPersonality as keyof typeof personalityTypes]?.description ||
                              customPersonalityTypes[selectedPersonality]?.description}
                           </p>
                           {selectedPersonality.startsWith('custom_') && (
                             <button
                               onClick={() => handleDeleteCustomPersonality(selectedPersonality)}
-                              className="ml-2 p-1 text-red-600 hover:text-red-700 hover:bg-red-50 rounded"
+                              className="ml-2 p-1 text-error-600 hover:text-error-700 hover:bg-error-50 dark:hover:bg-error-700/20 rounded"
                               title="Delete custom personality"
                             >
                               <Trash2 size={14} />
@@ -628,27 +628,27 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
 
                       {/* Fine-tune Personality */}
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Sliders size={18} />
                           Fine-tune Personality
                         </h3>
-                        <p className="text-sm text-gray-600 mb-4">Adjust the personality balance to perfectly match your needs.</p>
-                        
-                        <div className="bg-gray-50 p-4 rounded-lg border border-gray-200">
+                        <p className="text-sm text-foreground-secondary mb-4">Adjust the personality balance to perfectly match your needs.</p>
+
+                        <div className="bg-background-secondary p-4 rounded-lg border border-border">
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-x-6 gap-y-4">
                             {Object.entries(personalitySpectrums).map(([spectrumKey, spectrum]) => (
                               <div key={spectrumKey} className="space-y-2">
                                 {/* Compact title with percentage */}
                                 <div className="flex items-center justify-between">
-                                  <label className="text-sm font-semibold text-gray-900">{spectrum.name}</label>
-                                  <span className="text-xs font-medium text-gray-600 bg-white px-2 py-0.5 rounded">
+                                  <label className="text-sm font-semibold text-foreground">{spectrum.name}</label>
+                                  <span className="text-xs font-medium text-foreground-secondary bg-surface-elevated px-2 py-0.5 rounded">
                                     {Math.round(personality[spectrumKey as keyof typeof personality] || 50)}%
                                   </span>
                                 </div>
-                                
+
                                 {/* Slider with inline labels */}
                                 <div className="relative">
-                                  <div className="flex justify-between text-xs text-gray-600 mb-1">
+                                  <div className="flex justify-between text-xs text-foreground-secondary mb-1">
                                     <span>{spectrum.left.label}</span>
                                     <span>{spectrum.right.label}</span>
                                   </div>
@@ -658,9 +658,9 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                                     max="100"
                                     value={personality[spectrumKey as keyof typeof personality] || 50}
                                     onChange={(e) => handleSliderChange(spectrumKey, Number(e.target.value))}
-                                    className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                    className="w-full h-2 bg-background-tertiary rounded-lg appearance-none cursor-pointer"
                                     style={{
-                                      background: `linear-gradient(to right, #000 0%, #000 ${personality[spectrumKey as keyof typeof personality] || 50}%, #e5e7eb ${personality[spectrumKey as keyof typeof personality] || 50}%, #e5e7eb 100%)`
+                                      background: `linear-gradient(to right, var(--text-primary) 0%, var(--text-primary) ${personality[spectrumKey as keyof typeof personality] || 50}%, var(--bg-tertiary) ${personality[spectrumKey as keyof typeof personality] || 50}%, var(--bg-tertiary) 100%)`
                                     }}
                                   />
                                 </div>
@@ -668,17 +668,17 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                             ))}
                           </div>
                         </div>
-                        
+
                         {/* Save Custom Personality */}
                         {hasCustomChanges && (
-                          <div className="mt-4 p-3 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="mt-4 p-3 bg-info-50 dark:bg-info-700/30 border border-info-200 dark:border-info-700 rounded-lg">
                             <div className="flex items-center justify-between">
-                              <p className="text-sm text-blue-800">
+                              <p className="text-sm text-info-800 dark:text-info-300">
                                 💡 <strong>Custom changes detected:</strong> Save this as a new personality template?
                               </p>
                               <button
                                 onClick={() => setShowSaveModal(true)}
-                                className="px-3 py-1 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors"
+                                className="px-3 py-1 bg-info-600 text-white text-sm rounded-lg hover:bg-info-700 transition-colors"
                               >
                                 Save as Template
                               </button>
@@ -689,19 +689,19 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
 
                       {/* Response Freedom */}
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Shield size={18} />
                           Response Freedom
                         </h3>
-                        <p className="text-sm text-gray-600 mb-4">
+                        <p className="text-sm text-foreground-secondary mb-4">
                           Control how creative vs conservative your bot should be with its responses.
                         </p>
-                        
-                        <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+
+                        <div className="p-4 bg-background-secondary rounded-lg border border-border">
                           <div className="mb-3">
-                            <span className="text-sm font-medium">Response Style</span>
+                            <span className="text-sm font-medium text-foreground">Response Style</span>
                           </div>
-                          
+
                           <div className="mb-4">
                             <input
                               type="range"
@@ -709,25 +709,25 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                               max="100"
                               value={responseFreedom || 50}
                               onChange={(e) => handleResponseFreedomChange(Number(e.target.value))}
-                              className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                              className="w-full h-2 bg-background-tertiary rounded-lg appearance-none cursor-pointer"
                               style={{
-                                background: `linear-gradient(to right, #000 0%, #000 ${responseFreedom || 50}%, #e5e7eb ${responseFreedom || 50}%, #e5e7eb 100%)`
+                                background: `linear-gradient(to right, var(--text-primary) 0%, var(--text-primary) ${responseFreedom || 50}%, var(--bg-tertiary) ${responseFreedom || 50}%, var(--bg-tertiary) 100%)`
                               }}
                             />
                           </div>
-                          
-                          <div className="flex justify-between text-xs text-gray-500">
+
+                          <div className="flex justify-between text-xs text-foreground-tertiary">
                             <div className="text-center">
-                              <div className="font-medium text-gray-700">Conservative</div>
-                              <div className="text-gray-500 mt-1">Sticks to knowledge base</div>
+                              <div className="font-medium text-foreground-secondary">Conservative</div>
+                              <div className="text-foreground-tertiary mt-1">Sticks to knowledge base</div>
                             </div>
                             <div className="text-center">
-                              <div className="font-medium text-gray-700">Balanced</div>
-                              <div className="text-gray-500 mt-1">Some flexibility</div>
+                              <div className="font-medium text-foreground-secondary">Balanced</div>
+                              <div className="text-foreground-tertiary mt-1">Some flexibility</div>
                             </div>
                             <div className="text-center">
-                              <div className="font-medium text-gray-700">Creative</div>
-                              <div className="text-gray-500 mt-1">More spontaneous</div>
+                              <div className="font-medium text-foreground-secondary">Creative</div>
+                              <div className="text-foreground-tertiary mt-1">More spontaneous</div>
                             </div>
                           </div>
                         </div>
@@ -737,28 +737,28 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
 
                   {/* Save Custom Personality Modal */}
                   {showSaveModal && (
-                    <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-                      <div className="bg-white rounded-xl p-6 w-full max-w-md mx-4">
-                        <h3 className="text-lg font-semibold mb-4">Save Custom Personality</h3>
+                    <div className="fixed inset-0 bg-surface-overlay z-50 flex items-center justify-center">
+                      <div className="bg-surface-elevated rounded-xl p-6 w-full max-w-md mx-4 border border-border">
+                        <h3 className="text-lg font-semibold text-foreground mb-4">Save Custom Personality</h3>
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Template Name</label>
+                            <label className="block text-sm font-medium text-foreground-secondary mb-2">Template Name</label>
                             <input
                               type="text"
                               value={savePresetName}
                               onChange={(e) => setSavePresetName(e.target.value)}
                               placeholder="e.g., Friendly Sales Expert"
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="input"
                             />
                           </div>
                           <div>
-                            <label className="block text-sm font-medium text-gray-700 mb-2">Description (optional)</label>
+                            <label className="block text-sm font-medium text-foreground-secondary mb-2">Description (optional)</label>
                             <textarea
                               value={savePresetDescription}
                               onChange={(e) => setSavePresetDescription(e.target.value)}
                               placeholder="Describe when to use this personality..."
                               rows={3}
-                              className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                              className="input resize-none"
                             />
                           </div>
                         </div>
@@ -769,14 +769,14 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                               setSavePresetName('');
                               setSavePresetDescription('');
                             }}
-                            className="px-4 py-2 text-gray-600 hover:text-gray-800 transition-colors"
+                            className="px-4 py-2 text-foreground-secondary hover:text-foreground transition-colors"
                           >
                             Cancel
                           </button>
                           <button
                             onClick={handleSaveCustomPersonality}
                             disabled={!savePresetName.trim()}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                            className="btn-primary px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             Save Template
                           </button>
@@ -788,57 +788,57 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                   
                   {activeTab === 'knowledge' && integrationMode === 'external' && (
                     <div className="text-center py-12">
-                      <Shield size={48} className="mx-auto text-gray-300 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">Knowledge Base Managed Externally</h3>
-                      <p className="text-gray-600 mb-4">Your external chatbot provider handles knowledge base configuration.</p>
-                      <p className="text-sm text-gray-500">Switch to "Built-in AI" mode to manage knowledge sources here.</p>
+                      <Shield size={48} className="mx-auto text-foreground-disabled mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">Knowledge Base Managed Externally</h3>
+                      <p className="text-foreground-secondary mb-4">Your external chatbot provider handles knowledge base configuration.</p>
+                      <p className="text-sm text-foreground-tertiary">Switch to "Built-in AI" mode to manage knowledge sources here.</p>
                     </div>
                   )}
                   {activeTab === 'knowledge' && integrationMode === 'builtin' && (
                     <div className="space-y-6">
                       <div className="flex justify-between items-center mb-4">
-                        <h3 className="font-semibold flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground flex items-center gap-2">
                           <BookOpen size={18} />
                           Knowledge Sources
                         </h3>
-                        <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 text-sm">
+                        <button className="btn-primary px-4 py-2 text-sm">
                           Add Source
                         </button>
                       </div>
-                      
+
                       <div className="space-y-3">
                         {knowledge.map((source) => (
-                          <div key={source.id} className="flex items-center justify-between p-4 border border-gray-200 rounded-lg hover:bg-gray-50">
+                          <div key={source.id} className="flex items-center justify-between p-4 border border-border rounded-lg hover:bg-background-hover transition-colors">
                             <div className="flex items-center gap-4">
-                              <div className="w-10 h-10 bg-gray-100 rounded-lg flex items-center justify-center">
-                                <BookOpen size={18} className="text-gray-600" />
+                              <div className="w-10 h-10 bg-background-tertiary rounded-lg flex items-center justify-center">
+                                <BookOpen size={18} className="text-foreground-secondary" />
                               </div>
                               <div>
-                                <p className="font-medium">{source.title}</p>
-                                <p className="text-sm text-gray-600">{source.items} items • Updated {source.lastUpdated}</p>
+                                <p className="font-medium text-foreground">{source.title}</p>
+                                <p className="text-sm text-foreground-secondary">{source.items} items • Updated {source.lastUpdated}</p>
                               </div>
                             </div>
                             <div className="flex items-center gap-2">
                               <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                                source.status === 'active' 
-                                  ? 'bg-green-100 text-green-700' 
-                                  : 'bg-gray-100 text-gray-700'
+                                source.status === 'active'
+                                  ? 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500'
+                                  : 'bg-background-tertiary text-foreground-secondary'
                               }`}>
                                 {source.status}
                               </span>
-                              <button className="p-2 hover:bg-gray-100 rounded">
-                                <Sliders size={16} className="text-gray-600" />
+                              <button className="p-2 hover:bg-background-hover rounded">
+                                <Sliders size={16} className="text-foreground-secondary" />
                               </button>
                             </div>
                           </div>
                         ))}
                       </div>
-                      
-                      <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
-                        <BookOpen size={32} className="mx-auto mb-2 text-gray-400" />
-                        <p className="text-sm text-gray-600 mb-2">Drop files here or click to browse</p>
-                        <p className="text-xs text-gray-500 mb-4">Support for PDF, DOCX, TXT, CSV</p>
-                        <button className="px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium hover:bg-gray-200">
+
+                      <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
+                        <BookOpen size={32} className="mx-auto mb-2 text-foreground-tertiary" />
+                        <p className="text-sm text-foreground-secondary mb-2">Drop files here or click to browse</p>
+                        <p className="text-xs text-foreground-tertiary mb-4">Support for PDF, DOCX, TXT, CSV</p>
+                        <button className="btn-secondary px-4 py-2 text-sm">
                           Upload Documents
                         </button>
                       </div>
@@ -847,10 +847,10 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                   
                   {activeTab === 'chatflows' && integrationMode === 'external' && (
                     <div className="text-center py-12">
-                      <Shield size={48} className="mx-auto text-gray-300 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">Chatflows Managed Externally</h3>
-                      <p className="text-gray-600 mb-4">Your external chatbot provider handles conversation flow configuration.</p>
-                      <p className="text-sm text-gray-500">Switch to "Built-in AI" mode to design chatflows here.</p>
+                      <Shield size={48} className="mx-auto text-foreground-disabled mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">Chatflows Managed Externally</h3>
+                      <p className="text-foreground-secondary mb-4">Your external chatbot provider handles conversation flow configuration.</p>
+                      <p className="text-sm text-foreground-tertiary">Switch to "Built-in AI" mode to design chatflows here.</p>
                     </div>
                   )}
                   {activeTab === 'chatflows' && integrationMode === 'builtin' && (
@@ -858,72 +858,72 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                       {!selectedTemplate ? (
                         <div>
                           <div className="mb-6">
-                            <h3 className="font-semibold mb-2 flex items-center gap-2">
+                            <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
                               <GitBranch size={18} />
                               Select a Flow Template
                             </h3>
-                            <p className="text-sm text-gray-600">Choose a pre-built chatflow template to get started quickly</p>
+                            <p className="text-sm text-foreground-secondary">Choose a pre-built chatflow template to get started quickly</p>
                           </div>
-                          
+
                           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                             <button
                               onClick={() => handleTemplateSelect('university')}
-                              className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
+                              className="p-6 border-2 border-border rounded-xl hover:border-foreground hover:bg-background-hover transition-all text-left group"
                             >
                               <div className="flex items-center justify-between mb-3">
-                                <GraduationCap size={24} className="text-gray-700" />
-                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black transition-colors" />
+                                <GraduationCap size={24} className="text-foreground-secondary" />
+                                <ChevronRight size={16} className="text-foreground-tertiary group-hover:text-foreground transition-colors" />
                               </div>
-                              <h4 className="font-semibold mb-1">University</h4>
-                              <p className="text-sm text-gray-600">Student inquiries, admissions, course info</p>
+                              <h4 className="font-semibold text-foreground mb-1">University</h4>
+                              <p className="text-sm text-foreground-secondary">Student inquiries, admissions, course info</p>
                             </button>
-                            
+
                             <button
                               onClick={() => handleTemplateSelect('support')}
-                              className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
+                              className="p-6 border-2 border-border rounded-xl hover:border-foreground hover:bg-background-hover transition-all text-left group"
                             >
                               <div className="flex items-center justify-between mb-3">
-                                <Users size={24} className="text-gray-700" />
-                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black transition-colors" />
+                                <Users size={24} className="text-foreground-secondary" />
+                                <ChevronRight size={16} className="text-foreground-tertiary group-hover:text-foreground transition-colors" />
                               </div>
-                              <h4 className="font-semibold mb-1">Customer Support</h4>
-                              <p className="text-sm text-gray-600">Ticketing, FAQs, issue resolution</p>
+                              <h4 className="font-semibold text-foreground mb-1">Customer Support</h4>
+                              <p className="text-sm text-foreground-secondary">Ticketing, FAQs, issue resolution</p>
                             </button>
-                            
+
                             <button
                               onClick={() => handleTemplateSelect('webshop')}
-                              className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
+                              className="p-6 border-2 border-border rounded-xl hover:border-foreground hover:bg-background-hover transition-all text-left group"
                             >
                               <div className="flex items-center justify-between mb-3">
-                                <ShoppingCart size={24} className="text-gray-700" />
-                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black transition-colors" />
+                                <ShoppingCart size={24} className="text-foreground-secondary" />
+                                <ChevronRight size={16} className="text-foreground-tertiary group-hover:text-foreground transition-colors" />
                               </div>
-                              <h4 className="font-semibold mb-1">Webshop Assistant</h4>
-                              <p className="text-sm text-gray-600">Product search, recommendations, checkout</p>
+                              <h4 className="font-semibold text-foreground mb-1">Webshop Assistant</h4>
+                              <p className="text-sm text-foreground-secondary">Product search, recommendations, checkout</p>
                             </button>
-                            
+
                             <button
                               onClick={() => handleTemplateSelect('employee')}
-                              className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
+                              className="p-6 border-2 border-border rounded-xl hover:border-foreground hover:bg-background-hover transition-all text-left group"
                             >
                               <div className="flex items-center justify-between mb-3">
-                                <Briefcase size={24} className="text-gray-700" />
-                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black transition-colors" />
+                                <Briefcase size={24} className="text-foreground-secondary" />
+                                <ChevronRight size={16} className="text-foreground-tertiary group-hover:text-foreground transition-colors" />
                               </div>
-                              <h4 className="font-semibold mb-1">Employee Journey</h4>
-                              <p className="text-sm text-gray-600">Onboarding, HR queries, internal help</p>
+                              <h4 className="font-semibold text-foreground mb-1">Employee Journey</h4>
+                              <p className="text-sm text-foreground-secondary">Onboarding, HR queries, internal help</p>
                             </button>
-                            
+
                             <button
                               onClick={() => handleTemplateSelect('personal')}
-                              className="p-6 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all text-left group"
+                              className="p-6 border-2 border-border rounded-xl hover:border-foreground hover:bg-background-hover transition-all text-left group"
                             >
                               <div className="flex items-center justify-between mb-3">
-                                <User size={24} className="text-gray-700" />
-                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black transition-colors" />
+                                <User size={24} className="text-foreground-secondary" />
+                                <ChevronRight size={16} className="text-foreground-tertiary group-hover:text-foreground transition-colors" />
                               </div>
-                              <h4 className="font-semibold mb-1">Personal Assistant</h4>
-                              <p className="text-sm text-gray-600">Calendar, tasks, personal queries</p>
+                              <h4 className="font-semibold text-foreground mb-1">Personal Assistant</h4>
+                              <p className="text-sm text-foreground-secondary">Calendar, tasks, personal queries</p>
                             </button>
                           </div>
                         </div>
@@ -933,43 +933,43 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                             <div className="flex items-center gap-3">
                               <button
                                 onClick={handleBackToTemplates}
-                                className="p-2 hover:bg-gray-100 rounded-lg"
+                                className="p-2 hover:bg-background-hover rounded-lg text-foreground"
                               >
                                 <ArrowLeft size={18} />
                               </button>
                               <div>
-                                <h3 className="font-semibold flex items-center gap-2">
+                                <h3 className="font-semibold text-foreground flex items-center gap-2">
                                   <GitBranch size={18} />
                                   {selectedTemplate.charAt(0).toUpperCase() + selectedTemplate.slice(1)} Flow
                                 </h3>
-                                <p className="text-sm text-gray-600">Drag nodes to reposition • Click to select and edit</p>
+                                <p className="text-sm text-foreground-secondary">Drag nodes to reposition • Click to select and edit</p>
                               </div>
                             </div>
                             <div className="flex gap-2">
-                              <button className="p-2 hover:bg-gray-100 rounded-lg" title="Add Node">
+                              <button className="p-2 hover:bg-background-hover rounded-lg text-foreground-secondary hover:text-foreground" title="Add Node">
                                 <Plus size={18} />
                               </button>
-                              <button className="p-2 hover:bg-gray-100 rounded-lg" title="Test Flow">
+                              <button className="p-2 hover:bg-background-hover rounded-lg text-foreground-secondary hover:text-foreground" title="Test Flow">
                                 <Play size={18} />
                               </button>
-                              <button className="p-2 hover:bg-gray-100 rounded-lg" title="Duplicate">
+                              <button className="p-2 hover:bg-background-hover rounded-lg text-foreground-secondary hover:text-foreground" title="Duplicate">
                                 <Copy size={18} />
                               </button>
-                              <button className="p-2 hover:bg-gray-100 rounded-lg" title="Delete">
+                              <button className="p-2 hover:bg-background-hover rounded-lg text-foreground-secondary hover:text-foreground" title="Delete">
                                 <Trash2 size={18} />
                               </button>
                             </div>
                           </div>
-                          
-                          <div className="border-2 border-gray-200 rounded-xl bg-gray-50 relative" style={{ height: '400px' }}>
+
+                          <div className="border-2 border-border rounded-xl bg-background-secondary relative" style={{ height: '400px' }}>
                             <svg className="absolute inset-0 w-full h-full">
                               <defs>
                                 <pattern id="grid" width="20" height="20" patternUnits="userSpaceOnUse">
-                                  <circle cx="1" cy="1" r="1" fill="#e5e7eb" />
+                                  <circle cx="1" cy="1" r="1" className="fill-border" />
                                 </pattern>
                               </defs>
                               <rect width="100%" height="100%" fill="url(#grid)" />
-                              
+
                               {connections.map((conn, idx) => {
                                 const fromNode = flowNodes.find(n => n.id === conn.from);
                                 const toNode = flowNodes.find(n => n.id === conn.to);
@@ -987,20 +987,20 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                                   />
                                 );
                               })}
-                              
+
                               <defs>
                                 <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
                                   <polygon points="0 0, 10 3.5, 0 7" fill="#9ca3af" />
                                 </marker>
                               </defs>
                             </svg>
-                            
+
                             {flowNodes.map((node) => (
                               <div
                                 key={node.id}
                                 onClick={() => setSelectedNode(node)}
                                 className={`absolute cursor-pointer transition-all ${
-                                  selectedNode?.id === node.id ? 'ring-2 ring-black' : ''
+                                  selectedNode?.id === node.id ? 'ring-2 ring-foreground' : ''
                                 }`}
                                 style={{
                                   left: `${node.x}px`,
@@ -1009,34 +1009,34 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                                 }}
                               >
                                 <div className={`px-3 py-2 rounded-lg text-sm font-medium text-center shadow-sm border ${
-                                  node.type === 'start' ? 'bg-green-100 border-green-300 text-green-900' :
-                                  node.type === 'end' ? 'bg-red-100 border-red-300 text-red-900' :
-                                  node.type === 'menu' ? 'bg-blue-100 border-blue-300 text-blue-900' :
-                                  'bg-white border-gray-300 text-gray-900'
+                                  node.type === 'start' ? 'bg-success-100 dark:bg-success-700/30 border-success-300 dark:border-success-700 text-success-900 dark:text-success-300' :
+                                  node.type === 'end' ? 'bg-error-100 dark:bg-error-700/30 border-error-300 dark:border-error-700 text-error-900 dark:text-error-300' :
+                                  node.type === 'menu' ? 'bg-info-100 dark:bg-info-700/30 border-info-300 dark:border-info-700 text-info-900 dark:text-info-300' :
+                                  'bg-surface-elevated border-border text-foreground'
                                 }`}>
                                   {node.label}
                                 </div>
                               </div>
                             ))}
                           </div>
-                          
+
                           {selectedNode && (
-                            <div className="mt-6 p-4 bg-white border border-gray-200 rounded-lg">
+                            <div className="mt-6 p-4 bg-surface-elevated border border-border rounded-lg">
                               <div className="flex items-center justify-between mb-3">
-                                <h4 className="font-medium flex items-center gap-2">
+                                <h4 className="font-medium text-foreground flex items-center gap-2">
                                   <Settings size={16} />
                                   Node Settings
                                 </h4>
                                 <button
                                   onClick={() => setSelectedNode(null)}
-                                  className="text-gray-400 hover:text-gray-600"
+                                  className="text-foreground-tertiary hover:text-foreground"
                                 >
                                   ×
                                 </button>
                               </div>
                               <div className="space-y-3">
                                 <div>
-                                  <label className="block text-sm font-medium mb-1">Label</label>
+                                  <label className="block text-sm font-medium text-foreground-secondary mb-1">Label</label>
                                   <input
                                     type="text"
                                     value={selectedNode.label}
@@ -1046,12 +1046,12 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                                       );
                                       setSelectedNode({ ...selectedNode, label: e.target.value });
                                     }}
-                                    className="w-full px-3 py-1 border border-gray-200 rounded-lg text-sm"
+                                    className="input text-sm"
                                   />
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium mb-1">Type</label>
-                                  <select className="w-full px-3 py-1 border border-gray-200 rounded-lg text-sm">
+                                  <label className="block text-sm font-medium text-foreground-secondary mb-1">Type</label>
+                                  <select className="select text-sm">
                                     <option value="start">Start Node</option>
                                     <option value="menu">Menu Node</option>
                                     <option value="action">Action Node</option>
@@ -1059,9 +1059,9 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                                   </select>
                                 </div>
                                 <div>
-                                  <label className="block text-sm font-medium mb-1">Response</label>
+                                  <label className="block text-sm font-medium text-foreground-secondary mb-1">Response</label>
                                   <textarea
-                                    className="w-full px-3 py-1 border border-gray-200 rounded-lg text-sm resize-none"
+                                    className="input text-sm resize-none"
                                     rows={2}
                                     placeholder="Enter bot response..."
                                   />
@@ -1076,67 +1076,67 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                   
                   {activeTab === 'responses' && integrationMode === 'external' && (
                     <div className="text-center py-12">
-                      <Shield size={48} className="mx-auto text-gray-300 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">Response Templates Managed Externally</h3>
-                      <p className="text-gray-600 mb-4">Your external chatbot provider handles response template configuration.</p>
-                      <p className="text-sm text-gray-500">Switch to "Built-in AI" mode to configure response templates here.</p>
+                      <Shield size={48} className="mx-auto text-foreground-disabled mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">Response Templates Managed Externally</h3>
+                      <p className="text-foreground-secondary mb-4">Your external chatbot provider handles response template configuration.</p>
+                      <p className="text-sm text-foreground-tertiary">Switch to "Built-in AI" mode to configure response templates here.</p>
                     </div>
                   )}
                   {activeTab === 'responses' && integrationMode === 'builtin' && (
                     <div className="space-y-6">
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Zap size={18} />
                           Quick Responses
                         </h3>
                         <div className="space-y-4">
-                          <div className="p-4 border border-gray-200 rounded-lg">
+                          <div className="p-4 border border-border rounded-lg">
                             <div className="flex justify-between items-start mb-2">
-                              <p className="font-medium">Greeting</p>
-                              <button className="text-sm text-gray-600 hover:text-gray-900">Edit</button>
+                              <p className="font-medium text-foreground">Greeting</p>
+                              <button className="text-sm text-foreground-secondary hover:text-foreground">Edit</button>
                             </div>
-                            <p className="text-sm text-gray-600">Hello! I'm {bot.name}, your virtual assistant. How can I help you today?</p>
+                            <p className="text-sm text-foreground-secondary">Hello! I'm {bot.name}, your virtual assistant. How can I help you today?</p>
                           </div>
-                          
-                          <div className="p-4 border border-gray-200 rounded-lg">
+
+                          <div className="p-4 border border-border rounded-lg">
                             <div className="flex justify-between items-start mb-2">
-                              <p className="font-medium">Fallback</p>
-                              <button className="text-sm text-gray-600 hover:text-gray-900">Edit</button>
+                              <p className="font-medium text-foreground">Fallback</p>
+                              <button className="text-sm text-foreground-secondary hover:text-foreground">Edit</button>
                             </div>
-                            <p className="text-sm text-gray-600">I'm not sure I understand. Could you please rephrase your question?</p>
+                            <p className="text-sm text-foreground-secondary">I'm not sure I understand. Could you please rephrase your question?</p>
                           </div>
-                          
-                          <div className="p-4 border border-gray-200 rounded-lg">
+
+                          <div className="p-4 border border-border rounded-lg">
                             <div className="flex justify-between items-start mb-2">
-                              <p className="font-medium">Transfer to Human</p>
-                              <button className="text-sm text-gray-600 hover:text-gray-900">Edit</button>
+                              <p className="font-medium text-foreground">Transfer to Human</p>
+                              <button className="text-sm text-foreground-secondary hover:text-foreground">Edit</button>
                             </div>
-                            <p className="text-sm text-gray-600">I'll connect you with a human agent who can better assist you. One moment please...</p>
+                            <p className="text-sm text-foreground-secondary">I'll connect you with a human agent who can better assist you. One moment please...</p>
                           </div>
                         </div>
                       </div>
-                      
+
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Shield size={18} />
                           Response Guidelines
                         </h3>
                         <div className="space-y-3">
                           <label className="flex items-center gap-3">
-                            <input type="checkbox" defaultChecked className="rounded" />
-                            <span className="text-sm">Always maintain a positive tone</span>
+                            <input type="checkbox" defaultChecked className="rounded border-border" />
+                            <span className="text-sm text-foreground">Always maintain a positive tone</span>
                           </label>
                           <label className="flex items-center gap-3">
-                            <input type="checkbox" defaultChecked className="rounded" />
-                            <span className="text-sm">Avoid technical jargon when possible</span>
+                            <input type="checkbox" defaultChecked className="rounded border-border" />
+                            <span className="text-sm text-foreground">Avoid technical jargon when possible</span>
                           </label>
                           <label className="flex items-center gap-3">
-                            <input type="checkbox" defaultChecked className="rounded" />
-                            <span className="text-sm">Provide sources when sharing information</span>
+                            <input type="checkbox" defaultChecked className="rounded border-border" />
+                            <span className="text-sm text-foreground">Provide sources when sharing information</span>
                           </label>
                           <label className="flex items-center gap-3">
-                            <input type="checkbox" className="rounded" />
-                            <span className="text-sm">Use emojis in responses</span>
+                            <input type="checkbox" className="rounded border-border" />
+                            <span className="text-sm text-foreground">Use emojis in responses</span>
                           </label>
                         </div>
                       </div>
@@ -1145,130 +1145,130 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                   
                   {activeTab === 'connect-api' && integrationMode === 'builtin' && (
                     <div className="text-center py-12">
-                      <Shield size={48} className="mx-auto text-gray-300 mb-4" />
-                      <h3 className="text-lg font-medium text-gray-900 mb-2">API Connection Not Needed</h3>
-                      <p className="text-gray-600 mb-4">You're using our built-in AI, so no external API connection is required.</p>
-                      <p className="text-sm text-gray-500">Switch to "External Provider" mode to connect external chatbot APIs.</p>
+                      <Shield size={48} className="mx-auto text-foreground-disabled mb-4" />
+                      <h3 className="text-lg font-medium text-foreground mb-2">API Connection Not Needed</h3>
+                      <p className="text-foreground-secondary mb-4">You're using our built-in AI, so no external API connection is required.</p>
+                      <p className="text-sm text-foreground-tertiary">Switch to "External Provider" mode to connect external chatbot APIs.</p>
                     </div>
                   )}
                   {activeTab === 'connect-api' && integrationMode === 'external' && (
                     <div className="space-y-6">
                       <div className="mb-6">
-                        <h3 className="font-semibold mb-2 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-2 flex items-center gap-2">
                           <Link2 size={18} />
                           Connect External Chatbot
                         </h3>
-                        <p className="text-sm text-gray-600">Use your existing chatbot provider with our 3D mascot frontend</p>
+                        <p className="text-sm text-foreground-secondary">Use your existing chatbot provider with our 3D mascot frontend</p>
                       </div>
-                      
-                      <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+
+                      <div className="p-4 bg-info-50 dark:bg-info-700/30 border border-info-200 dark:border-info-700 rounded-lg">
                         <div className="flex items-start gap-3">
-                          <AlertCircle size={18} className="text-blue-600 mt-0.5" />
+                          <AlertCircle size={18} className="text-info-600 dark:text-info-500 mt-0.5" />
                           <div>
-                            <p className="text-sm font-medium text-blue-900">How it works</p>
-                            <p className="text-sm text-blue-700 mt-1">
-                              Connect your existing chatbot API and we'll handle the 3D mascot frontend. 
+                            <p className="text-sm font-medium text-info-900 dark:text-info-300">How it works</p>
+                            <p className="text-sm text-info-700 dark:text-info-400 mt-1">
+                              Connect your existing chatbot API and we'll handle the 3D mascot frontend.
                               Your chatbot logic stays the same, but gets a premium visual experience.
                             </p>
                           </div>
                         </div>
                       </div>
-                      
+
                       <div>
-                        <h4 className="font-medium mb-4">Choose Your Chatbot Partner</h4>
+                        <h4 className="font-medium text-foreground mb-4">Choose Your Chatbot Partner</h4>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                          <div className="p-4 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all cursor-pointer group">
+                          <div className="p-4 border-2 border-border rounded-xl hover:border-foreground hover:bg-background-hover transition-all cursor-pointer group">
                             <div className="flex items-center justify-between mb-3">
-                              <div className="w-12 h-12 bg-orange-100 rounded-lg flex items-center justify-center">
-                                <MessageSquare size={20} className="text-orange-600" />
+                              <div className="w-12 h-12 bg-warning-100 dark:bg-warning-700/30 rounded-lg flex items-center justify-center">
+                                <MessageSquare size={20} className="text-warning-600 dark:text-warning-500" />
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Partner</span>
-                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black" />
+                                <span className="px-2 py-1 bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500 rounded text-xs font-medium">Partner</span>
+                                <ChevronRight size={16} className="text-foreground-tertiary group-hover:text-foreground" />
                               </div>
                             </div>
-                            <h5 className="font-semibold mb-1">Chatfuel</h5>
-                            <p className="text-sm text-gray-600 mb-3">Facebook Messenger & Instagram chatbot platform</p>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <CheckCircle size={12} className="text-green-500" />
+                            <h5 className="font-semibold text-foreground mb-1">Chatfuel</h5>
+                            <p className="text-sm text-foreground-secondary mb-3">Facebook Messenger & Instagram chatbot platform</p>
+                            <div className="flex items-center gap-2 text-xs text-foreground-tertiary">
+                              <CheckCircle size={12} className="text-success-500" />
                               <span>Webhook Integration</span>
                             </div>
                           </div>
-                          
-                          <div className="p-4 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all cursor-pointer group">
+
+                          <div className="p-4 border-2 border-border rounded-xl hover:border-foreground hover:bg-background-hover transition-all cursor-pointer group">
                             <div className="flex items-center justify-between mb-3">
-                              <div className="w-12 h-12 bg-blue-100 rounded-lg flex items-center justify-center">
-                                <BotIcon size={20} className="text-blue-600" />
+                              <div className="w-12 h-12 bg-info-100 dark:bg-info-700/30 rounded-lg flex items-center justify-center">
+                                <BotIcon size={20} className="text-info-600 dark:text-info-500" />
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Partner</span>
-                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black" />
+                                <span className="px-2 py-1 bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500 rounded text-xs font-medium">Partner</span>
+                                <ChevronRight size={16} className="text-foreground-tertiary group-hover:text-foreground" />
                               </div>
                             </div>
-                            <h5 className="font-semibold mb-1">ManyChat</h5>
-                            <p className="text-sm text-gray-600 mb-3">Multi-channel chatbot automation platform</p>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <CheckCircle size={12} className="text-green-500" />
+                            <h5 className="font-semibold text-foreground mb-1">ManyChat</h5>
+                            <p className="text-sm text-foreground-secondary mb-3">Multi-channel chatbot automation platform</p>
+                            <div className="flex items-center gap-2 text-xs text-foreground-tertiary">
+                              <CheckCircle size={12} className="text-success-500" />
                               <span>API Integration</span>
                             </div>
                           </div>
-                          
-                          <div className="p-4 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all cursor-pointer group">
+
+                          <div className="p-4 border-2 border-border rounded-xl hover:border-foreground hover:bg-background-hover transition-all cursor-pointer group">
                             <div className="flex items-center justify-between mb-3">
-                              <div className="w-12 h-12 bg-purple-100 rounded-lg flex items-center justify-center">
-                                <Zap size={20} className="text-purple-600" />
+                              <div className="w-12 h-12 bg-plan-premium-bg rounded-lg flex items-center justify-center">
+                                <Zap size={20} className="text-plan-premium-text" />
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-medium">Partner</span>
-                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black" />
+                                <span className="px-2 py-1 bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500 rounded text-xs font-medium">Partner</span>
+                                <ChevronRight size={16} className="text-foreground-tertiary group-hover:text-foreground" />
                               </div>
                             </div>
-                            <h5 className="font-semibold mb-1">Botpress</h5>
-                            <p className="text-sm text-gray-600 mb-3">Open-source conversational AI platform</p>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <CheckCircle size={12} className="text-green-500" />
+                            <h5 className="font-semibold text-foreground mb-1">Botpress</h5>
+                            <p className="text-sm text-foreground-secondary mb-3">Open-source conversational AI platform</p>
+                            <div className="flex items-center gap-2 text-xs text-foreground-tertiary">
+                              <CheckCircle size={12} className="text-success-500" />
                               <span>Webhook Integration</span>
                             </div>
                           </div>
-                          
-                          <div className="p-4 border-2 border-gray-200 rounded-xl hover:border-black hover:bg-gray-50 transition-all cursor-pointer group">
+
+                          <div className="p-4 border-2 border-border rounded-xl hover:border-foreground hover:bg-background-hover transition-all cursor-pointer group">
                             <div className="flex items-center justify-between mb-3">
-                              <div className="w-12 h-12 bg-green-100 rounded-lg flex items-center justify-center">
-                                <Settings size={20} className="text-green-600" />
+                              <div className="w-12 h-12 bg-success-100 dark:bg-success-700/30 rounded-lg flex items-center justify-center">
+                                <Settings size={20} className="text-success-600 dark:text-success-500" />
                               </div>
                               <div className="flex items-center gap-2">
-                                <span className="px-2 py-1 bg-gray-100 text-gray-700 rounded text-xs font-medium">Custom</span>
-                                <ChevronRight size={16} className="text-gray-400 group-hover:text-black" />
+                                <span className="px-2 py-1 bg-background-tertiary text-foreground-secondary rounded text-xs font-medium">Custom</span>
+                                <ChevronRight size={16} className="text-foreground-tertiary group-hover:text-foreground" />
                               </div>
                             </div>
-                            <h5 className="font-semibold mb-1">Custom API</h5>
-                            <p className="text-sm text-gray-600 mb-3">Connect your own chatbot API or webhook</p>
-                            <div className="flex items-center gap-2 text-xs text-gray-500">
-                              <Settings size={12} className="text-gray-500" />
+                            <h5 className="font-semibold text-foreground mb-1">Custom API</h5>
+                            <p className="text-sm text-foreground-secondary mb-3">Connect your own chatbot API or webhook</p>
+                            <div className="flex items-center gap-2 text-xs text-foreground-tertiary">
+                              <Settings size={12} className="text-foreground-tertiary" />
                               <span>Custom Integration</span>
                             </div>
                           </div>
                         </div>
                       </div>
-                      
-                      <div className="border-2 border-dashed border-gray-300 rounded-xl p-8 text-center">
-                        <Link2 size={32} className="mx-auto mb-4 text-gray-400" />
-                        <h4 className="font-medium text-gray-900 mb-2">Don't see your provider?</h4>
-                        <p className="text-sm text-gray-600 mb-4">
+
+                      <div className="border-2 border-dashed border-border rounded-xl p-8 text-center">
+                        <Link2 size={32} className="mx-auto mb-4 text-foreground-tertiary" />
+                        <h4 className="font-medium text-foreground mb-2">Don't see your provider?</h4>
+                        <p className="text-sm text-foreground-secondary mb-4">
                           We're always adding new partners. Contact us to discuss integrating your chatbot provider.
                         </p>
-                        <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 text-sm font-medium flex items-center gap-2 mx-auto">
+                        <button className="btn-primary px-4 py-2 text-sm font-medium flex items-center gap-2 mx-auto">
                           <ExternalLink size={14} />
                           Request Integration
                         </button>
                       </div>
-                      
-                      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+
+                      <div className="bg-warning-50 dark:bg-warning-700/30 border border-warning-200 dark:border-warning-700 rounded-lg p-4">
                         <div className="flex items-start gap-3">
-                          <Sparkles size={18} className="text-yellow-600 mt-0.5" />
+                          <Sparkles size={18} className="text-warning-600 dark:text-warning-500 mt-0.5" />
                           <div>
-                            <p className="text-sm font-medium text-yellow-900">Benefits of API Integration</p>
-                            <ul className="text-sm text-yellow-800 mt-2 space-y-1">
+                            <p className="text-sm font-medium text-warning-900 dark:text-warning-300">Benefits of API Integration</p>
+                            <ul className="text-sm text-warning-800 dark:text-warning-400 mt-2 space-y-1">
                               <li>• Keep your existing chatbot logic and flows</li>
                               <li>• Add premium 3D mascot experience</li>
                               <li>• Easy setup - just connect your API</li>
@@ -1284,34 +1284,34 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
             </div>
             
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-6">
-                <h3 className="font-semibold mb-4 flex items-center gap-2">
+              <div className="card p-6 sticky top-6">
+                <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                   <Sparkles size={18} />
                   Test Playground
                 </h3>
                 <div className="space-y-4">
                   <div>
-                    <label className="block text-sm font-medium mb-2">Test Input</label>
+                    <label className="block text-sm font-medium text-foreground-secondary mb-2">Test Input</label>
                     <textarea
-                      className="w-full p-3 border border-gray-200 rounded-lg resize-none"
+                      className="input resize-none"
                       rows={3}
                       placeholder="Type a message to test..."
                     />
                   </div>
-                  
-                  <button className="w-full px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800">
+
+                  <button className="btn-primary w-full px-4 py-2">
                     Generate Response
                   </button>
-                  
-                  <div className="p-3 bg-gray-50 rounded-lg">
-                    <p className="text-sm font-medium mb-1">Bot Response:</p>
-                    <p className="text-sm text-gray-600">Response will appear here...</p>
+
+                  <div className="p-3 bg-background-secondary rounded-lg">
+                    <p className="text-sm font-medium text-foreground mb-1">Bot Response:</p>
+                    <p className="text-sm text-foreground-secondary">Response will appear here...</p>
                   </div>
                 </div>
-                
-                <div className="mt-6 p-4 bg-amber-50 rounded-lg">
-                  <p className="text-sm text-amber-900 font-medium mb-1">Remember</p>
-                  <p className="text-sm text-amber-700">
+
+                <div className="mt-6 p-4 bg-warning-50 dark:bg-warning-700/30 border border-warning-200 dark:border-warning-700 rounded-lg">
+                  <p className="text-sm text-warning-900 dark:text-warning-300 font-medium mb-1">Remember</p>
+                  <p className="text-sm text-warning-700 dark:text-warning-400">
                     Changes to personality traits will affect all future conversations.
                   </p>
                 </div>

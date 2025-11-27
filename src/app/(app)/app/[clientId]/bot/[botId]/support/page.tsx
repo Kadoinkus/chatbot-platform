@@ -91,63 +91,63 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
   const getStatusIcon = (status: string) => {
     switch(status) {
       case 'resolved':
-        return <CheckCircle size={16} className="text-green-600" />;
+        return <CheckCircle size={16} className="text-success-600 dark:text-success-500" />;
       case 'in_progress':
-        return <Clock size={16} className="text-blue-600" />;
+        return <Clock size={16} className="text-info-600 dark:text-info-500" />;
       default:
-        return <AlertCircle size={16} className="text-gray-600" />;
+        return <AlertCircle size={16} className="text-foreground-secondary" />;
     }
   };
 
   const getPriorityColor = (priority: string) => {
     switch(priority) {
       case 'high':
-        return 'bg-red-100 text-red-700 border-red-200';
+        return 'bg-error-100 dark:bg-error-900/30 text-error-700 dark:text-error-400 border-error-200 dark:border-error-800';
       case 'medium':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        return 'bg-warning-100 dark:bg-warning-900/30 text-warning-700 dark:text-warning-400 border-warning-200 dark:border-warning-800';
       case 'low':
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-background-secondary text-foreground-secondary border-border';
       default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-background-secondary text-foreground-secondary border-border';
     }
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <div className="flex min-h-screen bg-background">
       <Sidebar clientId={client.id} />
-      
+
       <main className="flex-1 lg:ml-16">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <Link 
+          <Link
             href={`/app/${client.id}`}
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+            className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-6 transition-colors"
           >
             <ArrowLeft size={16} />
             Back to bots
           </Link>
-          
+
           {/* Bot Header */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <div className="card p-6 mb-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
-                <img 
-                  src={bot.image} 
+                <img
+                  src={bot.image}
                   alt={bot.name}
-                  className="w-16 h-16 rounded-full bg-gray-100"
+                  className="w-16 h-16 rounded-full bg-background-tertiary"
                 />
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <h1 className="text-2xl font-bold">{bot.name}</h1>
+                    <h1 className="text-2xl font-bold text-foreground">{bot.name}</h1>
                     <StatusBadge status={bot.status} />
                   </div>
-                  <p className="text-gray-600 mb-1">Manage support requests and tickets</p>
-                  <p className="text-sm text-gray-500">Client: {client.name}</p>
+                  <p className="text-foreground-secondary mb-1">Manage support requests and tickets</p>
+                  <p className="text-sm text-foreground-tertiary">Client: {client.name}</p>
                 </div>
               </div>
-              
-              <button 
+
+              <button
                 onClick={() => setShowNewTicket(true)}
-                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2"
+                className="btn-primary px-4 py-2 flex items-center gap-2"
               >
                 <Plus size={18} />
                 New Ticket
@@ -156,60 +156,60 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
           </div>
           
           <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Open Tickets</span>
-                <AlertCircle size={16} className="text-gray-400" />
+                <span className="text-sm text-foreground-secondary">Open Tickets</span>
+                <AlertCircle size={16} className="text-foreground-tertiary" />
               </div>
-              <p className="text-2xl font-bold">8</p>
-              <p className="text-xs text-gray-500 mt-1">2 high priority</p>
+              <p className="text-2xl font-bold text-foreground">8</p>
+              <p className="text-xs text-foreground-tertiary mt-1">2 high priority</p>
             </div>
-            
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">In Progress</span>
-                <Clock size={16} className="text-blue-400" />
+                <span className="text-sm text-foreground-secondary">In Progress</span>
+                <Clock size={16} className="text-info-500" />
               </div>
-              <p className="text-2xl font-bold">3</p>
-              <p className="text-xs text-gray-500 mt-1">Avg. 2 days</p>
+              <p className="text-2xl font-bold text-foreground">3</p>
+              <p className="text-xs text-foreground-tertiary mt-1">Avg. 2 days</p>
             </div>
-            
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Resolved</span>
-                <CheckCircle size={16} className="text-green-400" />
+                <span className="text-sm text-foreground-secondary">Resolved</span>
+                <CheckCircle size={16} className="text-success-500" />
               </div>
-              <p className="text-2xl font-bold">24</p>
-              <p className="text-xs text-gray-500 mt-1">This month</p>
+              <p className="text-2xl font-bold text-foreground">24</p>
+              <p className="text-xs text-foreground-tertiary mt-1">This month</p>
             </div>
-            
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Avg. Resolution</span>
-                <Headphones size={16} className="text-gray-400" />
+                <span className="text-sm text-foreground-secondary">Avg. Resolution</span>
+                <Headphones size={16} className="text-foreground-tertiary" />
               </div>
-              <p className="text-2xl font-bold">1.8</p>
-              <p className="text-xs text-gray-500 mt-1">Days</p>
+              <p className="text-2xl font-bold text-foreground">1.8</p>
+              <p className="text-xs text-foreground-tertiary mt-1">Days</p>
             </div>
           </div>
           
-          <div className="bg-white rounded-xl border border-gray-200">
-            <div className="p-4 border-b border-gray-200">
+          <div className="card">
+            <div className="p-4 border-b border-border">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 relative">
-                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-tertiary" />
                   <input
                     type="text"
                     placeholder="Search tickets..."
-                    className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:border-gray-400"
+                    className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:border-border-focus"
                   />
                 </div>
                 <div className="flex gap-2">
-                  <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+                  <button className="btn-secondary px-4 py-2 flex items-center gap-2">
                     <Filter size={16} />
                     Filter
                   </button>
-                  <select className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50">
+                  <select className="select">
                     <option>All Status</option>
                     <option>Open</option>
                     <option>In Progress</option>
@@ -218,24 +218,24 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
                 </div>
               </div>
             </div>
-            
-            <div className="divide-y divide-gray-200">
+
+            <div className="divide-y divide-border">
               {tickets.map((ticket) => (
-                <div key={ticket.id} className="p-4 hover:bg-gray-50 transition-colors">
+                <div key={ticket.id} className="p-4 hover:bg-background-hover transition-colors">
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
                         {getStatusIcon(ticket.status)}
-                        <span className="font-medium text-gray-900">{ticket.id}</span>
+                        <span className="font-medium text-foreground">{ticket.id}</span>
                         <span className={`px-2 py-0.5 text-xs font-medium rounded border ${getPriorityColor(ticket.priority)}`}>
                           {ticket.priority}
                         </span>
-                        <span className="px-2 py-0.5 text-xs bg-gray-100 text-gray-700 rounded">
+                        <span className="px-2 py-0.5 text-xs bg-background-secondary text-foreground-secondary rounded">
                           {ticket.category}
                         </span>
                       </div>
-                      <h3 className="font-medium mb-1">{ticket.subject}</h3>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <h3 className="font-medium text-foreground mb-1">{ticket.subject}</h3>
+                      <div className="flex items-center gap-4 text-sm text-foreground-secondary">
                         <span>Created {ticket.created}</span>
                         <span>•</span>
                         <span>Updated {ticket.lastUpdate}</span>
@@ -243,7 +243,7 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
                         <span>{ticket.assignee}</span>
                       </div>
                     </div>
-                    <button className="px-3 py-1 text-sm border border-gray-200 rounded-lg hover:bg-gray-50">
+                    <button className="btn-secondary px-3 py-1 text-sm">
                       View
                     </button>
                   </div>
@@ -255,32 +255,32 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
       </main>
       
       {showNewTicket && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
-            <div className="p-6 border-b border-gray-200">
-              <h2 className="text-xl font-semibold">Create New Support Ticket</h2>
-              <p className="text-sm text-gray-600 mt-1">Submit a request to the development team</p>
+        <div className="fixed inset-0 bg-surface-overlay flex items-center justify-center z-50 p-4">
+          <div className="bg-surface-elevated rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border">
+            <div className="p-6 border-b border-border">
+              <h2 className="text-xl font-semibold text-foreground">Create New Support Ticket</h2>
+              <p className="text-sm text-foreground-secondary mt-1">Submit a request to the development team</p>
             </div>
-            
+
             <div className="p-6 space-y-4">
               <div>
-                <label className="block text-sm font-medium mb-2">Subject</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Subject</label>
                 <input
                   type="text"
                   value={ticketForm.subject}
                   onChange={(e) => setTicketForm({...ticketForm, subject: e.target.value})}
-                  className="w-full p-2 border border-gray-200 rounded-lg"
+                  className="input"
                   placeholder="Brief description of the issue"
                 />
               </div>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Category</label>
-                  <select 
+                  <label className="block text-sm font-medium text-foreground mb-2">Category</label>
+                  <select
                     value={ticketForm.category}
                     onChange={(e) => setTicketForm({...ticketForm, category: e.target.value})}
-                    className="w-full p-2 border border-gray-200 rounded-lg"
+                    className="select"
                   >
                     <option value="bug">Bug Report</option>
                     <option value="feature">Feature Request</option>
@@ -289,13 +289,13 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
                     <option value="other">Other</option>
                   </select>
                 </div>
-                
+
                 <div>
-                  <label className="block text-sm font-medium mb-2">Priority</label>
-                  <select 
+                  <label className="block text-sm font-medium text-foreground mb-2">Priority</label>
+                  <select
                     value={ticketForm.priority}
                     onChange={(e) => setTicketForm({...ticketForm, priority: e.target.value})}
-                    className="w-full p-2 border border-gray-200 rounded-lg"
+                    className="select"
                   >
                     <option value="low">Low</option>
                     <option value="medium">Medium</option>
@@ -304,41 +304,41 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
                   </select>
                 </div>
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium mb-2">Description</label>
+                <label className="block text-sm font-medium text-foreground mb-2">Description</label>
                 <textarea
                   value={ticketForm.description}
                   onChange={(e) => setTicketForm({...ticketForm, description: e.target.value})}
-                  className="w-full p-2 border border-gray-200 rounded-lg resize-none"
+                  className="input resize-none"
                   rows={6}
                   placeholder="Provide detailed information about your request..."
                 />
               </div>
-              
+
               <div>
-                <label className="block text-sm font-medium mb-2">Attachments</label>
-                <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                  <MessageSquare size={24} className="mx-auto mb-2 text-gray-400" />
-                  <p className="text-sm text-gray-600">Drop files here or click to browse</p>
-                  <p className="text-xs text-gray-500 mt-1">Max 10MB per file</p>
+                <label className="block text-sm font-medium text-foreground mb-2">Attachments</label>
+                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+                  <MessageSquare size={24} className="mx-auto mb-2 text-foreground-tertiary" />
+                  <p className="text-sm text-foreground-secondary">Drop files here or click to browse</p>
+                  <p className="text-xs text-foreground-tertiary mt-1">Max 10MB per file</p>
                 </div>
               </div>
             </div>
-            
-            <div className="p-6 border-t border-gray-200 flex justify-end gap-3">
-              <button 
+
+            <div className="p-6 border-t border-border flex justify-end gap-3">
+              <button
                 onClick={() => setShowNewTicket(false)}
-                className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+                className="btn-secondary px-4 py-2"
               >
                 Cancel
               </button>
-              <button 
+              <button
                 onClick={() => {
                   setShowNewTicket(false);
                   setTicketForm({ subject: '', category: 'bug', priority: 'medium', description: '' });
                 }}
-                className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800"
+                className="btn-primary px-4 py-2"
               >
                 Submit Ticket
               </button>

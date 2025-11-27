@@ -39,14 +39,14 @@
   --surface-elevated: #FFFFFF;
   --surface-overlay: rgba(0, 0, 0, 0.5);
 
-  /* Sidebar Colors */
-  --sidebar-bg: #111827;
+  /* Sidebar Colors (pitch black for light mode) */
+  --sidebar-bg: #000000;
   --sidebar-text: #9CA3AF;
   --sidebar-text-hover: #FFFFFF;
   --sidebar-text-active: #FFFFFF;
-  --sidebar-item-hover: rgba(255, 255, 255, 0.05);
-  --sidebar-item-active: rgba(255, 255, 255, 0.1);
-  --sidebar-border: #1F2937;
+  --sidebar-item-hover: rgba(255, 255, 255, 0.08);
+  --sidebar-item-active: rgba(255, 255, 255, 0.15);
+  --sidebar-border: #1a1a1a;
 
   /* Plan Colors */
   --plan-starter-bg: #F3F4F6;
@@ -115,14 +115,14 @@
   --surface-elevated: #1F2937;
   --surface-overlay: rgba(0, 0, 0, 0.7);
 
-  /* Sidebar Colors (stays dark) */
-  --sidebar-bg: #030712;
-  --sidebar-text: #9CA3AF;
-  --sidebar-text-hover: #FFFFFF;
-  --sidebar-text-active: #FFFFFF;
-  --sidebar-item-hover: rgba(255, 255, 255, 0.05);
-  --sidebar-item-active: rgba(255, 255, 255, 0.1);
-  --sidebar-border: #1F2937;
+  /* Sidebar Colors (dark with subtle blue hue) */
+  --sidebar-bg: #0c1425;
+  --sidebar-text: #94a3b8;
+  --sidebar-text-hover: #f1f5f9;
+  --sidebar-text-active: #ffffff;
+  --sidebar-item-hover: rgba(59, 130, 246, 0.1);
+  --sidebar-item-active: rgba(59, 130, 246, 0.2);
+  --sidebar-border: #1e3a5f;
 
   /* Plan Colors (slightly adjusted for dark mode visibility) */
   --plan-starter-bg: #374151;

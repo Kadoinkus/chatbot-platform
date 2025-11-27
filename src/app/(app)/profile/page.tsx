@@ -4,7 +4,18 @@ import { clients } from '@/lib/data';
 import Sidebar from '@/components/Sidebar';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
-import { User, Mail, Phone, Building, MapPin, Key, Bell, Palette, Globe, Shield, Download, Upload, Save, Edit2 } from 'lucide-react';
+import { User, Key, Bell, Palette, Shield, Download, Upload, Save, Edit2 } from 'lucide-react';
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  Button,
+  Card,
+  Input,
+  Select,
+  Textarea,
+  Toggle,
+} from '@/components/ui';
 
 export default function UserProfilePage() {
   const { session } = useAuth();
@@ -63,30 +74,24 @@ export default function UserProfilePage() {
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={client?.id} />
 
-      <main className="flex-1 lg:ml-16 min-h-screen">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <div className="mb-8">
-            <div className="flex items-center justify-between">
-              <div>
-                <h1 className="text-3xl font-bold mb-2 text-foreground">Profile Settings</h1>
-                <p className="text-foreground-secondary">Manage your account settings and preferences</p>
-              </div>
-              {hasChanges && (
-                <button
-                  onClick={handleSave}
-                  className="btn-primary flex items-center gap-2 px-4 py-2"
-                >
-                  <Save size={20} />
-                  Save Changes
-                </button>
-              )}
-            </div>
-          </div>
+        <Page>
+          <PageContent>
+            <PageHeader
+              title="Profile Settings"
+              description="Manage your account settings and preferences"
+              actions={
+                hasChanges && (
+                  <Button icon={<Save size={20} />} onClick={handleSave}>
+                    Save Changes
+                  </Button>
+                )
+              }
+            />
 
-          <div className="flex gap-6">
-            {/* Sidebar Navigation */}
-            <div className="w-64">
-              <nav className="card p-2">
+            <div className="flex gap-6">
+              {/* Sidebar Navigation */}
+              <div className="w-64">
+                <Card padding="sm">
                 {tabs.map(tab => {
                   const Icon = tab.icon;
                   return (
@@ -104,13 +109,13 @@ export default function UserProfilePage() {
                     </button>
                   );
                 })}
-              </nav>
-            </div>
+                </Card>
+              </div>
 
             {/* Settings Content */}
             <div className="flex-1">
               {activeTab === 'profile' && (
-                <div className="card p-6">
+                <Card>
                   <h2 className="text-xl font-semibold text-foreground mb-6">Profile Information</h2>
 
                   <div className="space-y-6">
@@ -126,229 +131,194 @@ export default function UserProfilePage() {
                         </button>
                       </div>
                       <div>
-                        <button className="btn-secondary flex items-center gap-2 px-4 py-2">
-                          <Upload size={16} />
+                        <Button variant="secondary" icon={<Upload size={16} />}>
                           Change Photo
-                        </button>
+                        </Button>
                         <p className="text-sm text-foreground-tertiary mt-2">JPG, PNG or GIF. Max size 2MB.</p>
                       </div>
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-foreground-secondary mb-2">First Name</label>
-                        <input
-                          type="text"
-                          value={profileData.firstName}
-                          onChange={(e) => {
-                            setProfileData({...profileData, firstName: e.target.value});
-                            setHasChanges(true);
-                          }}
-                          className="input"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-foreground-secondary mb-2">Last Name</label>
-                        <input
-                          type="text"
-                          value={profileData.lastName}
-                          onChange={(e) => {
-                            setProfileData({...profileData, lastName: e.target.value});
-                            setHasChanges(true);
-                          }}
-                          className="input"
-                        />
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">Email Address</label>
-                      <input
-                        type="email"
-                        value={profileData.email}
+                      <Input
+                        label="First Name"
+                        value={profileData.firstName}
                         onChange={(e) => {
-                          setProfileData({...profileData, email: e.target.value});
+                          setProfileData({...profileData, firstName: e.target.value});
                           setHasChanges(true);
                         }}
-                        className="input"
+                      />
+                      <Input
+                        label="Last Name"
+                        value={profileData.lastName}
+                        onChange={(e) => {
+                          setProfileData({...profileData, lastName: e.target.value});
+                          setHasChanges(true);
+                        }}
+                      />
+                    </div>
+
+                    <Input
+                      label="Email Address"
+                      type="email"
+                      value={profileData.email}
+                      onChange={(e) => {
+                        setProfileData({...profileData, email: e.target.value});
+                        setHasChanges(true);
+                      }}
+                    />
+
+                    <div className="grid grid-cols-2 gap-6">
+                      <Input
+                        label="Phone Number"
+                        type="tel"
+                        value={profileData.phone}
+                        onChange={(e) => {
+                          setProfileData({...profileData, phone: e.target.value});
+                          setHasChanges(true);
+                        }}
+                      />
+                      <Input
+                        label="Position"
+                        value={profileData.position}
+                        onChange={(e) => {
+                          setProfileData({...profileData, position: e.target.value});
+                          setHasChanges(true);
+                        }}
                       />
                     </div>
 
                     <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-foreground-secondary mb-2">Phone Number</label>
-                        <input
-                          type="tel"
-                          value={profileData.phone}
-                          onChange={(e) => {
-                            setProfileData({...profileData, phone: e.target.value});
-                            setHasChanges(true);
-                          }}
-                          className="input"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-foreground-secondary mb-2">Position</label>
-                        <input
-                          type="text"
-                          value={profileData.position}
-                          onChange={(e) => {
-                            setProfileData({...profileData, position: e.target.value});
-                            setHasChanges(true);
-                          }}
-                          className="input"
-                        />
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 gap-6">
-                      <div>
-                        <label className="block text-sm font-medium text-foreground-secondary mb-2">Location</label>
-                        <input
-                          type="text"
-                          value={profileData.location}
-                          onChange={(e) => {
-                            setProfileData({...profileData, location: e.target.value});
-                            setHasChanges(true);
-                          }}
-                          className="input"
-                        />
-                      </div>
-                      <div>
-                        <label className="block text-sm font-medium text-foreground-secondary mb-2">Timezone</label>
-                        <select
-                          value={profileData.timezone}
-                          onChange={(e) => {
-                            setProfileData({...profileData, timezone: e.target.value});
-                            setHasChanges(true);
-                          }}
-                          className="select"
-                        >
-                          <option value="America/New_York">Eastern Time</option>
-                          <option value="America/Chicago">Central Time</option>
-                          <option value="America/Denver">Mountain Time</option>
-                          <option value="America/Los_Angeles">Pacific Time</option>
-                          <option value="Europe/London">London</option>
-                          <option value="Europe/Amsterdam">Amsterdam</option>
-                        </select>
-                      </div>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">Bio</label>
-                      <textarea
-                        rows={4}
-                        value={profileData.bio}
+                      <Input
+                        label="Location"
+                        value={profileData.location}
                         onChange={(e) => {
-                          setProfileData({...profileData, bio: e.target.value});
+                          setProfileData({...profileData, location: e.target.value});
                           setHasChanges(true);
                         }}
-                        className="input resize-none"
-                        placeholder="Tell us about yourself..."
+                      />
+                      <Select
+                        label="Timezone"
+                        value={profileData.timezone}
+                        onChange={(e) => {
+                          setProfileData({...profileData, timezone: e.target.value});
+                          setHasChanges(true);
+                        }}
+                        options={[
+                          { value: 'America/New_York', label: 'Eastern Time' },
+                          { value: 'America/Chicago', label: 'Central Time' },
+                          { value: 'America/Denver', label: 'Mountain Time' },
+                          { value: 'America/Los_Angeles', label: 'Pacific Time' },
+                          { value: 'Europe/London', label: 'London' },
+                          { value: 'Europe/Amsterdam', label: 'Amsterdam' },
+                        ]}
                       />
                     </div>
+
+                    <Textarea
+                      label="Bio"
+                      rows={4}
+                      value={profileData.bio}
+                      onChange={(e) => {
+                        setProfileData({...profileData, bio: e.target.value});
+                        setHasChanges(true);
+                      }}
+                      placeholder="Tell us about yourself..."
+                    />
                   </div>
-                </div>
+                </Card>
               )}
 
               {activeTab === 'notifications' && (
-                <div className="card p-6">
+                <Card>
                   <h2 className="text-xl font-semibold text-foreground mb-6">Notification Preferences</h2>
 
                   <div className="space-y-6">
                     <div>
                       <h3 className="text-lg font-medium text-foreground mb-4">Chat & Conversations</h3>
                       <div className="space-y-3">
-                        {[
-                          { key: 'newConversations', label: 'New conversations', desc: 'Get notified when someone starts a new chat' },
-                          { key: 'escalations', label: 'Escalations', desc: 'When a conversation is escalated to human agents' },
-                          { key: 'botOffline', label: 'Bot offline', desc: 'When your bots go offline or encounter errors' }
-                        ].map(setting => (
-                          <label key={setting.key} className="flex items-start gap-3">
-                            <input
-                              type="checkbox"
-                              checked={notificationSettings[setting.key as keyof typeof notificationSettings]}
-                              onChange={(e) => {
-                                setNotificationSettings({
-                                  ...notificationSettings,
-                                  [setting.key]: e.target.checked
-                                });
-                                setHasChanges(true);
-                              }}
-                              className="w-5 h-5 rounded mt-0.5 border-border"
-                            />
-                            <div>
-                              <span className="font-medium text-foreground">{setting.label}</span>
-                              <p className="text-sm text-foreground-tertiary">{setting.desc}</p>
-                            </div>
-                          </label>
-                        ))}
+                        <Toggle
+                          label="New conversations"
+                          description="Get notified when someone starts a new chat"
+                          checked={notificationSettings.newConversations}
+                          onChange={(e) => {
+                            setNotificationSettings({...notificationSettings, newConversations: e.target.checked});
+                            setHasChanges(true);
+                          }}
+                        />
+                        <Toggle
+                          label="Escalations"
+                          description="When a conversation is escalated to human agents"
+                          checked={notificationSettings.escalations}
+                          onChange={(e) => {
+                            setNotificationSettings({...notificationSettings, escalations: e.target.checked});
+                            setHasChanges(true);
+                          }}
+                        />
+                        <Toggle
+                          label="Bot offline"
+                          description="When your bots go offline or encounter errors"
+                          checked={notificationSettings.botOffline}
+                          onChange={(e) => {
+                            setNotificationSettings({...notificationSettings, botOffline: e.target.checked});
+                            setHasChanges(true);
+                          }}
+                        />
                       </div>
                     </div>
 
                     <div>
                       <h3 className="text-lg font-medium text-foreground mb-4">Reports & Analytics</h3>
                       <div className="space-y-3">
-                        {[
-                          { key: 'weeklyReports', label: 'Weekly reports', desc: 'Summary of your bot performance and metrics' },
-                          { key: 'monthlyReports', label: 'Monthly reports', desc: 'Detailed monthly analytics and insights' }
-                        ].map(setting => (
-                          <label key={setting.key} className="flex items-start gap-3">
-                            <input
-                              type="checkbox"
-                              checked={notificationSettings[setting.key as keyof typeof notificationSettings]}
-                              onChange={(e) => {
-                                setNotificationSettings({
-                                  ...notificationSettings,
-                                  [setting.key]: e.target.checked
-                                });
-                                setHasChanges(true);
-                              }}
-                              className="w-5 h-5 rounded mt-0.5 border-border"
-                            />
-                            <div>
-                              <span className="font-medium text-foreground">{setting.label}</span>
-                              <p className="text-sm text-foreground-tertiary">{setting.desc}</p>
-                            </div>
-                          </label>
-                        ))}
+                        <Toggle
+                          label="Weekly reports"
+                          description="Summary of your bot performance and metrics"
+                          checked={notificationSettings.weeklyReports}
+                          onChange={(e) => {
+                            setNotificationSettings({...notificationSettings, weeklyReports: e.target.checked});
+                            setHasChanges(true);
+                          }}
+                        />
+                        <Toggle
+                          label="Monthly reports"
+                          description="Detailed monthly analytics and insights"
+                          checked={notificationSettings.monthlyReports}
+                          onChange={(e) => {
+                            setNotificationSettings({...notificationSettings, monthlyReports: e.target.checked});
+                            setHasChanges(true);
+                          }}
+                        />
                       </div>
                     </div>
 
                     <div>
                       <h3 className="text-lg font-medium text-foreground mb-4">Product & Marketing</h3>
                       <div className="space-y-3">
-                        {[
-                          { key: 'productUpdates', label: 'Product updates', desc: 'New features and platform improvements' },
-                          { key: 'marketing', label: 'Marketing communications', desc: 'Tips, best practices, and promotional content' }
-                        ].map(setting => (
-                          <label key={setting.key} className="flex items-start gap-3">
-                            <input
-                              type="checkbox"
-                              checked={notificationSettings[setting.key as keyof typeof notificationSettings]}
-                              onChange={(e) => {
-                                setNotificationSettings({
-                                  ...notificationSettings,
-                                  [setting.key]: e.target.checked
-                                });
-                                setHasChanges(true);
-                              }}
-                              className="w-5 h-5 rounded mt-0.5 border-border"
-                            />
-                            <div>
-                              <span className="font-medium text-foreground">{setting.label}</span>
-                              <p className="text-sm text-foreground-tertiary">{setting.desc}</p>
-                            </div>
-                          </label>
-                        ))}
+                        <Toggle
+                          label="Product updates"
+                          description="New features and platform improvements"
+                          checked={notificationSettings.productUpdates}
+                          onChange={(e) => {
+                            setNotificationSettings({...notificationSettings, productUpdates: e.target.checked});
+                            setHasChanges(true);
+                          }}
+                        />
+                        <Toggle
+                          label="Marketing communications"
+                          description="Tips, best practices, and promotional content"
+                          checked={notificationSettings.marketing}
+                          onChange={(e) => {
+                            setNotificationSettings({...notificationSettings, marketing: e.target.checked});
+                            setHasChanges(true);
+                          }}
+                        />
                       </div>
                     </div>
                   </div>
-                </div>
+                </Card>
               )}
 
               {activeTab === 'security' && (
-                <div className="card p-6">
+                <Card>
                   <h2 className="text-xl font-semibold text-foreground mb-6">Security Settings</h2>
 
                   <div className="space-y-6">
@@ -358,83 +328,68 @@ export default function UserProfilePage() {
                           <h3 className="font-medium text-foreground">Two-Factor Authentication</h3>
                           <p className="text-sm text-foreground-tertiary">Add an extra layer of security to your account</p>
                         </div>
-                        <button className="btn-primary px-4 py-2 text-sm">
+                        <Button size="sm">
                           {securitySettings.twoFactorEnabled ? 'Disable' : 'Enable'}
-                        </button>
+                        </Button>
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">Session Timeout</label>
-                      <select
-                        value={securitySettings.sessionTimeout}
-                        onChange={(e) => {
-                          setSecuritySettings({...securitySettings, sessionTimeout: e.target.value});
-                          setHasChanges(true);
-                        }}
-                        className="select"
-                      >
-                        <option value="1">1 hour</option>
-                        <option value="4">4 hours</option>
-                        <option value="8">8 hours</option>
-                        <option value="24">24 hours</option>
-                        <option value="never">Never</option>
-                      </select>
-                      <p className="text-sm text-foreground-tertiary mt-1">Automatically log out after this period of inactivity</p>
-                    </div>
+                    <Select
+                      label="Session Timeout"
+                      value={securitySettings.sessionTimeout}
+                      onChange={(e) => {
+                        setSecuritySettings({...securitySettings, sessionTimeout: e.target.value});
+                        setHasChanges(true);
+                      }}
+                      options={[
+                        { value: '1', label: '1 hour' },
+                        { value: '4', label: '4 hours' },
+                        { value: '8', label: '8 hours' },
+                        { value: '24', label: '24 hours' },
+                        { value: 'never', label: 'Never' },
+                      ]}
+                      helperText="Automatically log out after this period of inactivity"
+                    />
 
                     <div className="space-y-3">
-                      <label className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={securitySettings.apiAccess}
-                          onChange={(e) => {
-                            setSecuritySettings({...securitySettings, apiAccess: e.target.checked});
-                            setHasChanges(true);
-                          }}
-                          className="w-5 h-5 rounded border-border"
-                        />
-                        <div>
-                          <span className="font-medium text-foreground">API Access</span>
-                          <p className="text-sm text-foreground-tertiary">Allow third-party applications to access your data</p>
-                        </div>
-                      </label>
-
-                      <label className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={securitySettings.loginAlerts}
-                          onChange={(e) => {
-                            setSecuritySettings({...securitySettings, loginAlerts: e.target.checked});
-                            setHasChanges(true);
-                          }}
-                          className="w-5 h-5 rounded border-border"
-                        />
-                        <div>
-                          <span className="font-medium text-foreground">Login Alerts</span>
-                          <p className="text-sm text-foreground-tertiary">Get notified of suspicious login attempts</p>
-                        </div>
-                      </label>
+                      <Toggle
+                        label="API Access"
+                        description="Allow third-party applications to access your data"
+                        checked={securitySettings.apiAccess}
+                        onChange={(e) => {
+                          setSecuritySettings({...securitySettings, apiAccess: e.target.checked});
+                          setHasChanges(true);
+                        }}
+                      />
+                      <Toggle
+                        label="Login Alerts"
+                        description="Get notified of suspicious login attempts"
+                        checked={securitySettings.loginAlerts}
+                        onChange={(e) => {
+                          setSecuritySettings({...securitySettings, loginAlerts: e.target.checked});
+                          setHasChanges(true);
+                        }}
+                      />
                     </div>
 
                     <div className="p-4 border border-error-200 dark:border-error-800 rounded-lg bg-error-50 dark:bg-error-900/20">
                       <h3 className="font-medium text-error-800 dark:text-error-400 mb-2">Danger Zone</h3>
                       <p className="text-sm text-error-600 dark:text-error-500 mb-3">These actions cannot be undone</p>
                       <div className="flex gap-3">
-                        <button className="px-4 py-2 border border-error-300 dark:border-error-700 text-error-700 dark:text-error-400 rounded-lg hover:bg-error-100 dark:hover:bg-error-900/40 text-sm transition-colors">
+                        <Button variant="danger" size="sm">
                           Change Password
-                        </button>
-                        <button className="px-4 py-2 border border-error-300 dark:border-error-700 text-error-700 dark:text-error-400 rounded-lg hover:bg-error-100 dark:hover:bg-error-900/40 text-sm transition-colors">
+                        </Button>
+                        <Button variant="danger" size="sm">
                           Delete Account
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   </div>
-                </div>
+                </Card>
               )}
 
               {(activeTab === 'account' || activeTab === 'appearance' || activeTab === 'data') && (
-                <div className="card p-6">
+                <Card>
                   <h2 className="text-xl font-semibold text-foreground mb-6 capitalize">{activeTab} Settings</h2>
                   <div className="text-center py-12">
                     <div className="w-16 h-16 bg-background-secondary rounded-full mx-auto mb-4 flex items-center justify-center">
@@ -448,13 +403,13 @@ export default function UserProfilePage() {
                       {activeTab === 'data' && 'Data export and privacy settings will be available soon'}
                     </p>
                   </div>
-                </div>
+                </Card>
               )}
             </div>
           </div>
-        </div>
-      </main>
-    </div>
+          </PageContent>
+        </Page>
+      </div>
     </AuthGuard>
   );
 }

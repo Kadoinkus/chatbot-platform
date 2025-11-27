@@ -18,6 +18,8 @@ import {
   Textarea,
   Spinner,
   EmptyState,
+  Modal,
+  Badge,
 } from '@/components/ui';
 
 export default function SupportPage({ params }: { params: { clientId: string; botId: string } }) {
@@ -238,146 +240,128 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
             </div>
 
             <Card padding="none">
-            <div className="p-4 border-b border-border">
-              <div className="flex flex-col sm:flex-row gap-4">
-                <div className="flex-1 relative">
-                  <Search size={18} className="absolute left-3 top-1/2 -translate-y-1/2 text-foreground-tertiary" />
-                  <input
-                    type="text"
+              <div className="p-4 border-b border-border">
+                <div className="flex flex-col sm:flex-row gap-4">
+                  <Input
+                    icon={<Search size={18} />}
                     placeholder="Search tickets..."
-                    className="w-full pl-10 pr-4 py-2 border border-border rounded-lg bg-background text-foreground focus:outline-none focus:border-border-focus"
+                    className="flex-1"
                   />
-                </div>
-                <div className="flex gap-2">
-                  <Button variant="secondary" icon={<Filter size={16} />}>
-                    Filter
-                  </Button>
-                  <Select options={statusOptions} />
-                </div>
-              </div>
-            </div>
-
-            <div className="divide-y divide-border">
-              {tickets.map((ticket) => (
-                <div key={ticket.id} className="p-4 hover:bg-background-hover transition-colors">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-3 mb-2">
-                        {getStatusIcon(ticket.status)}
-                        <span className="font-medium text-foreground">{ticket.id}</span>
-                        <span className={`px-2 py-0.5 text-xs font-medium rounded border ${getPriorityColor(ticket.priority)}`}>
-                          {ticket.priority}
-                        </span>
-                        <span className="px-2 py-0.5 text-xs bg-background-secondary text-foreground-secondary rounded">
-                          {ticket.category}
-                        </span>
-                      </div>
-                      <h3 className="font-medium text-foreground mb-1">{ticket.subject}</h3>
-                      <div className="flex items-center gap-4 text-sm text-foreground-secondary">
-                        <span>Created {ticket.created}</span>
-                        <span>•</span>
-                        <span>Updated {ticket.lastUpdate}</span>
-                        <span>•</span>
-                        <span>{ticket.assignee}</span>
-                      </div>
-                    </div>
-                    <Button variant="secondary" size="sm">View</Button>
+                  <div className="flex gap-2">
+                    <Button variant="secondary" icon={<Filter size={16} />}>
+                      Filter
+                    </Button>
+                    <Select options={statusOptions} />
                   </div>
                 </div>
-              ))}
-            </div>
+              </div>
+
+              <div className="divide-y divide-border">
+                {tickets.map((ticket) => (
+                  <div key={ticket.id} className="p-4 hover:bg-background-hover transition-colors">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-3 mb-2">
+                          {getStatusIcon(ticket.status)}
+                          <span className="font-medium text-foreground">{ticket.id}</span>
+                          <Badge variant={ticket.priority === 'high' ? 'error' : ticket.priority === 'medium' ? 'warning' : 'default'}>
+                            {ticket.priority}
+                          </Badge>
+                          <Badge>{ticket.category}</Badge>
+                        </div>
+                        <h3 className="font-medium text-foreground mb-1">{ticket.subject}</h3>
+                        <div className="flex items-center gap-4 text-sm text-foreground-secondary">
+                          <span>Created {ticket.created}</span>
+                          <span>•</span>
+                          <span>Updated {ticket.lastUpdate}</span>
+                          <span>•</span>
+                          <span>{ticket.assignee}</span>
+                        </div>
+                      </div>
+                      <Button variant="secondary" size="sm">View</Button>
+                    </div>
+                  </div>
+                ))}
+              </div>
             </Card>
           </PageContent>
         </Page>
       
-      {showNewTicket && (
-        <div className="fixed inset-0 bg-surface-overlay flex items-center justify-center z-50 p-4">
-          <div className="bg-surface-elevated rounded-xl max-w-2xl w-full max-h-[90vh] overflow-y-auto border border-border">
-            <div className="p-6 border-b border-border">
-              <h2 className="text-xl font-semibold text-foreground">Create New Support Ticket</h2>
-              <p className="text-sm text-foreground-secondary mt-1">Submit a request to the development team</p>
-            </div>
+      <Modal
+        isOpen={showNewTicket}
+        onClose={() => setShowNewTicket(false)}
+        title="Create New Support Ticket"
+        description="Submit a request to the development team"
+        size="lg"
+        footer={
+          <>
+            <Button variant="secondary" onClick={() => setShowNewTicket(false)}>
+              Cancel
+            </Button>
+            <Button
+              onClick={() => {
+                setShowNewTicket(false);
+                setTicketForm({ subject: '', category: 'bug', priority: 'medium', description: '' });
+              }}
+            >
+              Submit Ticket
+            </Button>
+          </>
+        }
+      >
+        <div className="space-y-4">
+          <Input
+            label="Subject"
+            value={ticketForm.subject}
+            onChange={(e) => setTicketForm({...ticketForm, subject: e.target.value})}
+            placeholder="Brief description of the issue"
+          />
 
-            <div className="p-6 space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Subject</label>
-                <input
-                  type="text"
-                  value={ticketForm.subject}
-                  onChange={(e) => setTicketForm({...ticketForm, subject: e.target.value})}
-                  className="input"
-                  placeholder="Brief description of the issue"
-                />
-              </div>
+          <div className="grid grid-cols-2 gap-4">
+            <Select
+              label="Category"
+              value={ticketForm.category}
+              onChange={(e) => setTicketForm({...ticketForm, category: e.target.value})}
+              options={[
+                { value: 'bug', label: 'Bug Report' },
+                { value: 'feature', label: 'Feature Request' },
+                { value: 'integration', label: 'Integration Issue' },
+                { value: 'performance', label: 'Performance' },
+                { value: 'other', label: 'Other' },
+              ]}
+            />
 
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Category</label>
-                  <select
-                    value={ticketForm.category}
-                    onChange={(e) => setTicketForm({...ticketForm, category: e.target.value})}
-                    className="select"
-                  >
-                    <option value="bug">Bug Report</option>
-                    <option value="feature">Feature Request</option>
-                    <option value="integration">Integration Issue</option>
-                    <option value="performance">Performance</option>
-                    <option value="other">Other</option>
-                  </select>
-                </div>
+            <Select
+              label="Priority"
+              value={ticketForm.priority}
+              onChange={(e) => setTicketForm({...ticketForm, priority: e.target.value})}
+              options={[
+                { value: 'low', label: 'Low' },
+                { value: 'medium', label: 'Medium' },
+                { value: 'high', label: 'High' },
+                { value: 'critical', label: 'Critical' },
+              ]}
+            />
+          </div>
 
-                <div>
-                  <label className="block text-sm font-medium text-foreground mb-2">Priority</label>
-                  <select
-                    value={ticketForm.priority}
-                    onChange={(e) => setTicketForm({...ticketForm, priority: e.target.value})}
-                    className="select"
-                  >
-                    <option value="low">Low</option>
-                    <option value="medium">Medium</option>
-                    <option value="high">High</option>
-                    <option value="critical">Critical</option>
-                  </select>
-                </div>
-              </div>
+          <Textarea
+            label="Description"
+            value={ticketForm.description}
+            onChange={(e) => setTicketForm({...ticketForm, description: e.target.value})}
+            rows={6}
+            placeholder="Provide detailed information about your request..."
+          />
 
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Description</label>
-                <textarea
-                  value={ticketForm.description}
-                  onChange={(e) => setTicketForm({...ticketForm, description: e.target.value})}
-                  className="input resize-none"
-                  rows={6}
-                  placeholder="Provide detailed information about your request..."
-                />
-              </div>
-
-              <div>
-                <label className="block text-sm font-medium text-foreground mb-2">Attachments</label>
-                <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
-                  <MessageSquare size={24} className="mx-auto mb-2 text-foreground-tertiary" />
-                  <p className="text-sm text-foreground-secondary">Drop files here or click to browse</p>
-                  <p className="text-xs text-foreground-tertiary mt-1">Max 10MB per file</p>
-                </div>
-              </div>
-            </div>
-
-            <div className="p-6 border-t border-border flex justify-end gap-3">
-              <Button variant="secondary" onClick={() => setShowNewTicket(false)}>
-                Cancel
-              </Button>
-              <Button
-                onClick={() => {
-                  setShowNewTicket(false);
-                  setTicketForm({ subject: '', category: 'bug', priority: 'medium', description: '' });
-                }}
-              >
-                Submit Ticket
-              </Button>
+          <div>
+            <label className="block text-sm font-medium text-foreground mb-2">Attachments</label>
+            <div className="border-2 border-dashed border-border rounded-lg p-6 text-center">
+              <MessageSquare size={24} className="mx-auto mb-2 text-foreground-tertiary" />
+              <p className="text-sm text-foreground-secondary">Drop files here or click to browse</p>
+              <p className="text-xs text-foreground-tertiary mt-1">Max 10MB per file</p>
             </div>
           </div>
         </div>
-      )}
+      </Modal>
       </div>
     </AuthGuard>
   );

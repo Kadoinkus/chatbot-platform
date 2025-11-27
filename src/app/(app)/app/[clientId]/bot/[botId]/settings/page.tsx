@@ -15,6 +15,7 @@ import {
   Input,
   Select,
   Textarea,
+  Toggle,
   EmptyState,
 } from '@/components/ui';
 
@@ -164,68 +165,52 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
 
                   <div className="space-y-6">
                     <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                        API Key
-                      </label>
                       <div className="flex gap-2">
-                        <input
-                          type="text"
+                        <Input
+                          label="API Key"
                           value={apiSettings.apiKey}
                           readOnly
-                          className="flex-1 px-4 py-2 border border-border rounded-lg bg-background-secondary font-mono text-sm text-foreground"
+                          className="flex-1 font-mono text-sm"
+                          helperText="Use this key to authenticate API requests"
                         />
-                        <Button variant="secondary">Regenerate</Button>
+                        <div className="flex items-end pb-6">
+                          <Button variant="secondary">Regenerate</Button>
+                        </div>
                       </div>
-                      <p className="text-sm text-foreground-tertiary mt-1">
-                        Use this key to authenticate API requests
-                      </p>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                        Widget ID
-                      </label>
-                      <input
-                        type="text"
-                        value={`widget-${bot.id}`}
-                        readOnly
-                        className="w-full px-4 py-2 border border-border rounded-lg bg-background-secondary font-mono text-sm text-foreground"
-                      />
-                      <p className="text-sm text-foreground-tertiary mt-1">
-                        Unique identifier for embedding the chat widget
-                      </p>
-                    </div>
+                    <Input
+                      label="Widget ID"
+                      value={`widget-${bot.id}`}
+                      readOnly
+                      className="font-mono text-sm"
+                      helperText="Unique identifier for embedding the chat widget"
+                    />
 
                     <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                        Rate Limiting
-                      </label>
-                      <div className="flex items-center gap-4">
-                        <input
+                      <div className="flex items-end gap-4">
+                        <Input
+                          label="Rate Limiting"
                           type="number"
-                          value={apiSettings.rateLimit}
+                          value={apiSettings.rateLimit.toString()}
                           onChange={(e) => {
                             setApiSettings({...apiSettings, rateLimit: parseInt(e.target.value)});
                             setHasChanges(true);
                           }}
-                          className="w-32 input"
+                          className="w-32"
                         />
-                        <span className="text-sm text-foreground-secondary">requests per hour</span>
+                        <span className="text-sm text-foreground-secondary pb-2">requests per hour</span>
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                        Embed Code
-                      </label>
-                      <textarea
-                        readOnly
-                        rows={4}
-                        value={`<script src="https://api.chatbot.com/widget.js"\n  data-bot-id="${bot.id}"\n  data-client-id="${client.id}">\n</script>`}
-                        className="w-full px-4 py-2 border border-border rounded-lg bg-background-secondary font-mono text-sm text-foreground"
-                      />
-                      <Button variant="secondary" className="mt-2">Copy Code</Button>
-                    </div>
+                    <Textarea
+                      label="Embed Code"
+                      readOnly
+                      rows={4}
+                      value={`<script src="https://api.chatbot.com/widget.js"\n  data-bot-id="${bot.id}"\n  data-client-id="${client.id}">\n</script>`}
+                      className="font-mono text-sm"
+                    />
+                    <Button variant="secondary">Copy Code</Button>
                   </div>
                   </Card>
                 )}
@@ -235,79 +220,55 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                   <h2 className="text-xl font-semibold text-foreground mb-6">Security Settings</h2>
 
                   <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                        Allowed Domains
-                      </label>
-                      <textarea
-                        value={securitySettings.allowedDomains}
-                        onChange={(e) => {
-                          setSecuritySettings({...securitySettings, allowedDomains: e.target.value});
-                          setHasChanges(true);
-                        }}
-                        rows={3}
-                        className="input font-mono text-sm"
-                        placeholder="example.com\napp.example.com"
-                      />
-                      <p className="text-sm text-foreground-tertiary mt-1">
-                        One domain per line. Widget will only load on these domains.
-                      </p>
-                    </div>
+                    <Textarea
+                      label="Allowed Domains"
+                      value={securitySettings.allowedDomains}
+                      onChange={(e) => {
+                        setSecuritySettings({...securitySettings, allowedDomains: e.target.value});
+                        setHasChanges(true);
+                      }}
+                      rows={3}
+                      className="font-mono text-sm"
+                      placeholder="example.com&#10;app.example.com"
+                      helperText="One domain per line. Widget will only load on these domains."
+                    />
+
+                    <Textarea
+                      label="IP Whitelist"
+                      value={securitySettings.ipWhitelist}
+                      onChange={(e) => {
+                        setSecuritySettings({...securitySettings, ipWhitelist: e.target.value});
+                        setHasChanges(true);
+                      }}
+                      rows={3}
+                      className="font-mono text-sm"
+                      placeholder="192.168.1.1&#10;10.0.0.0/8"
+                      helperText="Restrict API access to specific IP addresses or ranges"
+                    />
+
+                    <Toggle
+                      label="End-to-end encryption"
+                      description="Encrypt all messages between users and the bot"
+                      checked={securitySettings.encryption}
+                      onChange={(e) => {
+                        setSecuritySettings({...securitySettings, encryption: e.target.checked});
+                        setHasChanges(true);
+                      }}
+                    />
 
                     <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                        IP Whitelist
-                      </label>
-                      <textarea
-                        value={securitySettings.ipWhitelist}
-                        onChange={(e) => {
-                          setSecuritySettings({...securitySettings, ipWhitelist: e.target.value});
-                          setHasChanges(true);
-                        }}
-                        rows={3}
-                        className="input font-mono text-sm"
-                        placeholder="192.168.1.1\n10.0.0.0/8"
-                      />
-                      <p className="text-sm text-foreground-tertiary mt-1">
-                        Restrict API access to specific IP addresses or ranges
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          checked={securitySettings.encryption}
-                          onChange={(e) => {
-                            setSecuritySettings({...securitySettings, encryption: e.target.checked});
-                            setHasChanges(true);
-                          }}
-                          className="w-4 h-4 rounded border-border"
-                        />
-                        <span className="text-sm font-medium text-foreground">
-                          End-to-end encryption
-                        </span>
-                      </label>
-                      <p className="text-sm text-foreground-tertiary mt-1 ml-7">
-                        Encrypt all messages between users and the bot
-                      </p>
-                    </div>
-
-                    <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                        Data Retention Period
-                      </label>
-                      <div className="flex items-center gap-4">
-                        <input
+                      <div className="flex items-end gap-4">
+                        <Input
+                          label="Data Retention Period"
                           type="number"
-                          value={securitySettings.dataRetention}
+                          value={securitySettings.dataRetention.toString()}
                           onChange={(e) => {
                             setSecuritySettings({...securitySettings, dataRetention: parseInt(e.target.value)});
                             setHasChanges(true);
                           }}
-                          className="w-32 input"
+                          className="w-32"
                         />
-                        <span className="text-sm text-foreground-secondary">days</span>
+                        <span className="text-sm text-foreground-secondary pb-2">days</span>
                       </div>
                       <p className="text-sm text-foreground-tertiary mt-1">
                         Automatically delete conversation data after this period
@@ -323,43 +284,35 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
 
                   <div className="space-y-6">
                     <div>
-                      <label className="flex items-center gap-3 mb-4">
-                        <input
-                          type="checkbox"
-                          checked={businessHours.enabled}
-                          onChange={(e) => {
-                            setBusinessHours({...businessHours, enabled: e.target.checked});
-                            setHasChanges(true);
-                          }}
-                          className="w-4 h-4 rounded border-border"
-                        />
-                        <span className="text-sm font-medium text-foreground">
-                          Enable business hours
-                        </span>
-                      </label>
+                      <Toggle
+                        label="Enable business hours"
+                        checked={businessHours.enabled}
+                        onChange={(e) => {
+                          setBusinessHours({...businessHours, enabled: e.target.checked});
+                          setHasChanges(true);
+                        }}
+                        className="mb-4"
+                      />
 
                       {businessHours.enabled && (
                         <>
-                          <div className="mb-4">
-                            <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                              Timezone
-                            </label>
-                            <select
-                              value={businessHours.timezone}
-                              onChange={(e) => {
-                                setBusinessHours({...businessHours, timezone: e.target.value});
-                                setHasChanges(true);
-                              }}
-                              className="select"
-                            >
-                              <option value="America/New_York">Eastern Time (ET)</option>
-                              <option value="America/Chicago">Central Time (CT)</option>
-                              <option value="America/Denver">Mountain Time (MT)</option>
-                              <option value="America/Los_Angeles">Pacific Time (PT)</option>
-                              <option value="Europe/London">London (GMT)</option>
-                              <option value="Europe/Amsterdam">Amsterdam (CET)</option>
-                            </select>
-                          </div>
+                          <Select
+                            label="Timezone"
+                            value={businessHours.timezone}
+                            onChange={(e) => {
+                              setBusinessHours({...businessHours, timezone: e.target.value});
+                              setHasChanges(true);
+                            }}
+                            options={[
+                              { value: 'America/New_York', label: 'Eastern Time (ET)' },
+                              { value: 'America/Chicago', label: 'Central Time (CT)' },
+                              { value: 'America/Denver', label: 'Mountain Time (MT)' },
+                              { value: 'America/Los_Angeles', label: 'Pacific Time (PT)' },
+                              { value: 'Europe/London', label: 'London (GMT)' },
+                              { value: 'Europe/Amsterdam', label: 'Amsterdam (CET)' },
+                            ]}
+                            className="mb-4"
+                          />
 
                           <div className="space-y-3">
                             {Object.entries(businessHours.schedule).map(([day, hours]) => (
@@ -375,18 +328,18 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                                 </label>
                                 {hours.enabled && (
                                   <>
-                                    <input
+                                    <Input
                                       type="time"
                                       value={hours.start}
                                       onChange={() => setHasChanges(true)}
-                                      className="px-3 py-1 border border-border rounded-lg bg-background text-foreground"
+                                      className="w-auto"
                                     />
                                     <span className="text-foreground-tertiary">to</span>
-                                    <input
+                                    <Input
                                       type="time"
                                       value={hours.end}
                                       onChange={() => setHasChanges(true)}
-                                      className="px-3 py-1 border border-border rounded-lg bg-background text-foreground"
+                                      className="w-auto"
                                     />
                                   </>
                                 )}
@@ -397,32 +350,19 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                       )}
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                        After-hours message
-                      </label>
-                      <textarea
-                        rows={3}
-                        className="input resize-none"
-                        placeholder="Message shown outside business hours"
-                        defaultValue="Thanks for reaching out! We're currently closed but will respond as soon as we're back online."
-                        onChange={() => setHasChanges(true)}
-                      />
-                    </div>
+                    <Textarea
+                      label="After-hours message"
+                      rows={3}
+                      placeholder="Message shown outside business hours"
+                      defaultValue="Thanks for reaching out! We're currently closed but will respond as soon as we're back online."
+                      onChange={() => setHasChanges(true)}
+                    />
 
-                    <div>
-                      <label className="flex items-center gap-3">
-                        <input
-                          type="checkbox"
-                          defaultChecked
-                          className="w-4 h-4 rounded border-border"
-                          onChange={() => setHasChanges(true)}
-                        />
-                        <span className="text-sm font-medium text-foreground">
-                          Allow users to leave messages when offline
-                        </span>
-                      </label>
-                    </div>
+                    <Toggle
+                      label="Allow users to leave messages when offline"
+                      defaultChecked
+                      onChange={() => setHasChanges(true)}
+                    />
                   </div>
                   </Card>
                 )}
@@ -432,24 +372,17 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                   <h2 className="text-xl font-semibold text-foreground mb-6">Webhook Configuration</h2>
 
                   <div className="space-y-6">
-                    <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                        Webhook URL
-                      </label>
-                      <input
-                        type="url"
-                        value={apiSettings.webhookUrl}
-                        onChange={(e) => {
-                          setApiSettings({...apiSettings, webhookUrl: e.target.value});
-                          setHasChanges(true);
-                        }}
-                        className="input"
-                        placeholder="https://your-server.com/webhook"
-                      />
-                      <p className="text-sm text-foreground-tertiary mt-1">
-                        Receive real-time updates when events occur
-                      </p>
-                    </div>
+                    <Input
+                      label="Webhook URL"
+                      type="url"
+                      value={apiSettings.webhookUrl}
+                      onChange={(e) => {
+                        setApiSettings({...apiSettings, webhookUrl: e.target.value});
+                        setHasChanges(true);
+                      }}
+                      placeholder="https://your-server.com/webhook"
+                      helperText="Receive real-time updates when events occur"
+                    />
 
                     <div>
                       <label className="block text-sm font-medium text-foreground-secondary mb-2">
@@ -457,33 +390,23 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                       </label>
                       <div className="space-y-2">
                         {['New conversation', 'Message received', 'Conversation ended', 'Human handoff requested', 'Error occurred'].map(event => (
-                          <label key={event} className="flex items-center gap-3">
-                            <input
-                              type="checkbox"
-                              defaultChecked
-                              className="w-4 h-4 rounded border-border"
-                              onChange={() => setHasChanges(true)}
-                            />
-                            <span className="text-sm text-foreground">{event}</span>
-                          </label>
+                          <Toggle
+                            key={event}
+                            label={event}
+                            defaultChecked
+                            onChange={() => setHasChanges(true)}
+                          />
                         ))}
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                        Secret Key
-                      </label>
-                      <input
-                        type="text"
-                        value="whsec_xxx...xxx"
-                        readOnly
-                        className="w-full px-4 py-2 border border-border rounded-lg bg-background-secondary font-mono text-sm text-foreground"
-                      />
-                      <p className="text-sm text-foreground-tertiary mt-1">
-                        Use this to verify webhook signatures
-                      </p>
-                    </div>
+                    <Input
+                      label="Secret Key"
+                      value="whsec_xxx...xxx"
+                      readOnly
+                      className="font-mono text-sm"
+                      helperText="Use this to verify webhook signatures"
+                    />
                   </div>
                   </Card>
                 )}
@@ -511,14 +434,8 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                         Usage Alerts
                       </label>
                       <div className="space-y-2">
-                        <label className="flex items-center gap-3">
-                          <input type="checkbox" defaultChecked className="w-4 h-4 rounded border-border" />
-                          <span className="text-sm text-foreground">Alert when usage reaches 80%</span>
-                        </label>
-                        <label className="flex items-center gap-3">
-                          <input type="checkbox" defaultChecked className="w-4 h-4 rounded border-border" />
-                          <span className="text-sm text-foreground">Alert when usage reaches 100%</span>
-                        </label>
+                        <Toggle label="Alert when usage reaches 80%" defaultChecked />
+                        <Toggle label="Alert when usage reaches 100%" defaultChecked />
                       </div>
                     </div>
 
@@ -543,38 +460,33 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                         Export Data
                       </label>
                       <div className="space-y-3">
-                        <button className="flex items-center justify-between w-full px-4 py-3 border border-border rounded-lg hover:bg-background-hover text-foreground transition-colors">
-                          <span>Export conversations (CSV)</span>
-                          <Download size={16} />
-                        </button>
-                        <button className="flex items-center justify-between w-full px-4 py-3 border border-border rounded-lg hover:bg-background-hover text-foreground transition-colors">
-                          <span>Export training data (JSON)</span>
-                          <Download size={16} />
-                        </button>
-                        <button className="flex items-center justify-between w-full px-4 py-3 border border-border rounded-lg hover:bg-background-hover text-foreground transition-colors">
-                          <span>Export analytics report (PDF)</span>
-                          <Download size={16} />
-                        </button>
+                        <Button variant="secondary" fullWidth className="justify-between" iconRight={<Download size={16} />}>
+                          Export conversations (CSV)
+                        </Button>
+                        <Button variant="secondary" fullWidth className="justify-between" iconRight={<Download size={16} />}>
+                          Export training data (JSON)
+                        </Button>
+                        <Button variant="secondary" fullWidth className="justify-between" iconRight={<Download size={16} />}>
+                          Export analytics report (PDF)
+                        </Button>
                       </div>
                     </div>
 
-                    <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                        Backup Schedule
-                      </label>
-                      <select className="select">
-                        <option>Daily</option>
-                        <option>Weekly</option>
-                        <option>Monthly</option>
-                        <option>Disabled</option>
-                      </select>
-                    </div>
+                    <Select
+                      label="Backup Schedule"
+                      options={[
+                        { value: 'daily', label: 'Daily' },
+                        { value: 'weekly', label: 'Weekly' },
+                        { value: 'monthly', label: 'Monthly' },
+                        { value: 'disabled', label: 'Disabled' },
+                      ]}
+                    />
 
                     <div className="border-t border-border pt-6">
                       <h3 className="text-sm font-medium text-error-600 dark:text-error-500 mb-4">Danger Zone</h3>
-                      <button className="px-4 py-2 border border-error-300 dark:border-error-700 text-error-600 dark:text-error-500 rounded-lg hover:bg-error-50 dark:hover:bg-error-700/20 transition-colors">
+                      <Button variant="danger">
                         Delete All Data
-                      </button>
+                      </Button>
                     </div>
                   </div>
                   </Card>
@@ -585,36 +497,22 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                   <h2 className="text-xl font-semibold text-foreground mb-6">Advanced Settings</h2>
 
                   <div className="space-y-6">
-                    <div>
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" className="w-4 h-4 rounded border-border" />
-                        <span className="text-sm font-medium text-foreground">Debug Mode</span>
-                      </label>
-                      <p className="text-sm text-foreground-tertiary mt-1 ml-7">
-                        Enable detailed logging for troubleshooting
-                      </p>
-                    </div>
+                    <Toggle
+                      label="Debug Mode"
+                      description="Enable detailed logging for troubleshooting"
+                    />
 
-                    <div>
-                      <label className="flex items-center gap-3">
-                        <input type="checkbox" className="w-4 h-4 rounded border-border" />
-                        <span className="text-sm font-medium text-foreground">Beta Features</span>
-                      </label>
-                      <p className="text-sm text-foreground-tertiary mt-1 ml-7">
-                        Try experimental features before they're released
-                      </p>
-                    </div>
+                    <Toggle
+                      label="Beta Features"
+                      description="Try experimental features before they're released"
+                    />
 
-                    <div>
-                      <label className="block text-sm font-medium text-foreground-secondary mb-2">
-                        Custom CSS
-                      </label>
-                      <textarea
-                        rows={5}
-                        className="input font-mono text-sm"
-                        placeholder="/* Add custom styles for the chat widget */"
-                      />
-                    </div>
+                    <Textarea
+                      label="Custom CSS"
+                      rows={5}
+                      className="font-mono text-sm"
+                      placeholder="/* Add custom styles for the chat widget */"
+                    />
                   </div>
                   </Card>
                 )}

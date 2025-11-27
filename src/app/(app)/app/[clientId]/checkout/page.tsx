@@ -125,7 +125,7 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
         <Sidebar clientId={client.id} />
 
         <Page>
-          <PageContent maxWidth="6xl">
+          <PageContent maxWidth="7xl">
             <PageHeader
               title="Checkout"
               description={`Complete your purchase of ${totalItems} item${totalItems !== 1 ? 's' : ''}`}

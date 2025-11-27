@@ -4,8 +4,18 @@ import { getClientById, getBotsByClientId, getBotSessionsByClientId, getWorkspac
 import type { Client, Bot, BotSession, Workspace } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import Sidebar from '@/components/Sidebar';
+import AuthGuard from '@/components/AuthGuard';
 import { UsageLine, IntentBars, MultiLineChart } from '@/components/Charts';
 import { Calendar, Download, Filter, TrendingUp, MessageSquare, Clock, Star, Users, AlertTriangle, CheckCircle, ChevronDown, X, BarChart3, Target, Settings, FileText } from 'lucide-react';
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  Button,
+  Select,
+  Spinner,
+  EmptyState,
+} from '@/components/ui';
 
 export default function AnalyticsDashboardPage({ params }: { params: { clientId: string } }) {
   const [client, setClient] = useState<Client | null>(null);
@@ -271,9 +281,9 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
-        </main>
+        <Page className="flex items-center justify-center">
+          <Spinner size="lg" />
+        </Page>
       </div>
     );
   }
@@ -282,49 +292,60 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16 p-6">
-          <p className="text-foreground-secondary">Client not found</p>
-        </main>
+        <Page>
+          <PageContent>
+            <EmptyState
+              icon={<BarChart3 size={48} />}
+              title="Client not found"
+              message="The requested client could not be found."
+            />
+          </PageContent>
+        </Page>
       </div>
     );
   }
 
-  return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar clientId={client.id} />
+  const workspaceOptions = [
+    { value: 'all', label: 'All Workspaces' },
+    ...workspaces.map(ws => ({ value: ws.id, label: ws.name }))
+  ];
 
-      <main className="flex-1 lg:ml-16 min-h-screen">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <div className="mb-6 lg:mb-8">
-            <div className="flex items-center justify-between mb-4">
+  const dateRangeOptions = [
+    { value: 'today', label: 'Today' },
+    { value: '7days', label: 'Last 7 days' },
+    { value: '30days', label: 'Last 30 days' },
+    { value: '90days', label: 'Last 90 days' },
+    { value: 'custom', label: 'Custom range' }
+  ];
+
+  return (
+    <AuthGuard clientId={params.clientId}>
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={client.id} />
+
+        <Page>
+          <PageContent>
+            <PageHeader
+              title="Analytics Dashboard"
+              description={selectedWorkspace === 'all'
+                ? `Comprehensive insights for ${client.name}`
+                : `${workspaces.find(w => w.id === selectedWorkspace)?.name || 'Workspace'} - ${client.name}`
+              }
+            />
+
+            <div className="flex gap-3 flex-wrap items-end mb-6">
+              {/* Workspace Selector */}
               <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">Analytics Dashboard</h1>
-                <p className="text-foreground-secondary">
-                  {selectedWorkspace === 'all'
-                    ? `Comprehensive insights for ${client.name}`
-                    : `${workspaces.find(w => w.id === selectedWorkspace)?.name || 'Workspace'} - ${client.name}`
-                  }
-                </p>
-              </div>
-              <div className="flex gap-3 flex-wrap items-end">
-                {/* Workspace Selector */}
-                <div>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm font-medium text-foreground-secondary">Workspace:</span>
-                  </div>
-                  <select
-                    value={selectedWorkspace}
-                    onChange={(e) => setSelectedWorkspace(e.target.value)}
-                    className="select min-w-[180px]"
-                  >
-                    <option value="all">All Workspaces</option>
-                    {workspaces.map(workspace => (
-                      <option key={workspace.id} value={workspace.id}>
-                        {workspace.name}
-                      </option>
-                    ))}
-                  </select>
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="text-sm font-medium text-foreground-secondary">Workspace:</span>
                 </div>
+                <Select
+                  options={workspaceOptions}
+                  value={selectedWorkspace}
+                  onChange={(e) => setSelectedWorkspace(e.target.value)}
+                  minWidth="180px"
+                />
+              </div>
 
                 {/* Bot Selection Dropdown */}
                 <div className="relative" ref={dropdownRef}>
@@ -437,29 +458,19 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                   )}
                 </div>
 
-                <select
-                  value={dateRange}
-                  onChange={(e) => setDateRange(e.target.value)}
-                  className="select min-w-[140px]"
-                >
-                  <option value="today">Today</option>
-                  <option value="7days">Last 7 days</option>
-                  <option value="30days">Last 30 days</option>
-                  <option value="90days">Last 90 days</option>
-                  <option value="custom">Custom range</option>
-                </select>
-                <button className="btn-secondary">
-                  <Filter size={18} />
-                  Filters
-                </button>
-                <button className="btn-primary">
-                  <Download size={18} />
-                  Export Report
-                </button>
-              </div>
-
+              <Select
+                options={dateRangeOptions}
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+                minWidth="140px"
+              />
+              <Button variant="secondary" icon={<Filter size={18} />}>
+                Filters
+              </Button>
+              <Button icon={<Download size={18} />}>
+                Export Report
+              </Button>
             </div>
-          </div>
 
           {/* Tab Navigation */}
           <div className="mb-6">
@@ -572,9 +583,10 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
               </tbody>
             </table>
           </div>
-        </div>
-      </main>
-    </div>
+          </PageContent>
+        </Page>
+      </div>
+    </AuthGuard>
   );
 
   // Tab render functions

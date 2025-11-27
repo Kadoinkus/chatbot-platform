@@ -3,8 +3,15 @@ import { useState, useRef, useEffect } from 'react';
 import { clients } from '@/lib/data';
 import { getClientBrandColor } from '@/lib/brandColors';
 import Sidebar from '@/components/Sidebar';
-import { ArrowLeft, Send, Paperclip, MoreVertical, Phone, Video, Info, Smile, Mic } from 'lucide-react';
+import AuthGuard from '@/components/AuthGuard';
+import { ArrowLeft, Send, Paperclip, MoreVertical, Phone, Video, Info, Smile, Mic, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
+import {
+  Page,
+  PageContent,
+  Button,
+  EmptyState,
+} from '@/components/ui';
 
 interface Message {
   id: string;
@@ -99,9 +106,15 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16 p-6">
-          <p className="text-foreground-secondary">Bot not found</p>
-        </main>
+        <Page>
+          <PageContent>
+            <EmptyState
+              icon={<MessageSquare size={48} />}
+              title="Bot not found"
+              message="The requested bot could not be found."
+            />
+          </PageContent>
+        </Page>
       </div>
     );
   }
@@ -111,47 +124,48 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
-      <Sidebar clientId={client.id} />
-      
-      <main className="flex-1 ml-16 flex flex-col">
-        {/* Chat Header */}
-        <div className="bg-white border-b px-6 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-4">
-              <Link 
-                href={`/app/${client.id}/bot/${bot.id}`}
-                className="text-gray-600 hover:text-gray-900"
-              >
-                <ArrowLeft size={20} />
-              </Link>
-              <img 
-                src={bot.image} 
-                alt={bot.name}
-                className="w-10 h-10 rounded-full"
-                style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-              />
-              <div>
-                <h1 className="font-semibold">{bot.name}</h1>
-                <p className="text-xs text-green-600">Active now</p>
+    <AuthGuard clientId={params.clientId}>
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={client.id} />
+
+        <main className="flex-1 lg:ml-16 flex flex-col">
+          {/* Chat Header */}
+          <div className="bg-surface-elevated border-b border-border px-6 py-4">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-4">
+                <Link
+                  href={`/app/${client.id}/bot/${bot.id}`}
+                  className="text-foreground-secondary hover:text-foreground"
+                >
+                  <ArrowLeft size={20} />
+                </Link>
+                <img
+                  src={bot.image}
+                  alt={bot.name}
+                  className="w-10 h-10 rounded-full"
+                  style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                />
+                <div>
+                  <h1 className="font-semibold text-foreground">{bot.name}</h1>
+                  <p className="text-xs text-success-600 dark:text-success-500">Active now</p>
+                </div>
+              </div>
+              <div className="flex items-center gap-2">
+                <button className="p-2 hover:bg-background-hover rounded-lg">
+                  <Phone size={20} className="text-foreground-secondary" />
+                </button>
+                <button className="p-2 hover:bg-background-hover rounded-lg">
+                  <Video size={20} className="text-foreground-secondary" />
+                </button>
+                <button className="p-2 hover:bg-background-hover rounded-lg">
+                  <Info size={20} className="text-foreground-secondary" />
+                </button>
+                <button className="p-2 hover:bg-background-hover rounded-lg">
+                  <MoreVertical size={20} className="text-foreground-secondary" />
+                </button>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <Phone size={20} className="text-gray-600" />
-              </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <Video size={20} className="text-gray-600" />
-              </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <Info size={20} className="text-gray-600" />
-              </button>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <MoreVertical size={20} className="text-gray-600" />
-              </button>
-            </div>
           </div>
-        </div>
 
         {/* Messages Area */}
         <div className="flex-1 overflow-y-auto p-6">
@@ -179,10 +193,10 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
                     <div
                       className={`rounded-lg px-4 py-2 ${
                         message.sender === 'user'
-                          ? 'bg-black text-white'
+                          ? 'bg-interactive text-foreground-inverse'
                           : message.sender === 'agent'
-                          ? 'bg-blue-100 text-gray-900'
-                          : 'bg-gray-100 text-gray-900'
+                          ? 'bg-info-100 dark:bg-info-900/30 text-foreground'
+                          : 'bg-background-secondary text-foreground'
                       }`}
                     >
                       <p className="text-sm">{message.content}</p>
@@ -198,7 +212,7 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
                         </div>
                       )}
                     </div>
-                    <p className="text-xs text-gray-500 mt-1 px-1">
+                    <p className="text-xs text-foreground-tertiary mt-1 px-1">
                       {formatTime(message.timestamp)}
                       {message.sender === 'user' && message.status && (
                         <span className="ml-2">
@@ -215,17 +229,17 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
             {isTyping && (
               <div className="flex justify-start">
                 <div className="flex gap-3 max-w-lg">
-                  <div 
+                  <div
                     className="w-8 h-8 rounded-full flex items-center justify-center p-0.5"
                     style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
                   >
                     <img src={bot.image} alt={bot.name} className="w-7 h-7 object-contain" />
                   </div>
-                  <div className="bg-gray-100 rounded-lg px-4 py-2">
+                  <div className="bg-background-secondary rounded-lg px-4 py-2">
                     <div className="flex gap-1">
-                      <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
-                      <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
-                      <span className="w-2 h-2 bg-gray-500 rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
+                      <span className="w-2 h-2 bg-foreground-tertiary rounded-full animate-bounce" style={{ animationDelay: '0ms' }} />
+                      <span className="w-2 h-2 bg-foreground-tertiary rounded-full animate-bounce" style={{ animationDelay: '150ms' }} />
+                      <span className="w-2 h-2 bg-foreground-tertiary rounded-full animate-bounce" style={{ animationDelay: '300ms' }} />
                     </div>
                   </div>
                 </div>
@@ -235,65 +249,63 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
           </div>
         </div>
 
-        {/* Quick Replies */}
-        <div className="px-6 py-2">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex gap-2 overflow-x-auto pb-2">
-              {['Track my order', 'Shipping info', 'Return policy', 'Contact support'].map((reply) => (
-                <button
-                  key={reply}
-                  onClick={() => setInputMessage(reply)}
-                  className="px-3 py-1 bg-white border border-gray-300 rounded-full text-sm whitespace-nowrap hover:bg-gray-50"
-                >
-                  {reply}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Input Area */}
-        <div className="bg-white border-t p-4">
-          <div className="max-w-4xl mx-auto">
-            <div className="flex items-end gap-2">
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <Paperclip size={20} className="text-gray-600" />
-              </button>
-              <div className="flex-1 relative">
-                <textarea
-                  value={inputMessage}
-                  onChange={(e) => setInputMessage(e.target.value)}
-                  onKeyPress={(e) => {
-                    if (e.key === 'Enter' && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendMessage();
-                    }
-                  }}
-                  placeholder="Type a message..."
-                  className="w-full px-4 py-3 bg-gray-100 rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-black"
-                  rows={1}
-                  style={{ maxHeight: '120px' }}
-                />
-                <button className="absolute right-2 bottom-3 p-1 hover:bg-gray-200 rounded">
-                  <Smile size={20} className="text-gray-600" />
-                </button>
+          {/* Quick Replies */}
+          <div className="px-6 py-2">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex gap-2 overflow-x-auto pb-2">
+                {['Track my order', 'Shipping info', 'Return policy', 'Contact support'].map((reply) => (
+                  <button
+                    key={reply}
+                    onClick={() => setInputMessage(reply)}
+                    className="px-3 py-1 bg-surface-elevated border border-border rounded-full text-sm whitespace-nowrap hover:bg-background-hover text-foreground"
+                  >
+                    {reply}
+                  </button>
+                ))}
               </div>
-              <button className="p-2 hover:bg-gray-100 rounded-lg">
-                <Mic size={20} className="text-gray-600" />
-              </button>
-              <button
-                onClick={handleSendMessage}
-                className="p-3 bg-black text-white rounded-lg hover:bg-gray-800"
-              >
-                <Send size={20} />
-              </button>
             </div>
-            <p className="text-xs text-gray-500 mt-2">
-              {bot.name} typically replies instantly • Powered by AI
-            </p>
           </div>
-        </div>
-      </main>
-    </div>
+
+          {/* Input Area */}
+          <div className="bg-surface-elevated border-t border-border p-4">
+            <div className="max-w-4xl mx-auto">
+              <div className="flex items-end gap-2">
+                <button className="p-2 hover:bg-background-hover rounded-lg">
+                  <Paperclip size={20} className="text-foreground-secondary" />
+                </button>
+                <div className="flex-1 relative">
+                  <textarea
+                    value={inputMessage}
+                    onChange={(e) => setInputMessage(e.target.value)}
+                    onKeyPress={(e) => {
+                      if (e.key === 'Enter' && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendMessage();
+                      }
+                    }}
+                    placeholder="Type a message..."
+                    className="w-full px-4 py-3 bg-background-secondary text-foreground rounded-lg resize-none focus:outline-none focus:ring-2 focus:ring-border-focus"
+                    rows={1}
+                    style={{ maxHeight: '120px' }}
+                  />
+                  <button className="absolute right-2 bottom-3 p-1 hover:bg-background-tertiary rounded">
+                    <Smile size={20} className="text-foreground-secondary" />
+                  </button>
+                </div>
+                <button className="p-2 hover:bg-background-hover rounded-lg">
+                  <Mic size={20} className="text-foreground-secondary" />
+                </button>
+                <Button onClick={handleSendMessage}>
+                  <Send size={20} />
+                </Button>
+              </div>
+              <p className="text-xs text-foreground-tertiary mt-2">
+                {bot.name} typically replies instantly • Powered by AI
+              </p>
+            </div>
+          </div>
+        </main>
+      </div>
+    </AuthGuard>
   );
 }

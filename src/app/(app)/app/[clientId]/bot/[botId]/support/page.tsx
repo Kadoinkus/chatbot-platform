@@ -2,10 +2,23 @@
 import { getClientById, getBotById } from '@/lib/dataService';
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
+import AuthGuard from '@/components/AuthGuard';
 import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Headphones, Plus, Search, Filter, AlertCircle, CheckCircle, Clock, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, Bot } from '@/lib/dataService';
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  Button,
+  Card,
+  Input,
+  Select,
+  Textarea,
+  Spinner,
+  EmptyState,
+} from '@/components/ui';
 
 export default function SupportPage({ params }: { params: { clientId: string; botId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
@@ -81,11 +94,31 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
   }, [params.clientId, params.botId]);
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
+        <Page className="flex items-center justify-center">
+          <Spinner size="lg" />
+        </Page>
+      </div>
+    );
   }
-  
+
   if (!client || !bot) {
-    return <div className="p-6">Bot not found</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
+        <Page>
+          <PageContent>
+            <EmptyState
+              icon={<Headphones size={48} />}
+              title="Bot not found"
+              message="The requested bot could not be found."
+            />
+          </PageContent>
+        </Page>
+      </div>
+    );
   }
 
   const getStatusIcon = (status: string) => {
@@ -112,88 +145,99 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
     }
   };
 
+  const statusOptions = [
+    { value: 'all', label: 'All Status' },
+    { value: 'open', label: 'Open' },
+    { value: 'in_progress', label: 'In Progress' },
+    { value: 'resolved', label: 'Resolved' }
+  ];
+
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar clientId={client.id} />
+    <AuthGuard clientId={params.clientId}>
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={client.id} />
 
-      <main className="flex-1 lg:ml-16">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <Link
-            href={`/app/${client.id}`}
-            className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-6 transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Back to bots
-          </Link>
+        <Page>
+          <PageContent>
+            <PageHeader
+              title={`${bot.name} Support`}
+              description="Manage support requests and tickets"
+              backLink={
+                <Link
+                  href={`/app/${client.id}`}
+                  className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
+                >
+                  <ArrowLeft size={16} />
+                  Back to bots
+                </Link>
+              }
+              actions={
+                <Button onClick={() => setShowNewTicket(true)} icon={<Plus size={18} />}>
+                  New Ticket
+                </Button>
+              }
+            />
 
-          {/* Bot Header */}
-          <div className="card p-6 mb-6">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <img
-                  src={bot.image}
-                  alt={bot.name}
-                  className="w-16 h-16 rounded-full bg-background-tertiary"
-                />
-                <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <h1 className="text-2xl font-bold text-foreground">{bot.name}</h1>
-                    <StatusBadge status={bot.status} />
+            {/* Bot Header */}
+            <Card className="mb-6">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <img
+                    src={bot.image}
+                    alt={bot.name}
+                    className="w-16 h-16 rounded-full bg-background-tertiary"
+                  />
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <h1 className="text-2xl font-bold text-foreground">{bot.name}</h1>
+                      <StatusBadge status={bot.status} />
+                    </div>
+                    <p className="text-foreground-secondary mb-1">Manage support requests and tickets</p>
+                    <p className="text-sm text-foreground-tertiary">Client: {client.name}</p>
                   </div>
-                  <p className="text-foreground-secondary mb-1">Manage support requests and tickets</p>
-                  <p className="text-sm text-foreground-tertiary">Client: {client.name}</p>
                 </div>
               </div>
+            </Card>
 
-              <button
-                onClick={() => setShowNewTicket(true)}
-                className="btn-primary px-4 py-2 flex items-center gap-2"
-              >
-                <Plus size={18} />
-                New Ticket
-              </button>
-            </div>
-          </div>
-          
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
-            <div className="card p-4">
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+              <Card padding="sm">
               <div className="flex items-center justify-between mb-2">
                 <span className="text-sm text-foreground-secondary">Open Tickets</span>
                 <AlertCircle size={16} className="text-foreground-tertiary" />
               </div>
               <p className="text-2xl font-bold text-foreground">8</p>
               <p className="text-xs text-foreground-tertiary mt-1">2 high priority</p>
+              </Card>
+
+              <Card padding="sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-foreground-secondary">In Progress</span>
+                  <Clock size={16} className="text-info-500" />
+                </div>
+                <p className="text-2xl font-bold text-foreground">3</p>
+                <p className="text-xs text-foreground-tertiary mt-1">Avg. 2 days</p>
+              </Card>
+
+              <Card padding="sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-foreground-secondary">Resolved</span>
+                  <CheckCircle size={16} className="text-success-500" />
+                </div>
+                <p className="text-2xl font-bold text-foreground">24</p>
+                <p className="text-xs text-foreground-tertiary mt-1">This month</p>
+              </Card>
+
+              <Card padding="sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-foreground-secondary">Avg. Resolution</span>
+                  <Headphones size={16} className="text-foreground-tertiary" />
+                </div>
+                <p className="text-2xl font-bold text-foreground">1.8</p>
+                <p className="text-xs text-foreground-tertiary mt-1">Days</p>
+              </Card>
             </div>
 
-            <div className="card p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-foreground-secondary">In Progress</span>
-                <Clock size={16} className="text-info-500" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">3</p>
-              <p className="text-xs text-foreground-tertiary mt-1">Avg. 2 days</p>
-            </div>
-
-            <div className="card p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-foreground-secondary">Resolved</span>
-                <CheckCircle size={16} className="text-success-500" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">24</p>
-              <p className="text-xs text-foreground-tertiary mt-1">This month</p>
-            </div>
-
-            <div className="card p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-foreground-secondary">Avg. Resolution</span>
-                <Headphones size={16} className="text-foreground-tertiary" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">1.8</p>
-              <p className="text-xs text-foreground-tertiary mt-1">Days</p>
-            </div>
-          </div>
-          
-          <div className="card">
+            <Card padding="none">
             <div className="p-4 border-b border-border">
               <div className="flex flex-col sm:flex-row gap-4">
                 <div className="flex-1 relative">
@@ -205,16 +249,10 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
                   />
                 </div>
                 <div className="flex gap-2">
-                  <button className="btn-secondary px-4 py-2 flex items-center gap-2">
-                    <Filter size={16} />
+                  <Button variant="secondary" icon={<Filter size={16} />}>
                     Filter
-                  </button>
-                  <select className="select">
-                    <option>All Status</option>
-                    <option>Open</option>
-                    <option>In Progress</option>
-                    <option>Resolved</option>
-                  </select>
+                  </Button>
+                  <Select options={statusOptions} />
                 </div>
               </div>
             </div>
@@ -243,16 +281,14 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
                         <span>{ticket.assignee}</span>
                       </div>
                     </div>
-                    <button className="btn-secondary px-3 py-1 text-sm">
-                      View
-                    </button>
+                    <Button variant="secondary" size="sm">View</Button>
                   </div>
                 </div>
               ))}
             </div>
-          </div>
-        </div>
-      </main>
+            </Card>
+          </PageContent>
+        </Page>
       
       {showNewTicket && (
         <div className="fixed inset-0 bg-surface-overlay flex items-center justify-center z-50 p-4">
@@ -327,25 +363,22 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
             </div>
 
             <div className="p-6 border-t border-border flex justify-end gap-3">
-              <button
-                onClick={() => setShowNewTicket(false)}
-                className="btn-secondary px-4 py-2"
-              >
+              <Button variant="secondary" onClick={() => setShowNewTicket(false)}>
                 Cancel
-              </button>
-              <button
+              </Button>
+              <Button
                 onClick={() => {
                   setShowNewTicket(false);
                   setTicketForm({ subject: '', category: 'bug', priority: 'medium', description: '' });
                 }}
-                className="btn-primary px-4 py-2"
               >
                 Submit Ticket
-              </button>
+              </Button>
             </div>
           </div>
         </div>
       )}
-    </div>
+      </div>
+    </AuthGuard>
   );
 }

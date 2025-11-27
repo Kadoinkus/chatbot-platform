@@ -2,9 +2,21 @@
 import { useState } from 'react';
 import { clients } from '@/lib/data';
 import Sidebar from '@/components/Sidebar';
-import { ArrowLeft, Save, Key, Clock, Shield, Bell, AlertTriangle, Database, Webhook, Download, CreditCard } from 'lucide-react';
+import AuthGuard from '@/components/AuthGuard';
+import { ArrowLeft, Save, Key, Clock, Shield, Bell, AlertTriangle, Database, Webhook, Download, CreditCard, Settings as SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 import StatusBadge from '@/components/StatusBadge';
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  Button,
+  Card,
+  Input,
+  Select,
+  Textarea,
+  EmptyState,
+} from '@/components/ui';
 
 export default function BotSettingsPage({ params }: { params: { clientId: string; botId: string } }) {
   const client = clients.find(c => c.id === params.clientId);
@@ -44,9 +56,15 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16 p-6">
-          <p className="text-foreground-secondary">Bot not found</p>
-        </main>
+        <Page>
+          <PageContent>
+            <EmptyState
+              icon={<SettingsIcon size={48} />}
+              title="Bot not found"
+              message="The requested bot could not be found."
+            />
+          </PageContent>
+        </Page>
       </div>
     );
   }
@@ -68,55 +86,56 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
   };
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar clientId={client.id} />
+    <AuthGuard clientId={params.clientId}>
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={client.id} />
 
-      <main className="flex-1 lg:ml-16 min-h-screen">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <div className="mb-6">
-            <Link
-              href={`/app/${client.id}`}
-              className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-4 transition-colors"
-            >
-              <ArrowLeft size={16} />
-              Back to bots
-            </Link>
-          </div>
+        <Page>
+          <PageContent>
+            <PageHeader
+              title={`${bot.name} Settings`}
+              description="Technical configuration and administration"
+              backLink={
+                <Link
+                  href={`/app/${client.id}`}
+                  className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
+                >
+                  <ArrowLeft size={16} />
+                  Back to bots
+                </Link>
+              }
+              actions={hasChanges && (
+                <Button onClick={handleSave} icon={<Save size={18} />}>
+                  Save Changes
+                </Button>
+              )}
+            />
 
-          {/* Bot Header */}
-          <div className="card p-6 mb-6">
-            <div className="flex items-start justify-between">
-              <div className="flex items-center gap-4">
-                <img
-                  src={bot.image}
-                  alt={bot.name}
-                  className="w-16 h-16 rounded-full bg-background-tertiary"
-                />
-                <div>
-                  <div className="flex items-center gap-3 mb-1">
-                    <h1 className="text-2xl font-bold text-foreground">{bot.name}</h1>
-                    <StatusBadge status={bot.status} />
+            {/* Bot Header */}
+            <Card className="mb-6">
+              <div className="flex items-start justify-between">
+                <div className="flex items-center gap-4">
+                  <img
+                    src={bot.image}
+                    alt={bot.name}
+                    className="w-16 h-16 rounded-full bg-background-tertiary"
+                  />
+                  <div>
+                    <div className="flex items-center gap-3 mb-1">
+                      <h1 className="text-2xl font-bold text-foreground">{bot.name}</h1>
+                      <StatusBadge status={bot.status} />
+                    </div>
+                    <p className="text-foreground-secondary mb-1">Technical configuration and administration</p>
+                    <p className="text-sm text-foreground-tertiary">Client: {client.name}</p>
                   </div>
-                  <p className="text-foreground-secondary mb-1">Technical configuration and administration</p>
-                  <p className="text-sm text-foreground-tertiary">Client: {client.name}</p>
                 </div>
               </div>
-              {hasChanges && (
-                <button
-                  onClick={handleSave}
-                  className="btn-primary px-4 py-2"
-                >
-                  <Save size={20} />
-                  Save Changes
-                </button>
-              )}
-            </div>
-          </div>
+            </Card>
 
-          <div className="flex gap-6">
-            {/* Sidebar Navigation */}
-            <div className="w-64">
-              <nav className="card p-2">
+            <div className="flex gap-6">
+              {/* Sidebar Navigation */}
+              <div className="w-64">
+                <Card padding="sm">
                 {tabs.map(tab => {
                   const Icon = tab.icon;
                   return (
@@ -134,13 +153,13 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                     </button>
                   );
                 })}
-              </nav>
-            </div>
+                </Card>
+              </div>
 
-            {/* Settings Content */}
-            <div className="flex-1">
-              {activeTab === 'api' && (
-                <div className="card p-6">
+              {/* Settings Content */}
+              <div className="flex-1">
+                {activeTab === 'api' && (
+                  <Card>
                   <h2 className="text-xl font-semibold text-foreground mb-6">API Configuration</h2>
 
                   <div className="space-y-6">
@@ -155,9 +174,7 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                           readOnly
                           className="flex-1 px-4 py-2 border border-border rounded-lg bg-background-secondary font-mono text-sm text-foreground"
                         />
-                        <button className="btn-secondary px-4 py-2">
-                          Regenerate
-                        </button>
+                        <Button variant="secondary">Regenerate</Button>
                       </div>
                       <p className="text-sm text-foreground-tertiary mt-1">
                         Use this key to authenticate API requests
@@ -207,16 +224,14 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                         value={`<script src="https://api.chatbot.com/widget.js"\n  data-bot-id="${bot.id}"\n  data-client-id="${client.id}">\n</script>`}
                         className="w-full px-4 py-2 border border-border rounded-lg bg-background-secondary font-mono text-sm text-foreground"
                       />
-                      <button className="btn-secondary mt-2 px-4 py-2">
-                        Copy Code
-                      </button>
+                      <Button variant="secondary" className="mt-2">Copy Code</Button>
                     </div>
                   </div>
-                </div>
-              )}
+                  </Card>
+                )}
 
-              {activeTab === 'security' && (
-                <div className="card p-6">
+                {activeTab === 'security' && (
+                  <Card>
                   <h2 className="text-xl font-semibold text-foreground mb-6">Security Settings</h2>
 
                   <div className="space-y-6">
@@ -299,11 +314,11 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                       </p>
                     </div>
                   </div>
-                </div>
-              )}
+                  </Card>
+                )}
 
-              {activeTab === 'availability' && (
-                <div className="card p-6">
+                {activeTab === 'availability' && (
+                  <Card>
                   <h2 className="text-xl font-semibold text-foreground mb-6">Availability Settings</h2>
 
                   <div className="space-y-6">
@@ -409,11 +424,11 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                       </label>
                     </div>
                   </div>
-                </div>
-              )}
+                  </Card>
+                )}
 
-              {activeTab === 'webhooks' && (
-                <div className="card p-6">
+                {activeTab === 'webhooks' && (
+                  <Card>
                   <h2 className="text-xl font-semibold text-foreground mb-6">Webhook Configuration</h2>
 
                   <div className="space-y-6">
@@ -470,11 +485,11 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                       </p>
                     </div>
                   </div>
-                </div>
-              )}
+                  </Card>
+                )}
 
-              {activeTab === 'billing' && (
-                <div className="card p-6">
+                {activeTab === 'billing' && (
+                  <Card>
                   <h2 className="text-xl font-semibold text-foreground mb-6">Billing & Usage</h2>
 
                   <div className="space-y-6">
@@ -508,20 +523,18 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                     </div>
 
                     <div>
-                      <Link
-                        href={`/app/${client.id}/billing`}
-                        className="btn-secondary inline-flex items-center gap-2 px-4 py-2"
-                      >
-                        <CreditCard size={16} />
-                        Manage Billing
+                      <Link href={`/app/${client.id}/billing`}>
+                        <Button variant="secondary" icon={<CreditCard size={16} />}>
+                          Manage Billing
+                        </Button>
                       </Link>
                     </div>
                   </div>
-                </div>
-              )}
+                  </Card>
+                )}
 
-              {activeTab === 'data' && (
-                <div className="card p-6">
+                {activeTab === 'data' && (
+                  <Card>
                   <h2 className="text-xl font-semibold text-foreground mb-6">Data & Export</h2>
 
                   <div className="space-y-6">
@@ -564,11 +577,11 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                       </button>
                     </div>
                   </div>
-                </div>
-              )}
+                  </Card>
+                )}
 
-              {activeTab === 'advanced' && (
-                <div className="card p-6">
+                {activeTab === 'advanced' && (
+                  <Card>
                   <h2 className="text-xl font-semibold text-foreground mb-6">Advanced Settings</h2>
 
                   <div className="space-y-6">
@@ -603,12 +616,13 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                       />
                     </div>
                   </div>
-                </div>
-              )}
+                  </Card>
+                )}
+              </div>
             </div>
-          </div>
-        </div>
-      </main>
-    </div>
+          </PageContent>
+        </Page>
+      </div>
+    </AuthGuard>
   );
 }

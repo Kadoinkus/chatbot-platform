@@ -1,6 +1,6 @@
 'use client';
 import { useState } from 'react';
-import { Home, BarChart3, Bot, Settings, HelpCircle, LogOut, Users, MessageSquare, Menu, X, Store, CreditCard, ShoppingCart, Package, Sun, Moon } from 'lucide-react';
+import { Home, BarChart3, Bot, Settings, HelpCircle, LogOut, Users, MessageSquare, Menu, X, Store, CreditCard, ShoppingCart, Package, Sun, Moon, User, UserCog } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
@@ -22,6 +22,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
     { icon: Store, label: 'Marketplace', href: clientId ? `/app/${clientId}/marketplace` : '/app' },
     { icon: MessageSquare, label: 'Conversations', href: clientId ? `/app/${clientId}/conversations` : '/app' },
     { icon: Users, label: 'Users', href: clientId ? `/app/${clientId}/users` : '/app' },
+    { icon: UserCog, label: 'Team', href: clientId ? `/app/${clientId}/team` : '/app' },
     { icon: BarChart3, label: 'Analytics', href: clientId ? `/app/${clientId}/analytics` : '/app' },
     { icon: Package, label: 'Plans', href: clientId ? `/app/${clientId}/plans` : '/app' },
     { icon: CreditCard, label: 'Billing', href: clientId ? `/app/${clientId}/billing` : '/app' },
@@ -29,6 +30,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
   ];
 
   const bottomItems = [
+    { icon: User, label: 'Profile', href: '/profile' },
     { icon: HelpCircle, label: 'Help', href: '/help' },
     { icon: LogOut, label: 'Logout', href: '/login' },
   ];

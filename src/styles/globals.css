@@ -86,7 +86,7 @@
   color-scheme: dark;
 
   /* Background Colors */
-  --bg-primary: #111827;
+  --bg-primary: #0a0f1a;
   --bg-secondary: #1F2937;
   --bg-tertiary: #374151;
   --bg-inverse: #FFFFFF;
@@ -112,7 +112,7 @@
   --interactive-secondary-hover: #374151;
 
   /* Surface Colors */
-  --surface-elevated: #111827;  /* Same as background for flat design */
+  --surface-elevated: #111827;  /* Slightly lighter than background for subtle contrast */
   --surface-overlay: rgba(0, 0, 0, 0.7);
 
   /* Sidebar Colors (dark with subtle blue hue) */

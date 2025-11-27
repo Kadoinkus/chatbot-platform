@@ -251,8 +251,8 @@ export async function loadSessions(): Promise<Session[]> {
 
 export async function loadBotSessions(): Promise<BotSession[]> {
   if (botSessionsData) return botSessionsData;
-  
-  const response = await fetch('/data/sessions.json');
+
+  const response = await fetch('/data/bot_sessions.json');
   botSessionsData = await response.json();
   return botSessionsData!;
 }

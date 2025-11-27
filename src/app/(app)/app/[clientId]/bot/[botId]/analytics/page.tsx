@@ -104,11 +104,15 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
         if (useCustomRange && customDateRange.start && customDateRange.end) {
           startDate = new Date(customDateRange.start);
+          startDate.setHours(0, 0, 0, 0);
           endDate = new Date(customDateRange.end);
+          endDate.setHours(23, 59, 59, 999);
         } else {
           endDate = new Date();
+          endDate.setHours(23, 59, 59, 999);
           startDate = new Date();
           startDate.setDate(startDate.getDate() - dateRange);
+          startDate.setHours(0, 0, 0, 0);
         }
 
         const [clientData, botData, sessionData] = await Promise.all([

@@ -2,11 +2,11 @@
 import { getClientById, getBotById, getBotSessionsByBotId } from '@/lib/dataService';
 import { useState, useEffect, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
-import { 
-  ArrowLeft, 
-  Users, 
-  Clock, 
-  TrendingUp, 
+import {
+  ArrowLeft,
+  Users,
+  Clock,
+  TrendingUp,
   DollarSign,
   Calendar,
   Filter,
@@ -22,7 +22,8 @@ import {
   ThumbsUp,
   AlertTriangle,
   CheckCircle,
-  Percent
+  Percent,
+  Bot as BotIcon
 } from 'lucide-react';
 import Link from 'next/link';
 import { getClientBrandColor } from '@/lib/brandColors';
@@ -30,6 +31,7 @@ import AuthGuard from '@/components/AuthGuard';
 import type { Client, Bot, BotSession } from '@/lib/dataService';
 import type { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
+import { Page, PageContent, PageHeader, Card, Button, Input, Spinner, EmptyState } from '@/components/ui';
 
 // Dynamically import ApexCharts to avoid SSR issues
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
@@ -642,9 +644,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   if (loading) {
     return (
       <div className="flex min-h-screen bg-background">
-        <main className="flex-1 lg:ml-16 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
-        </main>
+        <Sidebar clientId={params.clientId} />
+        <Page className="flex items-center justify-center">
+          <Spinner size="lg" />
+        </Page>
       </div>
     );
   }
@@ -652,9 +655,16 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   if (!client || !bot) {
     return (
       <div className="flex min-h-screen bg-background">
-        <main className="flex-1 lg:ml-16 flex items-center justify-center">
-          <p className="text-foreground-secondary">Bot not found</p>
-        </main>
+        <Sidebar clientId={params.clientId} />
+        <Page>
+          <PageContent>
+            <EmptyState
+              icon={<BotIcon size={48} />}
+              title="Bot not found"
+              message="The requested bot could not be found."
+            />
+          </PageContent>
+        </Page>
       </div>
     );
   }
@@ -664,18 +674,24 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     <div className="flex min-h-screen bg-background">
       <Sidebar clientId={client.id} />
 
-      <main className="flex-1 lg:ml-16">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <Link
-            href={`/app/${client.id}`}
-            className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-6"
-          >
-            <ArrowLeft size={16} />
-            Back to bots
-          </Link>
-          
+      <Page>
+        <PageContent>
+          <PageHeader
+            title={`${bot.name} Analytics`}
+            description={bot.description}
+            backLink={
+              <Link
+                href={`/app/${client.id}`}
+                className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
+              >
+                <ArrowLeft size={16} />
+                Back to bots
+              </Link>
+            }
+          />
+
           {/* Header */}
-          <div className="card p-6 mb-6">
+          <Card className="mb-6">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-4">
                 <img
@@ -691,18 +707,18 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </div>
 
               <div className="flex gap-2">
-                <button
+                <Button
+                  variant="secondary"
                   onClick={() => setShowFilters(!showFilters)}
-                  className="btn-secondary px-4 py-2"
                 >
                   <Filter size={16} />
                   Filters
                   <ChevronDown size={16} className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`} />
-                </button>
-                <button className="btn-secondary px-4 py-2">
+                </Button>
+                <Button variant="secondary">
                   <Download size={16} />
                   Export
-                </button>
+                </Button>
               </div>
             </div>
 
@@ -791,27 +807,21 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <div className="bg-background-secondary rounded-lg p-4 border border-border mt-4">
                 <h4 className="font-medium text-foreground mb-3">Select Custom Date Range</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm text-foreground-secondary mb-1">Start Date</label>
-                    <input
-                      type="date"
-                      value={customDateRange.start}
-                      onChange={(e) => setCustomDateRange(prev => ({...prev, start: e.target.value}))}
-                      className="input"
-                      max={customDateRange.end || new Date().toISOString().split('T')[0]}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm text-foreground-secondary mb-1">End Date</label>
-                    <input
-                      type="date"
-                      value={customDateRange.end}
-                      onChange={(e) => setCustomDateRange(prev => ({...prev, end: e.target.value}))}
-                      className="input"
-                      min={customDateRange.start}
-                      max={new Date().toISOString().split('T')[0]}
-                    />
-                  </div>
+                  <Input
+                    label="Start Date"
+                    type="date"
+                    value={customDateRange.start}
+                    onChange={(e) => setCustomDateRange(prev => ({...prev, start: e.target.value}))}
+                    max={customDateRange.end || new Date().toISOString().split('T')[0]}
+                  />
+                  <Input
+                    label="End Date"
+                    type="date"
+                    value={customDateRange.end}
+                    onChange={(e) => setCustomDateRange(prev => ({...prev, end: e.target.value}))}
+                    min={customDateRange.start}
+                    max={new Date().toISOString().split('T')[0]}
+                  />
                 </div>
                 <div className="flex justify-between items-center mt-4">
                   <div className="flex gap-2">
@@ -851,16 +861,18 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     </button>
                   </div>
                   <div className="flex gap-2">
-                    <button
+                    <Button
+                      variant="secondary"
+                      size="sm"
                       onClick={() => {
                         setShowDatePicker(false);
                         setUseCustomRange(false);
                       }}
-                      className="btn-secondary px-3 py-1 text-sm"
                     >
                       Cancel
-                    </button>
-                    <button
+                    </Button>
+                    <Button
+                      size="sm"
                       onClick={() => {
                         if (customDateRange.start && customDateRange.end) {
                           setUseCustomRange(true);
@@ -868,19 +880,17 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                         }
                       }}
                       disabled={!customDateRange.start || !customDateRange.end}
-                      className="px-3 py-1 text-sm rounded text-white disabled:bg-foreground-tertiary disabled:cursor-not-allowed"
-                      style={{ backgroundColor: customDateRange.start && customDateRange.end ? brandColor : undefined }}
                     >
                       Apply Range
-                    </button>
+                    </Button>
                   </div>
                 </div>
               </div>
             )}
-          </div>
+          </Card>
 
           {/* Tab Navigation */}
-          <div className="card mb-6">
+          <Card className="mb-6 p-0">
             <div className="border-b border-border">
               <nav className="flex space-x-8 px-6" aria-label="Tabs">
                 {tabs.map((tab) => {
@@ -903,8 +913,8 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 })}
               </nav>
             </div>
-          </div>
-          
+          </Card>
+
           {/* Tab Content */}
           {activeTab === 'overview' && renderOverviewTab()}
           {activeTab === 'performance' && renderPerformanceTab()}
@@ -912,8 +922,8 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           {activeTab === 'business-impact' && renderBusinessImpactTab()}
           {activeTab === 'operations' && renderOperationsTab()}
           {activeTab === 'reports' && renderReportsTab()}
-        </div>
-      </main>
+        </PageContent>
+      </Page>
     </div>
     </AuthGuard>
   );
@@ -924,51 +934,51 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
       <>
         {/* KPI Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-            <div className="card p-4">
+            <Card className="p-4">
               <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                 <Users size={16} />
                 <span className="text-sm">Sessions</span>
               </div>
               <p className="text-2xl font-bold text-foreground">{kpis.totalSessions}</p>
-            </div>
+            </Card>
 
-            <div className="card p-4">
+            <Card className="p-4">
               <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                 <Clock size={16} />
                 <span className="text-sm">Avg Duration</span>
               </div>
               <p className="text-2xl font-bold text-foreground">{formatDuration(kpis.avgDuration)}</p>
-            </div>
+            </Card>
 
-            <div className="card p-4">
+            <Card className="p-4">
               <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                 <Clock size={16} />
                 <span className="text-sm">Avg Response Time</span>
               </div>
               <p className="text-2xl font-bold text-foreground">{kpis.avgResponseTime.toFixed(1)}s</p>
-            </div>
+            </Card>
 
-            <div className="card p-4">
+            <Card className="p-4">
               <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                 <TrendingUp size={16} />
                 <span className="text-sm">Escalation Rate</span>
               </div>
               <p className="text-2xl font-bold text-foreground">{kpis.escalationRate.toFixed(1)}%</p>
-            </div>
+            </Card>
 
-            <div className="card p-4">
+            <Card className="p-4">
               <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                 <DollarSign size={16} />
                 <span className="text-sm">Avg Session Cost</span>
               </div>
               <p className="text-2xl font-bold text-foreground">€{kpis.avgCost.toFixed(2)}</p>
-            </div>
+            </Card>
           </div>
 
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* Sessions over time */}
-            <div className="card p-6">
+            <Card>
               <h2 className="font-semibold text-foreground mb-4">Sessions Over Time</h2>
               <Chart
                 options={chartData.sessionsOverTime.options}
@@ -976,10 +986,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 type="area"
                 height={280}
               />
-            </div>
+            </Card>
 
             {/* Resolution vs Escalation */}
-            <div className="card p-6">
+            <Card>
               <h2 className="font-semibold text-foreground mb-4">Resolution vs Escalation</h2>
               <Chart
                 options={chartData.resolutionVsEscalation.options}
@@ -987,10 +997,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 type="bar"
                 height={280}
               />
-            </div>
+            </Card>
 
             {/* Sentiment Distribution */}
-            <div className="card p-6">
+            <Card>
               <h2 className="font-semibold text-foreground mb-4">Sentiment Distribution</h2>
               <Chart
                 options={chartData.sentimentDistribution.options}
@@ -998,10 +1008,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 type="donut"
                 height={280}
               />
-            </div>
+            </Card>
 
             {/* Sessions by Country */}
-            <div className="card p-6">
+            <Card>
               <h2 className="font-semibold text-foreground mb-4">Sessions by Country</h2>
               <Chart
                 options={chartData.sessionsByCountry.options}
@@ -1009,11 +1019,11 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 type="bar"
                 height={280}
               />
-            </div>
+            </Card>
           </div>
 
           {/* Sessions by Category */}
-          <div className="card p-6 mb-6">
+          <Card className="mb-6">
             <h2 className="font-semibold text-foreground mb-4">Sessions by Category</h2>
             <Chart
               options={chartData.sessionsByCategory.options}
@@ -1021,10 +1031,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               type="bar"
               height={300}
             />
-          </div>
+          </Card>
 
           {/* Top 5 Questions */}
-          <div className="card p-6">
+          <Card>
             <h2 className="font-semibold text-foreground mb-4">Top 5 Questions</h2>
             <Chart
               options={chartData.topQuestions.options}
@@ -1032,7 +1042,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               type="bar"
               height={240}
             />
-          </div>
+          </Card>
         </>
     );
   }
@@ -1042,46 +1052,46 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
       <div className="space-y-6">
         {/* Performance KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="card p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <CheckCircle size={16} />
               <span className="text-sm">Resolution Rate</span>
             </div>
             <p className="text-2xl font-bold text-foreground">{kpis.resolutionRate.toFixed(1)}%</p>
             <p className="text-sm text-success-600 dark:text-success-500 mt-1">+2.3% vs last period</p>
-          </div>
+          </Card>
 
-          <div className="card p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <ThumbsUp size={16} />
               <span className="text-sm">CSAT Score</span>
             </div>
             <p className="text-2xl font-bold text-foreground">{kpis.csatScore.toFixed(1)}%</p>
             <p className="text-sm text-success-600 dark:text-success-500 mt-1">+1.5% vs last period</p>
-          </div>
+          </Card>
 
-          <div className="card p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Target size={16} />
               <span className="text-sm">Intent Accuracy</span>
             </div>
             <p className="text-2xl font-bold text-foreground">{kpis.intentAccuracy.toFixed(1)}%</p>
             <p className="text-sm text-warning-600 dark:text-warning-500 mt-1">-0.5% vs last period</p>
-          </div>
+          </Card>
 
-          <div className="card p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Zap size={16} />
               <span className="text-sm">FCR Rate</span>
             </div>
             <p className="text-2xl font-bold text-foreground">{kpis.firstContactResolution.toFixed(1)}%</p>
             <p className="text-sm text-success-600 dark:text-success-500 mt-1">+3.1% vs last period</p>
-          </div>
+          </Card>
         </div>
 
         {/* Performance Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card p-6">
+          <Card>
             <h2 className="font-semibold text-foreground mb-4">Response Time Trends</h2>
             <Chart
               options={getResponseTimeTrendsChart()}
@@ -1089,9 +1099,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               type="line"
               height={280}
             />
-          </div>
+          </Card>
 
-          <div className="card p-6">
+          <Card>
             <h2 className="font-semibold text-foreground mb-4">Intent Confidence Distribution</h2>
             <Chart
               options={getIntentConfidenceChart()}
@@ -1099,7 +1109,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               type="bar"
               height={280}
             />
-          </div>
+          </Card>
         </div>
       </div>
     );
@@ -1110,42 +1120,42 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
       <div className="space-y-6">
         {/* User Journey KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="card p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Percent size={16} />
               <span className="text-sm">Completion Rate</span>
             </div>
             <p className="text-2xl font-bold text-foreground">{kpis.completionRate.toFixed(1)}%</p>
-          </div>
+          </Card>
 
-          <div className="card p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Users size={16} />
               <span className="text-sm">Return Users</span>
             </div>
             <p className="text-2xl font-bold text-foreground">{kpis.userReturnRate.toFixed(1)}%</p>
-          </div>
+          </Card>
 
-          <div className="card p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Activity size={16} />
               <span className="text-sm">Peak Usage</span>
             </div>
             <p className="text-2xl font-bold text-foreground">{kpis.peakUtilization}</p>
             <p className="text-sm text-foreground-tertiary mt-1">sessions/hour</p>
-          </div>
+          </Card>
 
-          <div className="card p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Clock size={16} />
               <span className="text-sm">Avg Duration</span>
             </div>
             <p className="text-2xl font-bold text-foreground">{formatDuration(kpis.avgDuration)}</p>
-          </div>
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card p-6">
+          <Card>
             <h2 className="font-semibold text-foreground mb-4">User Journey Funnel</h2>
             <Chart
               options={getUserJourneyFunnelChart()}
@@ -1153,9 +1163,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               type="bar"
               height={280}
             />
-          </div>
+          </Card>
 
-          <div className="card p-6">
+          <Card>
             <h2 className="font-semibold text-foreground mb-4">Channel Performance</h2>
             <Chart
               options={getChannelPerformanceChart()}
@@ -1163,7 +1173,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               type="donut"
               height={280}
             />
-          </div>
+          </Card>
         </div>
       </div>
     );
@@ -1174,45 +1184,45 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
       <div className="space-y-6">
         {/* Business Impact KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="card p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <DollarSign size={16} />
               <span className="text-sm">Cost Savings</span>
             </div>
             <p className="text-2xl font-bold text-foreground">€{kpis.costSavings.toFixed(2)}</p>
             <p className="text-sm text-foreground-tertiary mt-1">per session vs human</p>
-          </div>
+          </Card>
 
-          <div className="card p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <TrendingUp size={16} />
               <span className="text-sm">ROI</span>
             </div>
             <p className="text-2xl font-bold text-foreground">342%</p>
             <p className="text-sm text-success-600 dark:text-success-500 mt-1">vs human agents</p>
-          </div>
+          </Card>
 
-          <div className="card p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Clock size={16} />
               <span className="text-sm">Time Saved</span>
             </div>
             <p className="text-2xl font-bold text-foreground">847h</p>
             <p className="text-sm text-foreground-tertiary mt-1">this period</p>
-          </div>
+          </Card>
 
-          <div className="card p-4">
+          <Card className="p-4">
             <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Users size={16} />
               <span className="text-sm">FTE Equivalent</span>
             </div>
             <p className="text-2xl font-bold text-foreground">2.1</p>
             <p className="text-sm text-foreground-tertiary mt-1">full-time agents</p>
-          </div>
+          </Card>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card p-6">
+          <Card>
             <h2 className="font-semibold text-foreground mb-4">Cost Savings Analysis</h2>
             <Chart
               options={getCostSavingsChart()}
@@ -1220,9 +1230,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               type="area"
               height={280}
             />
-          </div>
+          </Card>
 
-          <div className="card p-6">
+          <Card>
             <h2 className="font-semibold text-foreground mb-4">Automation vs Human Costs</h2>
             <Chart
               options={getAutomationVsHumanChart()}
@@ -1230,7 +1240,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               type="bar"
               height={280}
             />
-          </div>
+          </Card>
         </div>
       </div>
     );
@@ -1239,7 +1249,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   function renderOperationsTab() {
     return (
       <div className="space-y-6">
-        <div className="card p-6">
+        <Card>
           <h2 className="font-semibold text-foreground mb-4">System Health</h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="text-center p-4">
@@ -1255,9 +1265,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <div className="text-sm text-foreground-secondary">Error Rate</div>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="card p-6">
+        <Card>
           <h2 className="font-semibold text-foreground mb-4">Training Recommendations</h2>
           <div className="space-y-3">
             <div className="p-3 bg-warning-50 dark:bg-warning-700/30 rounded-lg border border-warning-200 dark:border-warning-700">
@@ -1276,7 +1286,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <p className="text-sm text-info-700 dark:text-info-400 mt-1">Review and improve responses for "Personal Questions" category</p>
             </div>
           </div>
-        </div>
+        </Card>
       </div>
     );
   }
@@ -1284,7 +1294,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   function renderReportsTab() {
     return (
       <div className="space-y-6">
-        <div className="card p-6">
+        <Card>
           <h2 className="font-semibold text-foreground mb-4">Scheduled Reports</h2>
           <div className="space-y-4">
             <div className="flex items-center justify-between p-4 border border-border rounded-lg">
@@ -1307,9 +1317,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </button>
             </div>
           </div>
-        </div>
+        </Card>
 
-        <div className="card p-6">
+        <Card>
           <h2 className="font-semibold text-foreground mb-4">Export Data</h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <button className="p-4 border border-border rounded-lg hover:bg-background-hover text-left transition-colors">
@@ -1327,7 +1337,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <div className="text-sm text-foreground-secondary">ROI and cost analysis report</div>
             </button>
           </div>
-        </div>
+        </Card>
       </div>
     );
   }

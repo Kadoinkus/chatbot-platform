@@ -4,6 +4,7 @@ import { signIn } from '@/lib/auth';
 import { clients } from '@/lib/data';
 import { useTheme } from '@/contexts/ThemeContext';
 import { Sun, Moon } from 'lucide-react';
+import { Card, Button, Input, Select, Alert } from '@/components/ui';
 
 export default function LoginPage() {
   const [email, setEmail] = useState(clients[0].login.email);
@@ -32,7 +33,7 @@ export default function LoginPage() {
 
       <div className="w-full max-w-md">
         {/* Toggle Tabs */}
-        <div className="card overflow-hidden">
+        <Card className="overflow-hidden p-0">
           <div className="flex border-b border-border">
             <button
               onClick={() => setIsLogin(true)}
@@ -71,61 +72,39 @@ export default function LoginPage() {
 
           <div className="space-y-6">
             {isLogin ? (
-              <div>
-                <label className="block text-sm font-semibold text-foreground-secondary mb-2">
-                  Select Demo Account
-                </label>
-                <select
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="select"
-                >
-                  {clients.map(c => (
-                    <option key={c.id} value={c.login.email}>
-                      {c.name} — {c.login.email}
-                    </option>
-                  ))}
-                </select>
-              </div>
+              <Select
+                label="Select Demo Account"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                options={clients.map(c => ({
+                  value: c.login.email,
+                  label: `${c.name} — ${c.login.email}`
+                }))}
+              />
             ) : (
-              <div>
-                <label className="block text-sm font-semibold text-foreground-secondary mb-2">
-                  Email Address
-                </label>
-                <input
-                  type="email"
-                  value={email}
-                  onChange={e => setEmail(e.target.value)}
-                  className="input"
-                  placeholder="Enter your email"
-                />
-              </div>
+              <Input
+                label="Email Address"
+                type="email"
+                value={email}
+                onChange={e => setEmail(e.target.value)}
+                placeholder="Enter your email"
+              />
             )}
 
-            <div>
-              <label className="block text-sm font-semibold text-foreground-secondary mb-2">
-                Password
-              </label>
-              <input
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                type="password"
-                className="input"
-                placeholder="Enter demo password"
-              />
-            </div>
+            <Input
+              label="Password"
+              type="password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              placeholder="Enter demo password"
+            />
 
-            <button
-              type="submit"
-              className="btn-primary w-full py-3"
-            >
+            <Button type="submit" className="w-full py-3">
               {isLogin ? 'Log in to Dashboard' : 'Create Account'}
-            </button>
+            </Button>
 
             {err && (
-              <div className="p-3 bg-error-50 dark:bg-error-700/20 border border-error-200 dark:border-error-700 rounded-xl">
-                <p className="text-sm text-error-600 dark:text-error-500">{err}</p>
-              </div>
+              <Alert variant="error">{err}</Alert>
             )}
           </div>
 
@@ -151,7 +130,7 @@ export default function LoginPage() {
             </svg>
           </div>
         </form>
-        </div>
+        </Card>
       </div>
     </div>
   );

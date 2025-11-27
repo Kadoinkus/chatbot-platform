@@ -1,12 +1,13 @@
 'use client';
 import { useState } from 'react';
-import { 
-  HelpCircle, Search, Book, MessageCircle, Bot, Settings, 
+import {
+  HelpCircle, Search, Book, MessageCircle, Bot, Settings,
   CreditCard, Store, BarChart3, Users, ChevronDown, ChevronRight,
   ExternalLink, Mail, Phone, Clock, CheckCircle, ArrowLeft
 } from 'lucide-react';
 import Link from 'next/link';
 import Sidebar from '@/components/Sidebar';
+import { Page, PageContent, Card, Input, EmptyState } from '@/components/ui';
 
 type HelpCategory = 'getting-started' | 'bots' | 'marketplace' | 'billing' | 'integrations' | 'troubleshooting';
 
@@ -124,8 +125,8 @@ export default function HelpPage() {
     <div className="flex min-h-screen bg-background">
       <Sidebar />
 
-      <main className="flex-1 lg:ml-16 min-h-screen">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
+      <Page>
+        <PageContent>
         {/* Header */}
         <div className="mb-8">
           <Link
@@ -141,14 +142,13 @@ export default function HelpPage() {
             <p className="text-xl text-foreground-secondary mb-8">Get answers to your questions and learn how to make the most of our platform</p>
 
             {/* Search */}
-            <div className="max-w-2xl mx-auto relative">
-              <Search size={20} className="absolute left-4 top-1/2 transform -translate-y-1/2 text-foreground-tertiary" />
-              <input
-                type="text"
+            <div className="max-w-2xl mx-auto">
+              <Input
+                icon={<Search size={20} />}
                 placeholder="Search help articles..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="input w-full pl-12 py-4 text-lg"
+                className="py-4 text-lg"
               />
             </div>
           </div>
@@ -157,7 +157,7 @@ export default function HelpPage() {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-8">
           {/* Categories Sidebar */}
           <div className="lg:col-span-1">
-            <div className="card p-6 sticky top-6">
+            <Card className="sticky top-6">
               <h3 className="font-semibold text-foreground mb-4">Categories</h3>
               <nav className="space-y-2">
                 {helpCategories.map((category) => {
@@ -178,12 +178,12 @@ export default function HelpPage() {
                   );
                 })}
               </nav>
-            </div>
+            </Card>
           </div>
 
           {/* Main Content */}
           <div className="lg:col-span-3">
-            <div className="card">
+            <Card className="p-0">
               {/* Category Header */}
               <div className="border-b border-border p-6">
                 <div className="flex items-center gap-3">
@@ -201,13 +201,11 @@ export default function HelpPage() {
               {/* FAQ Content */}
               <div className="p-6">
                 {filteredFaqs.length === 0 ? (
-                  <div className="empty-state">
-                    <div className="empty-state-icon">
-                      <HelpCircle size={24} className="text-foreground-tertiary" />
-                    </div>
-                    <h3 className="empty-state-title">No results found</h3>
-                    <p className="empty-state-message">Try adjusting your search or browse different categories</p>
-                  </div>
+                  <EmptyState
+                    icon={<HelpCircle size={48} />}
+                    title="No results found"
+                    message="Try adjusting your search or browse different categories"
+                  />
                 ) : (
                   <div className="space-y-4">
                     {filteredFaqs.map((faq, index) => (
@@ -233,11 +231,11 @@ export default function HelpPage() {
                   </div>
                 )}
               </div>
-            </div>
+            </Card>
 
             {/* Quick Actions */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="card p-6">
+              <Card>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-info-100 dark:bg-info-700/30 rounded-full flex items-center justify-center">
                     <MessageCircle size={24} className="text-info-600 dark:text-info-500" />
@@ -267,9 +265,9 @@ export default function HelpPage() {
                     Mon-Fri 9AM-6PM EST
                   </div>
                 </div>
-              </div>
+              </Card>
 
-              <div className="card p-6">
+              <Card>
                 <div className="flex items-center gap-3 mb-4">
                   <div className="w-12 h-12 bg-success-100 dark:bg-success-700/30 rounded-full flex items-center justify-center">
                     <Book size={24} className="text-success-600 dark:text-success-500" />
@@ -302,11 +300,11 @@ export default function HelpPage() {
                     <ExternalLink size={16} />
                   </a>
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Status */}
-            <div className="card p-6 mt-8">
+            <Card className="mt-8">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-3 h-3 bg-success-500 rounded-full"></div>
                 <h3 className="font-semibold text-foreground">System Status</h3>
@@ -341,11 +339,11 @@ export default function HelpPage() {
                 View detailed status
                 <ExternalLink size={14} />
               </a>
-            </div>
+            </Card>
           </div>
         </div>
-        </div>
-      </main>
+        </PageContent>
+      </Page>
     </div>
   );
 }

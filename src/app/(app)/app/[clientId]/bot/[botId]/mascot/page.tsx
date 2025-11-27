@@ -4,11 +4,12 @@ import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
 import AuthGuard from '@/components/AuthGuard';
 import StatusBadge from '@/components/StatusBadge';
-import { ArrowLeft, Palette, Sparkles, Image, Type, Monitor, Smartphone, User, Eye, Smile, ShirtIcon as Shirt, HardHat, ShoppingCart, Lock, Crown, Zap, Package } from 'lucide-react';
+import { ArrowLeft, Palette, Sparkles, Image, Type, Monitor, Smartphone, User, Eye, Smile, ShirtIcon as Shirt, HardHat, ShoppingCart, Lock, Crown, Zap, Package, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, Bot } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { useCart } from '@/contexts/CartContext';
+import { Page, PageContent, PageHeader, Card, Button, Input, Select, Modal, Spinner, EmptyState } from '@/components/ui';
 
 export default function MascotStudioPage({ params }: { params: { clientId: string; botId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
@@ -65,9 +66,9 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
-        </main>
+        <Page className="flex items-center justify-center">
+          <Spinner size="lg" />
+        </Page>
       </div>
     );
   }
@@ -76,9 +77,15 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16 p-6">
-          <p className="text-foreground-secondary">Bot not found</p>
-        </main>
+        <Page>
+          <PageContent>
+            <EmptyState
+              icon={<BotIcon size={48} />}
+              title="Bot not found"
+              message="The requested bot could not be found."
+            />
+          </PageContent>
+        </Page>
       </div>
     );
   }
@@ -252,18 +259,24 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
     <div className="flex min-h-screen bg-background">
       <Sidebar clientId={client.id} />
 
-      <main className="flex-1 lg:ml-16 min-h-screen">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <Link
-            href={`/app/${client.id}`}
-            className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-6 transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Back to bots
-          </Link>
+      <Page>
+        <PageContent>
+          <PageHeader
+            title={bot.name}
+            description="Customize appearance and chat interface"
+            backLink={
+              <Link
+                href={`/app/${client.id}`}
+                className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
+              >
+                <ArrowLeft size={16} />
+                Back to bots
+              </Link>
+            }
+          />
 
           {/* Bot Header */}
-          <div className="card p-6 mb-6">
+          <Card className="mb-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <img
@@ -283,19 +296,19 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
               </div>
 
               <div className="flex gap-3">
-                <button className="btn-secondary px-4 py-2">
+                <Button variant="secondary">
                   Preview
-                </button>
-                <button className="btn-primary px-4 py-2">
+                </Button>
+                <Button>
                   Save Changes
-                </button>
+                </Button>
               </div>
             </div>
-          </div>
+          </Card>
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <div className="card">
+              <Card className="p-0">
                 <div className="border-b border-border">
                   <div className="flex gap-6 p-6">
                     <button
@@ -551,18 +564,19 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                     Get {studioPacks[showUpgradePrompt as keyof typeof studioPacks].name} for ${studioPacks[showUpgradePrompt as keyof typeof studioPacks].price} and unlock premium {selectedSubCategory} styles.
                                   </p>
                                   <div className="flex gap-2">
-                                    <button
+                                    <Button
+                                      size="sm"
                                       onClick={() => handlePurchaseStudioPack(showUpgradePrompt)}
-                                      className="btn-primary px-3 py-1.5 text-sm"
                                     >
                                       Add to Cart - ${studioPacks[showUpgradePrompt as keyof typeof studioPacks].price}
-                                    </button>
-                                    <button
+                                    </Button>
+                                    <Button
+                                      variant="ghost"
+                                      size="sm"
                                       onClick={() => setShowUpgradePrompt('')}
-                                      className="px-3 py-1.5 border border-info-300 dark:border-info-600 text-info-700 dark:text-info-400 rounded text-sm font-medium hover:bg-info-200 dark:hover:bg-info-600/30"
                                     >
                                       Maybe Later
-                                    </button>
+                                    </Button>
                                   </div>
                                 </div>
                               </div>
@@ -590,10 +604,9 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                 className="h-10 w-16 border border-border rounded cursor-pointer"
                                 onChange={(e) => handleSettingChange(selectedSubCategory, 'color', e.target.value)}
                               />
-                              <input
-                                type="text"
+                              <Input
                                 placeholder="#000000"
-                                className="input flex-1 text-sm"
+                                className="flex-1 text-sm"
                               />
                             </div>
                           </div>
@@ -646,92 +659,81 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                       </div>
                       
                       {/* Full Studio Pack Selector Modal */}
-                      {showPackSelector && (
-                        <div className="fixed inset-0 bg-surface-overlay z-50 flex items-center justify-center p-4">
-                          <div className="bg-surface-elevated rounded-xl max-w-3xl w-full max-h-[80vh] overflow-auto border border-border">
-                            <div className="p-6 border-b border-border">
-                              <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold text-foreground">Choose Style Pack</h3>
-                                <button
-                                  onClick={() => setShowPackSelector(false)}
-                                  className="text-foreground-tertiary hover:text-foreground"
-                                >
-                                  ×
-                                </button>
-                              </div>
-                              <p className="text-sm text-foreground-secondary mt-1">Style packs provide themed assets for all customization categories</p>
-                            </div>
-                            <div className="p-6">
-                              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                                {Object.entries(studioPacks).map(([key, pack]) => {
-                                  const isOwned = ownedStudioPacks.includes(key);
-                                  const isSelected = selectedSubTemplate === key;
-                                  return (
-                                    <div
-                                      key={key}
-                                      className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                        isSelected
-                                          ? 'border-interactive bg-background-secondary'
-                                          : 'border-border hover:border-border-secondary'
-                                      } ${!isOwned && 'opacity-75'}`}
-                                      onClick={() => {
-                                        if (isOwned) {
-                                          setSelectedSubTemplate(key);
-                                          setShowPackSelector(false);
-                                        }
-                                      }}
-                                    >
-                                      <div className="flex items-start justify-between">
-                                        <div className="flex items-center gap-3">
-                                          <span className="text-2xl">{pack.icon}</span>
-                                          <div>
-                                            <h4 className="font-medium text-foreground flex items-center gap-2">
-                                              {pack.name}
-                                              {!isOwned && <Lock size={14} className="text-foreground-tertiary" />}
-                                            </h4>
-                                            <p className="text-sm text-foreground-secondary">{pack.description}</p>
-                                            <p className="text-xs text-foreground-tertiary mt-1">
-                                              {Object.values(pack.assets).reduce((total, category) =>
-                                                total + Object.values(category).reduce((catTotal, subCat) =>
-                                                  catTotal + subCat.length, 0), 0
-                                              )} total assets
-                                            </p>
-                                          </div>
-                                        </div>
-                                        <div className="text-right">
-                                          {pack.price === 0 ? (
-                                            <span className="px-2 py-1 bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500 rounded-full text-xs font-medium">
-                                              INCLUDED
-                                            </span>
-                                          ) : (
-                                            <div>
-                                              <p className="font-semibold text-foreground">${pack.price}</p>
-                                              {!isOwned && (
-                                                <button
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    handlePurchaseStudioPack(key);
-                                                  }}
-                                                  className="btn-primary px-3 py-1 text-xs mt-1 w-full"
-                                                >
-                                                  Add to Cart
-                                                </button>
-                                              )}
-                                              {isOwned && (
-                                                <span className="text-xs text-success-600 dark:text-success-500">✓ Owned</span>
-                                              )}
-                                            </div>
-                                          )}
-                                        </div>
-                                      </div>
+                      <Modal
+                        isOpen={showPackSelector}
+                        onClose={() => setShowPackSelector(false)}
+                        title="Choose Style Pack"
+                        description="Style packs provide themed assets for all customization categories"
+                        size="lg"
+                      >
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                          {Object.entries(studioPacks).map(([key, pack]) => {
+                            const isOwned = ownedStudioPacks.includes(key);
+                            const isSelected = selectedSubTemplate === key;
+                            return (
+                              <div
+                                key={key}
+                                className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
+                                  isSelected
+                                    ? 'border-interactive bg-background-secondary'
+                                    : 'border-border hover:border-border-secondary'
+                                } ${!isOwned && 'opacity-75'}`}
+                                onClick={() => {
+                                  if (isOwned) {
+                                    setSelectedSubTemplate(key);
+                                    setShowPackSelector(false);
+                                  }
+                                }}
+                              >
+                                <div className="flex items-start justify-between">
+                                  <div className="flex items-center gap-3">
+                                    <span className="text-2xl">{pack.icon}</span>
+                                    <div>
+                                      <h4 className="font-medium text-foreground flex items-center gap-2">
+                                        {pack.name}
+                                        {!isOwned && <Lock size={14} className="text-foreground-tertiary" />}
+                                      </h4>
+                                      <p className="text-sm text-foreground-secondary">{pack.description}</p>
+                                      <p className="text-xs text-foreground-tertiary mt-1">
+                                        {Object.values(pack.assets).reduce((total, category) =>
+                                          total + Object.values(category).reduce((catTotal, subCat) =>
+                                            catTotal + subCat.length, 0), 0
+                                        )} total assets
+                                      </p>
                                     </div>
-                                  );
-                                })}
+                                  </div>
+                                  <div className="text-right">
+                                    {pack.price === 0 ? (
+                                      <span className="px-2 py-1 bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500 rounded-full text-xs font-medium">
+                                        INCLUDED
+                                      </span>
+                                    ) : (
+                                      <div>
+                                        <p className="font-semibold text-foreground">${pack.price}</p>
+                                        {!isOwned && (
+                                          <Button
+                                            size="sm"
+                                            className="mt-1 w-full"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              handlePurchaseStudioPack(key);
+                                            }}
+                                          >
+                                            Add to Cart
+                                          </Button>
+                                        )}
+                                        {isOwned && (
+                                          <span className="text-xs text-success-600 dark:text-success-500">✓ Owned</span>
+                                        )}
+                                      </div>
+                                    )}
+                                  </div>
+                                </div>
                               </div>
-                            </div>
-                          </div>
+                            );
+                          })}
                         </div>
-                      )}
+                      </Modal>
                     </div>
                   )}
                   
@@ -752,11 +754,10 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                 onChange={(e) => setPrimaryColor(e.target.value)}
                                 className="h-10 w-20 border border-border rounded cursor-pointer"
                               />
-                              <input
-                                type="text"
+                              <Input
                                 value={primaryColor}
                                 onChange={(e) => setPrimaryColor(e.target.value)}
-                                className="input flex-1"
+                                className="flex-1"
                               />
                             </div>
                           </div>
@@ -769,11 +770,10 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                 onChange={(e) => setAccentColor(e.target.value)}
                                 className="h-10 w-20 border border-border rounded cursor-pointer"
                               />
-                              <input
-                                type="text"
+                              <Input
                                 value={accentColor}
                                 onChange={(e) => setAccentColor(e.target.value)}
-                                className="input flex-1"
+                                className="flex-1"
                               />
                             </div>
                           </div>
@@ -790,9 +790,9 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                           {/* eslint-disable-next-line jsx-a11y/alt-text */}
                           <Image size={32} className="mx-auto mb-2 text-foreground-tertiary" />
                           <p className="text-sm text-foreground-secondary mb-2">Drop your logo here or click to browse</p>
-                          <button className="btn-secondary px-4 py-2 text-sm">
+                          <Button variant="secondary" size="sm">
                             Upload Logo
-                          </button>
+                          </Button>
                         </div>
                       </div>
                     </div>
@@ -829,23 +829,23 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                           Typography
                         </h3>
                         <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-foreground mb-2">Font Family</label>
-                            <select className="select">
-                              <option>Inter</option>
-                              <option>Roboto</option>
-                              <option>Open Sans</option>
-                              <option>Lato</option>
-                            </select>
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-foreground mb-2">Message Style</label>
-                            <select className="select">
-                              <option>Chat Bubbles</option>
-                              <option>Cards</option>
-                              <option>Minimal</option>
-                            </select>
-                          </div>
+                          <Select
+                            label="Font Family"
+                            options={[
+                              { value: 'inter', label: 'Inter' },
+                              { value: 'roboto', label: 'Roboto' },
+                              { value: 'open-sans', label: 'Open Sans' },
+                              { value: 'lato', label: 'Lato' },
+                            ]}
+                          />
+                          <Select
+                            label="Message Style"
+                            options={[
+                              { value: 'bubbles', label: 'Chat Bubbles' },
+                              { value: 'cards', label: 'Cards' },
+                              { value: 'minimal', label: 'Minimal' },
+                            ]}
+                          />
                         </div>
                       </div>
 
@@ -866,11 +866,11 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                     </div>
                   )}
                 </div>
-              </div>
+              </Card>
             </div>
-            
+
             <div className="lg:col-span-1">
-              <div className="card p-6 sticky top-6">
+              <Card className="sticky top-6">
                 <h3 className="font-semibold text-foreground mb-4">Live Preview</h3>
                 <div className="bg-background-tertiary rounded-lg p-4">
                   <div className="bg-surface-elevated rounded-lg shadow-sm p-4 mb-3">
@@ -911,11 +911,11 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                     Keep your mascot's appearance consistent with your brand identity for better recognition.
                   </p>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
-        </div>
-      </main>
+        </PageContent>
+      </Page>
     </div>
     </AuthGuard>
   );

@@ -3,10 +3,12 @@ import { getClientById, getBotById } from '@/lib/dataService';
 import { useState, useEffect, useMemo } from 'react';
 import Sidebar from '@/components/Sidebar';
 import StatusBadge from '@/components/StatusBadge';
+import AuthGuard from '@/components/AuthGuard';
 import { ArrowLeft, Brain, Sliders, BookOpen, MessageSquare, Zap, Shield, Sparkles, GitBranch, Plus, Play, Users, ShoppingCart, GraduationCap, Briefcase, User, ChevronRight, Settings, Copy, Trash2, Edit2, Link2, ExternalLink, CheckCircle, AlertCircle, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import { getClientBrandColor } from '@/lib/brandColors';
 import type { Client, Bot } from '@/lib/dataService';
+import { Page, PageContent, PageHeader, Card, Button, Input, Select, Textarea, Modal, Spinner, EmptyState } from '@/components/ui';
 
 export default function BrainStudioPage({ params }: { params: { clientId: string; botId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
@@ -136,9 +138,9 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
-        </main>
+        <Page className="flex items-center justify-center">
+          <Spinner size="lg" />
+        </Page>
       </div>
     );
   }
@@ -147,9 +149,15 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16 p-6">
-          <p className="text-foreground-secondary">Bot not found</p>
-        </main>
+        <Page>
+          <PageContent>
+            <EmptyState
+              icon={<BotIcon size={48} />}
+              title="Bot not found"
+              message="The requested bot could not be found."
+            />
+          </PageContent>
+        </Page>
       </div>
     );
   }
@@ -340,21 +348,28 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
   };
 
   return (
+    <AuthGuard clientId={params.clientId}>
     <div className="flex min-h-screen bg-background">
       <Sidebar clientId={client.id} />
 
-      <main className="flex-1 lg:ml-16 min-h-screen">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <Link
-            href={`/app/${client.id}`}
-            className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-6 transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Back to bots
-          </Link>
+      <Page>
+        <PageContent>
+          <PageHeader
+            title="Brain Studio"
+            description="Configure personality and knowledge base"
+            backLink={
+              <Link
+                href={`/app/${client.id}`}
+                className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
+              >
+                <ArrowLeft size={16} />
+                Back to bots
+              </Link>
+            }
+          />
 
           {/* Bot Header */}
-          <div className="card p-6 mb-6">
+          <Card className="mb-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <img
@@ -379,18 +394,18 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
               </div>
 
               <div className="flex gap-3">
-                <button className="btn-secondary px-4 py-2">
+                <Button variant="secondary">
                   Test Responses
-                </button>
-                <button className="btn-primary px-4 py-2">
+                </Button>
+                <Button>
                   Save Changes
-                </button>
+                </Button>
               </div>
             </div>
-          </div>
-          
+          </Card>
+
           {/* Mode Selector */}
-          <div className="card p-6 mb-6">
+          <Card className="mb-6">
             <h3 className="font-semibold text-foreground mb-4">Choose Configuration Mode</h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <label className={`p-4 border-2 rounded-xl cursor-pointer transition-all ${
@@ -444,11 +459,11 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                 </p>
               </div>
             )}
-          </div>
-          
+          </Card>
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <div className="card">
+              <Card className="p-0">
                 <div className="border-b border-border">
                   <div className="flex gap-6 p-6 overflow-x-auto">
                     <button
@@ -545,42 +560,36 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
 
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                           {/* Bot Name */}
-                          <div>
-                            <label className="block text-sm font-medium text-foreground-secondary mb-2">Bot Name</label>
-                            <input
-                              type="text"
-                              value={botName}
-                              onChange={(e) => handleBotNameChange(e.target.value)}
-                              placeholder="e.g., Alex, Sarah, Support Bot"
-                              className="input"
-                            />
-                          </div>
+                          <Input
+                            label="Bot Name"
+                            value={botName}
+                            onChange={(e) => handleBotNameChange(e.target.value)}
+                            placeholder="e.g., Alex, Sarah, Support Bot"
+                          />
 
                           {/* Age Group */}
                           <div>
-                            <label className="block text-sm font-medium text-foreground-secondary mb-2">Age Group</label>
-                            <select
+                            <Select
+                              label="Age Group"
                               value={botAgeGroup}
                               onChange={(e) => setBotAgeGroup(e.target.value)}
-                              className="select"
-                            >
-                              {Object.entries(ageGroups).map(([key, group]) => (
-                                <option key={key} value={key}>{group.label}</option>
-                              ))}
-                            </select>
+                              options={Object.entries(ageGroups).map(([key, group]) => ({
+                                value: key,
+                                label: group.label
+                              }))}
+                            />
                             <p className="text-xs text-foreground-tertiary mt-1">{ageGroups[botAgeGroup as keyof typeof ageGroups]?.description}</p>
                           </div>
                         </div>
 
                         {/* Backstory */}
                         <div className="mt-4">
-                          <label className="block text-sm font-medium text-foreground-secondary mb-2">Backstory & Role</label>
-                          <textarea
+                          <Textarea
+                            label="Backstory & Role"
                             value={botBackstory}
                             onChange={(e) => setBotBackstory(e.target.value)}
                             placeholder="e.g., I am a customer service representative with 3 years of experience helping customers with technical issues. I work for TechCorp and specialize in software troubleshooting..."
                             rows={3}
-                            className="input resize-none"
                           />
                         </div>
                       </div>
@@ -591,24 +600,21 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                           <Sparkles size={18} />
                           Personality Type
                         </h3>
-                        <select
+                        <Select
                           value={selectedPersonality}
                           onChange={(e) => handlePersonalityTypeChange(e.target.value)}
-                          className="select mb-2"
-                        >
-                          <optgroup label="Built-in Types">
-                            {Object.entries(personalityTypes).map(([key, type]) => (
-                              <option key={key} value={key}>{type.name}</option>
-                            ))}
-                          </optgroup>
-                          {Object.keys(customPersonalityTypes).length > 0 && (
-                            <optgroup label="Custom Types">
-                              {Object.entries(customPersonalityTypes).map(([key, type]) => (
-                                <option key={key} value={key}>⭐ {type.name}</option>
-                              ))}
-                            </optgroup>
-                          )}
-                        </select>
+                          className="mb-2"
+                          options={[
+                            ...Object.entries(personalityTypes).map(([key, type]) => ({
+                              value: key,
+                              label: type.name
+                            })),
+                            ...Object.entries(customPersonalityTypes).map(([key, type]) => ({
+                              value: key,
+                              label: `⭐ ${type.name}`
+                            }))
+                          ]}
+                        />
                         <div className="flex items-center justify-between">
                           <p className="text-sm text-foreground-secondary">
                             {personalityTypes[selectedPersonality as keyof typeof personalityTypes]?.description ||
@@ -736,54 +742,51 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                   )}
 
                   {/* Save Custom Personality Modal */}
-                  {showSaveModal && (
-                    <div className="fixed inset-0 bg-surface-overlay z-50 flex items-center justify-center">
-                      <div className="bg-surface-elevated rounded-xl p-6 w-full max-w-md mx-4 border border-border">
-                        <h3 className="text-lg font-semibold text-foreground mb-4">Save Custom Personality</h3>
-                        <div className="space-y-4">
-                          <div>
-                            <label className="block text-sm font-medium text-foreground-secondary mb-2">Template Name</label>
-                            <input
-                              type="text"
-                              value={savePresetName}
-                              onChange={(e) => setSavePresetName(e.target.value)}
-                              placeholder="e.g., Friendly Sales Expert"
-                              className="input"
-                            />
-                          </div>
-                          <div>
-                            <label className="block text-sm font-medium text-foreground-secondary mb-2">Description (optional)</label>
-                            <textarea
-                              value={savePresetDescription}
-                              onChange={(e) => setSavePresetDescription(e.target.value)}
-                              placeholder="Describe when to use this personality..."
-                              rows={3}
-                              className="input resize-none"
-                            />
-                          </div>
-                        </div>
-                        <div className="flex justify-end gap-3 mt-6">
-                          <button
-                            onClick={() => {
-                              setShowSaveModal(false);
-                              setSavePresetName('');
-                              setSavePresetDescription('');
-                            }}
-                            className="px-4 py-2 text-foreground-secondary hover:text-foreground transition-colors"
-                          >
-                            Cancel
-                          </button>
-                          <button
-                            onClick={handleSaveCustomPersonality}
-                            disabled={!savePresetName.trim()}
-                            className="btn-primary px-4 py-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                          >
-                            Save Template
-                          </button>
-                        </div>
+                  <Modal
+                    isOpen={showSaveModal}
+                    onClose={() => {
+                      setShowSaveModal(false);
+                      setSavePresetName('');
+                      setSavePresetDescription('');
+                    }}
+                    title="Save Custom Personality"
+                    footer={
+                      <div className="flex justify-end gap-3">
+                        <Button
+                          variant="ghost"
+                          onClick={() => {
+                            setShowSaveModal(false);
+                            setSavePresetName('');
+                            setSavePresetDescription('');
+                          }}
+                        >
+                          Cancel
+                        </Button>
+                        <Button
+                          onClick={handleSaveCustomPersonality}
+                          disabled={!savePresetName.trim()}
+                        >
+                          Save Template
+                        </Button>
                       </div>
+                    }
+                  >
+                    <div className="space-y-4">
+                      <Input
+                        label="Template Name"
+                        value={savePresetName}
+                        onChange={(e) => setSavePresetName(e.target.value)}
+                        placeholder="e.g., Friendly Sales Expert"
+                      />
+                      <Textarea
+                        label="Description (optional)"
+                        value={savePresetDescription}
+                        onChange={(e) => setSavePresetDescription(e.target.value)}
+                        placeholder="Describe when to use this personality..."
+                        rows={3}
+                      />
                     </div>
-                  )}
+                  </Modal>
 
                   
                   {activeTab === 'knowledge' && integrationMode === 'external' && (
@@ -801,9 +804,9 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                           <BookOpen size={18} />
                           Knowledge Sources
                         </h3>
-                        <button className="btn-primary px-4 py-2 text-sm">
+                        <Button size="sm">
                           Add Source
-                        </button>
+                        </Button>
                       </div>
 
                       <div className="space-y-3">
@@ -838,9 +841,9 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                         <BookOpen size={32} className="mx-auto mb-2 text-foreground-tertiary" />
                         <p className="text-sm text-foreground-secondary mb-2">Drop files here or click to browse</p>
                         <p className="text-xs text-foreground-tertiary mb-4">Support for PDF, DOCX, TXT, CSV</p>
-                        <button className="btn-secondary px-4 py-2 text-sm">
+                        <Button variant="secondary" size="sm">
                           Upload Documents
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -1035,37 +1038,33 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                                 </button>
                               </div>
                               <div className="space-y-3">
-                                <div>
-                                  <label className="block text-sm font-medium text-foreground-secondary mb-1">Label</label>
-                                  <input
-                                    type="text"
-                                    value={selectedNode.label}
-                                    onChange={(e) => {
-                                      setFlowNodes(nodes =>
-                                        nodes.map(n => n.id === selectedNode.id ? { ...n, label: e.target.value } : n)
-                                      );
-                                      setSelectedNode({ ...selectedNode, label: e.target.value });
-                                    }}
-                                    className="input text-sm"
-                                  />
-                                </div>
-                                <div>
-                                  <label className="block text-sm font-medium text-foreground-secondary mb-1">Type</label>
-                                  <select className="select text-sm">
-                                    <option value="start">Start Node</option>
-                                    <option value="menu">Menu Node</option>
-                                    <option value="action">Action Node</option>
-                                    <option value="end">End Node</option>
-                                  </select>
-                                </div>
-                                <div>
-                                  <label className="block text-sm font-medium text-foreground-secondary mb-1">Response</label>
-                                  <textarea
-                                    className="input text-sm resize-none"
-                                    rows={2}
-                                    placeholder="Enter bot response..."
-                                  />
-                                </div>
+                                <Input
+                                  label="Label"
+                                  value={selectedNode.label}
+                                  onChange={(e) => {
+                                    setFlowNodes(nodes =>
+                                      nodes.map(n => n.id === selectedNode.id ? { ...n, label: e.target.value } : n)
+                                    );
+                                    setSelectedNode({ ...selectedNode, label: e.target.value });
+                                  }}
+                                  className="text-sm"
+                                />
+                                <Select
+                                  label="Type"
+                                  className="text-sm"
+                                  options={[
+                                    { value: 'start', label: 'Start Node' },
+                                    { value: 'menu', label: 'Menu Node' },
+                                    { value: 'action', label: 'Action Node' },
+                                    { value: 'end', label: 'End Node' },
+                                  ]}
+                                />
+                                <Textarea
+                                  label="Response"
+                                  className="text-sm"
+                                  rows={2}
+                                  placeholder="Enter bot response..."
+                                />
                               </div>
                             </div>
                           )}
@@ -1257,10 +1256,10 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                         <p className="text-sm text-foreground-secondary mb-4">
                           We're always adding new partners. Contact us to discuss integrating your chatbot provider.
                         </p>
-                        <button className="btn-primary px-4 py-2 text-sm font-medium flex items-center gap-2 mx-auto">
+                        <Button size="sm" className="flex items-center gap-2 mx-auto">
                           <ExternalLink size={14} />
                           Request Integration
-                        </button>
+                        </Button>
                       </div>
 
                       <div className="bg-warning-50 dark:bg-warning-700/30 border border-warning-200 dark:border-warning-700 rounded-lg p-4">
@@ -1280,28 +1279,25 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                     </div>
                   )}
                 </div>
-              </div>
+              </Card>
             </div>
-            
+
             <div className="lg:col-span-1">
-              <div className="card p-6 sticky top-6">
+              <Card className="sticky top-6">
                 <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                   <Sparkles size={18} />
                   Test Playground
                 </h3>
                 <div className="space-y-4">
-                  <div>
-                    <label className="block text-sm font-medium text-foreground-secondary mb-2">Test Input</label>
-                    <textarea
-                      className="input resize-none"
-                      rows={3}
-                      placeholder="Type a message to test..."
-                    />
-                  </div>
+                  <Textarea
+                    label="Test Input"
+                    rows={3}
+                    placeholder="Type a message to test..."
+                  />
 
-                  <button className="btn-primary w-full px-4 py-2">
+                  <Button className="w-full">
                     Generate Response
-                  </button>
+                  </Button>
 
                   <div className="p-3 bg-background-secondary rounded-lg">
                     <p className="text-sm font-medium text-foreground mb-1">Bot Response:</p>
@@ -1315,11 +1311,12 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                     Changes to personality traits will affect all future conversations.
                   </p>
                 </div>
-              </div>
+              </Card>
             </div>
           </div>
-        </div>
-      </main>
+        </PageContent>
+      </Page>
     </div>
+    </AuthGuard>
   );
 }

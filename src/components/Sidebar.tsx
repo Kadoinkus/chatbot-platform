@@ -37,7 +37,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
       {/* Mobile Menu Button */}
       <button
         onClick={() => setIsMobileOpen(true)}
-        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-interactive text-foreground-inverse rounded-lg"
+        className="lg:hidden fixed top-4 left-4 z-50 p-3 bg-white text-foreground border border-foreground rounded-lg dark:bg-sidebar-bg dark:text-sidebar-text-active dark:border-sidebar-border"
       >
         <Menu size={20} />
       </button>

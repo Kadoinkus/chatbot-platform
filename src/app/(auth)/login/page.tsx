@@ -18,7 +18,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-background p-4 transition-colors">
+    <div className="min-h-screen flex items-start pt-8 sm:items-center sm:pt-0 justify-center bg-background p-4 transition-colors overflow-auto">
       <div className="w-full max-w-md">
         {/* Toggle Tabs */}
         <Card className="overflow-hidden p-0">

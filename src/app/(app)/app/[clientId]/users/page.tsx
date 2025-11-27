@@ -4,17 +4,16 @@ import { clients } from '@/lib/data';
 import { getUsersByClientId, type User } from '@/lib/dataService';
 import Sidebar from '@/components/Sidebar';
 import AuthGuard from '@/components/AuthGuard';
-import { 
-  Users, 
-  UserPlus, 
-  Search, 
-  Filter, 
-  MoreVertical, 
-  Edit, 
-  Trash2, 
-  Crown, 
-  Mail, 
-  Phone, 
+import {
+  Users,
+  UserPlus,
+  Search,
+  Edit,
+  Trash2,
+  MoreVertical,
+  Crown,
+  Mail,
+  Phone,
   Calendar,
   Activity,
   Shield,
@@ -22,7 +21,23 @@ import {
   XCircle,
   Clock
 } from 'lucide-react';
-
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  Button,
+  Input,
+  Select,
+  Card,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  Spinner,
+  EmptyState,
+} from '@/components/ui';
 
 export default function UsersPage({ params }: { params: { clientId: string } }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -44,7 +59,7 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
         setLoading(false);
       }
     }
-    
+
     loadUsers();
   }, [params.clientId]);
 
@@ -83,14 +98,29 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
     }
   };
 
+  const roleOptions = [
+    { value: 'all', label: 'All Roles' },
+    { value: 'admin', label: 'Admin' },
+    { value: 'manager', label: 'Manager' },
+    { value: 'agent', label: 'Agent' },
+    { value: 'viewer', label: 'Viewer' },
+  ];
+
+  const statusOptions = [
+    { value: 'all', label: 'All Status' },
+    { value: 'active', label: 'Active' },
+    { value: 'inactive', label: 'Inactive' },
+    { value: 'pending', label: 'Pending' },
+  ];
+
   if (loading) {
     return (
       <AuthGuard clientId={params.clientId}>
         <div className="flex min-h-screen bg-background">
           <Sidebar clientId={params.clientId} />
-          <main className="flex-1 lg:ml-16 flex items-center justify-center">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
-          </main>
+          <Page className="flex items-center justify-center">
+            <Spinner size="lg" />
+          </Page>
         </div>
       </AuthGuard>
     );
@@ -101,23 +131,21 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
 
-      <main className="flex-1 lg:ml-16 min-h-screen">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <div className="mb-6 lg:mb-8">
-            <div className="flex items-center justify-between mb-6">
-              <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">User Management</h1>
-                <p className="text-foreground-secondary">Manage team members and their access levels</p>
-              </div>
-              <button className="btn-primary px-4 py-2">
-                <UserPlus size={20} />
-                Invite User
-              </button>
-            </div>
+        <Page>
+          <PageContent>
+            <PageHeader
+              title="User Management"
+              description="Manage team members and their access levels"
+              actions={
+                <Button icon={<UserPlus size={20} />}>
+                  Invite User
+                </Button>
+              }
+            />
 
             {/* Stats Cards */}
             <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6 lg:mb-8">
-              <div className="card p-6">
+              <Card>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-info-100 dark:bg-info-700/30 rounded-lg flex items-center justify-center">
                     <Users className="w-6 h-6 text-info-600 dark:text-info-500" />
@@ -127,9 +155,9 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
                     <p className="text-2xl font-bold text-foreground">{users.length}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
 
-              <div className="card p-6">
+              <Card>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-success-100 dark:bg-success-700/30 rounded-lg flex items-center justify-center">
                     <CheckCircle className="w-6 h-6 text-success-600 dark:text-success-500" />
@@ -139,9 +167,9 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
                     <p className="text-2xl font-bold text-foreground">{users.filter(u => u.status === 'active').length}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
 
-              <div className="card p-6">
+              <Card>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-warning-100 dark:bg-warning-700/30 rounded-lg flex items-center justify-center">
                     <Clock className="w-6 h-6 text-warning-600 dark:text-warning-500" />
@@ -151,9 +179,9 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
                     <p className="text-2xl font-bold text-foreground">{users.filter(u => u.status === 'pending').length}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
 
-              <div className="card p-6">
+              <Card>
                 <div className="flex items-center gap-3">
                   <div className="w-12 h-12 bg-plan-premium-bg rounded-lg flex items-center justify-center">
                     <Crown className="w-6 h-6 text-plan-premium-text" />
@@ -163,154 +191,147 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
                     <p className="text-2xl font-bold text-foreground">{users.filter(u => u.role === 'admin').length}</p>
                   </div>
                 </div>
-              </div>
+              </Card>
             </div>
 
             {/* Filters */}
-            <div className="card p-6 mb-6">
+            <Card className="mb-6">
               <div className="flex flex-col sm:flex-row gap-4">
-                <div className="relative flex-1">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground-tertiary" size={20} />
-                  <input
-                    type="text"
+                <div className="flex-1">
+                  <Input
+                    icon={<Search size={20} />}
                     placeholder="Search users..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input pl-10"
                   />
                 </div>
 
                 <div className="flex gap-3">
-                  <select
+                  <Select
+                    options={roleOptions}
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value)}
-                    className="select"
-                  >
-                    <option value="all">All Roles</option>
-                    <option value="admin">Admin</option>
-                    <option value="manager">Manager</option>
-                    <option value="agent">Agent</option>
-                    <option value="viewer">Viewer</option>
-                  </select>
+                  />
 
-                  <select
+                  <Select
+                    options={statusOptions}
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}
-                    className="select"
-                  >
-                    <option value="all">All Status</option>
-                    <option value="active">Active</option>
-                    <option value="inactive">Inactive</option>
-                    <option value="pending">Pending</option>
-                  </select>
+                  />
                 </div>
               </div>
-            </div>
-          </div>
+            </Card>
 
-          {/* Users Table */}
-          <div className="card overflow-hidden">
-            <div className="overflow-x-auto">
-              <table className="data-table">
-                <thead>
-                  <tr>
-                    <th>User</th>
-                    <th>Role</th>
-                    <th>Status</th>
-                    <th>Last Active</th>
-                    <th>Conversations</th>
-                    <th>Joined</th>
-                    <th className="text-right">Actions</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {filteredUsers.map((user) => (
-                    <tr key={user.id}>
-                      <td>
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={user.avatar}
-                            alt={user.name}
-                            className="w-10 h-10 rounded-full"
-                          />
-                          <div>
-                            <p className="font-semibold text-foreground">{user.name}</p>
-                            <div className="flex items-center gap-2 text-sm text-foreground-secondary">
-                              <Mail size={14} />
-                              {user.email}
-                            </div>
-                            {user.phone && (
+            {/* Users Table */}
+            <Card padding="none" className="overflow-hidden">
+              <div className="overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>User</TableHead>
+                      <TableHead>Role</TableHead>
+                      <TableHead>Status</TableHead>
+                      <TableHead>Last Active</TableHead>
+                      <TableHead>Conversations</TableHead>
+                      <TableHead>Joined</TableHead>
+                      <TableHead className="text-right">Actions</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {filteredUsers.map((user) => (
+                      <TableRow key={user.id}>
+                        <TableCell>
+                          <div className="flex items-center gap-3">
+                            <img
+                              src={user.avatar}
+                              alt={user.name}
+                              className="w-10 h-10 rounded-full"
+                            />
+                            <div>
+                              <p className="font-semibold text-foreground">{user.name}</p>
                               <div className="flex items-center gap-2 text-sm text-foreground-secondary">
-                                <Phone size={14} />
-                                {user.phone}
+                                <Mail size={14} />
+                                {user.email}
                               </div>
-                            )}
+                              {user.phone && (
+                                <div className="flex items-center gap-2 text-sm text-foreground-secondary">
+                                  <Phone size={14} />
+                                  {user.phone}
+                                </div>
+                              )}
+                            </div>
                           </div>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-2">
-                          {getRoleIcon(user.role)}
-                          <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getRoleColor(user.role)}`}>
-                            {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-2">
-                          {getStatusIcon(user.status)}
-                          <span className="text-sm text-foreground capitalize">{user.status}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-2">
-                          <Activity size={14} className="text-foreground-tertiary" />
-                          <span className="text-sm text-foreground-secondary">{user.lastActive}</span>
-                        </div>
-                      </td>
-                      <td>
-                        <span className="text-sm font-medium text-foreground">{user.conversationsHandled.toLocaleString()}</span>
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-2">
-                          <Calendar size={14} className="text-foreground-tertiary" />
-                          <span className="text-sm text-foreground-secondary">
-                            {new Date(user.joinedDate).toLocaleDateString()}
-                          </span>
-                        </div>
-                      </td>
-                      <td>
-                        <div className="flex items-center justify-end gap-2">
-                          <button className="p-2 text-foreground-tertiary hover:text-foreground hover:bg-background-hover rounded-lg transition-colors">
-                            <Edit size={16} />
-                          </button>
-                          <button className="p-2 text-foreground-tertiary hover:text-error-600 hover:bg-error-50 dark:hover:bg-error-700/20 rounded-lg transition-colors">
-                            <Trash2 size={16} />
-                          </button>
-                          <button className="p-2 text-foreground-tertiary hover:text-foreground hover:bg-background-hover rounded-lg transition-colors">
-                            <MoreVertical size={16} />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          </div>
-
-          {filteredUsers.length === 0 && (
-            <div className="empty-state">
-              <div className="empty-state-icon">
-                <Users size={24} className="text-foreground-tertiary" />
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getRoleIcon(user.role)}
+                            <span className={`px-3 py-1 rounded-full text-xs font-medium border ${getRoleColor(user.role)}`}>
+                              {user.role.charAt(0).toUpperCase() + user.role.slice(1)}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            {getStatusIcon(user.status)}
+                            <span className="text-sm text-foreground capitalize">{user.status}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Activity size={14} className="text-foreground-tertiary" />
+                            <span className="text-sm text-foreground-secondary">{user.lastActive}</span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <span className="text-sm font-medium text-foreground">{user.conversationsHandled.toLocaleString()}</span>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center gap-2">
+                            <Calendar size={14} className="text-foreground-tertiary" />
+                            <span className="text-sm text-foreground-secondary">
+                              {new Date(user.joinedDate).toLocaleDateString()}
+                            </span>
+                          </div>
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex items-center justify-end gap-2">
+                            <button
+                              className="p-2 text-foreground-tertiary hover:text-foreground hover:bg-background-hover rounded-lg transition-colors"
+                              aria-label="Edit user"
+                            >
+                              <Edit size={16} />
+                            </button>
+                            <button
+                              className="p-2 text-foreground-tertiary hover:text-error-600 hover:bg-error-50 dark:hover:bg-error-700/20 rounded-lg transition-colors"
+                              aria-label="Delete user"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                            <button
+                              className="p-2 text-foreground-tertiary hover:text-foreground hover:bg-background-hover rounded-lg transition-colors"
+                              aria-label="More options"
+                            >
+                              <MoreVertical size={16} />
+                            </button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
               </div>
-              <h3 className="empty-state-title">No users found</h3>
-              <p className="empty-state-message">Try adjusting your search or filters</p>
-            </div>
-          )}
-        </div>
-      </main>
-    </div>
+            </Card>
+
+            {filteredUsers.length === 0 && (
+              <EmptyState
+                icon={<Users size={48} />}
+                title="No users found"
+                message="Try adjusting your search or filters"
+              />
+            )}
+          </PageContent>
+        </Page>
+      </div>
     </AuthGuard>
   );
 }

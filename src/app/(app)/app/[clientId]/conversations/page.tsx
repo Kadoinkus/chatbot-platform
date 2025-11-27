@@ -1,11 +1,26 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { clients } from '@/lib/data';
-import { getConversationsByClientId, type Conversation as ConversationType } from '@/lib/dataService';
 import Sidebar from '@/components/Sidebar';
 import AuthGuard from '@/components/AuthGuard';
-import { Search, Filter, Download, Calendar, MessageSquare, User, Clock, CheckCircle, XCircle, AlertCircle } from 'lucide-react';
+import { Search, Filter, Download, MessageSquare, User, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  Button,
+  Input,
+  Select,
+  Card,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  EmptyState,
+} from '@/components/ui';
 
 interface Conversation {
   id: string;
@@ -33,9 +48,15 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16 p-6">
-          <p className="text-foreground-secondary">Client not found</p>
-        </main>
+        <Page>
+          <PageContent>
+            <EmptyState
+              icon={<MessageSquare size={48} />}
+              title="Client not found"
+              message="The requested client could not be found."
+            />
+          </PageContent>
+        </Page>
       </div>
     );
   }
@@ -126,7 +147,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const hours = Math.floor(diff / 3600000);
-    
+
     if (hours < 1) return 'Just now';
     if (hours < 24) return `${hours}h ago`;
     const days = Math.floor(hours / 24);
@@ -147,211 +168,217 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     }
   };
 
+  const botOptions = [
+    { value: 'all', label: 'All Bots' },
+    ...client.mascots.map(bot => ({ value: bot.id, label: bot.name }))
+  ];
+
+  const statusOptions = [
+    { value: 'all', label: 'All Status' },
+    { value: 'resolved', label: 'Resolved' },
+    { value: 'pending', label: 'Pending' },
+    { value: 'escalated', label: 'Escalated' },
+  ];
+
+  const dateRangeOptions = [
+    { value: 'today', label: 'Today' },
+    { value: '7days', label: 'Last 7 days' },
+    { value: '30days', label: 'Last 30 days' },
+    { value: 'custom', label: 'Custom range' },
+  ];
+
   return (
     <AuthGuard clientId={params.clientId}>
-    <div className="flex min-h-screen bg-background">
-      <Sidebar clientId={client.id} />
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={client.id} />
 
-      <main className="flex-1 lg:ml-16 min-h-screen">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <div className="mb-6 lg:mb-8">
-            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">Conversations</h1>
-            <p className="text-foreground-secondary">View and manage all customer conversations</p>
-          </div>
+        <Page>
+          <PageContent>
+            <PageHeader
+              title="Conversations"
+              description="View and manage all customer conversations"
+            />
 
-          {/* Filters Bar */}
-          <div className="card p-4 mb-6">
-            <div className="flex flex-wrap gap-4">
-              <div className="flex-1 min-w-[300px]">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground-tertiary" size={20} />
-                  <input
-                    type="text"
+            {/* Filters Bar */}
+            <Card className="mb-6">
+              <div className="flex flex-wrap gap-4">
+                <div className="flex-1 min-w-[300px]">
+                  <Input
+                    icon={<Search size={20} />}
                     placeholder="Search conversations..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input pl-10"
                   />
                 </div>
+
+                <Select
+                  options={botOptions}
+                  value={selectedBot}
+                  onChange={(e) => setSelectedBot(e.target.value)}
+                />
+
+                <Select
+                  options={statusOptions}
+                  value={selectedStatus}
+                  onChange={(e) => setSelectedStatus(e.target.value)}
+                />
+
+                <Select
+                  options={dateRangeOptions}
+                  value={dateRange}
+                  onChange={(e) => setDateRange(e.target.value)}
+                />
+
+                <Button variant="secondary" icon={<Filter size={18} />}>
+                  More filters
+                </Button>
+
+                <Button icon={<Download size={18} />}>
+                  Export
+                </Button>
               </div>
+            </Card>
 
-              <select
-                value={selectedBot}
-                onChange={(e) => setSelectedBot(e.target.value)}
-                className="select"
-              >
-                <option value="all">All Bots</option>
-                {client.mascots.map(bot => (
-                  <option key={bot.id} value={bot.id}>{bot.name}</option>
-                ))}
-              </select>
-
-              <select
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-                className="select"
-              >
-                <option value="all">All Status</option>
-                <option value="resolved">Resolved</option>
-                <option value="pending">Pending</option>
-                <option value="escalated">Escalated</option>
-              </select>
-
-              <select
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                className="select"
-              >
-                <option value="today">Today</option>
-                <option value="7days">Last 7 days</option>
-                <option value="30days">Last 30 days</option>
-                <option value="custom">Custom range</option>
-              </select>
-
-              <button className="btn-secondary">
-                <Filter size={18} />
-                More filters
-              </button>
-
-              <button className="btn-primary">
-                <Download size={18} />
-                Export
-              </button>
+            {/* Stats Overview */}
+            <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+              <Card padding="sm">
+                <p className="text-sm text-foreground-secondary mb-1">Total Conversations</p>
+                <p className="text-2xl font-bold text-foreground">{conversations.length}</p>
+                <p className="text-xs text-success-600 dark:text-success-500 mt-1">+12% from last period</p>
+              </Card>
+              <Card padding="sm">
+                <p className="text-sm text-foreground-secondary mb-1">Resolved</p>
+                <p className="text-2xl font-bold text-foreground">{conversations.filter(c => c.status === 'resolved').length}</p>
+                <p className="text-xs text-foreground-tertiary mt-1">60% resolution rate</p>
+              </Card>
+              <Card padding="sm">
+                <p className="text-sm text-foreground-secondary mb-1">Avg Duration</p>
+                <p className="text-2xl font-bold text-foreground">10.6 min</p>
+                <p className="text-xs text-foreground-tertiary mt-1">-2 min from last week</p>
+              </Card>
+              <Card padding="sm">
+                <p className="text-sm text-foreground-secondary mb-1">Satisfaction</p>
+                <p className="text-2xl font-bold text-foreground">4.5/5</p>
+                <p className="text-xs text-success-600 dark:text-success-500 mt-1">Above average</p>
+              </Card>
             </div>
-          </div>
 
-          {/* Stats Overview */}
-          <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
-            <div className="card p-4">
-              <p className="text-sm text-foreground-secondary mb-1">Total Conversations</p>
-              <p className="text-2xl font-bold text-foreground">{conversations.length}</p>
-              <p className="text-xs text-success-600 dark:text-success-500 mt-1">+12% from last period</p>
-            </div>
-            <div className="card p-4">
-              <p className="text-sm text-foreground-secondary mb-1">Resolved</p>
-              <p className="text-2xl font-bold text-foreground">{conversations.filter(c => c.status === 'resolved').length}</p>
-              <p className="text-xs text-foreground-tertiary mt-1">60% resolution rate</p>
-            </div>
-            <div className="card p-4">
-              <p className="text-sm text-foreground-secondary mb-1">Avg Duration</p>
-              <p className="text-2xl font-bold text-foreground">10.6 min</p>
-              <p className="text-xs text-foreground-tertiary mt-1">-2 min from last week</p>
-            </div>
-            <div className="card p-4">
-              <p className="text-sm text-foreground-secondary mb-1">Satisfaction</p>
-              <p className="text-2xl font-bold text-foreground">4.5/5</p>
-              <p className="text-xs text-success-600 dark:text-success-500 mt-1">Above average</p>
-            </div>
-          </div>
-
-          {/* Conversations Table */}
-          <div className="card overflow-hidden">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>User</th>
-                  <th>Bot</th>
-                  <th>Last Message</th>
-                  <th>Status</th>
-                  <th>Duration</th>
-                  <th>Time</th>
-                  <th>Rating</th>
-                  <th>Actions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredConversations.map((conv) => (
-                  <tr key={conv.id}>
-                    <td>
-                      <div className="flex items-center gap-3">
-                        <div className="avatar-placeholder">
-                          <User size={16} className="text-foreground-tertiary" />
+            {/* Conversations Table */}
+            <Card padding="none" className="overflow-hidden">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>User</TableHead>
+                    <TableHead>Bot</TableHead>
+                    <TableHead>Last Message</TableHead>
+                    <TableHead>Status</TableHead>
+                    <TableHead>Duration</TableHead>
+                    <TableHead>Time</TableHead>
+                    <TableHead>Rating</TableHead>
+                    <TableHead>Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredConversations.map((conv) => (
+                    <TableRow key={conv.id}>
+                      <TableCell>
+                        <div className="flex items-center gap-3">
+                          <div className="w-8 h-8 bg-background-tertiary rounded-full flex items-center justify-center">
+                            <User size={16} className="text-foreground-tertiary" />
+                          </div>
+                          <div>
+                            <p className="font-medium text-sm text-foreground">{conv.userName}</p>
+                            <p className="text-xs text-foreground-tertiary">ID: {conv.userId}</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="font-medium text-sm text-foreground">{conv.userName}</p>
-                          <p className="text-xs text-foreground-tertiary">ID: {conv.userId}</p>
+                      </TableCell>
+                      <TableCell>
+                        <p className="text-sm text-foreground">{conv.botName}</p>
+                      </TableCell>
+                      <TableCell>
+                        <p className="text-sm text-foreground-secondary truncate max-w-xs">{conv.lastMessage}</p>
+                        <div className="flex gap-1 mt-1">
+                          {conv.tags.map(tag => (
+                            <span key={tag} className="px-2 py-0.5 bg-background-tertiary text-foreground-secondary text-xs rounded-full">
+                              {tag}
+                            </span>
+                          ))}
                         </div>
-                      </div>
-                    </td>
-                    <td>
-                      <p className="text-sm text-foreground">{conv.botName}</p>
-                    </td>
-                    <td>
-                      <p className="text-sm text-foreground-secondary truncate max-w-xs">{conv.lastMessage}</p>
-                      <div className="flex gap-1 mt-1">
-                        {conv.tags.map(tag => (
-                          <span key={tag} className="tag">
-                            {tag}
-                          </span>
-                        ))}
-                      </div>
-                    </td>
-                    <td>
-                      <div className="flex items-center gap-2">
-                        {getStatusIcon(conv.status)}
-                        <span className="text-sm text-foreground capitalize">{conv.status}</span>
-                      </div>
-                    </td>
-                    <td>
-                      <p className="text-sm text-foreground">{conv.duration} min</p>
-                      <p className="text-xs text-foreground-tertiary">{conv.messages} msgs</p>
-                    </td>
-                    <td>
-                      <p className="text-sm text-foreground">{formatTimestamp(conv.timestamp)}</p>
-                    </td>
-                    <td>
-                      {conv.satisfaction && (
-                        <div className="flex items-center gap-1">
-                          <span className="text-sm text-foreground">{conv.satisfaction}</span>
-                          <span className="text-warning-500">★</span>
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex items-center gap-2">
+                          {getStatusIcon(conv.status)}
+                          <span className="text-sm text-foreground capitalize">{conv.status}</span>
                         </div>
-                      )}
-                    </td>
-                    <td>
-                      <div className="flex gap-2">
-                        <Link
-                          href={`/app/${client.id}/conversations/${conv.id}`}
-                          className="link text-sm"
-                        >
-                          View
-                        </Link>
-                        <button className="link-subtle text-sm">
-                          Export
-                        </button>
-                      </div>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-            
-            {/* Pagination */}
-            <div className="px-6 py-4 flex items-center justify-between bg-background-secondary border-t border-border">
-              <p className="text-sm text-foreground-secondary">
-                Showing 1 to {filteredConversations.length} of {conversations.length} results
-              </p>
-              <div className="pagination">
-                <button className="pagination-btn">
-                  Previous
-                </button>
-                <button className="pagination-btn-active">
-                  1
-                </button>
-                <button className="pagination-btn">
-                  2
-                </button>
-                <button className="pagination-btn">
-                  3
-                </button>
-                <button className="pagination-btn">
-                  Next
-                </button>
+                      </TableCell>
+                      <TableCell>
+                        <p className="text-sm text-foreground">{conv.duration} min</p>
+                        <p className="text-xs text-foreground-tertiary">{conv.messages} msgs</p>
+                      </TableCell>
+                      <TableCell>
+                        <p className="text-sm text-foreground">{formatTimestamp(conv.timestamp)}</p>
+                      </TableCell>
+                      <TableCell>
+                        {conv.satisfaction && (
+                          <div className="flex items-center gap-1">
+                            <span className="text-sm text-foreground">{conv.satisfaction}</span>
+                            <span className="text-warning-500">★</span>
+                          </div>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        <div className="flex gap-2">
+                          <Link
+                            href={`/app/${client.id}/conversations/${conv.id}`}
+                            className="text-sm text-info-600 dark:text-info-500 hover:text-info-700 dark:hover:text-info-400"
+                          >
+                            View
+                          </Link>
+                          <button className="text-sm text-foreground-secondary hover:text-foreground">
+                            Export
+                          </button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+
+              {/* Pagination */}
+              <div className="px-6 py-4 flex items-center justify-between bg-background-secondary border-t border-border">
+                <p className="text-sm text-foreground-secondary">
+                  Showing 1 to {filteredConversations.length} of {conversations.length} results
+                </p>
+                <div className="flex gap-1">
+                  <Button variant="ghost" size="sm">
+                    Previous
+                  </Button>
+                  <Button size="sm">
+                    1
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    2
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    3
+                  </Button>
+                  <Button variant="ghost" size="sm">
+                    Next
+                  </Button>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
-      </main>
-    </div>
+            </Card>
+
+            {filteredConversations.length === 0 && (
+              <EmptyState
+                icon={<MessageSquare size={48} />}
+                title="No conversations found"
+                message="Try adjusting your search or filters"
+              />
+            )}
+          </PageContent>
+        </Page>
+      </div>
     </AuthGuard>
   );
 }

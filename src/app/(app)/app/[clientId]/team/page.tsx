@@ -3,8 +3,21 @@ import { useState } from 'react';
 import { clients } from '@/lib/data';
 import Sidebar from '@/components/Sidebar';
 import AuthGuard from '@/components/AuthGuard';
-import { Plus, Search, Mail, Shield, Clock, MoreVertical, UserPlus, Settings, Trash2, Key, Activity, ArrowLeft } from 'lucide-react';
+import { Search, Mail, Shield, MoreVertical, UserPlus, Settings, Key, Activity, ArrowLeft, Users } from 'lucide-react';
 import Link from 'next/link';
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  Button,
+  Input,
+  Select,
+  Textarea,
+  Card,
+  Badge,
+  Modal,
+  EmptyState,
+} from '@/components/ui';
 
 interface TeamMember {
   id: string;
@@ -90,6 +103,12 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
     viewer: { label: 'Viewer', color: 'badge-plan-starter', icon: Activity }
   };
 
+  const roleSelectOptions = [
+    { value: 'admin', label: 'Admin - Manage bots and settings' },
+    { value: 'agent', label: 'Agent - Handle conversations' },
+    { value: 'viewer', label: 'Viewer - View analytics only' },
+  ];
+
   const filteredMembers = teamMembers.filter(member => {
     const matchesSearch = member.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
                           member.email.toLowerCase().includes(searchTerm.toLowerCase());
@@ -101,9 +120,15 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16 p-6">
-          <p className="text-foreground-secondary">Client not found</p>
-        </main>
+        <Page>
+          <PageContent>
+            <EmptyState
+              icon={<Users size={48} />}
+              title="Client not found"
+              message="The requested client could not be found."
+            />
+          </PageContent>
+        </Page>
       </div>
     );
   }
@@ -112,7 +137,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
     const now = new Date();
     const diff = now.getTime() - date.getTime();
     const hours = Math.floor(diff / 3600000);
-    
+
     if (hours < 1) return 'Active now';
     if (hours < 24) return `${hours}h ago`;
     const days = Math.floor(hours / 24);
@@ -122,228 +147,212 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
 
   return (
     <AuthGuard clientId={params.clientId}>
-    <div className="flex min-h-screen bg-background">
-      <Sidebar clientId={client.id} />
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={client.id} />
 
-      <main className="flex-1 lg:ml-16 min-h-screen">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          {/* Back Link */}
-          <Link
-            href={`/app/${params.clientId}/settings`}
-            className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-6 transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Back to Settings
-          </Link>
+        <Page>
+          <PageContent>
+            <PageHeader
+              title="Team Members"
+              description="Manage your team and their permissions"
+              backLink={
+                <Link
+                  href={`/app/${params.clientId}/settings`}
+                  className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground transition-colors"
+                >
+                  <ArrowLeft size={16} />
+                  Back to Settings
+                </Link>
+              }
+              actions={
+                <Button icon={<UserPlus size={20} />} onClick={() => setShowInviteModal(true)}>
+                  Invite Member
+                </Button>
+              }
+            />
 
-          <div className="mb-6 lg:mb-8">
-            <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4 mb-2">
-              <div>
-                <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">Team Members</h1>
-                <p className="text-foreground-secondary">Manage your team and their permissions</p>
-              </div>
-              <button
-                onClick={() => setShowInviteModal(true)}
-                className="btn-primary px-4 py-2"
-              >
-                <UserPlus size={20} />
-                Invite Member
-              </button>
+            {/* Stats Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+              <Card padding="sm">
+                <p className="text-sm text-foreground-secondary mb-1">Total Members</p>
+                <p className="text-2xl font-bold text-foreground">{teamMembers.length}</p>
+                <p className="text-xs text-foreground-tertiary mt-1">2 seats available</p>
+              </Card>
+              <Card padding="sm">
+                <p className="text-sm text-foreground-secondary mb-1">Active Now</p>
+                <p className="text-2xl font-bold text-foreground">{teamMembers.filter(m => m.status === 'active').length}</p>
+                <p className="text-xs text-success-600 dark:text-success-500 mt-1">All systems operational</p>
+              </Card>
+              <Card padding="sm">
+                <p className="text-sm text-foreground-secondary mb-1">Pending Invites</p>
+                <p className="text-2xl font-bold text-foreground">{teamMembers.filter(m => m.status === 'invited').length}</p>
+                <p className="text-xs text-warning-600 dark:text-warning-500 mt-1">Awaiting acceptance</p>
+              </Card>
+              <Card padding="sm">
+                <p className="text-sm text-foreground-secondary mb-1">Admins</p>
+                <p className="text-2xl font-bold text-foreground">{teamMembers.filter(m => m.role === 'admin' || m.role === 'owner').length}</p>
+                <p className="text-xs text-foreground-tertiary mt-1">Can manage settings</p>
+              </Card>
             </div>
-          </div>
 
-          {/* Stats Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="card p-4">
-              <p className="text-sm text-foreground-secondary mb-1">Total Members</p>
-              <p className="text-2xl font-bold text-foreground">{teamMembers.length}</p>
-              <p className="text-xs text-foreground-tertiary mt-1">2 seats available</p>
-            </div>
-            <div className="card p-4">
-              <p className="text-sm text-foreground-secondary mb-1">Active Now</p>
-              <p className="text-2xl font-bold text-foreground">{teamMembers.filter(m => m.status === 'active').length}</p>
-              <p className="text-xs text-success-600 dark:text-success-500 mt-1">All systems operational</p>
-            </div>
-            <div className="card p-4">
-              <p className="text-sm text-foreground-secondary mb-1">Pending Invites</p>
-              <p className="text-2xl font-bold text-foreground">{teamMembers.filter(m => m.status === 'invited').length}</p>
-              <p className="text-xs text-warning-600 dark:text-warning-500 mt-1">Awaiting acceptance</p>
-            </div>
-            <div className="card p-4">
-              <p className="text-sm text-foreground-secondary mb-1">Admins</p>
-              <p className="text-2xl font-bold text-foreground">{teamMembers.filter(m => m.role === 'admin' || m.role === 'owner').length}</p>
-              <p className="text-xs text-foreground-tertiary mt-1">Can manage settings</p>
-            </div>
-          </div>
-
-          {/* Filters */}
-          <div className="card p-4 mb-6">
-            <div className="flex flex-col lg:flex-row gap-4">
-              <div className="flex-1">
-                <div className="relative">
-                  <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground-tertiary" size={20} />
-                  <input
-                    type="text"
+            {/* Filters */}
+            <Card padding="sm" className="mb-6">
+              <div className="flex flex-col lg:flex-row gap-4">
+                <div className="flex-1">
+                  <Input
+                    icon={<Search size={20} />}
                     placeholder="Search members..."
                     value={searchTerm}
                     onChange={(e) => setSearchTerm(e.target.value)}
-                    className="input pl-10"
                   />
                 </div>
-              </div>
-              <div className="flex flex-wrap gap-2">
-                <button
-                  onClick={() => setSelectedRole('all')}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                    selectedRole === 'all' ? 'bg-interactive text-foreground-inverse' : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
-                  }`}
-                >
-                  All Roles
-                </button>
-                {Object.entries(roleConfig).map(([role, config]) => (
+                <div className="flex flex-wrap gap-2">
                   <button
-                    key={role}
-                    onClick={() => setSelectedRole(role)}
+                    onClick={() => setSelectedRole('all')}
                     className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                      selectedRole === role ? 'bg-interactive text-foreground-inverse' : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
+                      selectedRole === 'all' ? 'bg-interactive text-foreground-inverse' : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
                     }`}
                   >
-                    {config.label}s
+                    All Roles
                   </button>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          {/* Team Members Grid */}
-          <div className="grid gap-4">
-            {filteredMembers.map(member => {
-              const config = roleConfig[member.role];
-              const Icon = config.icon;
-
-              return (
-                <div key={member.id} className="card p-6">
-                  <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
-                    <div className="flex items-center gap-4">
-                      <img
-                        src={member.avatar}
-                        alt={member.name}
-                        className="w-12 h-12 rounded-full"
-                      />
-                      <div>
-                        <div className="flex items-center gap-3">
-                          <h3 className="font-semibold text-lg text-foreground">{member.name}</h3>
-                          {member.status === 'invited' && (
-                            <span className="badge bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500">
-                              Pending Invite
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-foreground-secondary">{member.email}</p>
-                      </div>
-                    </div>
-
-                    <div className="flex flex-wrap items-center gap-4 lg:gap-6">
-                      <div className="text-right">
-                        <div className={`badge inline-flex items-center gap-2 px-3 py-1 ${config.color}`}>
-                          <Icon size={14} />
-                          {config.label}
-                        </div>
-                        <p className="text-xs text-foreground-tertiary mt-1">
-                          {member.role === 'owner' ? 'Full access' : `${member.permissions.length} permissions`}
-                        </p>
-                      </div>
-
-                      <div className="text-right">
-                        <p className="text-sm text-foreground">{formatLastActive(member.lastActive)}</p>
-                        <p className="text-xs text-foreground-tertiary">
-                          Joined {Math.floor((Date.now() - member.joinedDate.getTime()) / (24 * 60 * 60 * 1000))} days ago
-                        </p>
-                      </div>
-
-                      <div className="flex gap-2">
-                        <button className="p-2 hover:bg-background-hover rounded-lg transition-colors">
-                          <Mail size={16} className="text-foreground-secondary" />
-                        </button>
-                        <button className="p-2 hover:bg-background-hover rounded-lg transition-colors">
-                          <Key size={16} className="text-foreground-secondary" />
-                        </button>
-                        <button className="p-2 hover:bg-background-hover rounded-lg transition-colors">
-                          <MoreVertical size={16} className="text-foreground-secondary" />
-                        </button>
-                      </div>
-                    </div>
-                  </div>
-
-                  {member.role !== 'owner' && (
-                    <div className="mt-4 pt-4 border-t border-border">
-                      <p className="text-xs font-medium text-foreground mb-2">Permissions</p>
-                      <div className="flex flex-wrap gap-2">
-                        {member.permissions.map(permission => (
-                          <span key={permission} className="badge bg-background-tertiary text-foreground-secondary">
-                            {permission.replace(/_/g, ' ')}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Invite Modal */}
-          {showInviteModal && (
-            <div className="fixed inset-0 bg-surface-overlay flex items-center justify-center z-50">
-              <div className="bg-surface-elevated rounded-xl border border-border p-6 w-full max-w-md mx-4">
-                <h2 className="text-xl font-semibold text-foreground mb-4">Invite Team Member</h2>
-
-                <div className="space-y-4">
-                  <div>
-                    <label className="label">Email Address</label>
-                    <input
-                      type="email"
-                      placeholder="colleague@company.com"
-                      className="input"
-                    />
-                  </div>
-
-                  <div>
-                    <label className="label">Role</label>
-                    <select className="select">
-                      <option value="admin">Admin - Manage bots and settings</option>
-                      <option value="agent">Agent - Handle conversations</option>
-                      <option value="viewer">Viewer - View analytics only</option>
-                    </select>
-                  </div>
-
-                  <div>
-                    <label className="label">Message (optional)</label>
-                    <textarea
-                      rows={3}
-                      placeholder="Add a personal message to the invitation..."
-                      className="textarea"
-                    />
-                  </div>
-
-                  <div className="flex gap-3 pt-4">
-                    <button className="btn-primary flex-1 px-4 py-2">
-                      Send Invitation
-                    </button>
+                  {Object.entries(roleConfig).map(([role, config]) => (
                     <button
-                      onClick={() => setShowInviteModal(false)}
-                      className="btn-secondary flex-1 px-4 py-2"
+                      key={role}
+                      onClick={() => setSelectedRole(role)}
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
+                        selectedRole === role ? 'bg-interactive text-foreground-inverse' : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
+                      }`}
                     >
-                      Cancel
+                      {config.label}s
                     </button>
-                  </div>
+                  ))}
                 </div>
               </div>
+            </Card>
+
+            {/* Team Members Grid */}
+            <div className="grid gap-4">
+              {filteredMembers.map(member => {
+                const config = roleConfig[member.role];
+                const Icon = config.icon;
+
+                return (
+                  <Card key={member.id}>
+                    <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-4">
+                      <div className="flex items-center gap-4">
+                        <img
+                          src={member.avatar}
+                          alt={member.name}
+                          className="w-12 h-12 rounded-full"
+                        />
+                        <div>
+                          <div className="flex items-center gap-3">
+                            <h3 className="font-semibold text-lg text-foreground">{member.name}</h3>
+                            {member.status === 'invited' && (
+                              <Badge variant="warning">
+                                Pending Invite
+                              </Badge>
+                            )}
+                          </div>
+                          <p className="text-sm text-foreground-secondary">{member.email}</p>
+                        </div>
+                      </div>
+
+                      <div className="flex flex-wrap items-center gap-4 lg:gap-6">
+                        <div className="text-right">
+                          <div className={`badge inline-flex items-center gap-2 px-3 py-1 ${config.color}`}>
+                            <Icon size={14} />
+                            {config.label}
+                          </div>
+                          <p className="text-xs text-foreground-tertiary mt-1">
+                            {member.role === 'owner' ? 'Full access' : `${member.permissions.length} permissions`}
+                          </p>
+                        </div>
+
+                        <div className="text-right">
+                          <p className="text-sm text-foreground">{formatLastActive(member.lastActive)}</p>
+                          <p className="text-xs text-foreground-tertiary">
+                            Joined {Math.floor((Date.now() - member.joinedDate.getTime()) / (24 * 60 * 60 * 1000))} days ago
+                          </p>
+                        </div>
+
+                        <div className="flex gap-2">
+                          <button className="p-2 hover:bg-background-hover rounded-lg transition-colors" aria-label="Send email">
+                            <Mail size={16} className="text-foreground-secondary" />
+                          </button>
+                          <button className="p-2 hover:bg-background-hover rounded-lg transition-colors" aria-label="Manage permissions">
+                            <Key size={16} className="text-foreground-secondary" />
+                          </button>
+                          <button className="p-2 hover:bg-background-hover rounded-lg transition-colors" aria-label="More options">
+                            <MoreVertical size={16} className="text-foreground-secondary" />
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+
+                    {member.role !== 'owner' && (
+                      <div className="mt-4 pt-4 border-t border-border">
+                        <p className="text-xs font-medium text-foreground mb-2">Permissions</p>
+                        <div className="flex flex-wrap gap-2">
+                          {member.permissions.map(permission => (
+                            <Badge key={permission} variant="default">
+                              {permission.replace(/_/g, ' ')}
+                            </Badge>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+                  </Card>
+                );
+              })}
             </div>
-          )}
-        </div>
-      </main>
-    </div>
+
+            {filteredMembers.length === 0 && (
+              <EmptyState
+                icon={<Users size={48} />}
+                title="No team members found"
+                message="Try adjusting your search or filters"
+              />
+            )}
+
+            {/* Invite Modal */}
+            <Modal
+              isOpen={showInviteModal}
+              onClose={() => setShowInviteModal(false)}
+              title="Invite Team Member"
+              footer={
+                <>
+                  <Button variant="secondary" onClick={() => setShowInviteModal(false)}>
+                    Cancel
+                  </Button>
+                  <Button onClick={() => setShowInviteModal(false)}>
+                    Send Invitation
+                  </Button>
+                </>
+              }
+            >
+              <div className="space-y-4">
+                <Input
+                  label="Email Address"
+                  type="email"
+                  placeholder="colleague@company.com"
+                />
+
+                <Select
+                  label="Role"
+                  options={roleSelectOptions}
+                />
+
+                <Textarea
+                  label="Message (optional)"
+                  rows={3}
+                  placeholder="Add a personal message to the invitation..."
+                />
+              </div>
+            </Modal>
+          </PageContent>
+        </Page>
+      </div>
     </AuthGuard>
   );
 }

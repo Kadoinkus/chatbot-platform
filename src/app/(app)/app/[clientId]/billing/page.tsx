@@ -6,13 +6,24 @@ import { getClientBrandColor } from '@/lib/brandColors';
 import Sidebar from '@/components/Sidebar';
 import AuthGuard from '@/components/AuthGuard';
 import {
-  CreditCard, TrendingUp, AlertCircle, CheckCircle, ChevronDown, ChevronUp,
-  Download, Plus, Wallet, Package, Activity, Users, Sparkles,
-  Euro, Calendar, Bot as BotIcon, BarChart3, Settings, Check, X,
-  MessageCircle, Server, Eye, Info, ArrowUpRight, AlertTriangle,
-  Star, Shield, Zap, Crown, Gift, ShoppingBag, Building2, ArrowLeft
+  CreditCard, ChevronDown, ChevronUp,
+  Plus, Wallet, Activity,
+  Euro, Bot as BotIcon, BarChart3,
+  MessageCircle, Server, AlertTriangle,
+  Shield, Zap, Crown, Building2, ArrowLeft, Package
 } from 'lucide-react';
 import Link from 'next/link';
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  Button,
+  Card,
+  Badge,
+  Alert,
+  Spinner,
+  EmptyState,
+} from '@/components/ui';
 
 export default function WorkspaceBillingPage({ params }: { params: { clientId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
@@ -29,10 +40,10 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
           getClientById(params.clientId),
           getWorkspacesByClientId(params.clientId)
         ]);
-        
+
         setClient(clientData);
         setWorkspaces(workspacesData || []);
-        
+
         // Load bots for each workspace
         const botsData: Record<string, Bot[]> = {};
         for (const workspace of workspacesData || []) {
@@ -40,7 +51,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
           botsData[workspace.id] = bots || [];
         }
         setWorkspaceBots(botsData);
-        
+
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -66,11 +77,9 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16">
-          <div className="flex items-center justify-center h-screen">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
-          </div>
-        </main>
+        <Page className="flex items-center justify-center">
+          <Spinner size="lg" />
+        </Page>
       </div>
     );
   }
@@ -79,12 +88,15 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16">
-          <div className="text-center p-8">
-            <AlertCircle size={48} className="text-foreground-tertiary mx-auto mb-4" />
-            <p className="text-foreground-secondary">No billing data found</p>
-          </div>
-        </main>
+        <Page>
+          <PageContent>
+            <EmptyState
+              icon={<CreditCard size={48} />}
+              title="No billing data found"
+              message="Unable to load billing information."
+            />
+          </PageContent>
+        </Page>
       </div>
     );
   }
@@ -108,18 +120,21 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
   };
 
   const getUsageWarnings = () => {
-    return workspaces.filter(ws => 
+    return workspaces.filter(ws =>
       (ws.bundleLoads.used / ws.bundleLoads.limit) > 0.8 ||
       (ws.messages.used / ws.messages.limit) > 0.9
     );
   };
 
-  const planColors: Record<string, string> = {
-    starter: 'badge-plan-starter',
-    basic: 'badge-plan-growth',
-    growth: 'badge-plan-growth',
-    premium: 'badge-plan-premium',
-    enterprise: 'badge-plan-enterprise'
+  const getPlanBadgeType = (plan: string): 'starter' | 'growth' | 'premium' | 'enterprise' => {
+    const planMap: Record<string, 'starter' | 'growth' | 'premium' | 'enterprise'> = {
+      starter: 'starter',
+      basic: 'growth',
+      growth: 'growth',
+      premium: 'premium',
+      enterprise: 'enterprise'
+    };
+    return planMap[plan] || 'starter';
   };
 
   const getPlanConfig = (plan: string) => {
@@ -150,13 +165,13 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
 
   const getMascotCost = (botId: string, workspacePlan: string) => {
     const mascot = getMascotPricing(botId);
-    
+
     if (mascot.type === 'notso-standard') return 0;
-    
+
     if (mascot.type === 'notso-pro') {
       return workspacePlan === 'starter' ? 30 : 0; // Free for Basic+
     }
-    
+
     return mascot.studioPrice; // Third-party price
   };
 
@@ -167,87 +182,78 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
 
   return (
     <AuthGuard clientId={params.clientId}>
-    <div className="flex min-h-screen bg-background">
-      <Sidebar clientId={params.clientId} />
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={params.clientId} />
 
-      <main className="flex-1 lg:ml-16">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          {/* Back Link */}
-          <Link
-            href={`/app/${params.clientId}/settings`}
-            className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-6 transition-colors"
-          >
-            <ArrowLeft size={16} />
-            Back to Settings
-          </Link>
+        <Page>
+          <PageContent>
+            <PageHeader
+              title="Billing & Workspaces"
+              description={`${workspaces.length} workspace${workspaces.length !== 1 ? 's' : ''} with ${getTotalBots()} bot${getTotalBots() !== 1 ? 's' : ''}`}
+              backLink={
+                <Link
+                  href={`/app/${params.clientId}/settings`}
+                  className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground transition-colors"
+                >
+                  <ArrowLeft size={16} />
+                  Back to Settings
+                </Link>
+              }
+              actions={
+                <Button icon={<Plus size={18} />}>
+                  New Workspace
+                </Button>
+              }
+            />
 
-          {/* Header */}
-          <div className="flex items-center justify-between mb-8">
-            <div>
-              <h1 className="text-3xl font-bold text-foreground mb-2">Billing & Workspaces</h1>
-              <p className="text-foreground-secondary">
-                {workspaces.length} workspace{workspaces.length !== 1 ? 's' : ''} with {getTotalBots()} bot{getTotalBots() !== 1 ? 's' : ''}
-              </p>
+            {/* Key Metrics */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              <Card padding="sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-foreground-secondary">Monthly Total</span>
+                  <Euro size={16} className="text-foreground-tertiary" />
+                </div>
+                <p className="text-2xl font-bold text-foreground">€{getTotalMonthlyFee().toLocaleString()}</p>
+                <p className="text-xs text-foreground-tertiary mt-1">
+                  Across {workspaces.length} workspaces
+                </p>
+              </Card>
+
+              <Card padding="sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-foreground-secondary">Total Credits</span>
+                  <Wallet size={16} className="text-warning-500" />
+                </div>
+                <p className="text-2xl font-bold text-foreground">€{getTotalCredits().toFixed(2)}</p>
+                <p className="text-xs text-foreground-tertiary mt-1">Available for overages</p>
+              </Card>
+
+              <Card padding="sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-foreground-secondary">Active Workspaces</span>
+                  <Building2 size={16} className="text-info-500" />
+                </div>
+                <p className="text-2xl font-bold text-foreground">
+                  {workspaces.filter(ws => ws.status === 'active').length}
+                </p>
+                <p className="text-xs text-foreground-tertiary mt-1">of {workspaces.length} total</p>
+              </Card>
+
+              <Card padding="sm">
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm text-foreground-secondary">Usage Warnings</span>
+                  <AlertTriangle size={16} className="text-error-500" />
+                </div>
+                <p className="text-2xl font-bold text-foreground">{getUsageWarnings().length}</p>
+                <p className="text-xs text-foreground-tertiary mt-1">Near limits</p>
+              </Card>
             </div>
-            <div className="flex gap-3">
-              <button className="btn-primary px-4 py-2">
-                <Plus size={18} />
-                New Workspace
-              </button>
-            </div>
-          </div>
 
-          {/* Key Metrics */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="card p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-foreground-secondary">Monthly Total</span>
-                <Euro size={16} className="text-foreground-tertiary" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">€{getTotalMonthlyFee().toLocaleString()}</p>
-              <p className="text-xs text-foreground-tertiary mt-1">
-                Across {workspaces.length} workspaces
-              </p>
-            </div>
-
-            <div className="card p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-foreground-secondary">Total Credits</span>
-                <Wallet size={16} className="text-warning-500" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">€{getTotalCredits().toFixed(2)}</p>
-              <p className="text-xs text-foreground-tertiary mt-1">Available for overages</p>
-            </div>
-
-            <div className="card p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-foreground-secondary">Active Workspaces</span>
-                <Building2 size={16} className="text-info-500" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">
-                {workspaces.filter(ws => ws.status === 'active').length}
-              </p>
-              <p className="text-xs text-foreground-tertiary mt-1">of {workspaces.length} total</p>
-            </div>
-
-            <div className="card p-4">
-              <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-foreground-secondary">Usage Warnings</span>
-                <AlertTriangle size={16} className="text-error-500" />
-              </div>
-              <p className="text-2xl font-bold text-foreground">{getUsageWarnings().length}</p>
-              <p className="text-xs text-foreground-tertiary mt-1">Near limits</p>
-            </div>
-          </div>
-
-          {/* Usage Warnings */}
-          {getUsageWarnings().length > 0 && (
-            <div className="mb-6 p-4 bg-warning-100 dark:bg-warning-700/30 border border-warning-300 dark:border-warning-700 rounded-lg">
-              <div className="flex items-start gap-3">
-                <AlertTriangle size={20} className="text-warning-600 dark:text-warning-500 mt-0.5" />
-                <div>
-                  <p className="font-medium text-warning-900 dark:text-warning-300 mb-1">Usage Warnings</p>
-                  <ul className="text-sm text-warning-800 dark:text-warning-400 space-y-1">
+            {/* Usage Warnings */}
+            {getUsageWarnings().length > 0 && (
+              <div className="mb-6">
+                <Alert variant="warning" title="Usage Warnings">
+                  <ul className="text-sm space-y-1 mt-2">
                     {getUsageWarnings().map(workspace => (
                       <li key={workspace.id}>
                         <strong>{workspace.name}</strong> is approaching limits
@@ -258,386 +264,382 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                       </li>
                     ))}
                   </ul>
-                </div>
+                </Alert>
               </div>
-            </div>
-          )}
+            )}
 
-          {/* Action Bar */}
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-              <Building2 size={24} />
-              Your Workspaces
-            </h2>
-            <div className="flex gap-3">
-              <button
+            {/* Action Bar */}
+            <div className="flex items-center justify-between mb-6">
+              <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
+                <Building2 size={24} />
+                Your Workspaces
+              </h2>
+              <Button
+                variant="secondary"
+                icon={<CreditCard size={16} />}
                 onClick={() => setShowInvoices(!showInvoices)}
-                className="btn-secondary px-4 py-2"
               >
-                <CreditCard size={16} />
                 {showInvoices ? 'Hide' : 'View'} Invoices
-              </button>
+              </Button>
             </div>
-          </div>
 
-          {/* Invoices Section */}
-          {showInvoices && (
-            <div className="card p-6 mb-6">
-              <div className="text-center py-12">
-                <CreditCard size={48} className="text-foreground-tertiary mx-auto mb-4" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">Invoices Coming Soon</h3>
-                <p className="text-foreground-secondary">Workspace-based invoicing will be available shortly.</p>
-              </div>
-            </div>
-          )}
-
-          {/* Unified Workspace Dashboard */}
-          <div className="space-y-4 mb-6">{workspaces.map(workspace => {
-            const isExpanded = expandedWorkspaces.has(workspace.id);
-            const bots = workspaceBots[workspace.id] || [];
-            const bundleUsagePercent = (workspace.bundleLoads.used / workspace.bundleLoads.limit) * 100;
-            const messageUsagePercent = (workspace.messages.used / workspace.messages.limit) * 100;
-            const apiUsagePercent = (workspace.apiCalls.used / workspace.apiCalls.limit) * 100;
-            const planConfig = getPlanConfig(workspace.plan);
-            
-            return (
-              <div key={workspace.id} className="card">
-                <div
-                  className="p-6 cursor-pointer hover:bg-background-hover transition-colors"
-                  onClick={() => toggleWorkspaceExpansion(workspace.id)}
-                >
-                  {/* Compact Summary View */}
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center gap-4">
-                      <planConfig.icon size={28} className={planConfig.color} />
-                      <div>
-                        <div className="flex items-center gap-3 mb-1">
-                          <h3 className="text-lg font-semibold text-foreground">{workspace.name}</h3>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${planColors[workspace.plan]}`}>
-                            {planConfig.name}
-                          </span>
-                          {workspace.status !== 'active' && (
-                            <span className="px-2 py-1 bg-error-100 dark:bg-error-700/30 text-error-700 dark:text-error-500 rounded-full text-xs font-medium">
-                              {workspace.status.toUpperCase()}
-                            </span>
-                          )}
-                        </div>
-                        <p className="text-sm text-foreground-secondary">
-                          {bots.length} bot{bots.length !== 1 ? 's' : ''} • {workspace.billingCycle} billing • {workspace.description}
-                        </p>
-                      </div>
-                    </div>
-                    <div className="flex items-center gap-6">
-                      <div className="text-right">
-                        <p className="text-sm text-foreground-tertiary">Monthly Cost</p>
-                        {getPlanConfig(workspace.plan).price === 0 ? (
-                          <p className="text-lg font-semibold text-foreground">On Request</p>
-                        ) : (
-                          <div>
-                            <p className="text-lg font-semibold text-foreground">
-                              €{(getPlanConfig(workspace.plan).price + getWorkspaceMascotTotal(workspace.id, workspace.plan)).toLocaleString()}
-                            </p>
-                            {getWorkspaceMascotTotal(workspace.id, workspace.plan) > 0 && (
-                              <p className="text-xs text-foreground-tertiary">
-                                Plan: €{getPlanConfig(workspace.plan).price.toLocaleString()} + Mascots: €{getWorkspaceMascotTotal(workspace.id, workspace.plan)}
-                              </p>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                      <div className="text-right">
-                        <p className="text-sm text-foreground-tertiary">Credits</p>
-                        <p className="text-lg font-semibold text-foreground">€{workspace.walletCredits.toFixed(2)}</p>
-                      </div>
-                      {isExpanded ? <ChevronUp size={20} className="text-foreground-tertiary" /> : <ChevronDown size={20} className="text-foreground-tertiary" />}
-                    </div>
-                  </div>
-
-                  {/* Bot Summary */}
-                  {bots.length > 0 ? (
-                    <div>
-                      <div className="flex items-center justify-between mb-3">
-                        <p className="text-sm font-medium text-foreground-secondary flex items-center gap-2">
-                          <BotIcon size={14} />
-                          {bots.filter(b => b.status === 'Live').length} active of {bots.length} bots
-                        </p>
-                        <span className="text-xs text-foreground-tertiary">Click to expand</span>
-                      </div>
-                      <div className="flex items-center gap-2 overflow-hidden">
-                        {bots.slice(0, 4).map(bot => (
-                          <div key={bot.id} className="relative flex-shrink-0">
-                            <img
-                              src={bot.image}
-                              alt={bot.name}
-                              className="w-8 h-8 rounded-full border-2 border-surface-elevated shadow-sm"
-                              style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                              title={`${bot.name} - ${bot.status}`}
-                            />
-                            <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface-elevated ${
-                              bot.status === 'Live' ? 'bg-success-500' :
-                              bot.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
-                            }`} />
-                          </div>
-                        ))}
-                        {bots.length > 4 && (
-                          <div className="w-8 h-8 bg-background-tertiary rounded-full flex items-center justify-center text-xs text-foreground-secondary font-medium">
-                            +{bots.length - 4}
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  ) : (
-                    <div className="text-center py-3">
-                      <BotIcon size={16} className="text-foreground-tertiary mx-auto mb-1" />
-                      <p className="text-sm text-foreground-tertiary">No bots in this workspace</p>
-                      <button className="text-xs text-info-600 dark:text-info-500 hover:text-info-700 dark:hover:text-info-400 mt-1">+ Add first bot</button>
-                    </div>
-                  )}
+            {/* Invoices Section */}
+            {showInvoices && (
+              <Card className="mb-6">
+                <div className="text-center py-12">
+                  <CreditCard size={48} className="text-foreground-tertiary mx-auto mb-4" />
+                  <h3 className="text-lg font-semibold text-foreground mb-2">Invoices Coming Soon</h3>
+                  <p className="text-foreground-secondary">Workspace-based invoicing will be available shortly.</p>
                 </div>
+              </Card>
+            )}
 
-                {/* Detailed Expanded View */}
-                {isExpanded && (
-                  <div className="border-t border-border p-6 bg-background-secondary">
-                    <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-                      {/* Detailed Resource Usage */}
-                      <div>
-                        <h4 className="text-sm font-semibold text-foreground-secondary mb-4 flex items-center gap-2">
-                          <BarChart3 size={16} />
-                          Resource Usage Details
-                        </h4>
-                        <div className="space-y-4">
-                          <div className="bg-surface-elevated rounded-lg p-4 border border-border">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <Server size={14} className="text-info-600 dark:text-info-500" />
-                                Bundle Loads (3D Rendering)
-                              </span>
-                              <span className="text-sm text-foreground-secondary">
-                                {workspace.bundleLoads.used.toLocaleString()} / {workspace.bundleLoads.limit.toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="h-3 bg-background-tertiary rounded-full overflow-hidden mb-2">
-                              <div
-                                className={`h-full transition-all ${
-                                  bundleUsagePercent > 90 ? 'bg-error-500' :
-                                  bundleUsagePercent > 70 ? 'bg-warning-500' : 'bg-info-500'
-                                }`}
-                                style={{ width: `${Math.min(100, bundleUsagePercent)}%` }}
-                              />
-                            </div>
-                            <p className="text-xs text-foreground-tertiary">
-                              €{workspace.overageRates.bundleLoads}/load overage • {workspace.bundleLoads.remaining.toLocaleString()} remaining
-                            </p>
-                          </div>
-
-                          <div className="bg-surface-elevated rounded-lg p-4 border border-border">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <MessageCircle size={14} className="text-plan-premium-text" />
-                                Messages (OpenAI Processing)
-                              </span>
-                              <span className="text-sm text-foreground-secondary">
-                                {workspace.messages.used.toLocaleString()} / {workspace.messages.limit.toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="h-3 bg-background-tertiary rounded-full overflow-hidden mb-2">
-                              <div
-                                className={`h-full transition-all ${
-                                  messageUsagePercent > 90 ? 'bg-error-500' :
-                                  messageUsagePercent > 70 ? 'bg-warning-500' : 'bg-plan-premium-text'
-                                }`}
-                                style={{ width: `${Math.min(100, messageUsagePercent)}%` }}
-                              />
-                            </div>
-                            <p className="text-xs text-foreground-tertiary">
-                              €{workspace.overageRates.messages}/message overage • {workspace.messages.remaining.toLocaleString()} remaining
-                            </p>
-                          </div>
-
-                          <div className="bg-surface-elevated rounded-lg p-4 border border-border">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium text-foreground flex items-center gap-2">
-                                <Activity size={14} className="text-success-600 dark:text-success-500" />
-                                API Calls
-                              </span>
-                              <span className="text-sm text-foreground-secondary">
-                                {workspace.apiCalls.used.toLocaleString()} / {workspace.apiCalls.limit.toLocaleString()}
-                              </span>
-                            </div>
-                            <div className="h-3 bg-background-tertiary rounded-full overflow-hidden mb-2">
-                              <div
-                                className={`h-full transition-all ${
-                                  apiUsagePercent > 90 ? 'bg-error-500' :
-                                  apiUsagePercent > 70 ? 'bg-warning-500' : 'bg-success-500'
-                                }`}
-                                style={{ width: `${Math.min(100, apiUsagePercent)}%` }}
-                              />
-                            </div>
-                            <p className="text-xs text-foreground-tertiary">
-                              €{workspace.overageRates.apiCalls}/call overage • {workspace.apiCalls.remaining.toLocaleString()} remaining
-                            </p>
-                          </div>
-                        </div>
-                      </div>
-
-                      {/* Workspace Bots & Actions */}
-                      <div>
-                        <h4 className="text-sm font-semibold text-foreground-secondary mb-4 flex items-center gap-2">
-                          <BotIcon size={16} />
-                          Workspace Bots ({bots.length})
-                        </h4>
-                        {bots.length > 0 ? (
-                          <div className="space-y-2 mb-6">
-                            {bots.map(bot => {
-                              const mascotInfo = getMascotPricing(bot.id);
-                              const mascotCost = getMascotCost(bot.id, workspace.plan);
-                              const isIncluded = mascotInfo.type === 'notso-pro' && workspace.plan !== 'starter';
-
-                              return (
-                                <div key={bot.id} className="flex items-center gap-3 p-3 bg-surface-elevated rounded-lg border border-border">
-                                  <img
-                                    src={bot.image}
-                                    alt={bot.name}
-                                    className="w-10 h-10 rounded-full"
-                                    style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                                  />
-                                  <div className="flex-1">
-                                    <div className="flex items-center gap-2 mb-1">
-                                      <p className="text-sm font-medium text-foreground">{bot.name}</p>
-                                      <span className={`w-2 h-2 rounded-full ${
-                                        bot.status === 'Live' ? 'bg-success-500' :
-                                        bot.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
-                                      }`} />
-                                    </div>
-                                    <p className="text-xs text-foreground-tertiary mb-1">{bot.description}</p>
-                                    <div className="flex items-center gap-2">
-                                      <span className="text-xs text-foreground-secondary">{mascotInfo.studioName}</span>
-                                      {mascotInfo.type === 'notso-pro' && (
-                                        <span className="px-2 py-0.5 bg-info-100 dark:bg-info-700/30 text-info-700 dark:text-info-500 text-xs rounded-full font-medium">Pro</span>
-                                      )}
-                                      {mascotInfo.type === 'third-party' && (
-                                        <span className="px-2 py-0.5 bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500 text-xs rounded-full font-medium">3rd Party</span>
-                                      )}
-                                    </div>
-                                  </div>
-                                  <div className="text-right">
-                                    {mascotCost === 0 ? (
-                                      <span className="text-sm font-medium text-success-600 dark:text-success-500">
-                                        {isIncluded ? 'Included' : 'Free'}
-                                      </span>
-                                    ) : (
-                                      <span className="text-sm font-medium text-foreground">€{mascotCost}/mo</span>
-                                    )}
-                                  </div>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        ) : (
-                          <div className="bg-surface-elevated rounded-lg border border-border p-6 text-center mb-6">
-                            <BotIcon size={32} className="text-foreground-tertiary mx-auto mb-2" />
-                            <p className="text-sm text-foreground-tertiary">No bots in this workspace</p>
-                          </div>
-                        )}
-
-                        {/* Mascot Cost Summary */}
-                        {bots.length > 0 && (
-                          <div className="bg-background-tertiary rounded-lg p-4 mb-6">
-                            <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium text-foreground-secondary">Mascot Costs</span>
-                              <span className="text-sm font-bold text-foreground">
-                                €{getWorkspaceMascotTotal(workspace.id, workspace.plan)}/mo
-                              </span>
-                            </div>
-                            <div className="text-xs text-foreground-secondary space-y-1">
-                              {bots.filter(bot => getMascotCost(bot.id, workspace.plan) > 0).length > 0 ? (
-                                bots.filter(bot => getMascotCost(bot.id, workspace.plan) > 0).map(bot => (
-                                  <div key={bot.id} className="flex justify-between">
-                                    <span>{bot.name} ({getMascotPricing(bot.id).studioName})</span>
-                                    <span>€{getMascotCost(bot.id, workspace.plan)}</span>
-                                  </div>
-                                ))
-                              ) : (
-                                <span className="text-success-600 dark:text-success-500">All mascots included in plan or free</span>
-                              )}
-                            </div>
-                          </div>
-                        )}
-
-                        {/* Action Buttons */}
-                        <div className="space-y-3">
-                          <div className="flex gap-2">
-                            <Link
-                              href={`/app/${client.id}/plans`}
-                              className="flex-1 btn-primary px-4 py-2 text-sm text-center justify-center"
-                            >
-                              Upgrade Plan
-                            </Link>
-                            <button className="flex-1 btn-secondary px-4 py-2 text-sm">
-                              Add Credits
-                            </button>
-                          </div>
-                          <Link
-                            href={`/app/${client.id}/workspace/${workspace.id}`}
-                            className="block w-full btn-secondary px-4 py-2 text-sm text-center justify-center"
-                          >
-                            Manage Workspace →
-                          </Link>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              </div>
-            );
-          })}
-          </div>
-
-          {/* Monthly Cost Breakdown */}
-          <div className="card p-6">
-            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-              <BarChart3 size={20} />
-              Monthly Cost Breakdown
-            </h3>
-            <div className="space-y-3">
+            {/* Unified Workspace Dashboard */}
+            <div className="space-y-4 mb-6">
               {workspaces.map(workspace => {
+                const isExpanded = expandedWorkspaces.has(workspace.id);
+                const bots = workspaceBots[workspace.id] || [];
+                const bundleUsagePercent = (workspace.bundleLoads.used / workspace.bundleLoads.limit) * 100;
+                const messageUsagePercent = (workspace.messages.used / workspace.messages.limit) * 100;
+                const apiUsagePercent = (workspace.apiCalls.used / workspace.apiCalls.limit) * 100;
                 const planConfig = getPlanConfig(workspace.plan);
-                const mascotCost = getWorkspaceMascotTotal(workspace.id, workspace.plan);
-                const totalCost = planConfig.price + mascotCost;
 
                 return (
-                  <div key={workspace.id} className="py-3 border-b border-border last:border-b-0">
-                    <div className="flex justify-between items-center">
-                      <div className="flex items-center gap-3">
-                        <planConfig.icon size={16} className={planConfig.color} />
-                        <span className="font-medium text-foreground">{workspace.name}</span>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${planColors[workspace.plan]}`}>
-                          {planConfig.name}
-                        </span>
+                  <Card key={workspace.id} padding="none">
+                    <div
+                      className="p-6 cursor-pointer hover:bg-background-hover transition-colors"
+                      onClick={() => toggleWorkspaceExpansion(workspace.id)}
+                    >
+                      {/* Compact Summary View */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-4">
+                          <planConfig.icon size={28} className={planConfig.color} />
+                          <div>
+                            <div className="flex items-center gap-3 mb-1">
+                              <h3 className="text-lg font-semibold text-foreground">{workspace.name}</h3>
+                              <Badge plan={getPlanBadgeType(workspace.plan)}>
+                                {planConfig.name}
+                              </Badge>
+                              {workspace.status !== 'active' && (
+                                <Badge variant="error">
+                                  {workspace.status.toUpperCase()}
+                                </Badge>
+                              )}
+                            </div>
+                            <p className="text-sm text-foreground-secondary">
+                              {bots.length} bot{bots.length !== 1 ? 's' : ''} • {workspace.billingCycle} billing • {workspace.description}
+                            </p>
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-6">
+                          <div className="text-right">
+                            <p className="text-sm text-foreground-tertiary">Monthly Cost</p>
+                            {getPlanConfig(workspace.plan).price === 0 ? (
+                              <p className="text-lg font-semibold text-foreground">On Request</p>
+                            ) : (
+                              <div>
+                                <p className="text-lg font-semibold text-foreground">
+                                  €{(getPlanConfig(workspace.plan).price + getWorkspaceMascotTotal(workspace.id, workspace.plan)).toLocaleString()}
+                                </p>
+                                {getWorkspaceMascotTotal(workspace.id, workspace.plan) > 0 && (
+                                  <p className="text-xs text-foreground-tertiary">
+                                    Plan: €{getPlanConfig(workspace.plan).price.toLocaleString()} + Mascots: €{getWorkspaceMascotTotal(workspace.id, workspace.plan)}
+                                  </p>
+                                )}
+                              </div>
+                            )}
+                          </div>
+                          <div className="text-right">
+                            <p className="text-sm text-foreground-tertiary">Credits</p>
+                            <p className="text-lg font-semibold text-foreground">€{workspace.walletCredits.toFixed(2)}</p>
+                          </div>
+                          {isExpanded ? <ChevronUp size={20} className="text-foreground-tertiary" /> : <ChevronDown size={20} className="text-foreground-tertiary" />}
+                        </div>
                       </div>
-                      <span className="font-semibold text-foreground">
-                        {planConfig.price === 0 ? 'On Request' : `€${totalCost.toLocaleString()}`}
-                      </span>
+
+                      {/* Bot Summary */}
+                      {bots.length > 0 ? (
+                        <div>
+                          <div className="flex items-center justify-between mb-3">
+                            <p className="text-sm font-medium text-foreground-secondary flex items-center gap-2">
+                              <BotIcon size={14} />
+                              {bots.filter(b => b.status === 'Live').length} active of {bots.length} bots
+                            </p>
+                            <span className="text-xs text-foreground-tertiary">Click to expand</span>
+                          </div>
+                          <div className="flex items-center gap-2 overflow-hidden">
+                            {bots.slice(0, 4).map(bot => (
+                              <div key={bot.id} className="relative flex-shrink-0">
+                                <img
+                                  src={bot.image}
+                                  alt={bot.name}
+                                  className="w-8 h-8 rounded-full border-2 border-surface-elevated shadow-sm"
+                                  style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                                  title={`${bot.name} - ${bot.status}`}
+                                />
+                                <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface-elevated ${
+                                  bot.status === 'Live' ? 'bg-success-500' :
+                                  bot.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
+                                }`} />
+                              </div>
+                            ))}
+                            {bots.length > 4 && (
+                              <div className="w-8 h-8 bg-background-tertiary rounded-full flex items-center justify-center text-xs text-foreground-secondary font-medium">
+                                +{bots.length - 4}
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="text-center py-3">
+                          <BotIcon size={16} className="text-foreground-tertiary mx-auto mb-1" />
+                          <p className="text-sm text-foreground-tertiary">No bots in this workspace</p>
+                          <button className="text-xs text-info-600 dark:text-info-500 hover:text-info-700 dark:hover:text-info-400 mt-1">+ Add first bot</button>
+                        </div>
+                      )}
                     </div>
-                    {planConfig.price > 0 && mascotCost > 0 && (
-                      <div className="flex justify-between items-center text-xs text-foreground-tertiary mt-1 pl-8">
-                        <span>Plan: €{planConfig.price.toLocaleString()} + Mascots: €{mascotCost}</span>
+
+                    {/* Detailed Expanded View */}
+                    {isExpanded && (
+                      <div className="border-t border-border p-6 bg-background-secondary">
+                        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                          {/* Detailed Resource Usage */}
+                          <div>
+                            <h4 className="text-sm font-semibold text-foreground-secondary mb-4 flex items-center gap-2">
+                              <BarChart3 size={16} />
+                              Resource Usage Details
+                            </h4>
+                            <div className="space-y-4">
+                              <div className="bg-surface-elevated rounded-lg p-4 border border-border">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium text-foreground flex items-center gap-2">
+                                    <Server size={14} className="text-info-600 dark:text-info-500" />
+                                    Bundle Loads (3D Rendering)
+                                  </span>
+                                  <span className="text-sm text-foreground-secondary">
+                                    {workspace.bundleLoads.used.toLocaleString()} / {workspace.bundleLoads.limit.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="h-3 bg-background-tertiary rounded-full overflow-hidden mb-2">
+                                  <div
+                                    className={`h-full transition-all ${
+                                      bundleUsagePercent > 90 ? 'bg-error-500' :
+                                      bundleUsagePercent > 70 ? 'bg-warning-500' : 'bg-info-500'
+                                    }`}
+                                    style={{ width: `${Math.min(100, bundleUsagePercent)}%` }}
+                                  />
+                                </div>
+                                <p className="text-xs text-foreground-tertiary">
+                                  €{workspace.overageRates.bundleLoads}/load overage • {workspace.bundleLoads.remaining.toLocaleString()} remaining
+                                </p>
+                              </div>
+
+                              <div className="bg-surface-elevated rounded-lg p-4 border border-border">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium text-foreground flex items-center gap-2">
+                                    <MessageCircle size={14} className="text-plan-premium-text" />
+                                    Messages (OpenAI Processing)
+                                  </span>
+                                  <span className="text-sm text-foreground-secondary">
+                                    {workspace.messages.used.toLocaleString()} / {workspace.messages.limit.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="h-3 bg-background-tertiary rounded-full overflow-hidden mb-2">
+                                  <div
+                                    className={`h-full transition-all ${
+                                      messageUsagePercent > 90 ? 'bg-error-500' :
+                                      messageUsagePercent > 70 ? 'bg-warning-500' : 'bg-plan-premium-text'
+                                    }`}
+                                    style={{ width: `${Math.min(100, messageUsagePercent)}%` }}
+                                  />
+                                </div>
+                                <p className="text-xs text-foreground-tertiary">
+                                  €{workspace.overageRates.messages}/message overage • {workspace.messages.remaining.toLocaleString()} remaining
+                                </p>
+                              </div>
+
+                              <div className="bg-surface-elevated rounded-lg p-4 border border-border">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium text-foreground flex items-center gap-2">
+                                    <Activity size={14} className="text-success-600 dark:text-success-500" />
+                                    API Calls
+                                  </span>
+                                  <span className="text-sm text-foreground-secondary">
+                                    {workspace.apiCalls.used.toLocaleString()} / {workspace.apiCalls.limit.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="h-3 bg-background-tertiary rounded-full overflow-hidden mb-2">
+                                  <div
+                                    className={`h-full transition-all ${
+                                      apiUsagePercent > 90 ? 'bg-error-500' :
+                                      apiUsagePercent > 70 ? 'bg-warning-500' : 'bg-success-500'
+                                    }`}
+                                    style={{ width: `${Math.min(100, apiUsagePercent)}%` }}
+                                  />
+                                </div>
+                                <p className="text-xs text-foreground-tertiary">
+                                  €{workspace.overageRates.apiCalls}/call overage • {workspace.apiCalls.remaining.toLocaleString()} remaining
+                                </p>
+                              </div>
+                            </div>
+                          </div>
+
+                          {/* Workspace Bots & Actions */}
+                          <div>
+                            <h4 className="text-sm font-semibold text-foreground-secondary mb-4 flex items-center gap-2">
+                              <BotIcon size={16} />
+                              Workspace Bots ({bots.length})
+                            </h4>
+                            {bots.length > 0 ? (
+                              <div className="space-y-2 mb-6">
+                                {bots.map(bot => {
+                                  const mascotInfo = getMascotPricing(bot.id);
+                                  const mascotCost = getMascotCost(bot.id, workspace.plan);
+                                  const isIncluded = mascotInfo.type === 'notso-pro' && workspace.plan !== 'starter';
+
+                                  return (
+                                    <div key={bot.id} className="flex items-center gap-3 p-3 bg-surface-elevated rounded-lg border border-border">
+                                      <img
+                                        src={bot.image}
+                                        alt={bot.name}
+                                        className="w-10 h-10 rounded-full"
+                                        style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                                      />
+                                      <div className="flex-1">
+                                        <div className="flex items-center gap-2 mb-1">
+                                          <p className="text-sm font-medium text-foreground">{bot.name}</p>
+                                          <span className={`w-2 h-2 rounded-full ${
+                                            bot.status === 'Live' ? 'bg-success-500' :
+                                            bot.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
+                                          }`} />
+                                        </div>
+                                        <p className="text-xs text-foreground-tertiary mb-1">{bot.description}</p>
+                                        <div className="flex items-center gap-2">
+                                          <span className="text-xs text-foreground-secondary">{mascotInfo.studioName}</span>
+                                          {mascotInfo.type === 'notso-pro' && (
+                                            <Badge variant="info" className="text-xs">Pro</Badge>
+                                          )}
+                                          {mascotInfo.type === 'third-party' && (
+                                            <Badge variant="warning" className="text-xs">3rd Party</Badge>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="text-right">
+                                        {mascotCost === 0 ? (
+                                          <span className="text-sm font-medium text-success-600 dark:text-success-500">
+                                            {isIncluded ? 'Included' : 'Free'}
+                                          </span>
+                                        ) : (
+                                          <span className="text-sm font-medium text-foreground">€{mascotCost}/mo</span>
+                                        )}
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            ) : (
+                              <div className="bg-surface-elevated rounded-lg border border-border p-6 text-center mb-6">
+                                <BotIcon size={32} className="text-foreground-tertiary mx-auto mb-2" />
+                                <p className="text-sm text-foreground-tertiary">No bots in this workspace</p>
+                              </div>
+                            )}
+
+                            {/* Mascot Cost Summary */}
+                            {bots.length > 0 && (
+                              <div className="bg-background-tertiary rounded-lg p-4 mb-6">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium text-foreground-secondary">Mascot Costs</span>
+                                  <span className="text-sm font-bold text-foreground">
+                                    €{getWorkspaceMascotTotal(workspace.id, workspace.plan)}/mo
+                                  </span>
+                                </div>
+                                <div className="text-xs text-foreground-secondary space-y-1">
+                                  {bots.filter(bot => getMascotCost(bot.id, workspace.plan) > 0).length > 0 ? (
+                                    bots.filter(bot => getMascotCost(bot.id, workspace.plan) > 0).map(bot => (
+                                      <div key={bot.id} className="flex justify-between">
+                                        <span>{bot.name} ({getMascotPricing(bot.id).studioName})</span>
+                                        <span>€{getMascotCost(bot.id, workspace.plan)}</span>
+                                      </div>
+                                    ))
+                                  ) : (
+                                    <span className="text-success-600 dark:text-success-500">All mascots included in plan or free</span>
+                                  )}
+                                </div>
+                              </div>
+                            )}
+
+                            {/* Action Buttons */}
+                            <div className="space-y-3">
+                              <div className="flex gap-2">
+                                <Link href={`/app/${client.id}/plans`} className="flex-1">
+                                  <Button fullWidth>
+                                    Upgrade Plan
+                                  </Button>
+                                </Link>
+                                <Button variant="secondary" className="flex-1">
+                                  Add Credits
+                                </Button>
+                              </div>
+                              <Link href={`/app/${client.id}/workspace/${workspace.id}`}>
+                                <Button variant="secondary" fullWidth>
+                                  Manage Workspace →
+                                </Button>
+                              </Link>
+                            </div>
+                          </div>
+                        </div>
                       </div>
                     )}
-                  </div>
+                  </Card>
                 );
               })}
-              <div className="border-t border-border pt-3 mt-4 flex justify-between items-center font-semibold text-lg">
-                <span className="text-foreground">Total Monthly Cost</span>
-                <span className="text-success-600 dark:text-success-500">
-                  €{getTotalMonthlyFee().toLocaleString()}
-                </span>
-              </div>
             </div>
-          </div>
-        </div>
-      </main>
-    </div>
+
+            {/* Monthly Cost Breakdown */}
+            <Card>
+              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
+                <BarChart3 size={20} />
+                Monthly Cost Breakdown
+              </h3>
+              <div className="space-y-3">
+                {workspaces.map(workspace => {
+                  const planConfig = getPlanConfig(workspace.plan);
+                  const mascotCost = getWorkspaceMascotTotal(workspace.id, workspace.plan);
+                  const totalCost = planConfig.price + mascotCost;
+
+                  return (
+                    <div key={workspace.id} className="py-3 border-b border-border last:border-b-0">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <planConfig.icon size={16} className={planConfig.color} />
+                          <span className="font-medium text-foreground">{workspace.name}</span>
+                          <Badge plan={getPlanBadgeType(workspace.plan)}>
+                            {planConfig.name}
+                          </Badge>
+                        </div>
+                        <span className="font-semibold text-foreground">
+                          {planConfig.price === 0 ? 'On Request' : `€${totalCost.toLocaleString()}`}
+                        </span>
+                      </div>
+                      {planConfig.price > 0 && mascotCost > 0 && (
+                        <div className="flex justify-between items-center text-xs text-foreground-tertiary mt-1 pl-8">
+                          <span>Plan: €{planConfig.price.toLocaleString()} + Mascots: €{mascotCost}</span>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+                <div className="border-t border-border pt-3 mt-4 flex justify-between items-center font-semibold text-lg">
+                  <span className="text-foreground">Total Monthly Cost</span>
+                  <span className="text-success-600 dark:text-success-500">
+                    €{getTotalMonthlyFee().toLocaleString()}
+                  </span>
+                </div>
+              </div>
+            </Card>
+          </PageContent>
+        </Page>
+      </div>
     </AuthGuard>
   );
 }

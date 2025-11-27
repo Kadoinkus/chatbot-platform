@@ -3,9 +3,19 @@ import { useState, useEffect } from 'react';
 import { getClientById } from '@/lib/dataService';
 import { useCart } from '@/contexts/CartContext';
 import Sidebar from '@/components/Sidebar';
-import { Star, Zap, MessageCircle, Gamepad, Heart, ShoppingCart, CheckCircle, Plus, Search } from 'lucide-react';
-import Link from 'next/link';
+import AuthGuard from '@/components/AuthGuard';
+import { Star, Zap, MessageCircle, Heart, ShoppingCart, CheckCircle, Plus, Search } from 'lucide-react';
 import type { Client } from '@/lib/dataService';
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  Button,
+  Input,
+  Card,
+  Spinner,
+  EmptyState,
+} from '@/components/ui';
 
 type BotTemplate = {
   id: string;
@@ -159,7 +169,7 @@ const appearanceTypes = [
   'All Types',
   'Humanoid',
   'Blob',
-  'Abstract', 
+  'Abstract',
   'Animal (4-legged)',
   'Animal (2-legged)',
   'Robot/Mech',
@@ -191,8 +201,8 @@ export default function MarketplacePage({ params }: { params: { clientId: string
   const [selectedPricing, setSelectedPricing] = useState('All Pricing');
   const [searchQuery, setSearchQuery] = useState('');
   const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
-  
-  const { addItem, totalItems } = useCart();
+
+  const { addItem } = useCart();
 
   useEffect(() => {
     async function loadData() {
@@ -211,7 +221,7 @@ export default function MarketplacePage({ params }: { params: { clientId: string
   const filteredTemplates = botTemplates.filter(template => {
     const matchesAppearance = selectedAppearance === 'All Types' || template.appearance === selectedAppearance;
     const matchesStudio = selectedStudio === 'All Studios' || template.studio === selectedStudio;
-    const matchesPricing = selectedPricing === 'All Pricing' || 
+    const matchesPricing = selectedPricing === 'All Pricing' ||
       (selectedPricing === 'Free' && template.price === 'Free') ||
       (selectedPricing === 'Premium' && template.price !== 'Free');
     const matchesSearch = template.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -223,9 +233,9 @@ export default function MarketplacePage({ params }: { params: { clientId: string
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
-        </main>
+        <Page className="flex items-center justify-center">
+          <Spinner size="lg" />
+        </Page>
       </div>
     );
   }
@@ -234,260 +244,261 @@ export default function MarketplacePage({ params }: { params: { clientId: string
     return (
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={params.clientId} />
-        <main className="flex-1 lg:ml-16 p-6">
-          <p className="text-foreground-secondary">Client not found</p>
-        </main>
+        <Page>
+          <PageContent>
+            <EmptyState
+              icon={<MessageCircle size={48} />}
+              title="Client not found"
+              message="The requested client could not be found."
+            />
+          </PageContent>
+        </Page>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen bg-background">
-      <Sidebar clientId={client.id} />
+    <AuthGuard clientId={params.clientId}>
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={client.id} />
 
-      <main className="flex-1 lg:ml-16 min-h-screen">
-        <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <div className="mb-6 lg:mb-8">
-            <h1 className="text-2xl lg:text-3xl font-bold text-foreground mb-2">3D Mascot Marketplace</h1>
-            <p className="text-foreground-secondary">Choose from our collection of animated 3D mascots for your chatbots</p>
-          </div>
+        <Page>
+          <PageContent>
+            <PageHeader
+              title="3D Mascot Marketplace"
+              description="Choose from our collection of animated 3D mascots for your chatbots"
+            />
 
-          {/* Search and Filters */}
-          <div className="space-y-4 mb-6">
-            {/* Search Bar */}
-            <div className="flex flex-col lg:flex-row lg:items-center gap-4">
-              <div className="relative flex-1 max-w-md">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-foreground-tertiary" size={20} />
-                <input
-                  type="text"
-                  placeholder="Search 3D mascot templates..."
-                  value={searchQuery}
-                  onChange={(e) => setSearchQuery(e.target.value)}
-                  className="input pl-10"
-                />
+            {/* Search and Filters */}
+            <div className="space-y-4 mb-6">
+              {/* Search Bar */}
+              <div className="flex flex-col lg:flex-row lg:items-center gap-4">
+                <div className="flex-1 max-w-md">
+                  <Input
+                    icon={<Search size={20} />}
+                    placeholder="Search 3D mascot templates..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                  />
+                </div>
+              </div>
+
+              {/* Filter Categories */}
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {/* Appearance Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-foreground-secondary mb-2">Appearance</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {appearanceTypes.map(type => (
+                      <button
+                        key={type}
+                        onClick={() => setSelectedAppearance(type)}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          selectedAppearance === type
+                            ? 'bg-info-600 text-white'
+                            : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
+                        }`}
+                      >
+                        {type}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Studio Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-foreground-secondary mb-2">Studio</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {studioFilters.map(studio => (
+                      <button
+                        key={studio}
+                        onClick={() => setSelectedStudio(studio)}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          selectedStudio === studio
+                            ? 'bg-success-600 text-white'
+                            : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
+                        }`}
+                      >
+                        {studio}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Pricing Filter */}
+                <div>
+                  <label className="block text-sm font-medium text-foreground-secondary mb-2">Pricing</label>
+                  <div className="flex gap-2 flex-wrap">
+                    {pricingFilters.map(pricing => (
+                      <button
+                        key={pricing}
+                        onClick={() => setSelectedPricing(pricing)}
+                        className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
+                          selectedPricing === pricing
+                            ? 'bg-plan-premium-text text-white'
+                            : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
+                        }`}
+                      >
+                        {pricing}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             </div>
 
-            {/* Filter Categories */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              {/* Appearance Filter */}
-              <div>
-                <label className="label">Appearance</label>
-                <div className="flex gap-2 flex-wrap">
-                  {appearanceTypes.map(type => (
-                    <button
-                      key={type}
-                      onClick={() => setSelectedAppearance(type)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        selectedAppearance === type
-                          ? 'bg-info-600 text-white'
-                          : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
-                      }`}
-                    >
-                      {type}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Studio Filter */}
-              <div>
-                <label className="label">Studio</label>
-                <div className="flex gap-2 flex-wrap">
-                  {studioFilters.map(studio => (
-                    <button
-                      key={studio}
-                      onClick={() => setSelectedStudio(studio)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        selectedStudio === studio
-                          ? 'bg-success-600 text-white'
-                          : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
-                      }`}
-                    >
-                      {studio}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
-              {/* Pricing Filter */}
-              <div>
-                <label className="label">Pricing</label>
-                <div className="flex gap-2 flex-wrap">
-                  {pricingFilters.map(pricing => (
-                    <button
-                      key={pricing}
-                      onClick={() => setSelectedPricing(pricing)}
-                      className={`px-3 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        selectedPricing === pricing
-                          ? 'bg-plan-premium-text text-white'
-                          : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
-                      }`}
-                    >
-                      {pricing}
-                    </button>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Template Grid */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
-            {filteredTemplates.map(template => (
-              <div key={template.id} className="card-hover overflow-hidden flex flex-col h-full">
-                {/* Header with badges */}
-                <div className="relative">
-                  <div className="absolute top-3 left-3 flex gap-2 z-10">
-                    {template.popular && (
-                      <span className="bg-gradient-to-r from-warning-500 to-error-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                        Popular
-                      </span>
-                    )}
-                    {template.new && (
-                      <span className="bg-gradient-to-r from-success-500 to-info-500 text-white text-xs px-2 py-1 rounded-full font-medium">
-                        New
-                      </span>
-                    )}
-                  </div>
-
-                  {/* Large Avatar */}
-                  <div className="p-6 pt-10">
-                    <div className="w-20 h-20 mx-auto">
-                      <img
-                        src={template.image}
-                        alt={template.name}
-                        className="w-full h-full rounded-full bg-background-tertiary border-4 border-surface-elevated shadow-lg"
-                      />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Content */}
-                <div className="p-4 pt-2 flex-1 flex flex-col">
-                  {/* Top Content */}
-                  <div className="flex-1">
-                    <div className="text-center mb-3">
-                      <h3 className="font-bold text-lg text-foreground mb-1">{template.name}</h3>
-                      <div className="flex items-center justify-center gap-2 mb-2">
-                        <span className="text-xs bg-info-100 dark:bg-info-700/30 text-info-700 dark:text-info-500 px-2 py-1 rounded">{template.appearance}</span>
-                        <span className="text-xs bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500 px-2 py-1 rounded">{template.studio}</span>
-                      </div>
-                      <p className="text-sm text-foreground-secondary line-clamp-2">{template.description}</p>
-                    </div>
-
-                    {/* Rating */}
-                    <div className="flex items-center justify-center gap-1 mb-3">
-                      <div className="flex">
-                        {[...Array(5)].map((_, i) => (
-                          <Star
-                            key={i}
-                            size={12}
-                            className={`${
-                              i < Math.floor(template.rating)
-                                ? 'text-warning-500 fill-current'
-                                : 'text-foreground-tertiary'
-                            }`}
-                          />
-                        ))}
-                      </div>
-                      <span className="text-sm font-medium text-foreground">{template.rating}</span>
-                      <span className="text-xs text-foreground-tertiary">({template.reviews.toLocaleString()})</span>
-                    </div>
-
-                    {/* Stats */}
-                    <div className="grid grid-cols-2 gap-2 mb-3">
-                      <div className="flex items-center gap-1 text-xs">
-                        <Zap size={12} className="text-info-500" />
-                        <span className="text-foreground-secondary">{template.animations} animations</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-xs">
-                        <Heart size={12} className="text-error-500" />
-                        <span className="text-foreground-secondary">{template.expressions} expressions</span>
-                      </div>
-                    </div>
-
-                    {/* Features */}
-                    <div className="mb-3">
-                      <div className="flex flex-wrap gap-1">
-                        {template.features.slice(0, 2).map(feature => (
-                          <span key={feature} className="tag">
-                            {feature}
-                          </span>
-                        ))}
-                        {template.features.length > 2 && (
-                          <span className="text-xs text-foreground-tertiary">
-                            +{template.features.length - 2} more
-                          </span>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Price and Action - Always at bottom */}
-                  <div className="flex items-center justify-between pt-2 border-t border-border">
-                    <div>
-                      {template.price === 'Free' ? (
-                        <span className="text-lg font-bold text-success-600 dark:text-success-500">Free</span>
-                      ) : (
-                        <div className="flex items-center gap-1">
-                          <span className="text-lg font-bold text-foreground">€{template.price}</span>
-                          <span className="text-sm text-foreground-tertiary">/month</span>
-                        </div>
+            {/* Template Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 lg:gap-6">
+              {filteredTemplates.map(template => (
+                <Card key={template.id} hover padding="none" className="overflow-hidden flex flex-col h-full">
+                  {/* Header with badges */}
+                  <div className="relative">
+                    <div className="absolute top-3 left-3 flex gap-2 z-10">
+                      {template.popular && (
+                        <span className="bg-gradient-to-r from-warning-500 to-error-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                          Popular
+                        </span>
+                      )}
+                      {template.new && (
+                        <span className="bg-gradient-to-r from-success-500 to-info-500 text-white text-xs px-2 py-1 rounded-full font-medium">
+                          New
+                        </span>
                       )}
                     </div>
-                    {addedItems.has(template.id) ? (
-                      <button className="bg-success-600 text-white px-4 py-2 rounded-lg transition-colors text-sm font-medium flex items-center gap-2" disabled>
-                        <CheckCircle size={14} />
-                        Added
-                      </button>
-                    ) : (
-                      <button
-                        className="btn-primary px-4 py-2 text-sm"
-                        onClick={() => {
-                          addItem({
-                            id: template.id,
-                            type: 'template',
-                            name: template.name,
-                            description: template.description,
-                            price: template.price,
-                            image: template.image,
-                            originalData: template
-                          });
-                          setAddedItems(prev => new Set(prev).add(template.id));
-                          setTimeout(() => {
-                            setAddedItems(prev => {
-                              const newSet = new Set(prev);
-                              newSet.delete(template.id);
-                              return newSet;
-                            });
-                          }, 2000);
-                        }}
-                      >
-                        {template.price === 'Free' ? (
-                          <><Plus size={14} />Install</>
-                        ) : (
-                          <><ShoppingCart size={14} />Add to Cart</>
-                        )}
-                      </button>
-                    )}
-                  </div>
-                </div>
-              </div>
-            ))}
-          </div>
 
-          {filteredTemplates.length === 0 && (
-            <div className="empty-state">
-              <div className="empty-state-icon">
-                <MessageCircle size={24} className="text-foreground-tertiary" />
-              </div>
-              <h3 className="empty-state-title">No templates found</h3>
-              <p className="empty-state-message">Try adjusting your search or filter criteria</p>
+                    {/* Large Avatar */}
+                    <div className="p-6 pt-10">
+                      <div className="w-20 h-20 mx-auto">
+                        <img
+                          src={template.image}
+                          alt={template.name}
+                          className="w-full h-full rounded-full bg-background-tertiary border-4 border-surface-elevated shadow-lg"
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Content */}
+                  <div className="p-4 pt-2 flex-1 flex flex-col">
+                    {/* Top Content */}
+                    <div className="flex-1">
+                      <div className="text-center mb-3">
+                        <h3 className="font-bold text-lg text-foreground mb-1">{template.name}</h3>
+                        <div className="flex items-center justify-center gap-2 mb-2">
+                          <span className="text-xs bg-info-100 dark:bg-info-700/30 text-info-700 dark:text-info-500 px-2 py-1 rounded">{template.appearance}</span>
+                          <span className="text-xs bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500 px-2 py-1 rounded">{template.studio}</span>
+                        </div>
+                        <p className="text-sm text-foreground-secondary line-clamp-2">{template.description}</p>
+                      </div>
+
+                      {/* Rating */}
+                      <div className="flex items-center justify-center gap-1 mb-3">
+                        <div className="flex">
+                          {[...Array(5)].map((_, i) => (
+                            <Star
+                              key={i}
+                              size={12}
+                              className={`${
+                                i < Math.floor(template.rating)
+                                  ? 'text-warning-500 fill-current'
+                                  : 'text-foreground-tertiary'
+                              }`}
+                            />
+                          ))}
+                        </div>
+                        <span className="text-sm font-medium text-foreground">{template.rating}</span>
+                        <span className="text-xs text-foreground-tertiary">({template.reviews.toLocaleString()})</span>
+                      </div>
+
+                      {/* Stats */}
+                      <div className="grid grid-cols-2 gap-2 mb-3">
+                        <div className="flex items-center gap-1 text-xs">
+                          <Zap size={12} className="text-info-500" />
+                          <span className="text-foreground-secondary">{template.animations} animations</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-xs">
+                          <Heart size={12} className="text-error-500" />
+                          <span className="text-foreground-secondary">{template.expressions} expressions</span>
+                        </div>
+                      </div>
+
+                      {/* Features */}
+                      <div className="mb-3">
+                        <div className="flex flex-wrap gap-1">
+                          {template.features.slice(0, 2).map(feature => (
+                            <span key={feature} className="px-2 py-0.5 bg-background-tertiary text-foreground-secondary text-xs rounded-full">
+                              {feature}
+                            </span>
+                          ))}
+                          {template.features.length > 2 && (
+                            <span className="text-xs text-foreground-tertiary">
+                              +{template.features.length - 2} more
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Price and Action - Always at bottom */}
+                    <div className="flex items-center justify-between pt-2 border-t border-border">
+                      <div>
+                        {template.price === 'Free' ? (
+                          <span className="text-lg font-bold text-success-600 dark:text-success-500">Free</span>
+                        ) : (
+                          <div className="flex items-center gap-1">
+                            <span className="text-lg font-bold text-foreground">€{template.price}</span>
+                            <span className="text-sm text-foreground-tertiary">/month</span>
+                          </div>
+                        )}
+                      </div>
+                      {addedItems.has(template.id) ? (
+                        <Button size="sm" disabled className="bg-success-600">
+                          <CheckCircle size={14} />
+                          Added
+                        </Button>
+                      ) : (
+                        <Button
+                          size="sm"
+                          icon={template.price === 'Free' ? <Plus size={14} /> : <ShoppingCart size={14} />}
+                          onClick={() => {
+                            addItem({
+                              id: template.id,
+                              type: 'template',
+                              name: template.name,
+                              description: template.description,
+                              price: template.price,
+                              image: template.image,
+                              originalData: template
+                            });
+                            setAddedItems(prev => new Set(prev).add(template.id));
+                            setTimeout(() => {
+                              setAddedItems(prev => {
+                                const newSet = new Set(prev);
+                                newSet.delete(template.id);
+                                return newSet;
+                              });
+                            }, 2000);
+                          }}
+                        >
+                          {template.price === 'Free' ? 'Install' : 'Add to Cart'}
+                        </Button>
+                      )}
+                    </div>
+                  </div>
+                </Card>
+              ))}
             </div>
-          )}
-        </div>
-      </main>
-    </div>
+
+            {filteredTemplates.length === 0 && (
+              <EmptyState
+                icon={<MessageCircle size={48} />}
+                title="No templates found"
+                message="Try adjusting your search or filter criteria"
+              />
+            )}
+          </PageContent>
+        </Page>
+      </div>
+    </AuthGuard>
   );
 }

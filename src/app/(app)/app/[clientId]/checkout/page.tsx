@@ -7,10 +7,20 @@ import AuthGuard from '@/components/AuthGuard';
 import {
   ArrowLeft, ShoppingCart, CreditCard, CheckCircle,
   Minus, Plus, Trash2, Package, Wallet, Calendar,
-  Shield, AlertCircle, Star, Edit2
+  Shield, Star
 } from 'lucide-react';
 import Link from 'next/link';
 import type { Client } from '@/lib/dataService';
+import {
+  Page,
+  PageContent,
+  PageHeader,
+  Button,
+  Card,
+  Alert,
+  Spinner,
+  EmptyState,
+} from '@/components/ui';
 
 type CheckoutStep = 'cart' | 'billing' | 'payment' | 'confirmation';
 
@@ -21,14 +31,14 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
   const [billingMethod, setBillingMethod] = useState<'subscription' | 'credits' | 'one-time'>('subscription');
   const [paymentMethod, setPaymentMethod] = useState('card-4242');
   const [orderPlaced, setOrderPlaced] = useState(false);
-  
-  const { 
-    items, 
-    totalItems, 
-    totalPrice, 
-    updateQuantity, 
-    removeItem, 
-    clearCart 
+
+  const {
+    items,
+    totalItems,
+    totalPrice,
+    updateQuantity,
+    removeItem,
+    clearCart
   } = useCart();
 
   useEffect(() => {
@@ -48,9 +58,9 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
   if (loading) {
     return (
       <div className="flex min-h-screen bg-background">
-        <main className="flex-1 lg:ml-16 flex items-center justify-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
-        </main>
+        <Page className="flex items-center justify-center">
+          <Spinner size="lg" />
+        </Page>
       </div>
     );
   }
@@ -58,9 +68,15 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
   if (!client) {
     return (
       <div className="flex min-h-screen bg-background">
-        <main className="flex-1 lg:ml-16 flex items-center justify-center">
-          <p className="text-foreground-secondary">Client not found</p>
-        </main>
+        <Page>
+          <PageContent>
+            <EmptyState
+              icon={<ShoppingCart size={48} />}
+              title="Client not found"
+              message="The requested client could not be found."
+            />
+          </PageContent>
+        </Page>
       </div>
     );
   }
@@ -68,25 +84,24 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
   if (items.length === 0 && !orderPlaced) {
     return (
       <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={client.id} />
+        <div className="flex min-h-screen bg-background">
+          <Sidebar clientId={client.id} />
 
-        <main className="flex-1 lg:ml-16">
-          <div className="container max-w-4xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-            <div className="text-center py-12">
-              <ShoppingCart size={64} className="mx-auto text-foreground-tertiary mb-4" />
-              <h2 className="text-2xl font-bold text-foreground mb-2">Your cart is empty</h2>
-              <p className="text-foreground-secondary mb-6">Add some bot templates from the marketplace to get started</p>
-              <Link
-                href={`/app/${client.id}/marketplace`}
-                className="btn-primary px-6 py-3"
-              >
-                Browse Marketplace
-              </Link>
-            </div>
-          </div>
-        </main>
-      </div>
+          <Page>
+            <PageContent>
+              <EmptyState
+                icon={<ShoppingCart size={64} />}
+                title="Your cart is empty"
+                message="Add some bot templates from the marketplace to get started"
+                action={
+                  <Link href={`/app/${client.id}/marketplace`}>
+                    <Button>Browse Marketplace</Button>
+                  </Link>
+                }
+              />
+            </PageContent>
+          </Page>
+        </div>
       </AuthGuard>
     );
   }
@@ -106,62 +121,62 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
 
   return (
     <AuthGuard clientId={params.clientId}>
-    <div className="flex min-h-screen bg-background">
-      <Sidebar clientId={client.id} />
+      <div className="flex min-h-screen bg-background">
+        <Sidebar clientId={client.id} />
 
-      <main className="flex-1 lg:ml-16">
-        <div className="container max-w-6xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <Link
-            href={`/app/${client.id}/marketplace`}
-            className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-6"
-          >
-            <ArrowLeft size={16} />
-            Back to marketplace
-          </Link>
+        <Page>
+          <PageContent maxWidth="6xl">
+            <PageHeader
+              title="Checkout"
+              description={`Complete your purchase of ${totalItems} item${totalItems !== 1 ? 's' : ''}`}
+              backLink={
+                <Link
+                  href={`/app/${client.id}/marketplace`}
+                  className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
+                >
+                  <ArrowLeft size={16} />
+                  Back to marketplace
+                </Link>
+              }
+            />
 
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold text-foreground mb-2">Checkout</h1>
-            <p className="text-foreground-secondary">Complete your purchase of {totalItems} item{totalItems !== 1 ? 's' : ''}</p>
-          </div>
+            {/* Progress Steps */}
+            <Card className="mb-6">
+              <div className="flex items-center justify-between">
+                {steps.map((step, index) => {
+                  const Icon = step.icon;
+                  const isActive = step.id === currentStep;
+                  const isCompleted = steps.findIndex(s => s.id === currentStep) > index;
 
-          {/* Progress Steps */}
-          <div className="card p-6 mb-6">
-            <div className="flex items-center justify-between">
-              {steps.map((step, index) => {
-                const Icon = step.icon;
-                const isActive = step.id === currentStep;
-                const isCompleted = steps.findIndex(s => s.id === currentStep) > index;
-
-                return (
-                  <div key={step.id} className="flex items-center">
-                    <div className={`flex items-center gap-3 ${
-                      isActive ? 'text-foreground' : isCompleted ? 'text-success-600 dark:text-success-500' : 'text-foreground-tertiary'
-                    }`}>
-                      <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
-                        isActive ? 'border-interactive bg-interactive text-foreground-inverse' :
-                        isCompleted ? 'border-success-600 bg-success-600 text-white dark:border-success-500 dark:bg-success-500' :
-                        'border-border'
+                  return (
+                    <div key={step.id} className="flex items-center">
+                      <div className={`flex items-center gap-3 ${
+                        isActive ? 'text-foreground' : isCompleted ? 'text-success-600 dark:text-success-500' : 'text-foreground-tertiary'
                       }`}>
-                        <Icon size={18} />
+                        <div className={`w-10 h-10 rounded-full flex items-center justify-center border-2 ${
+                          isActive ? 'border-interactive bg-interactive text-foreground-inverse' :
+                          isCompleted ? 'border-success-600 bg-success-600 text-white dark:border-success-500 dark:bg-success-500' :
+                          'border-border'
+                        }`}>
+                          <Icon size={18} />
+                        </div>
+                        <span className="font-medium hidden sm:block">{step.label}</span>
                       </div>
-                      <span className="font-medium hidden sm:block">{step.label}</span>
+                      {index < steps.length - 1 && (
+                        <div className={`w-12 h-0.5 mx-4 ${
+                          isCompleted ? 'bg-success-600 dark:bg-success-500' : 'bg-border'
+                        }`} />
+                      )}
                     </div>
-                    {index < steps.length - 1 && (
-                      <div className={`w-12 h-0.5 mx-4 ${
-                        isCompleted ? 'bg-success-600 dark:bg-success-500' : 'bg-border'
-                      }`} />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          </div>
+                  );
+                })}
+              </div>
+            </Card>
 
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Main Content */}
-            <div className="lg:col-span-2">
-              <div className="card">
-                <div className="p-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Main Content */}
+              <div className="lg:col-span-2">
+                <Card>
                   {currentStep === 'cart' && (
                     <div className="space-y-6">
                       <h2 className="text-xl font-semibold text-foreground">Review Your Items</h2>
@@ -215,13 +230,9 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
                       </div>
 
                       <div className="flex justify-end">
-                        <button
-                          onClick={() => setCurrentStep('billing')}
-                          className="btn-primary px-6 py-2"
-                          disabled={items.length === 0}
-                        >
+                        <Button onClick={() => setCurrentStep('billing')} disabled={items.length === 0}>
                           Continue to Billing
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -293,18 +304,12 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
                       </div>
 
                       <div className="flex justify-between">
-                        <button
-                          onClick={() => setCurrentStep('cart')}
-                          className="btn-secondary px-6 py-2"
-                        >
+                        <Button variant="secondary" onClick={() => setCurrentStep('cart')}>
                           Back
-                        </button>
-                        <button
-                          onClick={() => setCurrentStep('payment')}
-                          className="btn-primary px-6 py-2"
-                        >
+                        </Button>
+                        <Button onClick={() => setCurrentStep('payment')}>
                           Continue to Payment
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -314,18 +319,15 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
                       <h2 className="text-xl font-semibold text-foreground">Payment Information</h2>
 
                       {billingMethod === 'credits' ? (
-                        <div className="p-4 bg-success-100 dark:bg-success-700/30 border border-success-300 dark:border-success-700 rounded-lg">
-                          <div className="flex items-center gap-2 mb-2">
-                            <CheckCircle size={20} className="text-success-600 dark:text-success-500" />
-                            <p className="font-medium text-success-900 dark:text-success-300">Using Prepaid Credits</p>
+                        <Alert variant="success">
+                          <div>
+                            <p className="font-medium">Using Prepaid Credits</p>
+                            <p className="text-sm mt-1">
+                              ${totalPrice.toFixed(2)} will be deducted from your balance.
+                              Remaining balance: ${(2450.00 - totalPrice).toFixed(2)}
+                            </p>
                           </div>
-                          <p className="text-sm text-success-700 dark:text-success-400">
-                            ${totalPrice.toFixed(2)} will be deducted from your balance
-                          </p>
-                          <p className="text-sm text-success-600 dark:text-success-500 mt-1">
-                            Remaining balance: ${(2450.00 - totalPrice).toFixed(2)}
-                          </p>
-                        </div>
+                        </Alert>
                       ) : (
                         <div className="space-y-4">
                           <div>
@@ -358,31 +360,25 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
                             </div>
                           </div>
 
-                          <div className="p-4 bg-info-100 dark:bg-info-700/30 border border-info-300 dark:border-info-700 rounded-lg">
+                          <Alert variant="info">
                             <div className="flex items-start gap-2">
-                              <Shield size={18} className="text-info-600 dark:text-info-500 mt-0.5" />
+                              <Shield size={18} className="flex-shrink-0 mt-0.5" />
                               <div>
-                                <p className="text-sm font-medium text-info-900 dark:text-info-300">Secure Payment</p>
-                                <p className="text-sm text-info-700 dark:text-info-400">Your payment information is encrypted and secure</p>
+                                <p className="font-medium">Secure Payment</p>
+                                <p className="text-sm">Your payment information is encrypted and secure</p>
                               </div>
                             </div>
-                          </div>
+                          </Alert>
                         </div>
                       )}
 
                       <div className="flex justify-between">
-                        <button
-                          onClick={() => setCurrentStep('billing')}
-                          className="btn-secondary px-6 py-2"
-                        >
+                        <Button variant="secondary" onClick={() => setCurrentStep('billing')}>
                           Back
-                        </button>
-                        <button
-                          onClick={handlePlaceOrder}
-                          className="btn-primary px-6 py-2"
-                        >
+                        </Button>
+                        <Button onClick={handlePlaceOrder}>
                           Place Order - ${totalPrice.toFixed(2)}
-                        </button>
+                        </Button>
                       </div>
                     </div>
                   )}
@@ -400,7 +396,7 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
 
                       <div className="bg-background-secondary rounded-lg p-6">
                         <h3 className="font-medium text-foreground mb-4">What's Next?</h3>
-                        <div className="space-y-3 text-sm text-foreground-secondary">
+                        <div className="space-y-3 text-sm text-foreground-secondary text-left">
                           <div className="flex items-center gap-2">
                             <div className="w-2 h-2 bg-foreground rounded-full" />
                             <span>Your bots will appear in your dashboard within 5 minutes</span>
@@ -421,87 +417,80 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
                       </div>
 
                       <div className="flex gap-4 justify-center">
-                        <Link
-                          href={`/app/${client.id}`}
-                          className="btn-primary px-6 py-2"
-                        >
-                          View My Bots
+                        <Link href={`/app/${client.id}`}>
+                          <Button>View My Bots</Button>
                         </Link>
-                        <Link
-                          href={`/app/${client.id}/marketplace`}
-                          className="btn-secondary px-6 py-2"
-                        >
-                          Browse More Templates
+                        <Link href={`/app/${client.id}/marketplace`}>
+                          <Button variant="secondary">Browse More Templates</Button>
                         </Link>
                       </div>
                     </div>
                   )}
-                </div>
+                </Card>
               </div>
-            </div>
 
-            {/* Order Summary */}
-            <div className="lg:col-span-1">
-              <div className="card p-6 sticky top-6">
-                <h3 className="font-semibold text-foreground mb-4">Order Summary</h3>
+              {/* Order Summary */}
+              <div className="lg:col-span-1">
+                <Card className="sticky top-6">
+                  <h3 className="font-semibold text-foreground mb-4">Order Summary</h3>
 
-                <div className="space-y-3 mb-4">
-                  {items.slice(0, 3).map((item) => (
-                    <div key={item.id} className="flex justify-between text-sm">
-                      <span className="truncate pr-2 text-foreground-secondary">{item.name} x{item.quantity}</span>
-                      <span className="font-medium text-foreground">
-                        {typeof item.price === 'number' ? `$${(item.price * item.quantity).toFixed(2)}` : 'Free'}
+                  <div className="space-y-3 mb-4">
+                    {items.slice(0, 3).map((item) => (
+                      <div key={item.id} className="flex justify-between text-sm">
+                        <span className="truncate pr-2 text-foreground-secondary">{item.name} x{item.quantity}</span>
+                        <span className="font-medium text-foreground">
+                          {typeof item.price === 'number' ? `$${(item.price * item.quantity).toFixed(2)}` : 'Free'}
+                        </span>
+                      </div>
+                    ))}
+                    {items.length > 3 && (
+                      <div className="text-sm text-foreground-secondary">
+                        +{items.length - 3} more items
+                      </div>
+                    )}
+                  </div>
+
+                  <div className="border-t border-border pt-4 space-y-2">
+                    <div className="flex justify-between text-sm">
+                      <span className="text-foreground-secondary">Subtotal</span>
+                      <span className="text-foreground">${totalPrice.toFixed(2)}</span>
+                    </div>
+                    {billingMethod === 'subscription' && (
+                      <div className="flex justify-between text-sm text-success-600 dark:text-success-500">
+                        <span>First month discount (20%)</span>
+                        <span>-${(totalPrice * 0.2).toFixed(2)}</span>
+                      </div>
+                    )}
+                    <div className="flex justify-between font-semibold text-lg pt-2 border-t border-border">
+                      <span className="text-foreground">Total</span>
+                      <span className="text-foreground">
+                        ${billingMethod === 'subscription'
+                          ? (totalPrice * 0.8).toFixed(2)
+                          : totalPrice.toFixed(2)}
                       </span>
                     </div>
-                  ))}
-                  {items.length > 3 && (
-                    <div className="text-sm text-foreground-secondary">
-                      +{items.length - 3} more items
-                    </div>
-                  )}
-                </div>
+                    {billingMethod === 'subscription' && (
+                      <p className="text-xs text-foreground-secondary">
+                        Then ${totalPrice.toFixed(2)}/month
+                      </p>
+                    )}
+                  </div>
 
-                <div className="border-t border-border pt-4 space-y-2">
-                  <div className="flex justify-between text-sm">
-                    <span className="text-foreground-secondary">Subtotal</span>
-                    <span className="text-foreground">${totalPrice.toFixed(2)}</span>
-                  </div>
-                  {billingMethod === 'subscription' && (
-                    <div className="flex justify-between text-sm text-success-600 dark:text-success-500">
-                      <span>First month discount (20%)</span>
-                      <span>-${(totalPrice * 0.2).toFixed(2)}</span>
+                  <Alert variant="warning" className="mt-6">
+                    <div className="flex items-start gap-2">
+                      <Star size={16} className="flex-shrink-0 mt-0.5" />
+                      <div>
+                        <p className="font-medium">30-Day Money Back</p>
+                        <p className="text-xs">Not satisfied? Get a full refund within 30 days.</p>
+                      </div>
                     </div>
-                  )}
-                  <div className="flex justify-between font-semibold text-lg pt-2 border-t border-border">
-                    <span className="text-foreground">Total</span>
-                    <span className="text-foreground">
-                      ${billingMethod === 'subscription'
-                        ? (totalPrice * 0.8).toFixed(2)
-                        : totalPrice.toFixed(2)}
-                    </span>
-                  </div>
-                  {billingMethod === 'subscription' && (
-                    <p className="text-xs text-foreground-secondary">
-                      Then ${totalPrice.toFixed(2)}/month
-                    </p>
-                  )}
-                </div>
-
-                <div className="mt-6 p-3 bg-warning-100 dark:bg-warning-700/30 border border-warning-300 dark:border-warning-700 rounded-lg">
-                  <div className="flex items-start gap-2">
-                    <Star size={16} className="text-warning-600 dark:text-warning-500 mt-0.5" />
-                    <div>
-                      <p className="text-sm font-medium text-warning-900 dark:text-warning-300">30-Day Money Back</p>
-                      <p className="text-xs text-warning-700 dark:text-warning-400">Not satisfied? Get a full refund within 30 days.</p>
-                    </div>
-                  </div>
-                </div>
+                  </Alert>
+                </Card>
               </div>
             </div>
-          </div>
-        </div>
-      </main>
-    </div>
+          </PageContent>
+        </Page>
+      </div>
     </AuthGuard>
   );
 }

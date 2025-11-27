@@ -208,13 +208,13 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
                 <option value="custom">Custom range</option>
               </select>
 
-              <button className="btn-secondary px-4 py-2">
-                <Filter size={20} />
+              <button className="btn-secondary">
+                <Filter size={18} />
                 More filters
               </button>
 
-              <button className="btn-primary px-4 py-2">
-                <Download size={20} />
+              <button className="btn-primary">
+                <Download size={18} />
                 Export
               </button>
             </div>

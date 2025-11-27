@@ -20,8 +20,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ErrorBoundary>
               {children}
               <CartDrawer />
-              {/* Floating Theme Toggle - Top Right */}
-              <div className="fixed top-4 right-4 z-50">
+              {/* Floating Theme Toggle - Top Right (desktop only) */}
+              <div className="hidden lg:block fixed top-4 right-4 z-50">
                 <ThemeToggle
                   variant="icon"
                   size="md"

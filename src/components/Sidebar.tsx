@@ -1,9 +1,10 @@
 'use client';
 import { useState } from 'react';
-import { Home, BarChart3, Bot, Settings, HelpCircle, LogOut, Users, MessageSquare, Menu, X, Store, ShoppingCart, User } from 'lucide-react';
+import { Home, BarChart3, Bot, Settings, HelpCircle, LogOut, Users, MessageSquare, Menu, X, Store, ShoppingCart, User, Sun, Moon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
+import { useTheme } from '@/contexts/ThemeContext';
 
 interface SidebarProps {
   clientId?: string;
@@ -13,6 +14,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { totalItems, toggleCart } = useCart();
+  const { theme, setTheme } = useTheme();
   
   const navItems = [
     { icon: Home, label: 'Dashboard', href: clientId ? `/app/${clientId}/home` : '/app' },
@@ -173,6 +175,17 @@ export default function Sidebar({ clientId }: SidebarProps) {
                   )}
                 </button>
               )}
+
+              {/* Theme Toggle for Mobile */}
+              <button
+                onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+                className="flex items-center justify-between w-full px-4 py-3 rounded-lg text-sidebar-text hover:text-sidebar-text-hover hover:bg-sidebar-item-hover transition-colors"
+              >
+                <div className="flex items-center gap-3">
+                  {theme === 'dark' ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
+                  {theme === 'dark' ? 'Light Mode' : 'Dark Mode'}
+                </div>
+              </button>
 
               {bottomItems.map((item) => {
                 const Icon = item.icon;

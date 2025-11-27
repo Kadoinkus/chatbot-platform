@@ -333,7 +333,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                   </div>
                   <button
                     onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center gap-2 px-4 py-2 bg-info-100 dark:bg-info-700/30 border-2 border-info-500/30 rounded-lg hover:bg-info-100/80 dark:hover:bg-info-700/40 focus:outline-none focus:ring-2 focus:ring-info-500 min-w-[200px] justify-between"
+                    className="flex items-center gap-2 h-11 px-4 bg-info-100 dark:bg-info-700/30 border-2 border-info-500/30 rounded-xl hover:bg-info-100/80 dark:hover:bg-info-700/40 focus:outline-none focus:ring-2 focus:ring-info-500 min-w-[200px] justify-between"
                   >
                     <span className="truncate font-medium text-info-700 dark:text-info-500">{getSelectionLabel()}</span>
                     <ChevronDown size={16} className={`transition-transform text-info-600 dark:text-info-500 ${dropdownOpen ? 'rotate-180' : ''}`} />
@@ -440,7 +440,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                 <select
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value)}
-                  className="select"
+                  className="select min-w-[140px]"
                 >
                   <option value="today">Today</option>
                   <option value="7days">Last 7 days</option>
@@ -448,12 +448,12 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                   <option value="90days">Last 90 days</option>
                   <option value="custom">Custom range</option>
                 </select>
-                <button className="btn-secondary px-4 py-2">
-                  <Filter size={20} />
+                <button className="btn-secondary">
+                  <Filter size={18} />
                   Filters
                 </button>
-                <button className="btn-primary px-4 py-2">
-                  <Download size={20} />
+                <button className="btn-primary">
+                  <Download size={18} />
                   Export Report
                 </button>
               </div>

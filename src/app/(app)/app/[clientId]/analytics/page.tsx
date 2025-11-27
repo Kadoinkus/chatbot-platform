@@ -511,7 +511,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
           {activeTab === 'reports' && renderReportsTab()}
 
           {/* Always Visible: Selected Bots Comparison Table */}
-          <div className="card overflow-hidden mb-8">
+          <div className="card overflow-hidden mt-6 mb-8">
             <div className="p-6 border-b border-border">
               <h2 className="text-xl font-semibold text-foreground">Selected Bots Comparison</h2>
               <p className="text-sm text-foreground-secondary mt-1">

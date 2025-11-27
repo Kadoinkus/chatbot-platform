@@ -1,0 +1,338 @@
+/* ============================================================================
+   DESIGN TOKENS - SINGLE SOURCE OF TRUTH
+   ============================================================================
+
+   This file documents all design tokens used in the application.
+   Actual CSS variables are defined in globals.css and extended in tailwind.config.js
+
+   DO NOT modify token values without updating both:
+   1. globals.css (CSS variables)
+   2. tailwind.config.js (Tailwind theme extension)
+
+   ============================================================================ */
+
+/* =============================================================================
+   COLOR TOKENS
+   ============================================================================= */
+
+/*
+ * BACKGROUND COLORS
+ * -----------------
+ * --bg-primary       Main background (white/dark gray)
+ * --bg-secondary     Secondary surfaces (light gray/darker gray)
+ * --bg-tertiary      Tertiary surfaces (medium gray)
+ * --bg-inverse       Inverted background for contrast
+ * --bg-hover         Hover state background
+ * --bg-active        Active/pressed state background
+ *
+ * Tailwind: bg-background, bg-background-secondary, bg-background-tertiary, etc.
+ */
+
+/*
+ * TEXT COLORS
+ * -----------
+ * --text-primary     Primary text (near black/near white)
+ * --text-secondary   Secondary text (medium gray)
+ * --text-tertiary    Tertiary/muted text (light gray)
+ * --text-inverse     Inverted text for dark backgrounds
+ * --text-disabled    Disabled text state
+ *
+ * Tailwind: text-foreground, text-foreground-secondary, text-foreground-tertiary, etc.
+ */
+
+/*
+ * BORDER COLORS
+ * -------------
+ * --border-primary   Default borders
+ * --border-secondary Emphasized borders
+ * --border-focus     Focus ring borders
+ *
+ * Tailwind: border-border, border-border-secondary, border-border-focus
+ */
+
+/*
+ * INTERACTIVE COLORS
+ * ------------------
+ * --interactive-primary        Primary button/action background (black/white)
+ * --interactive-primary-hover  Primary hover state
+ * --interactive-secondary      Secondary button background
+ * --interactive-secondary-hover Secondary hover state
+ *
+ * Tailwind: bg-interactive, bg-interactive-primary-hover, etc.
+ */
+
+/*
+ * SURFACE COLORS
+ * --------------
+ * --surface-elevated   Elevated surfaces (cards, modals)
+ * --surface-overlay    Modal/drawer overlay
+ *
+ * Tailwind: bg-surface-elevated, bg-surface-overlay
+ */
+
+/*
+ * SIDEBAR COLORS
+ * --------------
+ * --sidebar-bg          Sidebar background
+ * --sidebar-text        Default sidebar text
+ * --sidebar-text-hover  Hovered sidebar text
+ * --sidebar-text-active Active sidebar text
+ * --sidebar-item-hover  Hovered item background
+ * --sidebar-item-active Active item background
+ * --sidebar-border      Sidebar border
+ *
+ * Tailwind: bg-sidebar-bg, text-sidebar-text, etc.
+ */
+
+/*
+ * SEMANTIC COLORS (Consistent across themes)
+ * ------------------------------------------
+ * Success: success-50 through success-900 (green)
+ * Warning: warning-50 through warning-900 (amber)
+ * Error:   error-50 through error-900 (red)
+ * Info:    info-50 through info-900 (blue)
+ *
+ * Tailwind: bg-success-500, text-error-600, etc.
+ */
+
+/*
+ * PLAN COLORS (Theme-aware)
+ * -------------------------
+ * Starter:    --plan-starter-bg, --plan-starter-text, --plan-starter-border
+ * Growth:     --plan-growth-bg, --plan-growth-text, --plan-growth-border
+ * Premium:    --plan-premium-bg, --plan-premium-text, --plan-premium-border
+ * Enterprise: --plan-enterprise-bg, --plan-enterprise-text, --plan-enterprise-border
+ *
+ * CSS Classes: .badge-plan-starter, .badge-plan-growth, .badge-plan-premium, .badge-plan-enterprise
+ */
+
+/*
+ * STATUS COLORS
+ * -------------
+ * Live:               #10B981 (green)
+ * Paused:             #F59E0B (amber)
+ * Needs Finalization: #EF4444 (red)
+ * Draft:              #6B7280 (gray)
+ *
+ * Tailwind: bg-status-live, text-status-paused, etc.
+ */
+
+/* =============================================================================
+   SPACING TOKENS
+   ============================================================================= */
+
+/*
+ * SPACING SCALE (Tailwind default)
+ * --------------------------------
+ * 0:    0px
+ * 0.5:  2px
+ * 1:    4px
+ * 1.5:  6px
+ * 2:    8px
+ * 2.5:  10px
+ * 3:    12px
+ * 4:    16px
+ * 5:    20px
+ * 6:    24px
+ * 8:    32px
+ * 10:   40px
+ * 12:   48px
+ * 16:   64px
+ * 20:   80px
+ * 24:   96px
+ *
+ * Common patterns:
+ * - Card padding: p-4 lg:p-6 (16px / 24px)
+ * - Section gap: gap-6 (24px)
+ * - Page padding: p-4 lg:p-8 (16px / 32px)
+ * - Element gap: gap-2 to gap-4 (8px to 16px)
+ */
+
+/* =============================================================================
+   TYPOGRAPHY TOKENS
+   ============================================================================= */
+
+/*
+ * FONT FAMILIES
+ * -------------
+ * Sans:  Inter, system-ui, -apple-system, sans-serif
+ * Mono:  JetBrains Mono, Menlo, Monaco, monospace
+ *
+ * Tailwind: font-sans, font-mono
+ */
+
+/*
+ * FONT SIZES (Tailwind default)
+ * -----------------------------
+ * xs:    12px / 16px line-height
+ * sm:    14px / 20px line-height
+ * base:  16px / 24px line-height
+ * lg:    18px / 28px line-height
+ * xl:    20px / 28px line-height
+ * 2xl:   24px / 32px line-height
+ * 3xl:   30px / 36px line-height
+ *
+ * Common patterns:
+ * - Page title: text-2xl lg:text-3xl font-bold
+ * - Section title: text-lg lg:text-xl font-semibold
+ * - Body text: text-base
+ * - Small text: text-sm
+ * - Labels: text-xs font-medium
+ */
+
+/*
+ * FONT WEIGHTS
+ * ------------
+ * normal:   400
+ * medium:   500
+ * semibold: 600
+ * bold:     700
+ */
+
+/* =============================================================================
+   BORDER RADIUS TOKENS
+   ============================================================================= */
+
+/*
+ * RADIUS SCALE
+ * ------------
+ * none:    0
+ * sm:      2px
+ * DEFAULT: 4px
+ * md:      6px
+ * lg:      8px
+ * xl:      12px
+ * 2xl:     16px
+ * 3xl:     24px
+ * full:    9999px
+ *
+ * Common patterns:
+ * - Buttons: rounded-lg (8px)
+ * - Inputs/Selects: rounded-xl (12px)
+ * - Cards: rounded-2xl (16px)
+ * - Badges/Tags: rounded-full (pill)
+ * - Avatars: rounded-full
+ */
+
+/* =============================================================================
+   SHADOW TOKENS
+   ============================================================================= */
+
+/*
+ * SHADOW SCALE (Theme-aware via CSS variables)
+ * -------------------------------------------
+ * sm:      Subtle shadow for slight elevation
+ * DEFAULT: Standard shadow for cards
+ * md:      Medium shadow for dropdowns
+ * lg:      Large shadow for modals
+ * xl:      Extra large shadow for popovers
+ * 2xl:     Maximum shadow for floating elements
+ *
+ * Note: Dark mode shadows have increased opacity for visibility
+ */
+
+/* =============================================================================
+   Z-INDEX TOKENS
+   ============================================================================= */
+
+/*
+ * Z-INDEX SCALE
+ * -------------
+ * dropdown:       10   - Dropdown menus
+ * sticky:         20   - Sticky headers
+ * fixed:          30   - Fixed elements (sidebar)
+ * modal-backdrop: 40   - Modal backdrop
+ * modal:          50   - Modal content
+ * popover:        60   - Popovers/tooltips
+ * tooltip:        70   - Tooltips
+ * toast:          80   - Toast notifications
+ */
+
+/* =============================================================================
+   ANIMATION TOKENS
+   ============================================================================= */
+
+/*
+ * TRANSITION DURATIONS
+ * --------------------
+ * fast:   150ms - Micro-interactions (hover, focus)
+ * normal: 200ms - Standard transitions
+ * slow:   300ms - Complex animations
+ *
+ * Tailwind: duration-fast, duration-normal, duration-slow
+ */
+
+/*
+ * ANIMATIONS
+ * ----------
+ * .animate-fade-in   - Fade in from 0 to 1 opacity
+ * .animate-slide-up  - Slide up with fade
+ * .animate-slide-down - Slide down with fade
+ */
+
+/* =============================================================================
+   COMPONENT SIZE TOKENS
+   ============================================================================= */
+
+/*
+ * INTERACTIVE ELEMENT HEIGHTS
+ * ---------------------------
+ * Standard: h-11 (44px) - Buttons, inputs, selects
+ * Small:    h-9 (36px)  - Compact buttons
+ * Large:    h-12 (48px) - Large buttons
+ *
+ * This ensures consistent touch targets and visual alignment.
+ */
+
+/*
+ * ICON SIZES
+ * ----------
+ * xs: 14px (size={14})
+ * sm: 16px (size={16})
+ * md: 18px (size={18}) - Default for buttons
+ * lg: 20px (size={20})
+ * xl: 24px (size={24})
+ */
+
+/* =============================================================================
+   RESPONSIVE BREAKPOINTS
+   ============================================================================= */
+
+/*
+ * BREAKPOINT SCALE (Tailwind default)
+ * -----------------------------------
+ * sm:  640px   - Small tablets
+ * md:  768px   - Tablets
+ * lg:  1024px  - Desktop
+ * xl:  1280px  - Large desktop
+ * 2xl: 1536px  - Extra large screens
+ *
+ * Common patterns:
+ * - Mobile sidebar toggle: lg:hidden
+ * - Desktop sidebar: hidden lg:flex
+ * - Grid columns: grid-cols-1 lg:grid-cols-4
+ * - Container padding: p-4 lg:p-8
+ */
+
+/* =============================================================================
+   LAYOUT TOKENS
+   ============================================================================= */
+
+/*
+ * MAX WIDTHS
+ * ----------
+ * Container: max-w-7xl (1280px)
+ * Content:   max-w-4xl (896px)
+ * Form:      max-w-md (448px)
+ *
+ * Common patterns:
+ * - Page container: container max-w-7xl mx-auto
+ */
+
+/*
+ * SIDEBAR
+ * -------
+ * Desktop width: w-16 (64px) - Icon-only sidebar
+ * Mobile width:  w-64 (256px) - Expanded with labels
+ * Main content offset: lg:ml-16
+ */

@@ -26,6 +26,7 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { getClientBrandColor } from '@/lib/brandColors';
+import AuthGuard from '@/components/AuthGuard';
 import type { Client, Bot, BotSession } from '@/lib/dataService';
 import type { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
@@ -639,53 +640,66 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   };
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <main className="flex-1 lg:ml-16 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
+        </main>
+      </div>
+    );
   }
-  
+
   if (!client || !bot) {
-    return <div className="p-6">Bot not found</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <main className="flex-1 lg:ml-16 flex items-center justify-center">
+          <p className="text-foreground-secondary">Bot not found</p>
+        </main>
+      </div>
+    );
   }
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <AuthGuard clientId={params.clientId}>
+    <div className="flex min-h-screen bg-background">
       <Sidebar clientId={client.id} />
-      
+
       <main className="flex-1 lg:ml-16">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
-          <Link 
+          <Link
             href={`/app/${client.id}`}
-            className="inline-flex items-center gap-2 text-gray-600 hover:text-gray-900 mb-6"
+            className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-6"
           >
             <ArrowLeft size={16} />
             Back to bots
           </Link>
           
           {/* Header */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+          <div className="card p-6 mb-6">
             <div className="flex items-start justify-between mb-6">
               <div className="flex items-center gap-4">
-                <img 
-                  src={bot.image} 
+                <img
+                  src={bot.image}
                   alt={bot.name}
                   className="w-16 h-16 rounded-full"
                   style={{ backgroundColor: brandColor }}
                 />
                 <div>
-                  <h1 className="text-2xl font-bold">{bot.name} Analytics</h1>
-                  <p className="text-gray-600">{bot.description}</p>
+                  <h1 className="text-2xl font-bold text-foreground">{bot.name} Analytics</h1>
+                  <p className="text-foreground-secondary">{bot.description}</p>
                 </div>
               </div>
-              
+
               <div className="flex gap-2">
-                <button 
+                <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2"
+                  className="btn-secondary px-4 py-2"
                 >
                   <Filter size={16} />
                   Filters
                   <ChevronDown size={16} className={`transform transition-transform ${showFilters ? 'rotate-180' : ''}`} />
                 </button>
-                <button className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2">
+                <button className="btn-secondary px-4 py-2">
                   <Download size={16} />
                   Export
                 </button>
@@ -695,50 +709,50 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
             {/* Date Range Filter */}
             <div className="flex items-center justify-between flex-wrap gap-4">
               <div className="flex items-center gap-4">
-                <Calendar size={16} className="text-gray-500" />
-                <span className="text-sm font-medium text-gray-700">Time Period:</span>
-                
+                <Calendar size={16} className="text-foreground-tertiary" />
+                <span className="text-sm font-medium text-foreground-secondary">Time Period:</span>
+
                 {/* Quick Select Buttons */}
-                <div className="flex gap-1 bg-gray-100 p-1 rounded-lg">
-                  <button 
+                <div className="flex gap-1 bg-background-tertiary p-1 rounded-lg">
+                  <button
                     onClick={() => {setUseCustomRange(false); setDateRange(7);}}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                      !useCustomRange && dateRange === 7 
-                        ? 'bg-white text-gray-900 shadow-sm' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      !useCustomRange && dateRange === 7
+                        ? 'bg-surface-elevated text-foreground shadow-sm'
+                        : 'text-foreground-secondary hover:text-foreground hover:bg-background-hover'
                     }`}
-                    style={!useCustomRange && dateRange === 7 ? { 
-                      backgroundColor: 'white',
+                    style={!useCustomRange && dateRange === 7 ? {
+                      backgroundColor: 'var(--surface-elevated)',
                       color: brandColor,
                       boxShadow: `0 0 0 1px ${brandColor}20`
                     } : {}}
                   >
                     Last 7 days
                   </button>
-                  <button 
+                  <button
                     onClick={() => {setUseCustomRange(false); setDateRange(30);}}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                      !useCustomRange && dateRange === 30 
-                        ? 'bg-white text-gray-900 shadow-sm' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      !useCustomRange && dateRange === 30
+                        ? 'bg-surface-elevated text-foreground shadow-sm'
+                        : 'text-foreground-secondary hover:text-foreground hover:bg-background-hover'
                     }`}
-                    style={!useCustomRange && dateRange === 30 ? { 
-                      backgroundColor: 'white',
+                    style={!useCustomRange && dateRange === 30 ? {
+                      backgroundColor: 'var(--surface-elevated)',
                       color: brandColor,
                       boxShadow: `0 0 0 1px ${brandColor}20`
                     } : {}}
                   >
                     Last 30 days
                   </button>
-                  <button 
+                  <button
                     onClick={() => {setUseCustomRange(false); setDateRange(90);}}
                     className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                      !useCustomRange && dateRange === 90 
-                        ? 'bg-white text-gray-900 shadow-sm' 
-                        : 'text-gray-600 hover:text-gray-900 hover:bg-gray-50'
+                      !useCustomRange && dateRange === 90
+                        ? 'bg-surface-elevated text-foreground shadow-sm'
+                        : 'text-foreground-secondary hover:text-foreground hover:bg-background-hover'
                     }`}
-                    style={!useCustomRange && dateRange === 90 ? { 
-                      backgroundColor: 'white',
+                    style={!useCustomRange && dateRange === 90 ? {
+                      backgroundColor: 'var(--surface-elevated)',
                       color: brandColor,
                       boxShadow: `0 0 0 1px ${brandColor}20`
                     } : {}}
@@ -747,16 +761,16 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                   </button>
                 </div>
 
-                <button 
+                <button
                   onClick={() => setShowDatePicker(!showDatePicker)}
                   className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
-                    useCustomRange || showDatePicker 
-                      ? 'text-white shadow-sm' 
-                      : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'
+                    useCustomRange || showDatePicker
+                      ? 'text-white shadow-sm'
+                      : 'bg-surface-elevated text-foreground-secondary border-border hover:bg-background-hover'
                   }`}
-                  style={useCustomRange || showDatePicker ? { 
+                  style={useCustomRange || showDatePicker ? {
                     backgroundColor: brandColor,
-                    borderColor: brandColor 
+                    borderColor: brandColor
                   } : {}}
                 >
                   Custom Range
@@ -764,9 +778,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </div>
 
               {/* Current Range Display */}
-              <div className="flex items-center gap-2 text-sm text-gray-500 bg-gray-50 px-3 py-2 rounded-lg">
-                <BarChart3 size={14} className="text-gray-400" />
-                {useCustomRange && customDateRange.start && customDateRange.end 
+              <div className="flex items-center gap-2 text-sm text-foreground-tertiary bg-background-secondary px-3 py-2 rounded-lg">
+                <BarChart3 size={14} className="text-foreground-tertiary" />
+                {useCustomRange && customDateRange.start && customDateRange.end
                   ? `${new Date(customDateRange.start).toLocaleDateString()} - ${new Date(customDateRange.end).toLocaleDateString()}`
                   : `Showing last ${dateRange} days`}
               </div>
@@ -774,26 +788,26 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
             {/* Custom Date Picker */}
             {showDatePicker && (
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 mt-4">
-                <h4 className="font-medium mb-3">Select Custom Date Range</h4>
+              <div className="bg-background-secondary rounded-lg p-4 border border-border mt-4">
+                <h4 className="font-medium text-foreground mb-3">Select Custom Date Range</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">Start Date</label>
+                    <label className="block text-sm text-foreground-secondary mb-1">Start Date</label>
                     <input
                       type="date"
                       value={customDateRange.start}
                       onChange={(e) => setCustomDateRange(prev => ({...prev, start: e.target.value}))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                      className="input"
                       max={customDateRange.end || new Date().toISOString().split('T')[0]}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm text-gray-600 mb-1">End Date</label>
+                    <label className="block text-sm text-foreground-secondary mb-1">End Date</label>
                     <input
                       type="date"
                       value={customDateRange.end}
                       onChange={(e) => setCustomDateRange(prev => ({...prev, end: e.target.value}))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-yellow-500 focus:border-transparent"
+                      className="input"
                       min={customDateRange.start}
                       max={new Date().toISOString().split('T')[0]}
                     />
@@ -809,7 +823,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                         start.setDate(start.getDate() - 7);
                         setCustomDateRange({start: start.toISOString().split('T')[0], end});
                       }}
-                      className="px-2 py-1 text-xs bg-white border rounded hover:bg-gray-50"
+                      className="px-2 py-1 text-xs bg-surface-elevated border border-border rounded hover:bg-background-hover text-foreground-secondary"
                     >
                       Last Week
                     </button>
@@ -820,7 +834,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                         start.setMonth(start.getMonth() - 1);
                         setCustomDateRange({start: start.toISOString().split('T')[0], end});
                       }}
-                      className="px-2 py-1 text-xs bg-white border rounded hover:bg-gray-50"
+                      className="px-2 py-1 text-xs bg-surface-elevated border border-border rounded hover:bg-background-hover text-foreground-secondary"
                     >
                       Last Month
                     </button>
@@ -831,7 +845,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                         start.setMonth(start.getMonth() - 3);
                         setCustomDateRange({start: start.toISOString().split('T')[0], end});
                       }}
-                      className="px-2 py-1 text-xs bg-white border rounded hover:bg-gray-50"
+                      className="px-2 py-1 text-xs bg-surface-elevated border border-border rounded hover:bg-background-hover text-foreground-secondary"
                     >
                       Last Quarter
                     </button>
@@ -842,7 +856,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                         setShowDatePicker(false);
                         setUseCustomRange(false);
                       }}
-                      className="px-3 py-1 text-sm border border-gray-300 rounded hover:bg-gray-50"
+                      className="btn-secondary px-3 py-1 text-sm"
                     >
                       Cancel
                     </button>
@@ -854,8 +868,8 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                         }
                       }}
                       disabled={!customDateRange.start || !customDateRange.end}
-                      className="px-3 py-1 text-sm rounded text-white disabled:bg-gray-400 disabled:cursor-not-allowed"
-                      style={{ backgroundColor: customDateRange.start && customDateRange.end ? brandColor : '#9CA3AF' }}
+                      className="px-3 py-1 text-sm rounded text-white disabled:bg-foreground-tertiary disabled:cursor-not-allowed"
+                      style={{ backgroundColor: customDateRange.start && customDateRange.end ? brandColor : undefined }}
                     >
                       Apply Range
                     </button>
@@ -866,8 +880,8 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           </div>
 
           {/* Tab Navigation */}
-          <div className="bg-white rounded-xl border border-gray-200 mb-6">
-            <div className="border-b border-gray-200">
+          <div className="card mb-6">
+            <div className="border-b border-border">
               <nav className="flex space-x-8 px-6" aria-label="Tabs">
                 {tabs.map((tab) => {
                   const Icon = tab.icon;
@@ -877,8 +891,8 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                       onClick={() => setActiveTab(tab.id)}
                       className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
                         activeTab === tab.id
-                          ? 'border-yellow-500 text-gray-900'
-                          : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                          ? 'border-interactive text-foreground'
+                          : 'border-transparent text-foreground-tertiary hover:text-foreground-secondary hover:border-border'
                       }`}
                       style={activeTab === tab.id ? { borderBottomColor: brandColor } : {}}
                     >
@@ -901,6 +915,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         </div>
       </main>
     </div>
+    </AuthGuard>
   );
 
   // Tab render functions
@@ -909,52 +924,52 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
       <>
         {/* KPI Cards */}
           <div className="grid grid-cols-2 lg:grid-cols-5 gap-4 mb-6">
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center gap-2 text-gray-600 mb-2">
+            <div className="card p-4">
+              <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                 <Users size={16} />
                 <span className="text-sm">Sessions</span>
               </div>
-              <p className="text-2xl font-bold">{kpis.totalSessions}</p>
+              <p className="text-2xl font-bold text-foreground">{kpis.totalSessions}</p>
             </div>
-            
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center gap-2 text-gray-600 mb-2">
+
+            <div className="card p-4">
+              <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                 <Clock size={16} />
                 <span className="text-sm">Avg Duration</span>
               </div>
-              <p className="text-2xl font-bold">{formatDuration(kpis.avgDuration)}</p>
+              <p className="text-2xl font-bold text-foreground">{formatDuration(kpis.avgDuration)}</p>
             </div>
-            
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center gap-2 text-gray-600 mb-2">
+
+            <div className="card p-4">
+              <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                 <Clock size={16} />
                 <span className="text-sm">Avg Response Time</span>
               </div>
-              <p className="text-2xl font-bold">{kpis.avgResponseTime.toFixed(1)}s</p>
+              <p className="text-2xl font-bold text-foreground">{kpis.avgResponseTime.toFixed(1)}s</p>
             </div>
-            
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center gap-2 text-gray-600 mb-2">
+
+            <div className="card p-4">
+              <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                 <TrendingUp size={16} />
                 <span className="text-sm">Escalation Rate</span>
               </div>
-              <p className="text-2xl font-bold">{kpis.escalationRate.toFixed(1)}%</p>
+              <p className="text-2xl font-bold text-foreground">{kpis.escalationRate.toFixed(1)}%</p>
             </div>
-            
-            <div className="bg-white rounded-lg border border-gray-200 p-4">
-              <div className="flex items-center gap-2 text-gray-600 mb-2">
+
+            <div className="card p-4">
+              <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                 <DollarSign size={16} />
                 <span className="text-sm">Avg Session Cost</span>
               </div>
-              <p className="text-2xl font-bold">€{kpis.avgCost.toFixed(2)}</p>
+              <p className="text-2xl font-bold text-foreground">€{kpis.avgCost.toFixed(2)}</p>
             </div>
           </div>
-          
+
           {/* Charts */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* Sessions over time */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="font-semibold mb-4">Sessions Over Time</h2>
+            <div className="card p-6">
+              <h2 className="font-semibold text-foreground mb-4">Sessions Over Time</h2>
               <Chart
                 options={chartData.sessionsOverTime.options}
                 series={chartData.sessionsOverTime.series}
@@ -962,10 +977,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 height={280}
               />
             </div>
-            
+
             {/* Resolution vs Escalation */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="font-semibold mb-4">Resolution vs Escalation</h2>
+            <div className="card p-6">
+              <h2 className="font-semibold text-foreground mb-4">Resolution vs Escalation</h2>
               <Chart
                 options={chartData.resolutionVsEscalation.options}
                 series={chartData.resolutionVsEscalation.series}
@@ -973,10 +988,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 height={280}
               />
             </div>
-            
+
             {/* Sentiment Distribution */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="font-semibold mb-4">Sentiment Distribution</h2>
+            <div className="card p-6">
+              <h2 className="font-semibold text-foreground mb-4">Sentiment Distribution</h2>
               <Chart
                 options={chartData.sentimentDistribution.options}
                 series={chartData.sentimentDistribution.series}
@@ -984,10 +999,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 height={280}
               />
             </div>
-            
+
             {/* Sessions by Country */}
-            <div className="bg-white rounded-xl border border-gray-200 p-6">
-              <h2 className="font-semibold mb-4">Sessions by Country</h2>
+            <div className="card p-6">
+              <h2 className="font-semibold text-foreground mb-4">Sessions by Country</h2>
               <Chart
                 options={chartData.sessionsByCountry.options}
                 series={chartData.sessionsByCountry.series}
@@ -996,10 +1011,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               />
             </div>
           </div>
-          
+
           {/* Sessions by Category */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
-            <h2 className="font-semibold mb-4">Sessions by Category</h2>
+          <div className="card p-6 mb-6">
+            <h2 className="font-semibold text-foreground mb-4">Sessions by Category</h2>
             <Chart
               options={chartData.sessionsByCategory.options}
               series={chartData.sessionsByCategory.series}
@@ -1007,10 +1022,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               height={300}
             />
           </div>
-          
+
           {/* Top 5 Questions */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="font-semibold mb-4">Top 5 Questions</h2>
+          <div className="card p-6">
+            <h2 className="font-semibold text-foreground mb-4">Top 5 Questions</h2>
             <Chart
               options={chartData.topQuestions.options}
               series={chartData.topQuestions.series}
@@ -1027,47 +1042,47 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
       <div className="space-y-6">
         {/* Performance KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <CheckCircle size={16} />
               <span className="text-sm">Resolution Rate</span>
             </div>
-            <p className="text-2xl font-bold">{kpis.resolutionRate.toFixed(1)}%</p>
-            <p className="text-sm text-green-600 mt-1">+2.3% vs last period</p>
+            <p className="text-2xl font-bold text-foreground">{kpis.resolutionRate.toFixed(1)}%</p>
+            <p className="text-sm text-success-600 dark:text-success-500 mt-1">+2.3% vs last period</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <ThumbsUp size={16} />
               <span className="text-sm">CSAT Score</span>
             </div>
-            <p className="text-2xl font-bold">{kpis.csatScore.toFixed(1)}%</p>
-            <p className="text-sm text-green-600 mt-1">+1.5% vs last period</p>
+            <p className="text-2xl font-bold text-foreground">{kpis.csatScore.toFixed(1)}%</p>
+            <p className="text-sm text-success-600 dark:text-success-500 mt-1">+1.5% vs last period</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Target size={16} />
               <span className="text-sm">Intent Accuracy</span>
             </div>
-            <p className="text-2xl font-bold">{kpis.intentAccuracy.toFixed(1)}%</p>
-            <p className="text-sm text-yellow-600 mt-1">-0.5% vs last period</p>
+            <p className="text-2xl font-bold text-foreground">{kpis.intentAccuracy.toFixed(1)}%</p>
+            <p className="text-sm text-warning-600 dark:text-warning-500 mt-1">-0.5% vs last period</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Zap size={16} />
               <span className="text-sm">FCR Rate</span>
             </div>
-            <p className="text-2xl font-bold">{kpis.firstContactResolution.toFixed(1)}%</p>
-            <p className="text-sm text-green-600 mt-1">+3.1% vs last period</p>
+            <p className="text-2xl font-bold text-foreground">{kpis.firstContactResolution.toFixed(1)}%</p>
+            <p className="text-sm text-success-600 dark:text-success-500 mt-1">+3.1% vs last period</p>
           </div>
         </div>
 
         {/* Performance Charts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="font-semibold mb-4">Response Time Trends</h2>
+          <div className="card p-6">
+            <h2 className="font-semibold text-foreground mb-4">Response Time Trends</h2>
             <Chart
               options={getResponseTimeTrendsChart()}
               series={getResponseTimeTrendsData()}
@@ -1075,9 +1090,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               height={280}
             />
           </div>
-          
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="font-semibold mb-4">Intent Confidence Distribution</h2>
+
+          <div className="card p-6">
+            <h2 className="font-semibold text-foreground mb-4">Intent Confidence Distribution</h2>
             <Chart
               options={getIntentConfidenceChart()}
               series={getIntentConfidenceData()}
@@ -1095,43 +1110,43 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
       <div className="space-y-6">
         {/* User Journey KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Percent size={16} />
               <span className="text-sm">Completion Rate</span>
             </div>
-            <p className="text-2xl font-bold">{kpis.completionRate.toFixed(1)}%</p>
+            <p className="text-2xl font-bold text-foreground">{kpis.completionRate.toFixed(1)}%</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Users size={16} />
               <span className="text-sm">Return Users</span>
             </div>
-            <p className="text-2xl font-bold">{kpis.userReturnRate.toFixed(1)}%</p>
+            <p className="text-2xl font-bold text-foreground">{kpis.userReturnRate.toFixed(1)}%</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Activity size={16} />
               <span className="text-sm">Peak Usage</span>
             </div>
-            <p className="text-2xl font-bold">{kpis.peakUtilization}</p>
-            <p className="text-sm text-gray-500 mt-1">sessions/hour</p>
+            <p className="text-2xl font-bold text-foreground">{kpis.peakUtilization}</p>
+            <p className="text-sm text-foreground-tertiary mt-1">sessions/hour</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Clock size={16} />
               <span className="text-sm">Avg Duration</span>
             </div>
-            <p className="text-2xl font-bold">{formatDuration(kpis.avgDuration)}</p>
+            <p className="text-2xl font-bold text-foreground">{formatDuration(kpis.avgDuration)}</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="font-semibold mb-4">User Journey Funnel</h2>
+          <div className="card p-6">
+            <h2 className="font-semibold text-foreground mb-4">User Journey Funnel</h2>
             <Chart
               options={getUserJourneyFunnelChart()}
               series={getUserJourneyFunnelData()}
@@ -1139,9 +1154,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               height={280}
             />
           </div>
-          
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="font-semibold mb-4">Channel Performance</h2>
+
+          <div className="card p-6">
+            <h2 className="font-semibold text-foreground mb-4">Channel Performance</h2>
             <Chart
               options={getChannelPerformanceChart()}
               series={getChannelPerformanceData()}
@@ -1159,46 +1174,46 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
       <div className="space-y-6">
         {/* Business Impact KPIs */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <DollarSign size={16} />
               <span className="text-sm">Cost Savings</span>
             </div>
-            <p className="text-2xl font-bold">€{kpis.costSavings.toFixed(2)}</p>
-            <p className="text-sm text-gray-500 mt-1">per session vs human</p>
+            <p className="text-2xl font-bold text-foreground">€{kpis.costSavings.toFixed(2)}</p>
+            <p className="text-sm text-foreground-tertiary mt-1">per session vs human</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <TrendingUp size={16} />
               <span className="text-sm">ROI</span>
             </div>
-            <p className="text-2xl font-bold">342%</p>
-            <p className="text-sm text-green-600 mt-1">vs human agents</p>
+            <p className="text-2xl font-bold text-foreground">342%</p>
+            <p className="text-sm text-success-600 dark:text-success-500 mt-1">vs human agents</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Clock size={16} />
               <span className="text-sm">Time Saved</span>
             </div>
-            <p className="text-2xl font-bold">847h</p>
-            <p className="text-sm text-gray-500 mt-1">this period</p>
+            <p className="text-2xl font-bold text-foreground">847h</p>
+            <p className="text-sm text-foreground-tertiary mt-1">this period</p>
           </div>
 
-          <div className="bg-white rounded-lg border border-gray-200 p-4">
-            <div className="flex items-center gap-2 text-gray-600 mb-2">
+          <div className="card p-4">
+            <div className="flex items-center gap-2 text-foreground-secondary mb-2">
               <Users size={16} />
               <span className="text-sm">FTE Equivalent</span>
             </div>
-            <p className="text-2xl font-bold">2.1</p>
-            <p className="text-sm text-gray-500 mt-1">full-time agents</p>
+            <p className="text-2xl font-bold text-foreground">2.1</p>
+            <p className="text-sm text-foreground-tertiary mt-1">full-time agents</p>
           </div>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="font-semibold mb-4">Cost Savings Analysis</h2>
+          <div className="card p-6">
+            <h2 className="font-semibold text-foreground mb-4">Cost Savings Analysis</h2>
             <Chart
               options={getCostSavingsChart()}
               series={getCostSavingsData()}
@@ -1206,9 +1221,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               height={280}
             />
           </div>
-          
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h2 className="font-semibold mb-4">Automation vs Human Costs</h2>
+
+          <div className="card p-6">
+            <h2 className="font-semibold text-foreground mb-4">Automation vs Human Costs</h2>
             <Chart
               options={getAutomationVsHumanChart()}
               series={getAutomationVsHumanData()}
@@ -1224,41 +1239,41 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   function renderOperationsTab() {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="font-semibold mb-4">System Health</h2>
+        <div className="card p-6">
+          <h2 className="font-semibold text-foreground mb-4">System Health</h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="text-center p-4">
-              <div className="text-3xl font-bold text-green-600 mb-2">99.8%</div>
-              <div className="text-sm text-gray-600">Uptime</div>
+              <div className="text-3xl font-bold text-success-600 dark:text-success-500 mb-2">99.8%</div>
+              <div className="text-sm text-foreground-secondary">Uptime</div>
             </div>
             <div className="text-center p-4">
-              <div className="text-3xl font-bold text-yellow-600 mb-2">1.2s</div>
-              <div className="text-sm text-gray-600">Avg Response</div>
+              <div className="text-3xl font-bold text-warning-600 dark:text-warning-500 mb-2">1.2s</div>
+              <div className="text-sm text-foreground-secondary">Avg Response</div>
             </div>
             <div className="text-center p-4">
-              <div className="text-3xl font-bold text-blue-600 mb-2">0.02%</div>
-              <div className="text-sm text-gray-600">Error Rate</div>
+              <div className="text-3xl font-bold text-info-600 dark:text-info-500 mb-2">0.02%</div>
+              <div className="text-sm text-foreground-secondary">Error Rate</div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="font-semibold mb-4">Training Recommendations</h2>
+        <div className="card p-6">
+          <h2 className="font-semibold text-foreground mb-4">Training Recommendations</h2>
           <div className="space-y-3">
-            <div className="p-3 bg-yellow-50 rounded-lg border border-yellow-200">
+            <div className="p-3 bg-warning-50 dark:bg-warning-700/30 rounded-lg border border-warning-200 dark:border-warning-700">
               <div className="flex items-center gap-2">
-                <AlertTriangle size={16} className="text-yellow-600" />
-                <span className="font-medium text-yellow-800">Low confidence detected</span>
+                <AlertTriangle size={16} className="text-warning-600 dark:text-warning-500" />
+                <span className="font-medium text-warning-800 dark:text-warning-300">Low confidence detected</span>
               </div>
-              <p className="text-sm text-yellow-700 mt-1">Consider adding training data for "Sick Leave & Recovery" category</p>
+              <p className="text-sm text-warning-700 dark:text-warning-400 mt-1">Consider adding training data for "Sick Leave & Recovery" category</p>
             </div>
-            
-            <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
+
+            <div className="p-3 bg-info-50 dark:bg-info-700/30 rounded-lg border border-info-200 dark:border-info-700">
               <div className="flex items-center gap-2">
-                <Target size={16} className="text-blue-600" />
-                <span className="font-medium text-blue-800">Intent accuracy improvement</span>
+                <Target size={16} className="text-info-600 dark:text-info-500" />
+                <span className="font-medium text-info-800 dark:text-info-300">Intent accuracy improvement</span>
               </div>
-              <p className="text-sm text-blue-700 mt-1">Review and improve responses for "Personal Questions" category</p>
+              <p className="text-sm text-info-700 dark:text-info-400 mt-1">Review and improve responses for "Personal Questions" category</p>
             </div>
           </div>
         </div>
@@ -1269,47 +1284,47 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   function renderReportsTab() {
     return (
       <div className="space-y-6">
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="font-semibold mb-4">Scheduled Reports</h2>
+        <div className="card p-6">
+          <h2 className="font-semibold text-foreground mb-4">Scheduled Reports</h2>
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+            <div className="flex items-center justify-between p-4 border border-border rounded-lg">
               <div>
-                <div className="font-medium">Weekly Performance Summary</div>
-                <div className="text-sm text-gray-600">Every Monday at 9:00 AM</div>
+                <div className="font-medium text-foreground">Weekly Performance Summary</div>
+                <div className="text-sm text-foreground-secondary">Every Monday at 9:00 AM</div>
               </div>
-              <button className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded">
+              <button className="px-3 py-1 text-sm bg-background-tertiary hover:bg-background-hover rounded text-foreground-secondary">
                 Configure
               </button>
             </div>
-            
-            <div className="flex items-center justify-between p-4 border border-gray-200 rounded-lg">
+
+            <div className="flex items-center justify-between p-4 border border-border rounded-lg">
               <div>
-                <div className="font-medium">Monthly Business Impact</div>
-                <div className="text-sm text-gray-600">First day of each month</div>
+                <div className="font-medium text-foreground">Monthly Business Impact</div>
+                <div className="text-sm text-foreground-secondary">First day of each month</div>
               </div>
-              <button className="px-3 py-1 text-sm bg-gray-100 hover:bg-gray-200 rounded">
+              <button className="px-3 py-1 text-sm bg-background-tertiary hover:bg-background-hover rounded text-foreground-secondary">
                 Configure
               </button>
             </div>
           </div>
         </div>
 
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
-          <h2 className="font-semibold mb-4">Export Data</h2>
+        <div className="card p-6">
+          <h2 className="font-semibold text-foreground mb-4">Export Data</h2>
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-              <div className="font-medium mb-1">Session Data</div>
-              <div className="text-sm text-gray-600">Export raw session data as CSV</div>
+            <button className="p-4 border border-border rounded-lg hover:bg-background-hover text-left transition-colors">
+              <div className="font-medium text-foreground mb-1">Session Data</div>
+              <div className="text-sm text-foreground-secondary">Export raw session data as CSV</div>
             </button>
-            
-            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-              <div className="font-medium mb-1">Performance Report</div>
-              <div className="text-sm text-gray-600">Comprehensive performance metrics</div>
+
+            <button className="p-4 border border-border rounded-lg hover:bg-background-hover text-left transition-colors">
+              <div className="font-medium text-foreground mb-1">Performance Report</div>
+              <div className="text-sm text-foreground-secondary">Comprehensive performance metrics</div>
             </button>
-            
-            <button className="p-4 border border-gray-200 rounded-lg hover:bg-gray-50 text-left">
-              <div className="font-medium mb-1">Business Impact</div>
-              <div className="text-sm text-gray-600">ROI and cost analysis report</div>
+
+            <button className="p-4 border border-border rounded-lg hover:bg-background-hover text-left transition-colors">
+              <div className="font-medium text-foreground mb-1">Business Impact</div>
+              <div className="text-sm text-foreground-secondary">ROI and cost analysis report</div>
             </button>
           </div>
         </div>

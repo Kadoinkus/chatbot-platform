@@ -43,11 +43,23 @@ export default function WorkspaceDetailPage({
   }, [params.clientId, params.workspaceId]);
 
   if (loading) {
-    return <div className="p-6">Loading...</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <main className="flex-1 lg:ml-16 flex items-center justify-center">
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-foreground"></div>
+        </main>
+      </div>
+    );
   }
 
   if (!client || !workspace) {
-    return <div className="p-6">Workspace not found</div>;
+    return (
+      <div className="flex min-h-screen bg-background">
+        <main className="flex-1 lg:ml-16 flex items-center justify-center">
+          <p className="text-foreground-secondary">Workspace not found</p>
+        </main>
+      </div>
+    );
   }
 
   const planDetails: Record<string, { color: string; features: string[] }> = {
@@ -149,7 +161,7 @@ export default function WorkspaceDetailPage({
                 <CreditCard size={18} className="text-foreground-tertiary" />
               </div>
               <p className="text-2xl font-bold">€{workspace.walletCredits?.toFixed(2) || '0.00'}</p>
-              <button className="text-xs text-blue-600 hover:text-blue-700 mt-1">
+              <button className="text-xs text-info-600 dark:text-info-500 hover:text-info-700 dark:hover:text-info-400 mt-1">
                 + Add credits
               </button>
             </div>

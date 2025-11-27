@@ -2,6 +2,7 @@
 import { getClientById, getBotById } from '@/lib/dataService';
 import { useState, useEffect } from 'react';
 import Sidebar from '@/components/Sidebar';
+import AuthGuard from '@/components/AuthGuard';
 import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Palette, Sparkles, Image, Type, Monitor, Smartphone, User, Eye, Smile, ShirtIcon as Shirt, HardHat, ShoppingCart, Lock, Crown, Zap, Package } from 'lucide-react';
 import Link from 'next/link';
@@ -247,6 +248,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
   };
 
   return (
+    <AuthGuard clientId={params.clientId}>
     <div className="flex min-h-screen bg-background">
       <Sidebar clientId={client.id} />
 
@@ -293,15 +295,15 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
           
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
-              <div className="bg-white rounded-xl border border-gray-200">
-                <div className="border-b border-gray-200">
+              <div className="card">
+                <div className="border-b border-border">
                   <div className="flex gap-6 p-6">
                     <button
                       onClick={() => setActiveTab('appearance')}
                       className={`pb-2 px-1 font-medium transition-colors relative ${
-                        activeTab === 'appearance' 
-                          ? 'text-black border-b-2 border-black' 
-                          : 'text-gray-600 hover:text-gray-900'
+                        activeTab === 'appearance'
+                          ? 'text-foreground border-b-2 border-foreground'
+                          : 'text-foreground-secondary hover:text-foreground'
                       }`}
                     >
                       3D Mascot
@@ -309,9 +311,9 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                     <button
                       onClick={() => setActiveTab('colors')}
                       className={`pb-2 px-1 font-medium transition-colors relative ${
-                        activeTab === 'colors' 
-                          ? 'text-black border-b-2 border-black' 
-                          : 'text-gray-600 hover:text-gray-900'
+                        activeTab === 'colors'
+                          ? 'text-foreground border-b-2 border-foreground'
+                          : 'text-foreground-secondary hover:text-foreground'
                       }`}
                     >
                       Colors & Branding
@@ -319,9 +321,9 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                     <button
                       onClick={() => setActiveTab('chat')}
                       className={`pb-2 px-1 font-medium transition-colors relative ${
-                        activeTab === 'chat' 
-                          ? 'text-black border-b-2 border-black' 
-                          : 'text-gray-600 hover:text-gray-900'
+                        activeTab === 'chat'
+                          ? 'text-foreground border-b-2 border-foreground'
+                          : 'text-foreground-secondary hover:text-foreground'
                       }`}
                     >
                       Chat Interface
@@ -334,22 +336,22 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                     <div className="space-y-6">
                       {/* Template Selection */}
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Sparkles size={18} />
                           Current Template
                         </h3>
-                        <div className="p-4 border border-gray-200 rounded-lg bg-white">
+                        <div className="p-4 border border-border rounded-lg bg-surface-elevated">
                           <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                              <div className="w-12 h-12 bg-gradient-to-br from-blue-500 to-purple-600 rounded-lg"></div>
+                              <div className="w-12 h-12 bg-gradient-to-br from-info-500 to-plan-premium-text rounded-lg"></div>
                               <div>
-                                <h4 className="font-medium">{mascotTemplates[selectedTemplate as keyof typeof mascotTemplates].name}</h4>
-                                <p className="text-sm text-gray-600">{mascotTemplates[selectedTemplate as keyof typeof mascotTemplates].type}</p>
+                                <h4 className="font-medium text-foreground">{mascotTemplates[selectedTemplate as keyof typeof mascotTemplates].name}</h4>
+                                <p className="text-sm text-foreground-secondary">{mascotTemplates[selectedTemplate as keyof typeof mascotTemplates].type}</p>
                               </div>
                             </div>
                             <div className="text-right">
-                              <p className="text-lg font-semibold">${mascotTemplates[selectedTemplate as keyof typeof mascotTemplates].price}</p>
-                              <p className="text-sm text-green-600">✓ Owned</p>
+                              <p className="text-lg font-semibold text-foreground">${mascotTemplates[selectedTemplate as keyof typeof mascotTemplates].price}</p>
+                              <p className="text-sm text-success-600 dark:text-success-500">✓ Owned</p>
                             </div>
                           </div>
                         </div>
@@ -357,33 +359,33 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
 
                       {/* Active Studio Pack Indicator */}
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Package size={18} />
                           Active Style Pack
                         </h3>
-                        <div className="p-3 border border-gray-200 rounded-lg bg-gray-50 flex items-center justify-between">
+                        <div className="p-3 border border-border rounded-lg bg-background-secondary flex items-center justify-between">
                           <div className="flex items-center gap-3">
                             <span className="text-xl">{studioPacks[selectedSubTemplate as keyof typeof studioPacks].icon}</span>
                             <div>
-                              <h4 className="font-medium">{studioPacks[selectedSubTemplate as keyof typeof studioPacks].name}</h4>
-                              <p className="text-xs text-gray-600">
+                              <h4 className="font-medium text-foreground">{studioPacks[selectedSubTemplate as keyof typeof studioPacks].name}</h4>
+                              <p className="text-xs text-foreground-secondary">
                                 {studioPacks[selectedSubTemplate as keyof typeof studioPacks].price === 0 ? 'Included with template' : `$${studioPacks[selectedSubTemplate as keyof typeof studioPacks].price} • Active for all customizations`}
                               </p>
                             </div>
                           </div>
                           <div className="flex items-center gap-2">
                             {studioPacks[selectedSubTemplate as keyof typeof studioPacks].price === 0 ? (
-                              <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                              <span className="px-2 py-1 bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500 rounded-full text-xs font-medium">
                                 FREE
                               </span>
                             ) : (
-                              <span className="px-2 py-1 bg-blue-100 text-blue-700 rounded-full text-xs font-medium">
+                              <span className="px-2 py-1 bg-info-100 dark:bg-info-700/30 text-info-700 dark:text-info-500 rounded-full text-xs font-medium">
                                 ${studioPacks[selectedSubTemplate as keyof typeof studioPacks].price}
                               </span>
                             )}
-                            <button 
+                            <button
                               onClick={() => setShowPackSelector(!showPackSelector)}
-                              className="px-3 py-1 text-sm text-blue-600 hover:text-blue-700 font-medium"
+                              className="px-3 py-1 text-sm text-info-600 dark:text-info-500 hover:text-info-700 dark:hover:text-info-400 font-medium"
                             >
                               Change
                             </button>
@@ -392,19 +394,19 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                       </div>
 
                       {/* 3D Preview */}
-                      <div className="bg-gray-100 rounded-lg p-8 text-center">
-                        <div className="w-48 h-48 bg-gradient-to-br from-gray-300 to-gray-400 rounded-lg mx-auto mb-4 flex items-center justify-center">
-                          <div className="text-center text-gray-600">
+                      <div className="bg-background-tertiary rounded-lg p-8 text-center">
+                        <div className="w-48 h-48 bg-gradient-to-br from-foreground-tertiary/30 to-foreground-tertiary/50 rounded-lg mx-auto mb-4 flex items-center justify-center">
+                          <div className="text-center text-foreground-secondary">
                             <User size={48} className="mx-auto mb-2" />
                             <p className="text-sm">3D Model Preview</p>
-                            <p className="text-xs text-gray-500">Template: {mascotTemplates[selectedTemplate as keyof typeof mascotTemplates].name}</p>
+                            <p className="text-xs text-foreground-tertiary">Template: {mascotTemplates[selectedTemplate as keyof typeof mascotTemplates].name}</p>
                           </div>
                         </div>
                       </div>
 
                       {/* Customization Categories */}
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Zap size={18} />
                           Customize Parts
                         </h3>
@@ -420,12 +422,12 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                 }}
                                 className={`p-4 border-2 rounded-lg transition-all ${
                                   activeCustomizationTab === key
-                                    ? 'border-black bg-gray-50'
-                                    : 'border-gray-200 hover:border-gray-300'
+                                    ? 'border-interactive bg-background-secondary'
+                                    : 'border-border hover:border-border-secondary'
                                 }`}
                               >
-                                <Icon size={24} className="mx-auto mb-2" />
-                                <p className="text-sm font-medium">{category.name}</p>
+                                <Icon size={24} className="mx-auto mb-2 text-foreground" />
+                                <p className="text-sm font-medium text-foreground">{category.name}</p>
                               </button>
                             );
                           })}
@@ -435,7 +437,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                       {/* Sub-Category Navigation */}
                       {customizationCategories[activeCustomizationTab as keyof typeof customizationCategories]?.subCategories.length > 1 && (
                         <div>
-                          <h4 className="font-medium mb-3">Select Part</h4>
+                          <h4 className="font-medium text-foreground mb-3">Select Part</h4>
                           <div className="flex gap-2 overflow-x-auto pb-2">
                             {customizationCategories[activeCustomizationTab as keyof typeof customizationCategories].subCategories.map((subCat) => (
                               <button
@@ -443,8 +445,8 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                 onClick={() => setSelectedSubCategory(subCat)}
                                 className={`px-4 py-2 rounded-lg whitespace-nowrap transition-all ${
                                   selectedSubCategory === subCat
-                                    ? 'bg-black text-white'
-                                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                                    ? 'bg-interactive text-foreground-inverse'
+                                    : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
                                 }`}
                               >
                                 {subCat.charAt(0).toUpperCase() + subCat.slice(1).replace(/([A-Z])/g, ' $1')}
@@ -456,7 +458,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
 
                       {/* Option Selection */}
                       <div>
-                        <h4 className="font-medium mb-3">Choose Style</h4>
+                        <h4 className="font-medium text-foreground mb-3">Choose Style</h4>
                         <div className="grid grid-cols-3 md:grid-cols-4 gap-4">
                           {(() => {
                             const availableOptions: { option: string; pack: string }[] = [];
@@ -474,20 +476,20 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                 key={`${pack}-${option}`}
                                 className={`p-3 border-2 rounded-lg cursor-pointer transition-all ${
                                   selectedOptions[selectedSubCategory as keyof typeof selectedOptions] === option
-                                    ? 'border-black bg-gray-50'
-                                    : 'border-gray-200 hover:border-gray-300'
+                                    ? 'border-interactive bg-background-secondary'
+                                    : 'border-border hover:border-border-secondary'
                                 }`}
                                 onClick={() => handleOptionSelect(selectedSubCategory, option)}
                               >
-                                <div className="w-full h-20 bg-gray-200 rounded mb-2 flex items-center justify-center">
-                                  <span className="text-xs text-gray-500">{option}</span>
+                                <div className="w-full h-20 bg-background-tertiary rounded mb-2 flex items-center justify-center">
+                                  <span className="text-xs text-foreground-tertiary">{option}</span>
                                 </div>
-                                <p className="text-sm font-medium capitalize">{option.replace(/_/g, ' ')}</p>
-                                <p className="text-xs text-gray-500">{studioPacks[pack as keyof typeof studioPacks].name}</p>
+                                <p className="text-sm font-medium text-foreground capitalize">{option.replace(/_/g, ' ')}</p>
+                                <p className="text-xs text-foreground-tertiary">{studioPacks[pack as keyof typeof studioPacks].name}</p>
                               </div>
                             ));
                           })()}
-                          
+
                           {/* Show locked options from unowned packs */}
                           {Object.entries(studioPacks).map(([packKey, pack]) => {
                             if (ownedStudioPacks.includes(packKey)) return null;
@@ -495,34 +497,34 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                             if (!categoryOptions) return null;
 
                             const previewCount = Math.min(2, categoryOptions.length);
-                            
+
                             return categoryOptions.slice(0, previewCount).map((option, index) => (
                               <div
                                 key={`locked-${packKey}-${option}`}
-                                className="p-3 border-2 border-dashed border-gray-300 rounded-lg opacity-75 cursor-pointer hover:opacity-90 transition-all group"
+                                className="p-3 border-2 border-dashed border-border rounded-lg opacity-75 cursor-pointer hover:opacity-90 transition-all group"
                                 onClick={() => setShowUpgradePrompt(packKey)}
                               >
-                                <div className="w-full h-20 bg-gradient-to-br from-gray-100 to-gray-200 rounded mb-2 flex items-center justify-center relative">
-                                  <Lock size={14} className="text-gray-400" />
-                                  <div className="absolute inset-0 bg-black/10 rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <span className="text-xs text-white bg-black/50 px-2 py-1 rounded">Preview</span>
+                                <div className="w-full h-20 bg-gradient-to-br from-background-secondary to-background-tertiary rounded mb-2 flex items-center justify-center relative">
+                                  <Lock size={14} className="text-foreground-tertiary" />
+                                  <div className="absolute inset-0 bg-surface-overlay rounded flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                    <span className="text-xs text-foreground-inverse bg-interactive px-2 py-1 rounded">Preview</span>
                                   </div>
                                 </div>
-                                <p className="text-sm font-medium capitalize text-gray-600">{option.replace(/_/g, ' ')}</p>
+                                <p className="text-sm font-medium capitalize text-foreground-secondary">{option.replace(/_/g, ' ')}</p>
                                 <div className="flex items-center justify-between mt-1">
-                                  <p className="text-xs text-gray-500 flex items-center gap-1">
-                                    <Crown size={10} className="text-yellow-500" />
+                                  <p className="text-xs text-foreground-tertiary flex items-center gap-1">
+                                    <Crown size={10} className="text-warning-500" />
                                     {pack.name}
                                   </p>
                                   {index === previewCount - 1 && categoryOptions.length > previewCount ? (
-                                    <span className="text-xs text-blue-600">+{categoryOptions.length - previewCount} more</span>
+                                    <span className="text-xs text-info-600 dark:text-info-500">+{categoryOptions.length - previewCount} more</span>
                                   ) : (
-                                    <button 
+                                    <button
                                       onClick={(e) => {
                                         e.stopPropagation();
                                         handlePurchaseStudioPack(packKey);
                                       }}
-                                      className="text-xs text-blue-600 hover:text-blue-700 font-medium"
+                                      className="text-xs text-info-600 dark:text-info-500 hover:text-info-700 dark:hover:text-info-400 font-medium"
                                     >
                                       ${pack.price}
                                     </button>
@@ -535,38 +537,38 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                         
                         {/* Contextual upgrade prompt */}
                         {showUpgradePrompt && (
-                          <div className="mt-4 p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                          <div className="mt-4 p-4 bg-info-100 dark:bg-info-700/30 border border-info-300 dark:border-info-700 rounded-lg">
                             <div className="flex items-start justify-between">
                               <div className="flex items-start gap-3">
-                                <div className="w-8 h-8 bg-blue-100 rounded-full flex items-center justify-center flex-shrink-0">
-                                  <Crown size={16} className="text-blue-600" />
+                                <div className="w-8 h-8 bg-info-200 dark:bg-info-600/30 rounded-full flex items-center justify-center flex-shrink-0">
+                                  <Crown size={16} className="text-info-600 dark:text-info-500" />
                                 </div>
                                 <div>
-                                  <h4 className="font-medium text-blue-900">
+                                  <h4 className="font-medium text-info-900 dark:text-info-300">
                                     Get Premium {selectedSubCategory.charAt(0).toUpperCase() + selectedSubCategory.slice(1)} Styles
                                   </h4>
-                                  <p className="text-sm text-blue-700 mb-3">
+                                  <p className="text-sm text-info-700 dark:text-info-400 mb-3">
                                     Get {studioPacks[showUpgradePrompt as keyof typeof studioPacks].name} for ${studioPacks[showUpgradePrompt as keyof typeof studioPacks].price} and unlock premium {selectedSubCategory} styles.
                                   </p>
                                   <div className="flex gap-2">
-                                    <button 
+                                    <button
                                       onClick={() => handlePurchaseStudioPack(showUpgradePrompt)}
-                                      className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm font-medium hover:bg-blue-700"
+                                      className="btn-primary px-3 py-1.5 text-sm"
                                     >
                                       Add to Cart - ${studioPacks[showUpgradePrompt as keyof typeof studioPacks].price}
                                     </button>
-                                    <button 
+                                    <button
                                       onClick={() => setShowUpgradePrompt('')}
-                                      className="px-3 py-1.5 border border-blue-300 text-blue-700 rounded text-sm font-medium hover:bg-blue-100"
+                                      className="px-3 py-1.5 border border-info-300 dark:border-info-600 text-info-700 dark:text-info-400 rounded text-sm font-medium hover:bg-info-200 dark:hover:bg-info-600/30"
                                     >
                                       Maybe Later
                                     </button>
                                   </div>
                                 </div>
                               </div>
-                              <button 
+                              <button
                                 onClick={() => setShowUpgradePrompt('')}
-                                className="text-blue-400 hover:text-blue-600"
+                                className="text-info-400 hover:text-info-600 dark:hover:text-info-300"
                               >
                                 ×
                               </button>
@@ -577,28 +579,28 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
 
                       {/* Option Settings */}
                       <div>
-                        <h4 className="font-medium mb-3">Adjust Settings</h4>
+                        <h4 className="font-medium text-foreground mb-3">Adjust Settings</h4>
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                           {/* Color Setting */}
                           <div>
-                            <label className="block text-sm font-medium mb-2">Color</label>
+                            <label className="block text-sm font-medium text-foreground mb-2">Color</label>
                             <div className="flex gap-2">
                               <input
                                 type="color"
-                                className="h-10 w-16 border border-gray-200 rounded cursor-pointer"
+                                className="h-10 w-16 border border-border rounded cursor-pointer"
                                 onChange={(e) => handleSettingChange(selectedSubCategory, 'color', e.target.value)}
                               />
                               <input
                                 type="text"
                                 placeholder="#000000"
-                                className="flex-1 px-3 py-2 border border-gray-200 rounded-lg text-sm"
+                                className="input flex-1 text-sm"
                               />
                             </div>
                           </div>
 
                           {/* Scale Setting */}
                           <div>
-                            <label className="block text-sm font-medium mb-2">Scale</label>
+                            <label className="block text-sm font-medium text-foreground mb-2">Scale</label>
                             <input
                               type="range"
                               min="80"
@@ -607,7 +609,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                               className="w-full"
                               onChange={(e) => handleSettingChange(selectedSubCategory, 'scale', e.target.value)}
                             />
-                            <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <div className="flex justify-between text-xs text-foreground-tertiary mt-1">
                               <span>80%</span>
                               <span>100%</span>
                               <span>120%</span>
@@ -616,7 +618,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
 
                           {/* Position Setting */}
                           <div>
-                            <label className="block text-sm font-medium mb-2">Position</label>
+                            <label className="block text-sm font-medium text-foreground mb-2">Position</label>
                             <div className="grid grid-cols-2 gap-2">
                               <input
                                 type="range"
@@ -635,7 +637,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                 onChange={(e) => handleSettingChange(selectedSubCategory, 'y', e.target.value)}
                               />
                             </div>
-                            <div className="flex justify-between text-xs text-gray-500 mt-1">
+                            <div className="flex justify-between text-xs text-foreground-tertiary mt-1">
                               <span>X-axis</span>
                               <span>Y-axis</span>
                             </div>
@@ -645,19 +647,19 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                       
                       {/* Full Studio Pack Selector Modal */}
                       {showPackSelector && (
-                        <div className="fixed inset-0 bg-black/50 z-50 flex items-center justify-center p-4">
-                          <div className="bg-white rounded-xl max-w-3xl w-full max-h-[80vh] overflow-auto">
-                            <div className="p-6 border-b border-gray-200">
+                        <div className="fixed inset-0 bg-surface-overlay z-50 flex items-center justify-center p-4">
+                          <div className="bg-surface-elevated rounded-xl max-w-3xl w-full max-h-[80vh] overflow-auto border border-border">
+                            <div className="p-6 border-b border-border">
                               <div className="flex items-center justify-between">
-                                <h3 className="text-lg font-semibold">Choose Style Pack</h3>
-                                <button 
+                                <h3 className="text-lg font-semibold text-foreground">Choose Style Pack</h3>
+                                <button
                                   onClick={() => setShowPackSelector(false)}
-                                  className="text-gray-400 hover:text-gray-600"
+                                  className="text-foreground-tertiary hover:text-foreground"
                                 >
                                   ×
                                 </button>
                               </div>
-                              <p className="text-sm text-gray-600 mt-1">Style packs provide themed assets for all customization categories</p>
+                              <p className="text-sm text-foreground-secondary mt-1">Style packs provide themed assets for all customization categories</p>
                             </div>
                             <div className="p-6">
                               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -668,9 +670,9 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                     <div
                                       key={key}
                                       className={`p-4 border-2 rounded-lg cursor-pointer transition-all ${
-                                        isSelected 
-                                          ? 'border-black bg-gray-50' 
-                                          : 'border-gray-200 hover:border-gray-300'
+                                        isSelected
+                                          ? 'border-interactive bg-background-secondary'
+                                          : 'border-border hover:border-border-secondary'
                                       } ${!isOwned && 'opacity-75'}`}
                                       onClick={() => {
                                         if (isOwned) {
@@ -683,14 +685,14 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                         <div className="flex items-center gap-3">
                                           <span className="text-2xl">{pack.icon}</span>
                                           <div>
-                                            <h4 className="font-medium flex items-center gap-2">
+                                            <h4 className="font-medium text-foreground flex items-center gap-2">
                                               {pack.name}
-                                              {!isOwned && <Lock size={14} className="text-gray-400" />}
+                                              {!isOwned && <Lock size={14} className="text-foreground-tertiary" />}
                                             </h4>
-                                            <p className="text-sm text-gray-600">{pack.description}</p>
-                                            <p className="text-xs text-gray-500 mt-1">
-                                              {Object.values(pack.assets).reduce((total, category) => 
-                                                total + Object.values(category).reduce((catTotal, subCat) => 
+                                            <p className="text-sm text-foreground-secondary">{pack.description}</p>
+                                            <p className="text-xs text-foreground-tertiary mt-1">
+                                              {Object.values(pack.assets).reduce((total, category) =>
+                                                total + Object.values(category).reduce((catTotal, subCat) =>
                                                   catTotal + subCat.length, 0), 0
                                               )} total assets
                                             </p>
@@ -698,25 +700,25 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                                         </div>
                                         <div className="text-right">
                                           {pack.price === 0 ? (
-                                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded-full text-xs font-medium">
+                                            <span className="px-2 py-1 bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500 rounded-full text-xs font-medium">
                                               INCLUDED
                                             </span>
                                           ) : (
                                             <div>
-                                              <p className="font-semibold">${pack.price}</p>
+                                              <p className="font-semibold text-foreground">${pack.price}</p>
                                               {!isOwned && (
-                                                <button 
+                                                <button
                                                   onClick={(e) => {
                                                     e.stopPropagation();
                                                     handlePurchaseStudioPack(key);
                                                   }}
-                                                  className="px-3 py-1 bg-blue-600 text-white rounded text-xs hover:bg-blue-700 mt-1 w-full"
+                                                  className="btn-primary px-3 py-1 text-xs mt-1 w-full"
                                                 >
                                                   Add to Cart
                                                 </button>
                                               )}
                                               {isOwned && (
-                                                <span className="text-xs text-green-600">✓ Owned</span>
+                                                <span className="text-xs text-success-600 dark:text-success-500">✓ Owned</span>
                                               )}
                                             </div>
                                           )}
@@ -736,59 +738,59 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                   {activeTab === 'colors' && (
                     <div className="space-y-6">
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Palette size={18} />
                           Brand Colors
                         </h3>
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-medium mb-2">Primary Color</label>
+                            <label className="block text-sm font-medium text-foreground mb-2">Primary Color</label>
                             <div className="flex gap-3">
                               <input
                                 type="color"
                                 value={primaryColor}
                                 onChange={(e) => setPrimaryColor(e.target.value)}
-                                className="h-10 w-20 border border-gray-200 rounded cursor-pointer"
+                                className="h-10 w-20 border border-border rounded cursor-pointer"
                               />
                               <input
                                 type="text"
                                 value={primaryColor}
                                 onChange={(e) => setPrimaryColor(e.target.value)}
-                                className="flex-1 p-2 border border-gray-200 rounded-lg"
+                                className="input flex-1"
                               />
                             </div>
                           </div>
                           <div>
-                            <label className="block text-sm font-medium mb-2">Accent Color</label>
+                            <label className="block text-sm font-medium text-foreground mb-2">Accent Color</label>
                             <div className="flex gap-3">
                               <input
                                 type="color"
                                 value={accentColor}
                                 onChange={(e) => setAccentColor(e.target.value)}
-                                className="h-10 w-20 border border-gray-200 rounded cursor-pointer"
+                                className="h-10 w-20 border border-border rounded cursor-pointer"
                               />
                               <input
                                 type="text"
                                 value={accentColor}
                                 onChange={(e) => setAccentColor(e.target.value)}
-                                className="flex-1 p-2 border border-gray-200 rounded-lg"
+                                className="input flex-1"
                               />
                             </div>
                           </div>
                         </div>
                       </div>
-                      
+
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           {/* eslint-disable-next-line jsx-a11y/alt-text */}
                           <Image size={18} />
                           Logo & Branding
                         </h3>
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-8 text-center">
+                        <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
                           {/* eslint-disable-next-line jsx-a11y/alt-text */}
-                          <Image size={32} className="mx-auto mb-2 text-gray-400" />
-                          <p className="text-sm text-gray-600 mb-2">Drop your logo here or click to browse</p>
-                          <button className="px-4 py-2 bg-gray-100 rounded-lg text-sm font-medium hover:bg-gray-200">
+                          <Image size={32} className="mx-auto mb-2 text-foreground-tertiary" />
+                          <p className="text-sm text-foreground-secondary mb-2">Drop your logo here or click to browse</p>
+                          <button className="btn-secondary px-4 py-2 text-sm">
                             Upload Logo
                           </button>
                         </div>
@@ -799,7 +801,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                   {activeTab === 'chat' && (
                     <div className="space-y-6">
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Monitor size={18} />
                           Chat Widget Theme
                         </h3>
@@ -809,27 +811,27 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                               key={theme}
                               onClick={() => setChatTheme(theme)}
                               className={`p-4 border-2 rounded-lg transition-all ${
-                                chatTheme === theme 
-                                  ? 'border-black bg-gray-50' 
-                                  : 'border-gray-200 hover:border-gray-300'
+                                chatTheme === theme
+                                  ? 'border-interactive bg-background-secondary'
+                                  : 'border-border hover:border-border-secondary'
                               }`}
                             >
-                              <div className="bg-gray-200 rounded h-20 mb-2" />
-                              <p className="text-sm font-medium capitalize">{theme}</p>
+                              <div className="bg-background-tertiary rounded h-20 mb-2" />
+                              <p className="text-sm font-medium text-foreground capitalize">{theme}</p>
                             </button>
                           ))}
                         </div>
                       </div>
-                      
+
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Type size={18} />
                           Typography
                         </h3>
                         <div className="space-y-4">
                           <div>
-                            <label className="block text-sm font-medium mb-2">Font Family</label>
-                            <select className="w-full p-2 border border-gray-200 rounded-lg">
+                            <label className="block text-sm font-medium text-foreground mb-2">Font Family</label>
+                            <select className="select">
                               <option>Inter</option>
                               <option>Roboto</option>
                               <option>Open Sans</option>
@@ -837,8 +839,8 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                             </select>
                           </div>
                           <div>
-                            <label className="block text-sm font-medium mb-2">Message Style</label>
-                            <select className="w-full p-2 border border-gray-200 rounded-lg">
+                            <label className="block text-sm font-medium text-foreground mb-2">Message Style</label>
+                            <select className="select">
                               <option>Chat Bubbles</option>
                               <option>Cards</option>
                               <option>Minimal</option>
@@ -846,18 +848,18 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                           </div>
                         </div>
                       </div>
-                      
+
                       <div>
-                        <h3 className="font-semibold mb-4 flex items-center gap-2">
+                        <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
                           <Smartphone size={18} />
                           Widget Position
                         </h3>
                         <div className="grid grid-cols-2 gap-4">
-                          <button className="p-4 border-2 border-black rounded-lg bg-gray-50">
-                            <p className="text-sm font-medium">Bottom Right</p>
+                          <button className="p-4 border-2 border-interactive rounded-lg bg-background-secondary">
+                            <p className="text-sm font-medium text-foreground">Bottom Right</p>
                           </button>
-                          <button className="p-4 border-2 border-gray-200 rounded-lg hover:border-gray-300">
-                            <p className="text-sm font-medium">Bottom Left</p>
+                          <button className="p-4 border-2 border-border rounded-lg hover:border-border-secondary">
+                            <p className="text-sm font-medium text-foreground">Bottom Left</p>
                           </button>
                         </div>
                       </div>
@@ -868,24 +870,24 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
             </div>
             
             <div className="lg:col-span-1">
-              <div className="bg-white rounded-xl border border-gray-200 p-6 sticky top-6">
-                <h3 className="font-semibold mb-4">Live Preview</h3>
-                <div className="bg-gray-100 rounded-lg p-4">
-                  <div className="bg-white rounded-lg shadow-sm p-4 mb-3">
+              <div className="card p-6 sticky top-6">
+                <h3 className="font-semibold text-foreground mb-4">Live Preview</h3>
+                <div className="bg-background-tertiary rounded-lg p-4">
+                  <div className="bg-surface-elevated rounded-lg shadow-sm p-4 mb-3">
                     <div className="flex items-center gap-3 mb-3">
-                      <img 
-                        src={bot.image} 
+                      <img
+                        src={bot.image}
                         alt={bot.name}
                         className="w-8 h-8 rounded-full"
                         style={{ borderColor: primaryColor, borderWidth: 2 }}
                       />
-                      <span className="font-medium">{bot.name}</span>
+                      <span className="font-medium text-foreground">{bot.name}</span>
                     </div>
                     <div className="space-y-2">
-                      <div className="bg-gray-100 rounded-lg p-2 max-w-[80%]">
-                        <p className="text-sm">Hello! How can I help you today?</p>
+                      <div className="bg-background-tertiary rounded-lg p-2 max-w-[80%]">
+                        <p className="text-sm text-foreground">Hello! How can I help you today?</p>
                       </div>
-                      <div 
+                      <div
                         className="text-white rounded-lg p-2 max-w-[80%] ml-auto"
                         style={{ backgroundColor: primaryColor }}
                       >
@@ -894,7 +896,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                     </div>
                   </div>
                   <div className="text-center">
-                    <button 
+                    <button
                       className="px-4 py-2 text-white rounded-full text-sm"
                       style={{ backgroundColor: primaryColor }}
                     >
@@ -902,10 +904,10 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                     </button>
                   </div>
                 </div>
-                
-                <div className="mt-6 p-4 bg-blue-50 rounded-lg">
-                  <p className="text-sm text-blue-900 font-medium mb-1">Pro Tip</p>
-                  <p className="text-sm text-blue-700">
+
+                <div className="mt-6 p-4 bg-info-100 dark:bg-info-700/30 rounded-lg">
+                  <p className="text-sm text-info-900 dark:text-info-300 font-medium mb-1">Pro Tip</p>
+                  <p className="text-sm text-info-700 dark:text-info-400">
                     Keep your mascot's appearance consistent with your brand identity for better recognition.
                   </p>
                 </div>
@@ -915,5 +917,6 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
         </div>
       </main>
     </div>
+    </AuthGuard>
   );
 }

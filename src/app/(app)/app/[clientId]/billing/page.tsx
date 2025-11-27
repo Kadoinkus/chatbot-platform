@@ -4,7 +4,8 @@ import { getClientById, getWorkspacesByClientId, getBotsByWorkspaceId } from '@/
 import type { Client, Workspace, Bot } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import Sidebar from '@/components/Sidebar';
-import { 
+import AuthGuard from '@/components/AuthGuard';
+import {
   CreditCard, TrendingUp, AlertCircle, CheckCircle, ChevronDown, ChevronUp,
   Download, Plus, Wallet, Package, Activity, Users, Sparkles,
   Euro, Calendar, Bot as BotIcon, BarChart3, Settings, Check, X,
@@ -123,10 +124,10 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
 
   const getPlanConfig = (plan: string) => {
     const configs = {
-      starter: { name: 'Starter', icon: Package, color: 'text-gray-600', price: 99, currency: 'EUR' },
-      growth: { name: 'Growth', icon: Zap, color: 'text-blue-600', price: 299, currency: 'EUR' },
-      premium: { name: 'Premium', icon: Crown, color: 'text-purple-600', price: 2499, currency: 'EUR' },
-      enterprise: { name: 'Enterprise', icon: Shield, color: 'text-orange-600', price: 0, currency: 'EUR' }
+      starter: { name: 'Starter', icon: Package, color: 'text-foreground-secondary', price: 99, currency: 'EUR' },
+      growth: { name: 'Growth', icon: Zap, color: 'text-info-600 dark:text-info-500', price: 299, currency: 'EUR' },
+      premium: { name: 'Premium', icon: Crown, color: 'text-plan-premium-text', price: 2499, currency: 'EUR' },
+      enterprise: { name: 'Enterprise', icon: Shield, color: 'text-warning-600 dark:text-warning-500', price: 0, currency: 'EUR' }
     };
     if (plan === 'basic') return configs.growth;
     return configs[plan as keyof typeof configs] || configs.starter;
@@ -165,21 +166,22 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
   };
 
   return (
-    <div className="flex min-h-screen bg-gray-50">
+    <AuthGuard clientId={params.clientId}>
+    <div className="flex min-h-screen bg-background">
       <Sidebar clientId={params.clientId} />
-      
+
       <main className="flex-1 lg:ml-16">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
           {/* Header */}
           <div className="flex items-center justify-between mb-8">
             <div>
-              <h1 className="text-3xl font-bold mb-2">Billing & Workspaces</h1>
-              <p className="text-gray-600">
+              <h1 className="text-3xl font-bold text-foreground mb-2">Billing & Workspaces</h1>
+              <p className="text-foreground-secondary">
                 {workspaces.length} workspace{workspaces.length !== 1 ? 's' : ''} with {getTotalBots()} bot{getTotalBots() !== 1 ? 's' : ''}
               </p>
             </div>
             <div className="flex gap-3">
-              <button className="px-4 py-2 bg-black text-white rounded-lg hover:bg-gray-800 flex items-center gap-2">
+              <button className="btn-primary px-4 py-2">
                 <Plus size={18} />
                 New Workspace
               </button>
@@ -188,61 +190,61 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
 
           {/* Key Metrics */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Monthly Total</span>
-                <Euro size={16} className="text-gray-400" />
+                <span className="text-sm text-foreground-secondary">Monthly Total</span>
+                <Euro size={16} className="text-foreground-tertiary" />
               </div>
-              <p className="text-2xl font-bold">€{getTotalMonthlyFee().toLocaleString()}</p>
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-2xl font-bold text-foreground">€{getTotalMonthlyFee().toLocaleString()}</p>
+              <p className="text-xs text-foreground-tertiary mt-1">
                 Across {workspaces.length} workspaces
               </p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Total Credits</span>
-                <Wallet size={16} className="text-orange-400" />
+                <span className="text-sm text-foreground-secondary">Total Credits</span>
+                <Wallet size={16} className="text-warning-500" />
               </div>
-              <p className="text-2xl font-bold">€{getTotalCredits().toFixed(2)}</p>
-              <p className="text-xs text-gray-500 mt-1">Available for overages</p>
+              <p className="text-2xl font-bold text-foreground">€{getTotalCredits().toFixed(2)}</p>
+              <p className="text-xs text-foreground-tertiary mt-1">Available for overages</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Active Workspaces</span>
-                <Building2 size={16} className="text-blue-400" />
+                <span className="text-sm text-foreground-secondary">Active Workspaces</span>
+                <Building2 size={16} className="text-info-500" />
               </div>
-              <p className="text-2xl font-bold">
+              <p className="text-2xl font-bold text-foreground">
                 {workspaces.filter(ws => ws.status === 'active').length}
               </p>
-              <p className="text-xs text-gray-500 mt-1">of {workspaces.length} total</p>
+              <p className="text-xs text-foreground-tertiary mt-1">of {workspaces.length} total</p>
             </div>
 
-            <div className="bg-white rounded-xl border border-gray-200 p-4">
+            <div className="card p-4">
               <div className="flex items-center justify-between mb-2">
-                <span className="text-sm text-gray-600">Usage Warnings</span>
-                <AlertTriangle size={16} className="text-red-400" />
+                <span className="text-sm text-foreground-secondary">Usage Warnings</span>
+                <AlertTriangle size={16} className="text-error-500" />
               </div>
-              <p className="text-2xl font-bold">{getUsageWarnings().length}</p>
-              <p className="text-xs text-gray-500 mt-1">Near limits</p>
+              <p className="text-2xl font-bold text-foreground">{getUsageWarnings().length}</p>
+              <p className="text-xs text-foreground-tertiary mt-1">Near limits</p>
             </div>
           </div>
 
           {/* Usage Warnings */}
           {getUsageWarnings().length > 0 && (
-            <div className="mb-6 p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+            <div className="mb-6 p-4 bg-warning-100 dark:bg-warning-700/30 border border-warning-300 dark:border-warning-700 rounded-lg">
               <div className="flex items-start gap-3">
-                <AlertTriangle size={20} className="text-yellow-600 mt-0.5" />
+                <AlertTriangle size={20} className="text-warning-600 dark:text-warning-500 mt-0.5" />
                 <div>
-                  <p className="font-medium text-yellow-900 mb-1">Usage Warnings</p>
-                  <ul className="text-sm text-yellow-800 space-y-1">
+                  <p className="font-medium text-warning-900 dark:text-warning-300 mb-1">Usage Warnings</p>
+                  <ul className="text-sm text-warning-800 dark:text-warning-400 space-y-1">
                     {getUsageWarnings().map(workspace => (
                       <li key={workspace.id}>
                         <strong>{workspace.name}</strong> is approaching limits
-                        {(workspace.bundleLoads.used / workspace.bundleLoads.limit) > 0.8 && 
+                        {(workspace.bundleLoads.used / workspace.bundleLoads.limit) > 0.8 &&
                           ` - Bundle loads: ${Math.round((workspace.bundleLoads.used / workspace.bundleLoads.limit) * 100)}%`}
-                        {(workspace.messages.used / workspace.messages.limit) > 0.9 && 
+                        {(workspace.messages.used / workspace.messages.limit) > 0.9 &&
                           ` - Messages: ${Math.round((workspace.messages.used / workspace.messages.limit) * 100)}%`}
                       </li>
                     ))}
@@ -254,14 +256,14 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
 
           {/* Action Bar */}
           <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-semibold flex items-center gap-2">
+            <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
               <Building2 size={24} />
               Your Workspaces
             </h2>
             <div className="flex gap-3">
-              <button 
+              <button
                 onClick={() => setShowInvoices(!showInvoices)}
-                className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 flex items-center gap-2"
+                className="btn-secondary px-4 py-2"
               >
                 <CreditCard size={16} />
                 {showInvoices ? 'Hide' : 'View'} Invoices
@@ -271,11 +273,11 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
 
           {/* Invoices Section */}
           {showInvoices && (
-            <div className="bg-white rounded-xl border border-gray-200 p-6 mb-6">
+            <div className="card p-6 mb-6">
               <div className="text-center py-12">
-                <CreditCard size={48} className="text-gray-400 mx-auto mb-4" />
-                <h3 className="text-lg font-semibold mb-2">Invoices Coming Soon</h3>
-                <p className="text-gray-600">Workspace-based invoicing will be available shortly.</p>
+                <CreditCard size={48} className="text-foreground-tertiary mx-auto mb-4" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">Invoices Coming Soon</h3>
+                <p className="text-foreground-secondary">Workspace-based invoicing will be available shortly.</p>
               </div>
             </div>
           )}
@@ -290,9 +292,9 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
             const planConfig = getPlanConfig(workspace.plan);
             
             return (
-              <div key={workspace.id} className="bg-white rounded-xl border border-gray-200">
-                <div 
-                  className="p-6 cursor-pointer hover:bg-gray-50 transition-colors"
+              <div key={workspace.id} className="card">
+                <div
+                  className="p-6 cursor-pointer hover:bg-background-hover transition-colors"
                   onClick={() => toggleWorkspaceExpansion(workspace.id)}
                 >
                   {/* Compact Summary View */}
@@ -301,33 +303,33 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                       <planConfig.icon size={28} className={planConfig.color} />
                       <div>
                         <div className="flex items-center gap-3 mb-1">
-                          <h3 className="text-lg font-semibold">{workspace.name}</h3>
+                          <h3 className="text-lg font-semibold text-foreground">{workspace.name}</h3>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium ${planColors[workspace.plan]}`}>
                             {planConfig.name}
                           </span>
                           {workspace.status !== 'active' && (
-                            <span className="px-2 py-1 bg-red-100 text-red-700 rounded-full text-xs font-medium">
+                            <span className="px-2 py-1 bg-error-100 dark:bg-error-700/30 text-error-700 dark:text-error-500 rounded-full text-xs font-medium">
                               {workspace.status.toUpperCase()}
                             </span>
                           )}
                         </div>
-                        <p className="text-sm text-gray-600">
+                        <p className="text-sm text-foreground-secondary">
                           {bots.length} bot{bots.length !== 1 ? 's' : ''} • {workspace.billingCycle} billing • {workspace.description}
                         </p>
                       </div>
                     </div>
                     <div className="flex items-center gap-6">
                       <div className="text-right">
-                        <p className="text-sm text-gray-500">Monthly Cost</p>
+                        <p className="text-sm text-foreground-tertiary">Monthly Cost</p>
                         {getPlanConfig(workspace.plan).price === 0 ? (
-                          <p className="text-lg font-semibold">On Request</p>
+                          <p className="text-lg font-semibold text-foreground">On Request</p>
                         ) : (
                           <div>
-                            <p className="text-lg font-semibold">
+                            <p className="text-lg font-semibold text-foreground">
                               €{(getPlanConfig(workspace.plan).price + getWorkspaceMascotTotal(workspace.id, workspace.plan)).toLocaleString()}
                             </p>
                             {getWorkspaceMascotTotal(workspace.id, workspace.plan) > 0 && (
-                              <p className="text-xs text-gray-500">
+                              <p className="text-xs text-foreground-tertiary">
                                 Plan: €{getPlanConfig(workspace.plan).price.toLocaleString()} + Mascots: €{getWorkspaceMascotTotal(workspace.id, workspace.plan)}
                               </p>
                             )}
@@ -335,10 +337,10 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                         )}
                       </div>
                       <div className="text-right">
-                        <p className="text-sm text-gray-500">Credits</p>
-                        <p className="text-lg font-semibold">€{workspace.walletCredits.toFixed(2)}</p>
+                        <p className="text-sm text-foreground-tertiary">Credits</p>
+                        <p className="text-lg font-semibold text-foreground">€{workspace.walletCredits.toFixed(2)}</p>
                       </div>
-                      {isExpanded ? <ChevronUp size={20} className="text-gray-400" /> : <ChevronDown size={20} className="text-gray-400" />}
+                      {isExpanded ? <ChevronUp size={20} className="text-foreground-tertiary" /> : <ChevronDown size={20} className="text-foreground-tertiary" />}
                     </div>
                   </div>
 
@@ -346,30 +348,30 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                   {bots.length > 0 ? (
                     <div>
                       <div className="flex items-center justify-between mb-3">
-                        <p className="text-sm font-medium text-gray-700 flex items-center gap-2">
+                        <p className="text-sm font-medium text-foreground-secondary flex items-center gap-2">
                           <BotIcon size={14} />
                           {bots.filter(b => b.status === 'Live').length} active of {bots.length} bots
                         </p>
-                        <span className="text-xs text-gray-500">Click to expand</span>
+                        <span className="text-xs text-foreground-tertiary">Click to expand</span>
                       </div>
                       <div className="flex items-center gap-2 overflow-hidden">
                         {bots.slice(0, 4).map(bot => (
                           <div key={bot.id} className="relative flex-shrink-0">
-                            <img 
-                              src={bot.image} 
+                            <img
+                              src={bot.image}
                               alt={bot.name}
-                              className="w-8 h-8 rounded-full border-2 border-white shadow-sm"
+                              className="w-8 h-8 rounded-full border-2 border-surface-elevated shadow-sm"
                               style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
                               title={`${bot.name} - ${bot.status}`}
                             />
-                            <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-white ${
-                              bot.status === 'Live' ? 'bg-green-500' : 
-                              bot.status === 'Paused' ? 'bg-yellow-500' : 'bg-red-500'
+                            <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface-elevated ${
+                              bot.status === 'Live' ? 'bg-success-500' :
+                              bot.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
                             }`} />
                           </div>
                         ))}
                         {bots.length > 4 && (
-                          <div className="w-8 h-8 bg-gray-100 rounded-full flex items-center justify-center text-xs text-gray-600 font-medium">
+                          <div className="w-8 h-8 bg-background-tertiary rounded-full flex items-center justify-center text-xs text-foreground-secondary font-medium">
                             +{bots.length - 4}
                           </div>
                         )}
@@ -377,92 +379,92 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                     </div>
                   ) : (
                     <div className="text-center py-3">
-                      <BotIcon size={16} className="text-gray-400 mx-auto mb-1" />
-                      <p className="text-sm text-gray-500">No bots in this workspace</p>
-                      <button className="text-xs text-blue-600 hover:text-blue-700 mt-1">+ Add first bot</button>
+                      <BotIcon size={16} className="text-foreground-tertiary mx-auto mb-1" />
+                      <p className="text-sm text-foreground-tertiary">No bots in this workspace</p>
+                      <button className="text-xs text-info-600 dark:text-info-500 hover:text-info-700 dark:hover:text-info-400 mt-1">+ Add first bot</button>
                     </div>
                   )}
                 </div>
 
                 {/* Detailed Expanded View */}
                 {isExpanded && (
-                  <div className="border-t border-gray-100 p-6 bg-gray-50">
+                  <div className="border-t border-border p-6 bg-background-secondary">
                     <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                       {/* Detailed Resource Usage */}
                       <div>
-                        <h4 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                        <h4 className="text-sm font-semibold text-foreground-secondary mb-4 flex items-center gap-2">
                           <BarChart3 size={16} />
                           Resource Usage Details
                         </h4>
                         <div className="space-y-4">
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <div className="bg-surface-elevated rounded-lg p-4 border border-border">
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium flex items-center gap-2">
-                                <Server size={14} className="text-blue-600" />
+                              <span className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Server size={14} className="text-info-600 dark:text-info-500" />
                                 Bundle Loads (3D Rendering)
                               </span>
-                              <span className="text-sm text-gray-600">
+                              <span className="text-sm text-foreground-secondary">
                                 {workspace.bundleLoads.used.toLocaleString()} / {workspace.bundleLoads.limit.toLocaleString()}
                               </span>
                             </div>
-                            <div className="h-3 bg-gray-200 rounded-full overflow-hidden mb-2">
-                              <div 
+                            <div className="h-3 bg-background-tertiary rounded-full overflow-hidden mb-2">
+                              <div
                                 className={`h-full transition-all ${
-                                  bundleUsagePercent > 90 ? 'bg-red-500' : 
-                                  bundleUsagePercent > 70 ? 'bg-yellow-500' : 'bg-blue-500'
+                                  bundleUsagePercent > 90 ? 'bg-error-500' :
+                                  bundleUsagePercent > 70 ? 'bg-warning-500' : 'bg-info-500'
                                 }`}
                                 style={{ width: `${Math.min(100, bundleUsagePercent)}%` }}
                               />
                             </div>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-foreground-tertiary">
                               €{workspace.overageRates.bundleLoads}/load overage • {workspace.bundleLoads.remaining.toLocaleString()} remaining
                             </p>
                           </div>
 
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <div className="bg-surface-elevated rounded-lg p-4 border border-border">
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium flex items-center gap-2">
-                                <MessageCircle size={14} className="text-purple-600" />
+                              <span className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <MessageCircle size={14} className="text-plan-premium-text" />
                                 Messages (OpenAI Processing)
                               </span>
-                              <span className="text-sm text-gray-600">
+                              <span className="text-sm text-foreground-secondary">
                                 {workspace.messages.used.toLocaleString()} / {workspace.messages.limit.toLocaleString()}
                               </span>
                             </div>
-                            <div className="h-3 bg-gray-200 rounded-full overflow-hidden mb-2">
-                              <div 
+                            <div className="h-3 bg-background-tertiary rounded-full overflow-hidden mb-2">
+                              <div
                                 className={`h-full transition-all ${
-                                  messageUsagePercent > 90 ? 'bg-red-500' : 
-                                  messageUsagePercent > 70 ? 'bg-yellow-500' : 'bg-purple-500'
+                                  messageUsagePercent > 90 ? 'bg-error-500' :
+                                  messageUsagePercent > 70 ? 'bg-warning-500' : 'bg-plan-premium-text'
                                 }`}
                                 style={{ width: `${Math.min(100, messageUsagePercent)}%` }}
                               />
                             </div>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-foreground-tertiary">
                               €{workspace.overageRates.messages}/message overage • {workspace.messages.remaining.toLocaleString()} remaining
                             </p>
                           </div>
 
-                          <div className="bg-white rounded-lg p-4 border border-gray-200">
+                          <div className="bg-surface-elevated rounded-lg p-4 border border-border">
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium flex items-center gap-2">
-                                <Activity size={14} className="text-green-600" />
+                              <span className="text-sm font-medium text-foreground flex items-center gap-2">
+                                <Activity size={14} className="text-success-600 dark:text-success-500" />
                                 API Calls
                               </span>
-                              <span className="text-sm text-gray-600">
+                              <span className="text-sm text-foreground-secondary">
                                 {workspace.apiCalls.used.toLocaleString()} / {workspace.apiCalls.limit.toLocaleString()}
                               </span>
                             </div>
-                            <div className="h-3 bg-gray-200 rounded-full overflow-hidden mb-2">
-                              <div 
+                            <div className="h-3 bg-background-tertiary rounded-full overflow-hidden mb-2">
+                              <div
                                 className={`h-full transition-all ${
-                                  apiUsagePercent > 90 ? 'bg-red-500' : 
-                                  apiUsagePercent > 70 ? 'bg-yellow-500' : 'bg-green-500'
+                                  apiUsagePercent > 90 ? 'bg-error-500' :
+                                  apiUsagePercent > 70 ? 'bg-warning-500' : 'bg-success-500'
                                 }`}
                                 style={{ width: `${Math.min(100, apiUsagePercent)}%` }}
                               />
                             </div>
-                            <p className="text-xs text-gray-500">
+                            <p className="text-xs text-foreground-tertiary">
                               €{workspace.overageRates.apiCalls}/call overage • {workspace.apiCalls.remaining.toLocaleString()} remaining
                             </p>
                           </div>
@@ -471,7 +473,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
 
                       {/* Workspace Bots & Actions */}
                       <div>
-                        <h4 className="text-sm font-semibold text-gray-700 mb-4 flex items-center gap-2">
+                        <h4 className="text-sm font-semibold text-foreground-secondary mb-4 flex items-center gap-2">
                           <BotIcon size={16} />
                           Workspace Bots ({bots.length})
                         </h4>
@@ -481,41 +483,41 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                               const mascotInfo = getMascotPricing(bot.id);
                               const mascotCost = getMascotCost(bot.id, workspace.plan);
                               const isIncluded = mascotInfo.type === 'notso-pro' && workspace.plan !== 'starter';
-                              
+
                               return (
-                                <div key={bot.id} className="flex items-center gap-3 p-3 bg-white rounded-lg border border-gray-200">
-                                  <img 
-                                    src={bot.image} 
+                                <div key={bot.id} className="flex items-center gap-3 p-3 bg-surface-elevated rounded-lg border border-border">
+                                  <img
+                                    src={bot.image}
                                     alt={bot.name}
                                     className="w-10 h-10 rounded-full"
                                     style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
                                   />
                                   <div className="flex-1">
                                     <div className="flex items-center gap-2 mb-1">
-                                      <p className="text-sm font-medium">{bot.name}</p>
+                                      <p className="text-sm font-medium text-foreground">{bot.name}</p>
                                       <span className={`w-2 h-2 rounded-full ${
-                                        bot.status === 'Live' ? 'bg-green-500' : 
-                                        bot.status === 'Paused' ? 'bg-yellow-500' : 'bg-red-500'
+                                        bot.status === 'Live' ? 'bg-success-500' :
+                                        bot.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
                                       }`} />
                                     </div>
-                                    <p className="text-xs text-gray-500 mb-1">{bot.description}</p>
+                                    <p className="text-xs text-foreground-tertiary mb-1">{bot.description}</p>
                                     <div className="flex items-center gap-2">
-                                      <span className="text-xs text-gray-600">{mascotInfo.studioName}</span>
+                                      <span className="text-xs text-foreground-secondary">{mascotInfo.studioName}</span>
                                       {mascotInfo.type === 'notso-pro' && (
-                                        <span className="px-2 py-0.5 bg-blue-100 text-blue-700 text-xs rounded-full font-medium">Pro</span>
+                                        <span className="px-2 py-0.5 bg-info-100 dark:bg-info-700/30 text-info-700 dark:text-info-500 text-xs rounded-full font-medium">Pro</span>
                                       )}
                                       {mascotInfo.type === 'third-party' && (
-                                        <span className="px-2 py-0.5 bg-orange-100 text-orange-700 text-xs rounded-full font-medium">3rd Party</span>
+                                        <span className="px-2 py-0.5 bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500 text-xs rounded-full font-medium">3rd Party</span>
                                       )}
                                     </div>
                                   </div>
                                   <div className="text-right">
                                     {mascotCost === 0 ? (
-                                      <span className="text-sm font-medium text-green-600">
+                                      <span className="text-sm font-medium text-success-600 dark:text-success-500">
                                         {isIncluded ? 'Included' : 'Free'}
                                       </span>
                                     ) : (
-                                      <span className="text-sm font-medium text-gray-900">€{mascotCost}/mo</span>
+                                      <span className="text-sm font-medium text-foreground">€{mascotCost}/mo</span>
                                     )}
                                   </div>
                                 </div>
@@ -523,22 +525,22 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                             })}
                           </div>
                         ) : (
-                          <div className="bg-white rounded-lg border border-gray-200 p-6 text-center mb-6">
-                            <BotIcon size={32} className="text-gray-400 mx-auto mb-2" />
-                            <p className="text-sm text-gray-500">No bots in this workspace</p>
+                          <div className="bg-surface-elevated rounded-lg border border-border p-6 text-center mb-6">
+                            <BotIcon size={32} className="text-foreground-tertiary mx-auto mb-2" />
+                            <p className="text-sm text-foreground-tertiary">No bots in this workspace</p>
                           </div>
                         )}
 
                         {/* Mascot Cost Summary */}
                         {bots.length > 0 && (
-                          <div className="bg-gray-100 rounded-lg p-4 mb-6">
+                          <div className="bg-background-tertiary rounded-lg p-4 mb-6">
                             <div className="flex justify-between items-center mb-2">
-                              <span className="text-sm font-medium text-gray-700">Mascot Costs</span>
-                              <span className="text-sm font-bold text-gray-900">
+                              <span className="text-sm font-medium text-foreground-secondary">Mascot Costs</span>
+                              <span className="text-sm font-bold text-foreground">
                                 €{getWorkspaceMascotTotal(workspace.id, workspace.plan)}/mo
                               </span>
                             </div>
-                            <div className="text-xs text-gray-600 space-y-1">
+                            <div className="text-xs text-foreground-secondary space-y-1">
                               {bots.filter(bot => getMascotCost(bot.id, workspace.plan) > 0).length > 0 ? (
                                 bots.filter(bot => getMascotCost(bot.id, workspace.plan) > 0).map(bot => (
                                   <div key={bot.id} className="flex justify-between">
@@ -547,7 +549,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                                   </div>
                                 ))
                               ) : (
-                                <span className="text-green-600">All mascots included in plan or free</span>
+                                <span className="text-success-600 dark:text-success-500">All mascots included in plan or free</span>
                               )}
                             </div>
                           </div>
@@ -558,17 +560,17 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                           <div className="flex gap-2">
                             <Link
                               href={`/app/${client.id}/plans`}
-                              className="flex-1 px-4 py-2 bg-blue-600 text-white text-sm rounded-lg hover:bg-blue-700 transition-colors text-center"
+                              className="flex-1 btn-primary px-4 py-2 text-sm text-center justify-center"
                             >
                               Upgrade Plan
                             </Link>
-                            <button className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors">
+                            <button className="flex-1 btn-secondary px-4 py-2 text-sm">
                               Add Credits
                             </button>
                           </div>
-                          <Link 
+                          <Link
                             href={`/app/${client.id}/workspace/${workspace.id}`}
-                            className="block w-full px-4 py-2 border border-gray-300 text-gray-700 text-sm rounded-lg hover:bg-gray-50 transition-colors text-center"
+                            className="block w-full btn-secondary px-4 py-2 text-sm text-center justify-center"
                           >
                             Manage Workspace →
                           </Link>
@@ -583,8 +585,8 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
           </div>
 
           {/* Monthly Cost Breakdown */}
-          <div className="bg-white rounded-xl border border-gray-200 p-6">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+          <div className="card p-6">
+            <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
               <BarChart3 size={20} />
               Monthly Cost Breakdown
             </h3>
@@ -593,32 +595,32 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                 const planConfig = getPlanConfig(workspace.plan);
                 const mascotCost = getWorkspaceMascotTotal(workspace.id, workspace.plan);
                 const totalCost = planConfig.price + mascotCost;
-                
+
                 return (
-                  <div key={workspace.id} className="py-3 border-b border-gray-100 last:border-b-0">
+                  <div key={workspace.id} className="py-3 border-b border-border last:border-b-0">
                     <div className="flex justify-between items-center">
                       <div className="flex items-center gap-3">
                         <planConfig.icon size={16} className={planConfig.color} />
-                        <span className="font-medium">{workspace.name}</span>
+                        <span className="font-medium text-foreground">{workspace.name}</span>
                         <span className={`px-2 py-1 rounded-full text-xs font-medium ${planColors[workspace.plan]}`}>
                           {planConfig.name}
                         </span>
                       </div>
-                      <span className="font-semibold">
+                      <span className="font-semibold text-foreground">
                         {planConfig.price === 0 ? 'On Request' : `€${totalCost.toLocaleString()}`}
                       </span>
                     </div>
                     {planConfig.price > 0 && mascotCost > 0 && (
-                      <div className="flex justify-between items-center text-xs text-gray-500 mt-1 pl-8">
+                      <div className="flex justify-between items-center text-xs text-foreground-tertiary mt-1 pl-8">
                         <span>Plan: €{planConfig.price.toLocaleString()} + Mascots: €{mascotCost}</span>
                       </div>
                     )}
                   </div>
                 );
               })}
-              <div className="border-t pt-3 mt-4 flex justify-between items-center font-semibold text-lg">
-                <span>Total Monthly Cost</span>
-                <span className="text-green-600">
+              <div className="border-t border-border pt-3 mt-4 flex justify-between items-center font-semibold text-lg">
+                <span className="text-foreground">Total Monthly Cost</span>
+                <span className="text-success-600 dark:text-success-500">
                   €{getTotalMonthlyFee().toLocaleString()}
                 </span>
               </div>
@@ -627,5 +629,6 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
         </div>
       </main>
     </div>
+    </AuthGuard>
   );
 }

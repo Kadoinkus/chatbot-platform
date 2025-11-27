@@ -3,12 +3,13 @@ import { useState, useEffect } from 'react';
 import { getClientById, getWorkspacesByClientId } from '@/lib/dataService';
 import type { Client, Workspace } from '@/lib/dataService';
 import Sidebar from '@/components/Sidebar';
-import { 
+import {
   CheckCircle, Package, Activity, Users,
   DollarSign, Settings, Check, X,
-  MessageCircle, Server, Info, 
-  Star, Shield, Zap, Crown
+  MessageCircle, Server, Info,
+  Star, Shield, Zap, Crown, ArrowLeft
 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function PlansPage({ params }: { params: { clientId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
@@ -66,6 +67,15 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
 
       <main className="flex-1 lg:ml-16">
         <div className="container max-w-7xl mx-auto p-4 lg:p-8 pt-20 lg:pt-8">
+          {/* Back Link */}
+          <Link
+            href={`/app/${params.clientId}/settings`}
+            className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-6 transition-colors"
+          >
+            <ArrowLeft size={16} />
+            Back to Settings
+          </Link>
+
           {/* Header */}
           <div className="mb-8">
             <h1 className="text-3xl font-bold text-foreground mb-2">Choose Your Plan</h1>

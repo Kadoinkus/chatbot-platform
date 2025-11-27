@@ -4,6 +4,7 @@ import ErrorBoundary from '@/components/ErrorBoundary';
 import { CartProvider } from '@/contexts/CartContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import CartDrawer from '@/components/CartDrawer';
+import ThemeToggle from '@/components/ThemeToggle';
 
 export const metadata: Metadata = {
   title: 'Chatbot Platform — Starter',
@@ -19,6 +20,14 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <ErrorBoundary>
               {children}
               <CartDrawer />
+              {/* Floating Theme Toggle - Top Right */}
+              <div className="fixed top-4 right-4 z-50">
+                <ThemeToggle
+                  variant="icon"
+                  size="md"
+                  className="shadow-md hover:shadow-lg bg-surface-elevated border border-border"
+                />
+              </div>
             </ErrorBoundary>
           </CartProvider>
         </ThemeProvider>

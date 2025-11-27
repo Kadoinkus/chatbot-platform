@@ -445,12 +445,13 @@ body {
 
   .toggle[data-state="checked"],
   .toggle.toggle-active {
-    @apply bg-interactive;
+    @apply bg-success-500;
   }
 
   .toggle-thumb {
     @apply inline-block h-4 w-4 transform rounded-full bg-white transition-transform;
     @apply translate-x-1;
+    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.1);
   }
 
   .toggle[data-state="checked"] .toggle-thumb,

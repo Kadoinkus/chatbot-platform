@@ -1,10 +1,9 @@
 'use client';
 import { useState } from 'react';
-import { Home, BarChart3, Bot, Settings, HelpCircle, LogOut, Users, MessageSquare, Menu, X, Store, CreditCard, ShoppingCart, Package, Sun, Moon, User, UserCog } from 'lucide-react';
+import { Home, BarChart3, Bot, Settings, HelpCircle, LogOut, Users, MessageSquare, Menu, X, Store, ShoppingCart, User } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
-import { useTheme } from '@/contexts/ThemeContext';
 
 interface SidebarProps {
   clientId?: string;
@@ -14,7 +13,6 @@ export default function Sidebar({ clientId }: SidebarProps) {
   const pathname = usePathname();
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { totalItems, toggleCart } = useCart();
-  const { toggleTheme, isDark } = useTheme();
   
   const navItems = [
     { icon: Home, label: 'Dashboard', href: clientId ? `/app/${clientId}/home` : '/app' },
@@ -22,10 +20,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
     { icon: Store, label: 'Marketplace', href: clientId ? `/app/${clientId}/marketplace` : '/app' },
     { icon: MessageSquare, label: 'Conversations', href: clientId ? `/app/${clientId}/conversations` : '/app' },
     { icon: Users, label: 'Users', href: clientId ? `/app/${clientId}/users` : '/app' },
-    { icon: UserCog, label: 'Team', href: clientId ? `/app/${clientId}/team` : '/app' },
     { icon: BarChart3, label: 'Analytics', href: clientId ? `/app/${clientId}/analytics` : '/app' },
-    { icon: Package, label: 'Plans', href: clientId ? `/app/${clientId}/plans` : '/app' },
-    { icon: CreditCard, label: 'Billing', href: clientId ? `/app/${clientId}/billing` : '/app' },
     { icon: Settings, label: 'Settings', href: clientId ? `/app/${clientId}/settings` : '/app' },
   ];
 
@@ -79,15 +74,6 @@ export default function Sidebar({ clientId }: SidebarProps) {
       </nav>
       
       <div className="flex flex-col gap-2 mt-auto">
-        {/* Theme Toggle */}
-        <button
-          onClick={toggleTheme}
-          className="w-12 h-12 flex items-center justify-center rounded-lg text-sidebar-text hover:text-sidebar-text-hover hover:bg-sidebar-item-hover transition-colors"
-          title={isDark ? 'Switch to light mode' : 'Switch to dark mode'}
-        >
-          {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-        </button>
-
         {/* Cart Icon */}
         {clientId && (
           <button
@@ -167,17 +153,6 @@ export default function Sidebar({ clientId }: SidebarProps) {
             </nav>
 
             <div className="space-y-2 mt-auto pt-4 border-t border-sidebar-border">
-              {/* Theme Toggle for Mobile */}
-              <button
-                onClick={() => {
-                  toggleTheme();
-                }}
-                className="flex items-center gap-3 w-full px-4 py-3 rounded-lg text-sidebar-text hover:text-sidebar-text-hover hover:bg-sidebar-item-hover transition-colors"
-              >
-                {isDark ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-                {isDark ? 'Light Mode' : 'Dark Mode'}
-              </button>
-
               {/* Cart for Mobile */}
               {clientId && (
                 <button

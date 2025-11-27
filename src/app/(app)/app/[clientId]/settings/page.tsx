@@ -3,14 +3,14 @@ import { useState, useEffect } from 'react';
 import { clients } from '@/lib/data';
 import Sidebar from '@/components/Sidebar';
 import AuthGuard from '@/components/AuthGuard';
-import { 
-  Settings, 
-  Building, 
-  CreditCard, 
-  Bell, 
-  Shield, 
-  Users, 
-  Globe, 
+import {
+  Settings,
+  Building,
+  CreditCard,
+  Bell,
+  Shield,
+  Users,
+  Globe,
   Mail,
   Key,
   Database,
@@ -24,8 +24,13 @@ import {
   Upload,
   Download,
   RefreshCw,
-  ChevronDown
+  ChevronDown,
+  ExternalLink,
+  UserPlus,
+  Crown,
+  Activity
 } from 'lucide-react';
+import Link from 'next/link';
 
 export default function SettingsPage({ params }: { params: { clientId: string } }) {
   const [activeTab, setActiveTab] = useState('general');
@@ -562,9 +567,20 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
                             <h3 className="font-medium text-lg text-foreground">Current Plan: {billing.plan}</h3>
                             <p className="text-sm text-foreground-secondary">Next billing date: {billing.nextBilling}</p>
                           </div>
-                          <button className="btn-primary px-4 py-2">
-                            Upgrade Plan
-                          </button>
+                          <div className="flex gap-2">
+                            <Link
+                              href={`/app/${params.clientId}/plans`}
+                              className="btn-secondary px-4 py-2"
+                            >
+                              View Plans
+                            </Link>
+                            <Link
+                              href={`/app/${params.clientId}/plans`}
+                              className="btn-primary px-4 py-2"
+                            >
+                              Upgrade Plan
+                            </Link>
+                          </div>
                         </div>
                       </div>
 
@@ -620,7 +636,14 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
                         </button>
                       </div>
 
-                      <div className="flex gap-3">
+                      <div className="flex flex-wrap gap-3">
+                        <Link
+                          href={`/app/${params.clientId}/billing`}
+                          className="btn-primary px-4 py-2"
+                        >
+                          <CreditCard size={16} />
+                          Billing & Workspaces
+                        </Link>
                         <button className="btn-secondary px-4 py-2">
                           <Download size={16} />
                           Download Invoice
@@ -700,18 +723,143 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
                   </div>
                 )}
 
-                {/* Other Settings */}
-                {(activeTab === 'data' || activeTab === 'team') && (
+                {/* Team Settings */}
+                {activeTab === 'team' && (
                   <div className="settings-panel">
-                    <h2 className="settings-title capitalize">{activeTab} Settings</h2>
+                    <h2 className="settings-title">Team Management</h2>
+
+                    <div className="space-y-6">
+                      {/* Quick Stats */}
+                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="p-4 bg-background-secondary rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-info-100 dark:bg-info-700/30 rounded-lg flex items-center justify-center">
+                              <Users size={20} className="text-info-600 dark:text-info-500" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-bold text-foreground">5</p>
+                              <p className="text-sm text-foreground-secondary">Team Members</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-4 bg-background-secondary rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-success-100 dark:bg-success-700/30 rounded-lg flex items-center justify-center">
+                              <Activity size={20} className="text-success-600 dark:text-success-500" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-bold text-foreground">4</p>
+                              <p className="text-sm text-foreground-secondary">Active Now</p>
+                            </div>
+                          </div>
+                        </div>
+                        <div className="p-4 bg-background-secondary rounded-lg">
+                          <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-plan-premium-bg rounded-lg flex items-center justify-center">
+                              <Crown size={20} className="text-plan-premium-text" />
+                            </div>
+                            <div>
+                              <p className="text-2xl font-bold text-foreground">2</p>
+                              <p className="text-sm text-foreground-secondary">Admins</p>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      {/* Quick Actions */}
+                      <div className="flex flex-wrap gap-3">
+                        <Link
+                          href={`/app/${params.clientId}/team`}
+                          className="btn-primary px-4 py-2"
+                        >
+                          <Users size={18} />
+                          Manage Team
+                        </Link>
+                        <button className="btn-secondary px-4 py-2">
+                          <UserPlus size={18} />
+                          Invite Member
+                        </button>
+                      </div>
+
+                      {/* Role Permissions Overview */}
+                      <div>
+                        <h3 className="font-medium text-foreground mb-3">Role Permissions</h3>
+                        <div className="space-y-3">
+                          <div className="p-4 border border-border rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <Crown size={18} className="text-plan-premium-text" />
+                                <div>
+                                  <p className="font-medium text-foreground">Owner</p>
+                                  <p className="text-sm text-foreground-secondary">Full access to all features</p>
+                                </div>
+                              </div>
+                              <span className="text-sm text-foreground-tertiary">1 member</span>
+                            </div>
+                          </div>
+                          <div className="p-4 border border-border rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <Shield size={18} className="text-info-600 dark:text-info-500" />
+                                <div>
+                                  <p className="font-medium text-foreground">Admin</p>
+                                  <p className="text-sm text-foreground-secondary">Manage bots, users, and settings</p>
+                                </div>
+                              </div>
+                              <span className="text-sm text-foreground-tertiary">1 member</span>
+                            </div>
+                          </div>
+                          <div className="p-4 border border-border rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <Activity size={18} className="text-success-600 dark:text-success-500" />
+                                <div>
+                                  <p className="font-medium text-foreground">Agent</p>
+                                  <p className="text-sm text-foreground-secondary">Handle conversations and support</p>
+                                </div>
+                              </div>
+                              <span className="text-sm text-foreground-tertiary">2 members</span>
+                            </div>
+                          </div>
+                          <div className="p-4 border border-border rounded-lg">
+                            <div className="flex items-center justify-between">
+                              <div className="flex items-center gap-3">
+                                <Users size={18} className="text-foreground-tertiary" />
+                                <div>
+                                  <p className="font-medium text-foreground">Viewer</p>
+                                  <p className="text-sm text-foreground-secondary">View analytics and reports only</p>
+                                </div>
+                              </div>
+                              <span className="text-sm text-foreground-tertiary">1 member</span>
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="alert-info">
+                        <AlertCircle size={20} className="alert-icon flex-shrink-0 mt-0.5" />
+                        <div>
+                          <p className="alert-title">Team Seats</p>
+                          <p className="alert-message mt-1">
+                            Your plan includes 7 team seats. You have 2 seats available.
+                            <Link href={`/app/${params.clientId}/settings?tab=billing`} className="underline link ml-1">Upgrade for more</Link>
+                          </p>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Data & Privacy Settings */}
+                {activeTab === 'data' && (
+                  <div className="settings-panel">
+                    <h2 className="settings-title">Data & Privacy</h2>
                     <div className="empty-state">
                       <div className="empty-state-icon">
-                        {activeTab === 'data' && <Database size={32} className="text-foreground-tertiary" />}
-                        {activeTab === 'team' && <Users size={32} className="text-foreground-tertiary" />}
+                        <Database size={32} className="text-foreground-tertiary" />
                       </div>
                       <p className="text-foreground-secondary">
-                        {activeTab === 'data' && 'Data export and privacy settings will be available soon'}
-                        {activeTab === 'team' && 'Team role and permission settings will be available soon'}
+                        Data export and privacy settings will be available soon
                       </p>
                     </div>
                   </div>

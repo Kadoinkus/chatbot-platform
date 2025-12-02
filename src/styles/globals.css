@@ -300,9 +300,9 @@ body {
     @apply transition-all duration-fast;
   }
 
-  /* Select base - auto width by default for filter bars */
+  /* Select base - full width by default, matching Input */
   .select {
-    @apply h-11 w-auto rounded-xl border border-border bg-background px-4;
+    @apply h-11 w-full rounded-xl border border-border bg-background px-4;
     @apply text-foreground appearance-none cursor-pointer;
     @apply focus:ring-2 focus:ring-interactive focus:border-transparent;
     @apply transition-all duration-fast;

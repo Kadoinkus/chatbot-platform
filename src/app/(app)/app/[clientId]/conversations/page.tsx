@@ -212,18 +212,21 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
                 </div>
 
                 <Select
+                  fullWidth={false}
                   options={botOptions}
                   value={selectedBot}
                   onChange={(e) => setSelectedBot(e.target.value)}
                 />
 
                 <Select
+                  fullWidth={false}
                   options={statusOptions}
                   value={selectedStatus}
                   onChange={(e) => setSelectedStatus(e.target.value)}
                 />
 
                 <Select
+                  fullWidth={false}
                   options={dateRangeOptions}
                   value={dateRange}
                   onChange={(e) => setDateRange(e.target.value)}

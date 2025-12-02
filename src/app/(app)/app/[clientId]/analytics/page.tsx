@@ -340,6 +340,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                   <span className="text-sm font-medium text-foreground-secondary">Workspace:</span>
                 </div>
                 <Select
+                  fullWidth={false}
                   options={workspaceOptions}
                   value={selectedWorkspace}
                   onChange={(e) => setSelectedWorkspace(e.target.value)}
@@ -459,6 +460,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                 </div>
 
               <Select
+                fullWidth={false}
                 options={dateRangeOptions}
                 value={dateRange}
                 onChange={(e) => setDateRange(e.target.value)}

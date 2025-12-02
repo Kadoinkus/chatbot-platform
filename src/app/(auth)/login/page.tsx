@@ -45,7 +45,7 @@ export default function LoginPage() {
             </button>
           </div>
 
-          <form onSubmit={handleSubmit} className="p-8">
+          <form onSubmit={handleSubmit} className="p-5 sm:p-8">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold text-foreground">
                 {isLogin ? 'Welcome back' : 'Get started'}

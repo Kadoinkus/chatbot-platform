@@ -132,6 +132,7 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
 
               {/* Workspace Filter */}
               <Select
+                fullWidth={false}
                 options={workspaceOptions}
                 value={selectedWorkspace}
                 onChange={(e) => setSelectedWorkspace(e.target.value)}

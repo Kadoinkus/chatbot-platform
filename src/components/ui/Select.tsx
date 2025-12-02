@@ -22,7 +22,7 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
   label?: string;
   /** Helper text below select */
   helperText?: string;
-  /** Full width (default: false for filter bars) */
+  /** Full width (default: true, matching Input) */
   fullWidth?: boolean;
   /** Minimum width */
   minWidth?: string;
@@ -45,8 +45,8 @@ export interface SelectProps extends Omit<SelectHTMLAttributes<HTMLSelectElement
  * <Select placeholder="Select an option" options={options} />
  *
  * @example
- * // Full width for forms
- * <Select fullWidth options={options} />
+ * // Auto width for filter bars
+ * <Select fullWidth={false} options={options} />
  */
 export const Select = forwardRef<HTMLSelectElement, SelectProps>(
   (
@@ -57,7 +57,7 @@ export const Select = forwardRef<HTMLSelectElement, SelectProps>(
       errorMessage,
       label,
       helperText,
-      fullWidth = false,
+      fullWidth = true,
       minWidth,
       className,
       id,

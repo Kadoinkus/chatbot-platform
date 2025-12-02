@@ -251,7 +251,7 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
                     <Button variant="secondary" icon={<Filter size={16} />}>
                       Filter
                     </Button>
-                    <Select options={statusOptions} />
+                    <Select fullWidth={false} options={statusOptions} />
                   </div>
                 </div>
               </div>

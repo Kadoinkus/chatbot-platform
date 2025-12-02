@@ -208,12 +208,14 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
 
                 <div className="flex gap-3">
                   <Select
+                    fullWidth={false}
                     options={roleOptions}
                     value={roleFilter}
                     onChange={(e) => setRoleFilter(e.target.value)}
                   />
 
                   <Select
+                    fullWidth={false}
                     options={statusOptions}
                     value={statusFilter}
                     onChange={(e) => setStatusFilter(e.target.value)}

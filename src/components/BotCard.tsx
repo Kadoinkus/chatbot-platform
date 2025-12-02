@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import StatusBadge from '@/components/StatusBadge';
+import Progress from '@/components/ui/Progress';
 import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, MessageCircle, AlertTriangle, MoreVertical, Settings, Trash2, Copy, Box, Square } from 'lucide-react';
 import type { Mascot } from '@/lib/data';
 import { getClientBrandColor } from '@/lib/brandColors';
@@ -207,20 +208,7 @@ export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) 
                 {bundleLoads.percentage}%
               </span>
             </div>
-            <div className="w-full bg-background-tertiary rounded-full h-2 overflow-hidden relative">
-              <div
-                className="absolute inset-0 h-2 rounded-full"
-                style={{
-                  background: 'linear-gradient(to right, #22c55e 0%, #eab308 70%, #ef4444 100%)'
-                }}
-              />
-              <div
-                className="absolute inset-0 h-2 rounded-full bg-background-tertiary transition-all duration-500 ease-out"
-                style={{
-                  left: `${bundleLoads.percentage}%`
-                }}
-              />
-            </div>
+            <Progress percentage={bundleLoads.percentage} />
             <div className="flex justify-between items-center mt-1">
               <span className="text-xs text-foreground-tertiary">
                 {bundleLoads.current.toLocaleString()} / {bundleLoads.limit.toLocaleString()}
@@ -245,20 +233,7 @@ export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) 
                 {chatUsage.percentage}%
               </span>
             </div>
-            <div className="w-full bg-background-tertiary rounded-full h-2 overflow-hidden relative">
-              <div
-                className="absolute inset-0 h-2 rounded-full"
-                style={{
-                  background: 'linear-gradient(to right, #22c55e 0%, #eab308 70%, #ef4444 100%)'
-                }}
-              />
-              <div
-                className="absolute inset-0 h-2 rounded-full bg-background-tertiary transition-all duration-500 ease-out"
-                style={{
-                  left: `${chatUsage.percentage}%`
-                }}
-              />
-            </div>
+            <Progress percentage={chatUsage.percentage} />
             <div className="flex justify-between items-center mt-1">
               <span className="text-xs text-foreground-tertiary">
                 {(chatUsage.current / 1000).toFixed(1)}k / {(chatUsage.limit / 1000).toFixed(0)}k

@@ -45,6 +45,8 @@ export type Client = {
   palette: Palette;
   login: ClientLogin;
   defaultWorkspaceId?: string;
+  /** Demo accounts have read-only access and display a demo badge */
+  isDemo?: boolean;
 };
 
 // =============================================================================

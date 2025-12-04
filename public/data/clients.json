@@ -2,7 +2,8 @@
   {
     "id": "c1",
     "name": "Jumbo",
-    "slug": "jumbo",
+    "slug": "demo-jumbo",
+    "isDemo": true,
     "palette": {
       "primary": "#FFD700",
       "primaryDark": "#E6C200",
@@ -16,7 +17,8 @@
   {
     "id": "c2",
     "name": "HiTapes",
-    "slug": "hitapes",
+    "slug": "demo-hitapes",
+    "isDemo": true,
     "palette": {
       "primary": "#0EA5E9",
       "primaryDark": "#0284C7",
@@ -30,7 +32,8 @@
   {
     "id": "c3",
     "name": "Happinessbureau",
-    "slug": "happiness",
+    "slug": "demo-happiness",
+    "isDemo": true,
     "palette": {
       "primary": "#EF4444",
       "primaryDark": "#DC2626",

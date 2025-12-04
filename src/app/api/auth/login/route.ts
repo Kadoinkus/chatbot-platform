@@ -21,6 +21,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { loadClients } from '@/lib/dataLoader.server';
+import { LoginRequestSchema, formatZodErrors } from '@/lib/schemas';
 import type { AuthSession } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -34,17 +35,21 @@ const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json();
-    const { email, password } = body;
 
-    if (!email || !password) {
+    // Validate request body with Zod
+    const validation = LoginRequestSchema.safeParse(body);
+    if (!validation.success) {
       return NextResponse.json(
         {
-          code: 'INVALID_CREDENTIALS',
-          message: 'Email and password are required',
+          code: 'VALIDATION_ERROR',
+          message: 'Invalid request data',
+          errors: formatZodErrors(validation.error),
         },
         { status: 400 }
       );
     }
+
+    const { email, password } = validation.data;
 
     // Load clients and find matching credentials
     const clients = await loadClients();

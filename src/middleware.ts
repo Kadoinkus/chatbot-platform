@@ -18,9 +18,7 @@
 
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
-import type { AuthSession } from '@/types';
-
-const SESSION_COOKIE_NAME = 'notsoai-session';
+import { getSessionFromRequest } from '@/lib/auth.server';
 
 // TODO: Replace with JWT verification before production
 // TODO: Add server-side tenant membership validation
@@ -34,18 +32,9 @@ const AUTH_ROUTES = ['/login'];
 export function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Get session from cookie
-  const sessionCookie = request.cookies.get(SESSION_COOKIE_NAME);
-  let session: AuthSession | null = null;
-
-  if (sessionCookie?.value) {
-    try {
-      session = JSON.parse(sessionCookie.value);
-    } catch {
-      // Invalid session cookie - treat as unauthenticated
-      session = null;
-    }
-  }
+  // Get session from cookie using centralized auth
+  const sessionResult = getSessionFromRequest(request);
+  const session = sessionResult.isValid ? sessionResult : null;
 
   // Check if this is a protected route
   const isProtectedRoute = PROTECTED_ROUTES.some(route => pathname.startsWith(route));

@@ -111,10 +111,10 @@ export default {
             text: 'var(--plan-starter-text)',
             border: 'var(--plan-starter-border)',
           },
-          growth: {
-            bg: 'var(--plan-growth-bg)',
-            text: 'var(--plan-growth-text)',
-            border: 'var(--plan-growth-border)',
+          basic: {
+            bg: 'var(--plan-basic-bg)',
+            text: 'var(--plan-basic-text)',
+            border: 'var(--plan-basic-border)',
           },
           premium: {
             bg: 'var(--plan-premium-bg)',

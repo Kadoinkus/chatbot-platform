@@ -99,11 +99,11 @@
  * PLAN COLORS (Theme-aware)
  * -------------------------
  * Starter:    --plan-starter-bg, --plan-starter-text, --plan-starter-border
- * Growth:     --plan-growth-bg, --plan-growth-text, --plan-growth-border
+ * Basic:      --plan-basic-bg, --plan-basic-text, --plan-basic-border
  * Premium:    --plan-premium-bg, --plan-premium-text, --plan-premium-border
  * Enterprise: --plan-enterprise-bg, --plan-enterprise-text, --plan-enterprise-border
  *
- * CSS Classes: .badge-plan-starter, .badge-plan-growth, .badge-plan-premium, .badge-plan-enterprise
+ * CSS Classes: .badge-plan-starter, .badge-plan-basic, .badge-plan-premium, .badge-plan-enterprise
  */
 
 /*

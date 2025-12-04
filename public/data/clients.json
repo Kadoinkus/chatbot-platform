@@ -1,6 +1,6 @@
 [
   {
-    "id": "c1",
+    "id": "demo-jumbo",
     "name": "Jumbo",
     "slug": "demo-jumbo",
     "isDemo": true,
@@ -15,7 +15,7 @@
     }
   },
   {
-    "id": "c2",
+    "id": "demo-hitapes",
     "name": "HiTapes",
     "slug": "demo-hitapes",
     "isDemo": true,
@@ -30,7 +30,7 @@
     }
   },
   {
-    "id": "c3",
+    "id": "demo-happiness",
     "name": "Happinessbureau",
     "slug": "demo-happiness",
     "isDemo": true,

@@ -83,10 +83,9 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
   );
 
   const getPlanBadge = (plan: string) => {
-    const planMap: Record<string, 'starter' | 'growth' | 'premium' | 'enterprise'> = {
+    const planMap: Record<string, 'starter' | 'basic' | 'premium' | 'enterprise'> = {
       starter: 'starter',
-      basic: 'growth',
-      growth: 'growth',
+      basic: 'basic',
       premium: 'premium',
       enterprise: 'enterprise'
     };

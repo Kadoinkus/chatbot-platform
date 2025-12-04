@@ -30,26 +30,26 @@ export default function LoadingSpinner({
 
 export function LoadingCard() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 p-6 animate-pulse">
+    <div className="bg-white dark:bg-surface-elevated rounded-xl border border-gray-200 dark:border-border p-6 animate-pulse">
       <div className="flex items-center gap-4 mb-4">
-        <div className="w-16 h-16 bg-gray-200 rounded-full" />
+        <div className="w-16 h-16 bg-gray-200 dark:bg-surface-hover rounded-full" />
         <div className="flex-1">
-          <div className="h-4 bg-gray-200 rounded mb-2" />
-          <div className="h-3 bg-gray-200 rounded w-3/4" />
+          <div className="h-4 bg-gray-200 dark:bg-surface-hover rounded mb-2" />
+          <div className="h-3 bg-gray-200 dark:bg-surface-hover rounded w-3/4" />
         </div>
       </div>
       <div className="grid grid-cols-3 gap-4">
         <div className="text-center">
-          <div className="h-6 bg-gray-200 rounded mb-1" />
-          <div className="h-3 bg-gray-200 rounded" />
+          <div className="h-6 bg-gray-200 dark:bg-surface-hover rounded mb-1" />
+          <div className="h-3 bg-gray-200 dark:bg-surface-hover rounded" />
         </div>
         <div className="text-center">
-          <div className="h-6 bg-gray-200 rounded mb-1" />
-          <div className="h-3 bg-gray-200 rounded" />
+          <div className="h-6 bg-gray-200 dark:bg-surface-hover rounded mb-1" />
+          <div className="h-3 bg-gray-200 dark:bg-surface-hover rounded" />
         </div>
         <div className="text-center">
-          <div className="h-6 bg-gray-200 rounded mb-1" />
-          <div className="h-3 bg-gray-200 rounded" />
+          <div className="h-6 bg-gray-200 dark:bg-surface-hover rounded mb-1" />
+          <div className="h-3 bg-gray-200 dark:bg-surface-hover rounded" />
         </div>
       </div>
     </div>
@@ -58,21 +58,21 @@ export function LoadingCard() {
 
 export function LoadingTable() {
   return (
-    <div className="bg-white rounded-xl border border-gray-200 overflow-hidden">
-      <div className="p-6 border-b animate-pulse">
-        <div className="h-6 bg-gray-200 rounded w-1/4" />
+    <div className="bg-white dark:bg-surface-elevated rounded-xl border border-gray-200 dark:border-border overflow-hidden">
+      <div className="p-6 border-b dark:border-border animate-pulse">
+        <div className="h-6 bg-gray-200 dark:bg-surface-hover rounded w-1/4" />
       </div>
-      <div className="divide-y">
+      <div className="divide-y dark:divide-border">
         {[1, 2, 3, 4, 5].map(i => (
           <div key={i} className="p-6 animate-pulse">
             <div className="flex items-center gap-4">
-              <div className="w-10 h-10 bg-gray-200 rounded-full" />
+              <div className="w-10 h-10 bg-gray-200 dark:bg-surface-hover rounded-full" />
               <div className="flex-1">
-                <div className="h-4 bg-gray-200 rounded mb-2 w-1/4" />
-                <div className="h-3 bg-gray-200 rounded w-1/2" />
+                <div className="h-4 bg-gray-200 dark:bg-surface-hover rounded mb-2 w-1/4" />
+                <div className="h-3 bg-gray-200 dark:bg-surface-hover rounded w-1/2" />
               </div>
-              <div className="h-8 bg-gray-200 rounded w-20" />
-              <div className="h-8 bg-gray-200 rounded w-16" />
+              <div className="h-8 bg-gray-200 dark:bg-surface-hover rounded w-20" />
+              <div className="h-8 bg-gray-200 dark:bg-surface-hover rounded w-16" />
             </div>
           </div>
         ))}

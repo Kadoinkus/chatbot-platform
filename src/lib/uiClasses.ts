@@ -106,7 +106,7 @@ export const badgeClasses = {
   /** Plan tier badges */
   plans: {
     starter: 'badge-plan-starter',
-    growth: 'badge-plan-growth',
+    basic: 'badge-plan-basic',
     premium: 'badge-plan-premium',
     enterprise: 'badge-plan-enterprise',
   },

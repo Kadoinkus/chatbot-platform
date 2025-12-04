@@ -53,9 +53,9 @@
   --plan-starter-text: #374151;
   --plan-starter-border: #E5E7EB;
 
-  --plan-growth-bg: #DBEAFE;
-  --plan-growth-text: #1D4ED8;
-  --plan-growth-border: #BFDBFE;
+  --plan-basic-bg: #DBEAFE;
+  --plan-basic-text: #1D4ED8;
+  --plan-basic-border: #BFDBFE;
 
   --plan-premium-bg: #F3E8FF;
   --plan-premium-text: #7C3AED;
@@ -64,6 +64,23 @@
   --plan-enterprise-bg: #FFEDD5;
   --plan-enterprise-text: #C2410C;
   --plan-enterprise-border: #FED7AA;
+
+  /* Role Colors */
+  --role-owner-bg: #F3E8FF;
+  --role-owner-text: #7C3AED;
+  --role-owner-border: #DDD6FE;
+
+  --role-admin-bg: #DBEAFE;
+  --role-admin-text: #1D4ED8;
+  --role-admin-border: #BFDBFE;
+
+  --role-agent-bg: #D1FAE5;
+  --role-agent-text: #059669;
+  --role-agent-border: #A7F3D0;
+
+  --role-viewer-bg: #F3F4F6;
+  --role-viewer-text: #374151;
+  --role-viewer-border: #E5E7EB;
 
   /* Shadows */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
@@ -89,12 +106,12 @@
   --bg-primary: #0a0f1a;
   --bg-secondary: #1F2937;
   --bg-tertiary: #374151;
-  --bg-inverse: #FFFFFF;
+  --bg-inverse: #C9CDD3;  /* Softened further - light gray */
   --bg-hover: #1F2937;
   --bg-active: #374151;
 
   /* Text Colors */
-  --text-primary: #F9FAFB;
+  --text-primary: #C9CDD3;  /* Softened further - easier on eyes */
   --text-secondary: #9CA3AF;
   --text-tertiary: #6B7280;
   --text-inverse: #111827;
@@ -106,8 +123,8 @@
   --border-focus: #9CA3AF;
 
   /* Interactive Elements */
-  --interactive-primary: #FFFFFF;
-  --interactive-primary-hover: #E5E7EB;
+  --interactive-primary: #C9CDD3;  /* Softened further - light gray */
+  --interactive-primary-hover: #B0B5BC;
   --interactive-secondary: #1F2937;
   --interactive-secondary-hover: #374151;
 
@@ -118,8 +135,8 @@
   /* Sidebar Colors (dark with subtle blue hue) */
   --sidebar-bg: #0c1425;
   --sidebar-text: #94a3b8;
-  --sidebar-text-hover: #f1f5f9;
-  --sidebar-text-active: #ffffff;
+  --sidebar-text-hover: #B0B5BC;  /* Softened further */
+  --sidebar-text-active: #C9CDD3;  /* Softened further - light gray */
   --sidebar-item-hover: rgba(59, 130, 246, 0.1);
   --sidebar-item-active: rgba(59, 130, 246, 0.2);
   --sidebar-border: #1e3a5f;
@@ -129,9 +146,9 @@
   --plan-starter-text: #E5E7EB;
   --plan-starter-border: #4B5563;
 
-  --plan-growth-bg: #1E3A5F;
-  --plan-growth-text: #93C5FD;
-  --plan-growth-border: #2563EB;
+  --plan-basic-bg: #1E3A5F;
+  --plan-basic-text: #93C5FD;
+  --plan-basic-border: #2563EB;
 
   --plan-premium-bg: #4C1D95;
   --plan-premium-text: #C4B5FD;
@@ -140,6 +157,23 @@
   --plan-enterprise-bg: #7C2D12;
   --plan-enterprise-text: #FDBA74;
   --plan-enterprise-border: #C2410C;
+
+  /* Role Colors (dark mode) */
+  --role-owner-bg: #4C1D95;
+  --role-owner-text: #C4B5FD;
+  --role-owner-border: #7C3AED;
+
+  --role-admin-bg: #1E3A5F;
+  --role-admin-text: #93C5FD;
+  --role-admin-border: #2563EB;
+
+  --role-agent-bg: #065F46;
+  --role-agent-text: #6EE7B7;
+  --role-agent-border: #059669;
+
+  --role-viewer-bg: #374151;
+  --role-viewer-text: #E5E7EB;
+  --role-viewer-border: #4B5563;
 
   /* Shadows (more visible in dark mode) */
   --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.3);
@@ -235,10 +269,10 @@ body {
     border: 1px solid var(--plan-starter-border);
   }
 
-  .badge-plan-growth {
-    background-color: var(--plan-growth-bg);
-    color: var(--plan-growth-text);
-    border: 1px solid var(--plan-growth-border);
+  .badge-plan-basic {
+    background-color: var(--plan-basic-bg);
+    color: var(--plan-basic-text);
+    border: 1px solid var(--plan-basic-border);
   }
 
   .badge-plan-premium {
@@ -251,6 +285,31 @@ body {
     background-color: var(--plan-enterprise-bg);
     color: var(--plan-enterprise-text);
     border: 1px solid var(--plan-enterprise-border);
+  }
+
+  /* Role badges */
+  .badge-role-owner {
+    background-color: var(--role-owner-bg);
+    color: var(--role-owner-text);
+    border: 1px solid var(--role-owner-border);
+  }
+
+  .badge-role-admin {
+    background-color: var(--role-admin-bg);
+    color: var(--role-admin-text);
+    border: 1px solid var(--role-admin-border);
+  }
+
+  .badge-role-agent {
+    background-color: var(--role-agent-bg);
+    color: var(--role-agent-text);
+    border: 1px solid var(--role-agent-border);
+  }
+
+  .badge-role-viewer {
+    background-color: var(--role-viewer-bg);
+    color: var(--role-viewer-text);
+    border: 1px solid var(--role-viewer-border);
   }
 
   /* Button base */

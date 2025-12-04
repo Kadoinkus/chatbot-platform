@@ -1,7 +1,7 @@
 [
   {
     "id": "m1",
-    "clientId": "c1",
+    "clientId": "demo-jumbo",
     "workspaceId": "ws_jumbo_customer_service",
     "name": "Liza",
     "image": "/images/client-mascots/m1-liza.png",
@@ -16,7 +16,7 @@
   },
   {
     "id": "m2",
-    "clientId": "c1",
+    "clientId": "demo-jumbo",
     "workspaceId": "ws_jumbo_customer_service",
     "name": "Remco",
     "image": "/images/client-mascots/m2-remco.png",
@@ -31,7 +31,7 @@
   },
   {
     "id": "m3",
-    "clientId": "c1",
+    "clientId": "demo-jumbo",
     "workspaceId": "ws_jumbo_hr",
     "name": "Sarah",
     "image": "/images/client-mascots/m3-sarah.png",
@@ -46,7 +46,7 @@
   },
   {
     "id": "m4",
-    "clientId": "c1",
+    "clientId": "demo-jumbo",
     "workspaceId": "ws_jumbo_store",
     "name": "Max",
     "image": "/images/client-mascots/m4-max.png",
@@ -61,7 +61,7 @@
   },
   {
     "id": "m5",
-    "clientId": "c2",
+    "clientId": "demo-hitapes",
     "workspaceId": "ws_techstart_main",
     "name": "Vinny",
     "image": "/images/client-mascots/m5-vinny.png",
@@ -76,7 +76,7 @@
   },
   {
     "id": "m6",
-    "clientId": "c2",
+    "clientId": "demo-hitapes",
     "workspaceId": "ws_techstart_main",
     "name": "Tech",
     "image": "/images/client-mascots/m6-tech.png",
@@ -91,7 +91,7 @@
   },
   {
     "id": "m7",
-    "clientId": "c3",
+    "clientId": "demo-happiness",
     "workspaceId": "ws_fashionhub_sales",
     "name": "Stella",
     "image": "/images/client-mascots/m7-stella.png",
@@ -106,7 +106,7 @@
   },
   {
     "id": "m8",
-    "clientId": "c3",
+    "clientId": "demo-happiness",
     "workspaceId": "ws_fashionhub_personal",
     "name": "Joy",
     "image": "/images/client-mascots/m8-joy.png",

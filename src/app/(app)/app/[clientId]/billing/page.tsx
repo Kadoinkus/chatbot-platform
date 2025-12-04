@@ -118,11 +118,10 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
     );
   };
 
-  const getPlanBadgeType = (plan: string): 'starter' | 'growth' | 'premium' | 'enterprise' => {
-    const planMap: Record<string, 'starter' | 'growth' | 'premium' | 'enterprise'> = {
+  const getPlanBadgeType = (plan: string): 'starter' | 'basic' | 'premium' | 'enterprise' => {
+    const planMap: Record<string, 'starter' | 'basic' | 'premium' | 'enterprise'> = {
       starter: 'starter',
-      basic: 'growth',
-      growth: 'growth',
+      basic: 'basic',
       premium: 'premium',
       enterprise: 'enterprise'
     };
@@ -132,11 +131,10 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
   const getPlanConfig = (plan: string) => {
     const configs = {
       starter: { name: 'Starter', icon: Package, color: 'text-foreground-secondary', price: 99, currency: 'EUR' },
-      growth: { name: 'Growth', icon: Zap, color: 'text-info-600 dark:text-info-500', price: 299, currency: 'EUR' },
+      basic: { name: 'Basic', icon: Zap, color: 'text-info-600 dark:text-info-500', price: 299, currency: 'EUR' },
       premium: { name: 'Premium', icon: Crown, color: 'text-plan-premium-text', price: 2499, currency: 'EUR' },
       enterprise: { name: 'Enterprise', icon: Shield, color: 'text-warning-600 dark:text-warning-500', price: 0, currency: 'EUR' }
     };
-    if (plan === 'basic') return configs.growth;
     return configs[plan as keyof typeof configs] || configs.starter;
   };
 

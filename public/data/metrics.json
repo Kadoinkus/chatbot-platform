@@ -1,6 +1,6 @@
 {
   "usageByDay": {
-    "c1": [
+    "demo-jumbo": [
       { "date": "2025-10-29", "conversations": 95, "resolved": 76 },
       { "date": "2025-10-30", "conversations": 102, "resolved": 84 },
       { "date": "2025-10-31", "conversations": 88, "resolved": 71 },
@@ -32,7 +32,7 @@
       { "date": "2025-11-26", "conversations": 162, "resolved": 138 },
       { "date": "2025-11-27", "conversations": 170, "resolved": 145 }
     ],
-    "c2": [
+    "demo-hitapes": [
       { "date": "2025-10-29", "conversations": 48, "resolved": 38 },
       { "date": "2025-10-30", "conversations": 52, "resolved": 42 },
       { "date": "2025-10-31", "conversations": 45, "resolved": 36 },
@@ -64,7 +64,7 @@
       { "date": "2025-11-26", "conversations": 92, "resolved": 76 },
       { "date": "2025-11-27", "conversations": 100, "resolved": 84 }
     ],
-    "c3": [
+    "demo-happiness": [
       { "date": "2025-10-29", "conversations": 15, "resolved": 11 },
       { "date": "2025-10-30", "conversations": 18, "resolved": 14 },
       { "date": "2025-10-31", "conversations": 14, "resolved": 10 },
@@ -164,7 +164,7 @@
     ]
   },
   "topIntents": {
-    "c1": [
+    "demo-jumbo": [
       { "intent": "Opening hours", "count": 420 },
       { "intent": "Product availability", "count": 385 },
       { "intent": "Delivery", "count": 320 },
@@ -176,7 +176,7 @@
       { "intent": "Employee onboarding", "count": 92 },
       { "intent": "Vacancies", "count": 65 }
     ],
-    "c2": [
+    "demo-hitapes": [
       { "intent": "Pricing", "count": 185 },
       { "intent": "Shipping tapes", "count": 145 },
       { "intent": "Supported formats", "count": 120 },
@@ -184,7 +184,7 @@
       { "intent": "Custom orders", "count": 72 },
       { "intent": "Account setup", "count": 48 }
     ],
-    "c3": [
+    "demo-happiness": [
       { "intent": "Workshop info", "count": 125 },
       { "intent": "Booking", "count": 98 },
       { "intent": "Case studies", "count": 75 },
@@ -213,27 +213,27 @@
     ]
   },
   "csat": {
-    "c1": 4.6,
-    "c2": 4.8,
-    "c3": 4.4
+    "demo-jumbo": 4.6,
+    "demo-hitapes": 4.8,
+    "demo-happiness": 4.4
   },
   "botCsat": {
     "m1": 4.5,
     "m2": 4.7
   },
   "responseTimeAvg": {
-    "c1": 1.8,
-    "c2": 2.1,
-    "c3": 1.5
+    "demo-jumbo": 1.8,
+    "demo-hitapes": 2.1,
+    "demo-happiness": 1.5
   },
   "botResponseTimeAvg": {
     "m1": 1.6,
     "m2": 2.0
   },
   "resolutionRate": {
-    "c1": 84.2,
-    "c2": 82.5,
-    "c3": 80.8
+    "demo-jumbo": 84.2,
+    "demo-hitapes": 82.5,
+    "demo-happiness": 80.8
   },
   "botResolutionRate": {
     "m1": 85.0,

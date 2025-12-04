@@ -53,7 +53,7 @@ export type Client = {
 // Workspace (Resource Pool)
 // =============================================================================
 
-export type PlanType = 'starter' | 'growth' | 'premium' | 'enterprise';
+export type PlanType = 'starter' | 'basic' | 'premium' | 'enterprise';
 export type WorkspaceStatus = 'active' | 'suspended' | 'trial';
 export type BillingCycle = 'monthly' | 'quarterly' | 'annual';
 

@@ -97,8 +97,8 @@ export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) 
     if (plan === 'Pro Plan') {
       return 'badge-plan-premium';
     }
-    if (plan === 'Starter') {
-      return 'badge-plan-growth';
+    if (plan === 'Basic') {
+      return 'badge-plan-basic';
     }
     return 'badge-plan-starter';
   };

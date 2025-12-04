@@ -71,12 +71,12 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
           {[1, 2, 3].map(step => (
             <div key={step} className="flex items-center">
               <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-medium ${
-                currentStep >= step ? 'bg-black text-white' : 'bg-gray-200 text-gray-600'
+                currentStep >= step ? 'bg-interactive-primary text-background dark:text-background' : 'bg-background-tertiary text-foreground-secondary'
               }`}>
                 {step}
               </div>
               {step < 3 && (
-                <div className={`w-16 h-0.5 ${currentStep > step ? 'bg-black' : 'bg-gray-200'}`} />
+                <div className={`w-16 h-0.5 ${currentStep > step ? 'bg-interactive-primary' : 'bg-background-tertiary'}`} />
               )}
             </div>
           ))}
@@ -86,29 +86,29 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
         {currentStep === 1 && (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Bot Name *</label>
+              <label className="block text-sm font-medium text-foreground-secondary mb-2">Bot Name *</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
                 placeholder="e.g., Customer Support Bot"
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-border-focus bg-background text-foreground"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Description</label>
+              <label className="block text-sm font-medium text-foreground-secondary mb-2">Description</label>
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
                 placeholder="Describe what this bot does..."
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-border-focus bg-background text-foreground resize-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Category</label>
+              <label className="block text-sm font-medium text-foreground-secondary mb-3">Category</label>
               <div className="grid grid-cols-2 gap-3">
                 {categories.map(category => {
                   const Icon = category.icon;
@@ -118,8 +118,8 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
                       onClick={() => setFormData({...formData, category: category.id})}
                       className={`p-4 border-2 rounded-lg text-left transition-colors ${
                         formData.category === category.id
-                          ? 'border-black bg-black text-white'
-                          : 'border-gray-200 hover:border-gray-300'
+                          ? 'border-interactive-primary bg-interactive-primary text-background dark:text-background'
+                          : 'border-border hover:border-border-secondary text-foreground'
                       }`}
                     >
                       <Icon size={24} className="mb-2" />
@@ -132,20 +132,20 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Avatar</label>
+              <label className="block text-sm font-medium text-foreground-secondary mb-2">Avatar</label>
               <div className="flex items-center gap-4">
                 {formData.avatar && (
-                  <img 
-                    src={formData.avatar} 
+                  <img
+                    src={formData.avatar}
                     alt="Bot avatar"
                     className="w-16 h-16 rounded-full"
                   />
                 )}
-                <button className="flex items-center gap-2 px-4 py-2 border border-gray-300 rounded-lg hover:bg-gray-50">
+                <button className="flex items-center gap-2 px-4 py-2 border border-border-secondary rounded-lg hover:bg-background-hover text-foreground">
                   <Upload size={16} />
                   Upload Image
                 </button>
-                <span className="text-sm text-gray-500">Or leave empty for auto-generated avatar</span>
+                <span className="text-sm text-foreground-tertiary">Or leave empty for auto-generated avatar</span>
               </div>
             </div>
           </div>
@@ -155,7 +155,7 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
         {currentStep === 2 && (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-3">Personality</label>
+              <label className="block text-sm font-medium text-foreground-secondary mb-3">Personality</label>
               <div className="grid grid-cols-2 gap-3">
                 {personalities.map(personality => (
                   <button
@@ -163,8 +163,8 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
                     onClick={() => setFormData({...formData, personality: personality.id})}
                     className={`p-4 border-2 rounded-lg text-left transition-colors ${
                       formData.personality === personality.id
-                        ? 'border-black bg-black text-white'
-                        : 'border-gray-200 hover:border-gray-300'
+                        ? 'border-interactive-primary bg-interactive-primary text-background dark:text-background'
+                        : 'border-border hover:border-border-secondary text-foreground'
                     }`}
                   >
                     <h3 className="font-medium">{personality.name}</h3>
@@ -175,33 +175,33 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Welcome Message</label>
+              <label className="block text-sm font-medium text-foreground-secondary mb-2">Welcome Message</label>
               <textarea
                 value={formData.welcomeMessage}
                 onChange={(e) => setFormData({...formData, welcomeMessage: e.target.value})}
                 placeholder={`Hi! I&apos;m ${formData.name || 'your bot'}. How can I help you today?`}
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-border-focus bg-background text-foreground resize-none"
               />
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Fallback Message</label>
+              <label className="block text-sm font-medium text-foreground-secondary mb-2">Fallback Message</label>
               <textarea
                 value={formData.fallbackMessage}
                 onChange={(e) => setFormData({...formData, fallbackMessage: e.target.value})}
                 rows={3}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black resize-none"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-border-focus bg-background text-foreground resize-none"
               />
-              <p className="text-sm text-gray-500 mt-1">Message shown when the bot doesn't understand</p>
+              <p className="text-sm text-foreground-tertiary mt-1">Message shown when the bot doesn't understand</p>
             </div>
 
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">Language</label>
-              <select 
+              <label className="block text-sm font-medium text-foreground-secondary mb-2">Language</label>
+              <select
                 value={formData.language}
                 onChange={(e) => setFormData({...formData, language: e.target.value})}
-                className="w-full px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-black"
+                className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-border-focus bg-background text-foreground"
               >
                 <option value="english">English</option>
                 <option value="spanish">Spanish</option>
@@ -216,41 +216,41 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
         {/* Step 3: Review */}
         {currentStep === 3 && (
           <div className="space-y-6">
-            <div className="bg-gray-50 rounded-lg p-6">
-              <h3 className="font-semibold mb-4">Review Your Bot</h3>
+            <div className="bg-background-tertiary rounded-lg p-6">
+              <h3 className="font-semibold mb-4 text-foreground">Review Your Bot</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-4">
-                  <img 
+                  <img
                     src={formData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name}`}
                     alt="Bot avatar"
                     className="w-12 h-12 rounded-full"
                   />
                   <div>
-                    <h4 className="font-medium">{formData.name}</h4>
-                    <p className="text-sm text-gray-600">{formData.description}</p>
+                    <h4 className="font-medium text-foreground">{formData.name}</h4>
+                    <p className="text-sm text-foreground-secondary">{formData.description}</p>
                   </div>
                 </div>
-                
-                <div className="grid grid-cols-2 gap-4 pt-4 border-t">
+
+                <div className="grid grid-cols-2 gap-4 pt-4 border-t border-border">
                   <div>
-                    <p className="text-sm text-gray-600">Category</p>
-                    <p className="font-medium capitalize">{categories.find(c => c.id === formData.category)?.name}</p>
+                    <p className="text-sm text-foreground-secondary">Category</p>
+                    <p className="font-medium capitalize text-foreground">{categories.find(c => c.id === formData.category)?.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Personality</p>
-                    <p className="font-medium capitalize">{personalities.find(p => p.id === formData.personality)?.name}</p>
+                    <p className="text-sm text-foreground-secondary">Personality</p>
+                    <p className="font-medium capitalize text-foreground">{personalities.find(p => p.id === formData.personality)?.name}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Language</p>
-                    <p className="font-medium capitalize">{formData.language}</p>
+                    <p className="text-sm text-foreground-secondary">Language</p>
+                    <p className="font-medium capitalize text-foreground">{formData.language}</p>
                   </div>
                 </div>
               </div>
             </div>
 
-            <div className="p-4 bg-blue-50 rounded-lg">
-              <h4 className="font-medium text-blue-900 mb-2">What happens next?</h4>
-              <ul className="text-sm text-blue-700 space-y-1">
+            <div className="p-4 bg-info-50 dark:bg-info-900/30 rounded-lg">
+              <h4 className="font-medium text-info-900 dark:text-info-300 mb-2">What happens next?</h4>
+              <ul className="text-sm text-info-700 dark:text-info-400 space-y-1">
                 <li>• Your bot will be created with "Needs finalization" status</li>
                 <li>• You can add knowledge base content and train responses</li>
                 <li>• Test conversations before going live</li>
@@ -261,14 +261,14 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
         )}
 
         {/* Navigation Buttons */}
-        <div className="flex justify-between pt-6 border-t">
+        <div className="flex justify-between pt-6 border-t border-border">
           <button
             onClick={() => currentStep > 1 ? setCurrentStep(currentStep - 1) : onClose()}
-            className="px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50"
+            className="px-4 py-2 border border-border rounded-lg hover:bg-background-hover text-foreground"
           >
             {currentStep === 1 ? 'Cancel' : 'Previous'}
           </button>
-          
+
           <button
             onClick={() => {
               if (currentStep < 3) {
@@ -278,7 +278,7 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
               }
             }}
             disabled={currentStep === 1 && !formData.name}
-            className="px-6 py-2 bg-black text-white rounded-lg hover:bg-gray-800 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-6 py-2 bg-interactive-primary text-background dark:text-background rounded-lg hover:bg-interactive-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {currentStep === 3 ? 'Create Bot' : 'Next'}
           </button>

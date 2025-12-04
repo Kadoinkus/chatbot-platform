@@ -83,9 +83,6 @@ export default function WorkspaceDetailPage({
     basic: {
       features: ['100,000 messages/month', '5,000 bundle loads', 'Advanced analytics', 'Priority support']
     },
-    growth: {
-      features: ['100,000 messages/month', '5,000 bundle loads', 'Advanced analytics', 'Priority support']
-    },
     premium: {
       features: ['500,000 messages/month', '25,000 bundle loads', 'Full analytics', '24/7 support', 'API access']
     },
@@ -94,11 +91,10 @@ export default function WorkspaceDetailPage({
     }
   };
 
-  const getPlanType = (plan: string): 'starter' | 'growth' | 'premium' | 'enterprise' => {
-    const planMap: Record<string, 'starter' | 'growth' | 'premium' | 'enterprise'> = {
+  const getPlanType = (plan: string): 'starter' | 'basic' | 'premium' | 'enterprise' => {
+    const planMap: Record<string, 'starter' | 'basic' | 'premium' | 'enterprise'> = {
       starter: 'starter',
-      basic: 'growth',
-      growth: 'growth',
+      basic: 'basic',
       premium: 'premium',
       enterprise: 'enterprise'
     };

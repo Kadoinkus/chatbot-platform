@@ -76,7 +76,7 @@ export const colors = {
       text: '#374151',
       border: '#E5E7EB',
     },
-    growth: {
+    basic: {
       bg: '#DBEAFE',
       text: '#1D4ED8',
       border: '#BFDBFE',

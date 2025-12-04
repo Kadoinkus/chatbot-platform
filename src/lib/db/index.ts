@@ -6,7 +6,7 @@
  *
  * Usage:
  *   import { db } from '@/lib/db';
- *   const client = await db.clients.getById('c1');
+ *   const client = await db.clients.getById('demo-jumbo');
  *
  * Toggle via environment:
  *   USE_MOCK_DATA=true  -> Uses JSON files from public/data/

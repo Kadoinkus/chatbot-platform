@@ -4,15 +4,18 @@ import { type ReactNode } from 'react';
 import { cn } from '@/lib/utils';
 
 export type BadgeVariant = 'default' | 'success' | 'warning' | 'error' | 'info';
-export type BadgePlan = 'starter' | 'growth' | 'premium' | 'enterprise';
+export type BadgePlan = 'starter' | 'basic' | 'premium' | 'enterprise';
+export type BadgeRole = 'owner' | 'admin' | 'agent' | 'viewer';
 export type BadgeStatus = 'live' | 'paused' | 'needs-finalization' | 'draft';
 
 export interface BadgeProps {
-  children: ReactNode;
+  children?: ReactNode;
   /** Color variant */
   variant?: BadgeVariant;
   /** Plan badge type */
   plan?: BadgePlan;
+  /** Role badge type */
+  role?: BadgeRole;
   /** Status badge type */
   status?: BadgeStatus;
   /** Show status dot */
@@ -31,9 +34,23 @@ const variantClasses: Record<BadgeVariant, string> = {
 
 const planClasses: Record<BadgePlan, string> = {
   starter: 'badge-plan-starter',
-  growth: 'badge-plan-growth',
+  basic: 'badge-plan-basic',
   premium: 'badge-plan-premium',
   enterprise: 'badge-plan-enterprise',
+};
+
+const roleClasses: Record<BadgeRole, string> = {
+  owner: 'badge-role-owner',
+  admin: 'badge-role-admin',
+  agent: 'badge-role-agent',
+  viewer: 'badge-role-viewer',
+};
+
+const roleLabels: Record<BadgeRole, string> = {
+  owner: 'Owner',
+  admin: 'Admin',
+  agent: 'Agent',
+  viewer: 'Viewer',
 };
 
 const statusConfig: Record<BadgeStatus, { variant: BadgeVariant; label: string }> = {
@@ -52,7 +69,7 @@ const dotColors: Record<BadgeVariant, string> = {
 };
 
 /**
- * Badge component for labels, statuses, and plan indicators
+ * Badge component for labels, statuses, plans, and roles
  *
  * @example
  * // Basic badge
@@ -67,6 +84,10 @@ const dotColors: Record<BadgeVariant, string> = {
  * <Badge plan="premium">Premium</Badge>
  *
  * @example
+ * // Role badge
+ * <Badge role="admin" />
+ *
+ * @example
  * // With dot
  * <Badge variant="success" dot>Active</Badge>
  */
@@ -74,6 +95,7 @@ export function Badge({
   children,
   variant = 'default',
   plan,
+  role,
   status,
   dot = false,
   className,
@@ -100,6 +122,15 @@ export function Badge({
     return (
       <span className={cn('badge', planClasses[plan], className)}>
         {children}
+      </span>
+    );
+  }
+
+  // Handle role badge
+  if (role) {
+    return (
+      <span className={cn('badge', roleClasses[role], className)}>
+        {children || roleLabels[role]}
       </span>
     );
   }

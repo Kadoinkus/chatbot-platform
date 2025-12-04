@@ -26,7 +26,7 @@ This is a concise, consultant-style guide so anyone can understand how to design
 - Borders: primary (default), secondary (emphasis), focus ring.
 - Buttons: interactive primary + hover; interactive secondary for secondary buttons.
 - Semantics: Success/Warning/Error/Info defined at 50/100/500/600/700; AA compliant.
-- Plans: pre-set badge colors for starter, growth, premium, enterprise (see Badge component).
+- Plans: pre-set badge colors for starter, basic, premium, enterprise (see Badge component).
 - Sidebar: dark shell by default; active text is white.
 
 ---

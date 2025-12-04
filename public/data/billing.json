@@ -161,11 +161,11 @@
     }
   },
   "clients": {
-    "c1": {
-      "clientId": "c1",
+    "demo-jumbo": {
+      "clientId": "demo-jumbo",
       "subscription": {
         "id": "sub-001",
-        "clientId": "c1",
+        "clientId": "demo-jumbo",
         "tier": "premium",
         "plan": {
           "tier": "premium",
@@ -243,7 +243,7 @@
             "reviews": 89,
             "assetPacks": []
           },
-          "clientId": "c1",
+          "clientId": "demo-jumbo",
           "billingModel": "subscription",
           "subscriptionId": "sub-001",
           "currentUsage": {
@@ -279,7 +279,7 @@
             "reviews": 234,
             "assetPacks": []
           },
-          "clientId": "c1",
+          "clientId": "demo-jumbo",
           "billingModel": "subscription",
           "subscriptionId": "sub-001",
           "currentUsage": {
@@ -382,11 +382,11 @@
         }
       ]
     },
-    "c2": {
-      "clientId": "c2",
+    "demo-hitapes": {
+      "clientId": "demo-hitapes",
       "subscription": {
         "id": "sub-002",
-        "clientId": "c2",
+        "clientId": "demo-hitapes",
         "tier": "enterprise",
         "plan": {
           "tier": "enterprise",
@@ -462,7 +462,7 @@
             "reviews": 1,
             "assetPacks": []
           },
-          "clientId": "c2",
+          "clientId": "demo-hitapes",
           "billingModel": "subscription",
           "subscriptionId": "sub-002",
           "currentUsage": {
@@ -501,7 +501,7 @@
             "reviews": 67,
             "assetPacks": []
           },
-          "clientId": "c2",
+          "clientId": "demo-hitapes",
           "billingModel": "subscription",
           "subscriptionId": "sub-002",
           "currentUsage": {
@@ -537,7 +537,7 @@
             "reviews": 45,
             "assetPacks": []
           },
-          "clientId": "c2",
+          "clientId": "demo-hitapes",
           "billingModel": "subscription",
           "subscriptionId": "sub-002",
           "currentUsage": {
@@ -611,11 +611,11 @@
         }
       ]
     },
-    "c3": {
-      "clientId": "c3",
+    "demo-happiness": {
+      "clientId": "demo-happiness",
       "subscription": {
         "id": "sub-003",
-        "clientId": "c3",
+        "clientId": "demo-happiness",
         "tier": "basic",
         "plan": {
           "tier": "basic",
@@ -675,7 +675,7 @@
             "reviews": 234,
             "assetPacks": []
           },
-          "clientId": "c3",
+          "clientId": "demo-happiness",
           "billingModel": "subscription",
           "subscriptionId": "sub-003",
           "currentUsage": {
@@ -711,7 +711,7 @@
             "reviews": 234,
             "assetPacks": []
           },
-          "clientId": "c3",
+          "clientId": "demo-happiness",
           "billingModel": "credits",
           "creditBalance": 234.50,
           "currentUsage": {

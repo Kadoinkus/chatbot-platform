@@ -64,7 +64,7 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
   return (
     <div
       className={`
-        max-w-sm w-full bg-white border rounded-lg shadow-lg p-4 transition-all duration-300
+        max-w-sm w-full bg-white dark:bg-surface-elevated border rounded-lg shadow-lg dark:shadow-none p-4 transition-all duration-300
         ${isExiting ? 'transform translate-x-full opacity-0' : 'transform translate-x-0 opacity-100'}
         ${getStyles()}
       `}
@@ -73,19 +73,19 @@ export function Toast({ id, type, title, message, duration = 5000, onClose }: To
         <div className="flex-shrink-0">
           {getIcon()}
         </div>
-        
+
         <div className="flex-1 min-w-0">
-          <h4 className="text-sm font-medium text-gray-900">{title}</h4>
+          <h4 className="text-sm font-medium text-gray-900 dark:text-text-primary">{title}</h4>
           {message && (
-            <p className="mt-1 text-sm text-gray-700">{message}</p>
+            <p className="mt-1 text-sm text-gray-700 dark:text-text-secondary">{message}</p>
           )}
         </div>
-        
+
         <button
           onClick={handleClose}
-          className="flex-shrink-0 p-1 hover:bg-gray-100 rounded transition-colors"
+          className="flex-shrink-0 p-1 hover:bg-gray-100 dark:hover:bg-surface-hover rounded transition-colors"
         >
-          <X size={16} className="text-gray-400" />
+          <X size={16} className="text-gray-400 dark:text-text-tertiary" />
         </button>
       </div>
     </div>

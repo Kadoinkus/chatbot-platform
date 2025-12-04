@@ -94,11 +94,12 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
     }
   ]);
 
-  const roleConfig = {
-    owner: { label: 'Owner', color: 'badge-plan-premium', icon: Shield },
-    admin: { label: 'Admin', color: 'badge-plan-growth', icon: Settings },
-    agent: { label: 'Agent', color: 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500', icon: Activity },
-    viewer: { label: 'Viewer', color: 'badge-plan-starter', icon: Activity }
+  // Role icons mapping (colors now come from Badge component)
+  const roleIcons = {
+    owner: Shield,
+    admin: Settings,
+    agent: Activity,
+    viewer: Activity
   };
 
   const roleSelectOptions = [
@@ -206,7 +207,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
                   >
                     All Roles
                   </button>
-                  {Object.entries(roleConfig).map(([role, config]) => (
+                  {(['owner', 'admin', 'agent', 'viewer'] as const).map((role) => (
                     <button
                       key={role}
                       onClick={() => setSelectedRole(role)}
@@ -214,7 +215,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
                         selectedRole === role ? 'bg-interactive text-foreground-inverse' : 'bg-background-tertiary text-foreground-secondary hover:bg-background-hover'
                       }`}
                     >
-                      {config.label}s
+                      {role.charAt(0).toUpperCase() + role.slice(1)}s
                     </button>
                   ))}
                 </div>
@@ -224,8 +225,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
             {/* Team Members Grid */}
             <div className="grid gap-4">
               {filteredMembers.map(member => {
-                const config = roleConfig[member.role];
-                const Icon = config.icon;
+                const Icon = roleIcons[member.role];
 
                 return (
                   <Card key={member.id}>
@@ -251,10 +251,9 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
 
                       <div className="flex flex-wrap items-center gap-4 lg:gap-6">
                         <div className="text-right">
-                          <div className={`badge inline-flex items-center gap-2 px-3 py-1 ${config.color}`}>
+                          <Badge role={member.role} className="inline-flex items-center gap-2">
                             <Icon size={14} />
-                            {config.label}
-                          </div>
+                          </Badge>
                           <p className="text-xs text-foreground-tertiary mt-1">
                             {member.role === 'owner' ? 'Full access' : `${member.permissions.length} permissions`}
                           </p>

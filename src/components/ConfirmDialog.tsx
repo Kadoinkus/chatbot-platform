@@ -27,26 +27,26 @@ export default function ConfirmDialog({
   const getIcon = () => {
     switch (type) {
       case 'danger':
-        return <AlertTriangle size={24} className="text-red-600" />;
+        return <AlertTriangle size={24} className="text-error-600 dark:text-error-400" />;
       case 'warning':
-        return <AlertTriangle size={24} className="text-orange-600" />;
+        return <AlertTriangle size={24} className="text-warning-600 dark:text-warning-400" />;
       case 'success':
-        return <CheckCircle size={24} className="text-green-600" />;
+        return <CheckCircle size={24} className="text-success-600 dark:text-success-400" />;
       default:
-        return <Info size={24} className="text-blue-600" />;
+        return <Info size={24} className="text-info-600 dark:text-info-400" />;
     }
   };
 
   const getButtonStyles = () => {
     switch (type) {
       case 'danger':
-        return 'bg-red-600 hover:bg-red-700 text-white';
+        return 'bg-error-600 hover:bg-error-700 text-white';
       case 'warning':
-        return 'bg-orange-600 hover:bg-orange-700 text-white';
+        return 'bg-warning-600 hover:bg-warning-700 text-white';
       case 'success':
-        return 'bg-green-600 hover:bg-green-700 text-white';
+        return 'bg-success-600 hover:bg-success-700 text-white';
       default:
-        return 'bg-blue-600 hover:bg-blue-700 text-white';
+        return 'bg-info-600 hover:bg-info-700 text-white';
     }
   };
 
@@ -56,14 +56,14 @@ export default function ConfirmDialog({
         <div className="mx-auto flex items-center justify-center w-12 h-12 mb-4">
           {getIcon()}
         </div>
-        
-        <p className="text-gray-600 mb-6">{message}</p>
-        
+
+        <p className="text-foreground-secondary mb-6">{message}</p>
+
         <div className="flex gap-3">
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1 px-4 py-2 border border-gray-200 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-2 border border-border rounded-lg hover:bg-background-hover text-foreground disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {cancelText}
           </button>

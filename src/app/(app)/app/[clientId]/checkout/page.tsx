@@ -2,8 +2,6 @@
 import { useState, useEffect } from 'react';
 import { getClientById } from '@/lib/dataService';
 import { useCart } from '@/contexts/CartContext';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import {
   ArrowLeft, ShoppingCart, CreditCard, CheckCircle,
   Minus, Plus, Trash2, Package, Wallet, Calendar,
@@ -57,52 +55,42 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Page className="flex items-center justify-center">
-          <Spinner size="lg" />
-        </Page>
-      </div>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   if (!client) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<ShoppingCart size={48} />}
-              title="Client not found"
-              message="The requested client could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<ShoppingCart size={48} />}
+            title="Client not found"
+            message="The requested client could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
   if (items.length === 0 && !orderPlaced) {
     return (
-      <AuthGuard clientId={params.clientId}>
-        <div className="flex min-h-screen bg-background">
-          <Sidebar clientId={client.id} />
-
-          <Page>
-            <PageContent>
-              <EmptyState
-                icon={<ShoppingCart size={64} />}
-                title="Your cart is empty"
-                message="Add some bot templates from the marketplace to get started"
-                action={
-                  <Link href={`/app/${client.id}/marketplace`}>
-                    <Button>Browse Marketplace</Button>
-                  </Link>
-                }
-              />
-            </PageContent>
-          </Page>
-        </div>
-      </AuthGuard>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<ShoppingCart size={64} />}
+            title="Your cart is empty"
+            message="Add some bot templates from the marketplace to get started"
+            action={
+              <Link href={`/app/${client.id}/marketplace`}>
+                <Button>Browse Marketplace</Button>
+              </Link>
+            }
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -120,12 +108,8 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
   };
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={client.id} />
-
-        <Page>
-          <PageContent maxWidth="7xl">
+    <Page>
+      <PageContent maxWidth="7xl">
             <PageHeader
               title="Checkout"
               description={`Complete your purchase of ${totalItems} item${totalItems !== 1 ? 's' : ''}`}
@@ -488,9 +472,7 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
                 </Card>
               </div>
             </div>
-          </PageContent>
-        </Page>
-      </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 }

@@ -1,8 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { clients } from '@/lib/data';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import { Search, Filter, Download, MessageSquare, User, Clock, CheckCircle, AlertCircle } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -46,18 +44,15 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
   if (!client) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<MessageSquare size={48} />}
-              title="Client not found"
-              message="The requested client could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<MessageSquare size={48} />}
+            title="Client not found"
+            message="The requested client could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -67,8 +62,8 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
       id: 'conv1',
       userId: 'user123',
       userName: 'John Smith',
-      botId: client.mascots[0].id,
-      botName: client.mascots[0].name,
+      botId: client.bots[0].id,
+      botName: client.bots[0].name,
       lastMessage: 'Thank you for your help!',
       timestamp: new Date(Date.now() - 3600000),
       status: 'resolved',
@@ -81,8 +76,8 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
       id: 'conv2',
       userId: 'user456',
       userName: 'Sarah Johnson',
-      botId: client.mascots[0].id,
-      botName: client.mascots[0].name,
+      botId: client.bots[0].id,
+      botName: client.bots[0].name,
       lastMessage: 'I need to speak with a human agent',
       timestamp: new Date(Date.now() - 7200000),
       status: 'escalated',
@@ -95,8 +90,8 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
       id: 'conv3',
       userId: 'user789',
       userName: 'Mike Williams',
-      botId: client.mascots[1]?.id || client.mascots[0].id,
-      botName: client.mascots[1]?.name || client.mascots[0].name,
+      botId: client.bots[1]?.id || client.bots[0].id,
+      botName: client.bots[1]?.name || client.bots[0].name,
       lastMessage: 'When will my order arrive?',
       timestamp: new Date(Date.now() - 10800000),
       status: 'pending',
@@ -108,8 +103,8 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
       id: 'conv4',
       userId: 'user321',
       userName: 'Emma Davis',
-      botId: client.mascots[0].id,
-      botName: client.mascots[0].name,
+      botId: client.bots[0].id,
+      botName: client.bots[0].name,
       lastMessage: 'Perfect, that solved my issue',
       timestamp: new Date(Date.now() - 14400000),
       status: 'resolved',
@@ -122,8 +117,8 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
       id: 'conv5',
       userId: 'user654',
       userName: 'Robert Brown',
-      botId: client.mascots[1]?.id || client.mascots[0].id,
-      botName: client.mascots[1]?.name || client.mascots[0].name,
+      botId: client.bots[1]?.id || client.bots[0].id,
+      botName: client.bots[1]?.name || client.bots[0].name,
       lastMessage: 'How do I reset my password?',
       timestamp: new Date(Date.now() - 18000000),
       status: 'resolved',
@@ -170,7 +165,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
   const botOptions = [
     { value: 'all', label: 'All Bots' },
-    ...client.mascots.map(bot => ({ value: bot.id, label: bot.name }))
+    ...client.bots.map(bot => ({ value: bot.id, label: bot.name }))
   ];
 
   const statusOptions = [
@@ -188,12 +183,8 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   ];
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={client.id} />
-
-        <Page>
-          <PageContent>
+    <Page>
+      <PageContent>
             <PageHeader
               title="Conversations"
               description="View and manage all customer conversations"
@@ -379,9 +370,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
                 message="Try adjusting your search or filters"
               />
             )}
-          </PageContent>
-        </Page>
-      </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 }

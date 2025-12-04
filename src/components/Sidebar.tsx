@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { useTheme } from '@/contexts/ThemeContext';
+import { useAuth } from '@/hooks/useAuth';
 
 interface SidebarProps {
   clientId?: string;
@@ -15,6 +16,12 @@ export default function Sidebar({ clientId }: SidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { totalItems, toggleCart } = useCart();
   const { theme, setTheme } = useTheme();
+  const { signOut } = useAuth();
+
+  const handleLogout = () => {
+    signOut();
+    window.location.href = '/login';
+  };
   
   const navItems = [
     { icon: Home, label: 'Dashboard', href: clientId ? `/app/${clientId}/home` : '/app' },
@@ -29,7 +36,6 @@ export default function Sidebar({ clientId }: SidebarProps) {
   const bottomItems = [
     { icon: User, label: 'Profile', href: '/profile' },
     { icon: HelpCircle, label: 'Help', href: '/help' },
-    { icon: LogOut, label: 'Logout', href: '/login' },
   ];
 
   return (
@@ -105,6 +111,13 @@ export default function Sidebar({ clientId }: SidebarProps) {
             </Link>
           );
         })}
+        <button
+          onClick={handleLogout}
+          className="w-12 h-12 flex items-center justify-center rounded-lg text-sidebar-text hover:text-sidebar-text-hover hover:bg-sidebar-item-hover transition-colors"
+          title="Logout"
+        >
+          <LogOut className="w-5 h-5" />
+        </button>
       </div>
       </div>
 
@@ -201,6 +214,13 @@ export default function Sidebar({ clientId }: SidebarProps) {
                   </Link>
                 );
               })}
+              <button
+                onClick={handleLogout}
+                className="flex items-center gap-3 px-4 py-3 rounded-lg text-sidebar-text hover:text-sidebar-text-hover hover:bg-sidebar-item-hover transition-colors w-full"
+              >
+                <LogOut className="w-5 h-5" />
+                Logout
+              </button>
             </div>
           </div>
         </div>

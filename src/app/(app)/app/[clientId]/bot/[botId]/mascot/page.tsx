@@ -1,8 +1,6 @@
 'use client';
 import { getClientById, getBotById } from '@/lib/dataService';
 import { useState, useEffect } from 'react';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Palette, Sparkles, Image, Type, Monitor, Smartphone, User, Eye, Smile, ShirtIcon as Shirt, HardHat, ShoppingCart, Lock, Crown, Zap, Package, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -64,29 +62,23 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page className="flex items-center justify-center">
-          <Spinner size="lg" />
-        </Page>
-      </div>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   if (!client || !bot) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<BotIcon size={48} />}
-              title="Bot not found"
-              message="The requested bot could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<BotIcon size={48} />}
+            title="Bot not found"
+            message="The requested bot could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -255,12 +247,8 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
   };
 
   return (
-    <AuthGuard clientId={params.clientId}>
-    <div className="flex min-h-screen bg-background">
-      <Sidebar clientId={client.id} />
-
-      <Page>
-        <PageContent>
+    <Page>
+      <PageContent>
           <PageHeader
             title={bot.name}
             description="Customize appearance and chat interface"
@@ -913,10 +901,8 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                 </div>
               </Card>
             </div>
-          </div>
-        </PageContent>
-      </Page>
-    </div>
-    </AuthGuard>
+        </div>
+      </PageContent>
+    </Page>
   );
 }

@@ -1,9 +1,7 @@
 'use client';
 import { getClientById, getBotById } from '@/lib/dataService';
 import { useState, useEffect, useMemo } from 'react';
-import Sidebar from '@/components/Sidebar';
 import StatusBadge from '@/components/StatusBadge';
-import AuthGuard from '@/components/AuthGuard';
 import { ArrowLeft, Brain, Sliders, BookOpen, MessageSquare, Zap, Shield, Sparkles, GitBranch, Plus, Play, Users, ShoppingCart, GraduationCap, Briefcase, User, ChevronRight, Settings, Copy, Trash2, Edit2, Link2, ExternalLink, CheckCircle, AlertCircle, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import { getClientBrandColor } from '@/lib/brandColors';
@@ -136,29 +134,23 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page className="flex items-center justify-center">
-          <Spinner size="lg" />
-        </Page>
-      </div>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   if (!client || !bot) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<BotIcon size={48} />}
-              title="Bot not found"
-              message="The requested bot could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<BotIcon size={48} />}
+            title="Bot not found"
+            message="The requested bot could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -348,12 +340,8 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
   };
 
   return (
-    <AuthGuard clientId={params.clientId}>
-    <div className="flex min-h-screen bg-background">
-      <Sidebar clientId={client.id} />
-
-      <Page>
-        <PageContent>
+    <Page>
+      <PageContent>
           <PageHeader
             title="Brain Studio"
             description="Configure personality and knowledge base"
@@ -1314,9 +1302,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
               </Card>
             </div>
           </div>
-        </PageContent>
-      </Page>
-    </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 }

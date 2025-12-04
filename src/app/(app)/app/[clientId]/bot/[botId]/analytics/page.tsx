@@ -1,7 +1,6 @@
 'use client';
 import { getClientById, getBotById, getBotSessionsByBotId } from '@/lib/dataService';
 import { useState, useEffect, useMemo } from 'react';
-import Sidebar from '@/components/Sidebar';
 import {
   ArrowLeft,
   Users,
@@ -27,7 +26,6 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import { getClientBrandColor } from '@/lib/brandColors';
-import AuthGuard from '@/components/AuthGuard';
 import type { Client, Bot, BotSession } from '@/lib/dataService';
 import type { ApexOptions } from 'apexcharts';
 import dynamic from 'next/dynamic';
@@ -647,39 +645,29 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page className="flex items-center justify-center">
-          <Spinner size="lg" />
-        </Page>
-      </div>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   if (!client || !bot) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<BotIcon size={48} />}
-              title="Bot not found"
-              message="The requested bot could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<BotIcon size={48} />}
+            title="Bot not found"
+            message="The requested bot could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
   return (
-    <AuthGuard clientId={params.clientId}>
-    <div className="flex min-h-screen bg-background">
-      <Sidebar clientId={client.id} />
-
-      <Page>
-        <PageContent>
+    <Page>
+      <PageContent>
           <PageHeader
             title={`${bot.name} Analytics`}
             description={bot.description}
@@ -926,10 +914,8 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           {activeTab === 'business-impact' && renderBusinessImpactTab()}
           {activeTab === 'operations' && renderOperationsTab()}
           {activeTab === 'reports' && renderReportsTab()}
-        </PageContent>
-      </Page>
-    </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 
   // Tab render functions

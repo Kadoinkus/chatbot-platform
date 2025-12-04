@@ -1,20 +1,41 @@
 'use client';
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { signIn } from '@/lib/auth';
 import { clients } from '@/lib/data';
-import { Card, Button, Input, Select, Alert } from '@/components/ui';
+import { Card, Button, Input, Select, Alert, Spinner } from '@/components/ui';
 
 export default function LoginPage() {
+  const searchParams = useSearchParams();
+  const redirectTo = searchParams.get('redirect');
+
   const [email, setEmail] = useState(clients[0].login.email);
   const [password, setPassword] = useState('');
   const [err, setErr] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    const session = signIn(email, password);
-    if (!session) { setErr('Invalid credentials'); return; }
-    window.location.href = '/app';
+    setErr(null);
+    setIsLoading(true);
+
+    try {
+      const authData = await signIn(email, password);
+      if (!authData || !authData.session) {
+        setErr('Invalid credentials');
+        setIsLoading(false);
+        return;
+      }
+
+      // Redirect to the requested page or the default app page
+      const redirectUrl = redirectTo || `/app/${authData.session.clientSlug}/home`;
+      window.location.href = redirectUrl;
+    } catch (error) {
+      console.error('Login error:', error);
+      setErr('An error occurred during login');
+      setIsLoading(false);
+    }
   }
 
   return (
@@ -87,8 +108,15 @@ export default function LoginPage() {
               placeholder="Enter demo password"
             />
 
-            <Button type="submit" className="w-full py-3">
-              {isLogin ? 'Log in to Dashboard' : 'Create Account'}
+            <Button type="submit" className="w-full py-3" disabled={isLoading}>
+              {isLoading ? (
+                <span className="flex items-center justify-center gap-2">
+                  <Spinner size="sm" />
+                  {isLogin ? 'Logging in...' : 'Creating account...'}
+                </span>
+              ) : (
+                isLogin ? 'Log in to Dashboard' : 'Create Account'
+              )}
             </Button>
 
             {err && (

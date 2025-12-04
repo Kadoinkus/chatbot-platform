@@ -2,9 +2,7 @@
 import { useState, useEffect } from 'react';
 import { getClientById, getWorkspaceById, getBotsByWorkspaceId } from '@/lib/dataService';
 import type { Client, Workspace, Bot } from '@/lib/dataService';
-import Sidebar from '@/components/Sidebar';
 import BotCard from '@/components/BotCard';
-import AuthGuard from '@/components/AuthGuard';
 import Link from 'next/link';
 import {
   ArrowLeft, Plus, Settings, CreditCard, Activity,
@@ -58,29 +56,23 @@ export default function WorkspaceDetailPage({
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page className="flex items-center justify-center">
-          <Spinner size="lg" />
-        </Page>
-      </div>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   if (!client || !workspace) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<Package size={48} />}
-              title="Workspace not found"
-              message="The requested workspace could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<Package size={48} />}
+            title="Workspace not found"
+            message="The requested workspace could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -122,12 +114,8 @@ export default function WorkspaceDetailPage({
   ];
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={client.id} />
-
-        <Page>
-          <PageContent>
+    <Page>
+      <PageContent>
             <PageHeader
               title={workspace.name}
               description={workspace.description}
@@ -362,9 +350,7 @@ export default function WorkspaceDetailPage({
                 </TabPanel>
               </Tabs>
             </Card>
-          </PageContent>
-        </Page>
-      </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 }

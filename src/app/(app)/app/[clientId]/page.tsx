@@ -2,9 +2,7 @@
 import { useState, useEffect } from 'react';
 import { getClientById, getWorkspacesByClientId, getBotsByWorkspaceId } from '@/lib/dataService';
 import type { Client, Workspace, Bot } from '@/lib/dataService';
-import Sidebar from '@/components/Sidebar';
 import BotCard from '@/components/BotCard';
-import AuthGuard from '@/components/AuthGuard';
 import { Plus, Search, Filter, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -62,29 +60,23 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page className="flex items-center justify-center">
-          <Spinner size="lg" />
-        </Page>
-      </div>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   if (!client) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<BotIcon size={48} />}
-              title="Client not found"
-              message="The requested client could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<BotIcon size={48} />}
+            title="Client not found"
+            message="The requested client could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -108,12 +100,8 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
   ];
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={client.id} />
-
-        <Page>
-          <PageContent>
+    <Page>
+      <PageContent>
             <PageHeader
               title="All Bots"
               description={`Manage all your AI assistants across all workspaces for ${client.name}`}
@@ -191,9 +179,7 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
                 }
               />
             )}
-          </PageContent>
-        </Page>
-      </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 }

@@ -3,11 +3,11 @@ import { useState, useRef, useEffect } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import Progress from '@/components/ui/Progress';
 import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, MessageCircle, AlertTriangle, MoreVertical, Settings, Trash2, Copy, Box, Square } from 'lucide-react';
-import type { Mascot } from '@/lib/data';
+import type { Bot } from '@/types';
 import { getClientBrandColor } from '@/lib/brandColors';
 
 interface BotCardProps {
-  bot: Mascot;
+  bot: Bot;
   clientId: string;
   workspaceName?: string;
 }

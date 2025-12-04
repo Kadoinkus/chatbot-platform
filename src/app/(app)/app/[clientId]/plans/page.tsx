@@ -2,8 +2,6 @@
 import { useState, useEffect } from 'react';
 import { getClientById, getWorkspacesByClientId } from '@/lib/dataService';
 import type { Client, Workspace } from '@/lib/dataService';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import {
   CheckCircle, Package, Activity,
   MessageCircle, Server, Info,
@@ -53,39 +51,29 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page className="flex items-center justify-center">
-          <Spinner size="lg" />
-        </Page>
-      </div>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   if (!client) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<Package size={48} />}
-              title="Client not found"
-              message="The requested client could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<Package size={48} />}
+            title="Client not found"
+            message="The requested client could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-
-        <Page>
-          <PageContent>
+    <Page>
+      <PageContent>
             <PageHeader
               title="Choose Your Plan"
               description="Select the perfect plan for your workspace needs. Each workspace can have its own plan."
@@ -470,9 +458,7 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
                 <p className="text-foreground-secondary">Bundle Loads: $0.04 each • Messages: $0.0015 each • API Calls: $0.0001 each</p>
               </div>
             </Alert>
-          </PageContent>
-        </Page>
-      </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 }

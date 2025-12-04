@@ -3,8 +3,6 @@ import { useState, useEffect } from 'react';
 import { getClientById, getWorkspacesByClientId, getBotsByWorkspaceId } from '@/lib/dataService';
 import type { Client, Workspace, Bot } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import { Plus, Search, Building2, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -56,29 +54,23 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page className="flex items-center justify-center">
-          <Spinner size="lg" />
-        </Page>
-      </div>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   if (!client) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<Building2 size={48} />}
-              title="Client not found"
-              message="The requested client could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<Building2 size={48} />}
+            title="Client not found"
+            message="The requested client could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -102,12 +94,8 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
   };
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={client.id} />
-
-        <Page>
-          <PageContent>
+    <Page>
+      <PageContent>
             <PageHeader
               title="Dashboard"
               description={`Manage your workspaces and AI assistants for ${client.name}`}
@@ -223,9 +211,7 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
                 message="No workspaces found matching your search."
               />
             )}
-          </PageContent>
-        </Page>
-      </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 }

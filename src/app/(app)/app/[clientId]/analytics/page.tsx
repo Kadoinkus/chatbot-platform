@@ -3,8 +3,6 @@ import { useState, useMemo, useEffect, useRef } from 'react';
 import { getClientById, getBotsByClientId, getBotSessionsByClientId, getWorkspacesByClientId } from '@/lib/dataService';
 import type { Client, Bot, BotSession, Workspace } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import { UsageLine, IntentBars, MultiLineChart } from '@/components/Charts';
 import { Calendar, Download, Filter, TrendingUp, MessageSquare, Clock, Star, Users, AlertTriangle, CheckCircle, ChevronDown, X, BarChart3, Target, Settings, FileText } from 'lucide-react';
 import {
@@ -279,29 +277,23 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page className="flex items-center justify-center">
-          <Spinner size="lg" />
-        </Page>
-      </div>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   if (!client) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<BarChart3 size={48} />}
-              title="Client not found"
-              message="The requested client could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<BarChart3 size={48} />}
+            title="Client not found"
+            message="The requested client could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -319,12 +311,8 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
   ];
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={client.id} />
-
-        <Page>
-          <PageContent>
+    <Page>
+      <PageContent>
             <PageHeader
               title="Analytics Dashboard"
               description={selectedWorkspace === 'all'
@@ -585,10 +573,8 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
               </tbody>
             </table>
           </div>
-          </PageContent>
-        </Page>
-      </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 
   // Tab render functions

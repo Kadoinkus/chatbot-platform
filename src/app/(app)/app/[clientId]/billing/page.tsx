@@ -3,8 +3,6 @@ import { useState, useEffect } from 'react';
 import { getClientById, getWorkspacesByClientId, getBotsByWorkspaceId } from '@/lib/dataService';
 import type { Client, Workspace, Bot } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import {
   CreditCard, ChevronDown, ChevronUp,
   Plus, Wallet, Activity,
@@ -75,29 +73,23 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page className="flex items-center justify-center">
-          <Spinner size="lg" />
-        </Page>
-      </div>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   if (!client) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<CreditCard size={48} />}
-              title="No billing data found"
-              message="Unable to load billing information."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<CreditCard size={48} />}
+            title="No billing data found"
+            message="Unable to load billing information."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -181,12 +173,8 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
   };
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-
-        <Page>
-          <PageContent>
+    <Page>
+      <PageContent>
             <PageHeader
               title="Billing & Workspaces"
               description={`${workspaces.length} workspace${workspaces.length !== 1 ? 's' : ''} with ${getTotalBots()} bot${getTotalBots() !== 1 ? 's' : ''}`}
@@ -637,9 +625,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                 </div>
               </div>
             </Card>
-          </PageContent>
-        </Page>
-      </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 }

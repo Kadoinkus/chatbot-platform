@@ -35,6 +35,7 @@ export {
 export { Modal, type ModalProps } from './Modal';
 export { Alert, type AlertProps, type AlertVariant } from './Alert';
 export { Skeleton, Spinner, EmptyState, type SkeletonProps, type SpinnerProps, type EmptyStateProps } from './Skeleton';
+export { PageSkeleton } from './PageSkeleton';
 
 // Layout Components
 export { Page, PageHeader, PageActions, PageContent, type PageProps, type PageHeaderProps, type PageActionsProps, type PageContentProps } from './Page';

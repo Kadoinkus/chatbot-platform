@@ -1,15 +1,17 @@
-// Re-export types and functions from dataService
-export type { 
-  Palette, 
-  Bot as Mascot, // Keep the old name for compatibility
-  Client, 
+// Re-export types from centralized location
+export type {
+  Palette,
+  Bot,
+  Client,
   User,
   UsageData,
-  IntentData
-} from './dataService';
+  IntentData,
+  BotStatus,
+} from '@/types';
 
 // Import the async data functions
 import { getClientsWithBots } from './dataService';
+import type { Bot, BotStatus } from '@/types';
 
 // Import JSON data directly for synchronous access (needed for auth)
 import clientsJson from '../../public/data/clients.json';
@@ -19,11 +21,11 @@ import botsJson from '../../public/data/bots.json';
 // This merges clients with their bots for backward compatibility
 export const clients = clientsJson.map(client => ({
   ...client,
-  mascots: botsJson
+  bots: botsJson
     .filter(bot => bot.clientId === client.id)
     .map(bot => ({
       ...bot,
-      status: bot.status as 'Live' | 'Paused' | 'Needs finalization',
+      status: bot.status as BotStatus,
       metrics: {
         ...bot.metrics,
         usageByDay: [],

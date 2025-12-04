@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import StatusBadge from './StatusBadge';
 import { MessageSquare } from 'lucide-react';
-export default function ClientCard({ clientId, name, slug, primary, mascots }:{
+import type { BotStatus } from '@/types';
+
+export default function ClientCard({ clientId, name, slug, primary, bots }:{
   clientId: string; name: string; slug: string; primary: string;
-  mascots: Array<{ id: string; name: string; status: 'Live'|'Paused'|'Needs finalization'; conversations: number }>
+  bots: Array<{ id: string; name: string; status: BotStatus; conversations: number }>
 }) {
-  const total = mascots.reduce((acc, m) => acc + (m.conversations || 0), 0);
+  const total = bots.reduce((acc, m) => acc + (m.conversations || 0), 0);
   return (
     <Link href={`/app/${clientId}`} className="card p-6 hover:shadow-md transition block">
       <div className="flex items-center justify-between">
@@ -19,7 +21,7 @@ export default function ClientCard({ clientId, name, slug, primary, mascots }:{
         <div className="text-sm text-neutral-600 flex items-center gap-1"><MessageSquare size={16} /> {total} conversations</div>
       </div>
       <div className="mt-4 grid sm:grid-cols-2 gap-3">
-        {mascots.map(m => (
+        {bots.map(m => (
           <div key={m.id} className="rounded-xl border p-3 bg-white">
             <div className="flex items-center justify-between">
               <div className="font-medium">{m.name}</div>

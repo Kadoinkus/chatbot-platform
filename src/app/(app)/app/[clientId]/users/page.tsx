@@ -2,8 +2,6 @@
 import { useState, useEffect } from 'react';
 import { clients } from '@/lib/data';
 import { getUsersByClientId, type User } from '@/lib/dataService';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import {
   Users,
   UserPlus,
@@ -115,24 +113,15 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
 
   if (loading) {
     return (
-      <AuthGuard clientId={params.clientId}>
-        <div className="flex min-h-screen bg-background">
-          <Sidebar clientId={params.clientId} />
-          <Page className="flex items-center justify-center">
-            <Spinner size="lg" />
-          </Page>
-        </div>
-      </AuthGuard>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-
-        <Page>
-          <PageContent>
+    <Page>
+      <PageContent>
             <PageHeader
               title="User Management"
               description="Manage team members and their access levels"
@@ -331,9 +320,7 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
                 message="Try adjusting your search or filters"
               />
             )}
-          </PageContent>
-        </Page>
-      </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 }

@@ -2,8 +2,6 @@
 import { useState, useRef, useEffect } from 'react';
 import { clients } from '@/lib/data';
 import { getClientBrandColor } from '@/lib/brandColors';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import { ArrowLeft, Send, Paperclip, MoreVertical, Phone, Video, Info, Smile, Mic, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -24,7 +22,7 @@ interface Message {
 
 export default function ChatInterfacePage({ params }: { params: { clientId: string; botId: string } }) {
   const client = clients.find(c => c.id === params.clientId);
-  const bot = client?.mascots.find(m => m.id === params.botId);
+  const bot = client?.bots.find(m => m.id === params.botId);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
@@ -104,18 +102,15 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
 
   if (!client || !bot) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<MessageSquare size={48} />}
-              title="Bot not found"
-              message="The requested bot could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<MessageSquare size={48} />}
+            title="Bot not found"
+            message="The requested bot could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -124,11 +119,7 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
   };
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={client.id} />
-
-        <main className="flex-1 lg:ml-16 flex flex-col">
+    <main className="flex-1 flex flex-col">
           {/* Chat Header */}
           <div className="bg-surface-elevated border-b border-border px-6 py-4">
             <div className="flex items-center justify-between">
@@ -304,8 +295,6 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
               </p>
             </div>
           </div>
-        </main>
-      </div>
-    </AuthGuard>
+    </main>
   );
 }

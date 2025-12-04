@@ -1,8 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { clients } from '@/lib/data';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import { ArrowLeft, Save, Key, Clock, Shield, Bell, AlertTriangle, Database, Webhook, Download, CreditCard, Settings as SettingsIcon } from 'lucide-react';
 import Link from 'next/link';
 import StatusBadge from '@/components/StatusBadge';
@@ -21,7 +19,7 @@ import {
 
 export default function BotSettingsPage({ params }: { params: { clientId: string; botId: string } }) {
   const client = clients.find(c => c.id === params.clientId);
-  const bot = client?.mascots.find(m => m.id === params.botId);
+  const bot = client?.bots.find(m => m.id === params.botId);
   const [activeTab, setActiveTab] = useState('api');
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -55,18 +53,15 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
 
   if (!client || !bot) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<SettingsIcon size={48} />}
-              title="Bot not found"
-              message="The requested bot could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<SettingsIcon size={48} />}
+            title="Bot not found"
+            message="The requested bot could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -87,12 +82,8 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
   };
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={client.id} />
-
-        <Page>
-          <PageContent>
+    <Page>
+      <PageContent>
             <PageHeader
               title={`${bot.name} Settings`}
               description="Technical configuration and administration"
@@ -517,10 +508,8 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                   </Card>
                 )}
               </div>
-            </div>
-          </PageContent>
-        </Page>
-      </div>
-    </AuthGuard>
+          </div>
+      </PageContent>
+    </Page>
   );
 }

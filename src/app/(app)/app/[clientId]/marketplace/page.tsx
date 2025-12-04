@@ -2,8 +2,6 @@
 import { useState, useEffect } from 'react';
 import { getClientById } from '@/lib/dataService';
 import { useCart } from '@/contexts/CartContext';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import { Star, Zap, MessageCircle, Heart, ShoppingCart, CheckCircle, Plus, Search } from 'lucide-react';
 import type { Client } from '@/lib/dataService';
 import {
@@ -231,39 +229,29 @@ export default function MarketplacePage({ params }: { params: { clientId: string
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page className="flex items-center justify-center">
-          <Spinner size="lg" />
-        </Page>
-      </div>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   if (!client) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<MessageCircle size={48} />}
-              title="Client not found"
-              message="The requested client could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<MessageCircle size={48} />}
+            title="Client not found"
+            message="The requested client could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={client.id} />
-
-        <Page>
-          <PageContent>
+    <Page>
+      <PageContent>
             <PageHeader
               title="3D Mascot Marketplace"
               description="Choose from our collection of animated 3D mascots for your chatbots"
@@ -496,9 +484,7 @@ export default function MarketplacePage({ params }: { params: { clientId: string
                 message="Try adjusting your search or filter criteria"
               />
             )}
-          </PageContent>
-        </Page>
-      </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 }

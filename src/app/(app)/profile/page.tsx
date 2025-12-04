@@ -70,10 +70,9 @@ export default function UserProfilePage() {
   };
 
   return (
-    <AuthGuard clientId={client?.id} showSidebar={false}>
+    <AuthGuard clientId={client?.id}>
       <div className="flex min-h-screen bg-background">
         <Sidebar clientId={client?.id} />
-
         <Page>
           <PageContent>
             <PageHeader

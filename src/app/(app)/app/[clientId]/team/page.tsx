@@ -1,8 +1,6 @@
 'use client';
 import { useState } from 'react';
 import { clients } from '@/lib/data';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import { Search, Mail, Shield, MoreVertical, UserPlus, Settings, Key, Activity, ArrowLeft, Users } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -118,18 +116,15 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
 
   if (!client) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<Users size={48} />}
-              title="Client not found"
-              message="The requested client could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<Users size={48} />}
+            title="Client not found"
+            message="The requested client could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -146,12 +141,8 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
   };
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={client.id} />
-
-        <Page>
-          <PageContent>
+    <Page>
+      <PageContent>
             <PageHeader
               title="Team Members"
               description="Manage your team and their permissions"
@@ -350,9 +341,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
                 />
               </div>
             </Modal>
-          </PageContent>
-        </Page>
-      </div>
-    </AuthGuard>
+      </PageContent>
+    </Page>
   );
 }

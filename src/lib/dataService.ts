@@ -1,188 +1,59 @@
-// Data types
-export type Palette = { primary: string; primaryDark: string; accent: string; };
+// Re-export all types from centralized location
+export type {
+  Palette,
+  Client,
+  ClientLogin,
+  PlanType,
+  WorkspaceStatus,
+  BillingCycle,
+  UsageCounter,
+  OverageRates,
+  Workspace,
+  BotStatus,
+  BotMetrics,
+  Bot,
+  TeamRole,
+  UserStatus,
+  User,
+  ConversationStatus,
+  Channel,
+  Conversation,
+  MessageSender,
+  Message,
+  SessionStatus,
+  SessionAction,
+  Session,
+  Sentiment,
+  YesNo,
+  ResolutionType,
+  CompletionStatus,
+  UserType,
+  DeviceType,
+  BotSession,
+  UsageData,
+  IntentData,
+  MetricsData,
+  AuthSession,
+  ApiError,
+  ApiResponse,
+  CounterSummary,
+} from '@/types';
 
-export type BotMetrics = {
-  responseTime: number;
-  resolutionRate: number;
-  csat: number;
-};
+import type {
+  Client,
+  Bot,
+  Workspace,
+  User,
+  MetricsData,
+  Conversation,
+  Session,
+  BotSession,
+  Message,
+  UsageData,
+  IntentData,
+} from '@/types';
 
-export type PlanType = 'starter' | 'growth' | 'premium' | 'enterprise';
-
-export type Workspace = {
-  id: string;
-  clientId: string;
-  name: string;
-  description?: string;
-  plan: PlanType;
-  // Bundle loads (expensive 3D avatar rendering)
-  bundleLoads: {
-    limit: number;
-    used: number;
-    remaining: number;
-  };
-  // Messages (cheaper OpenAI costs)
-  messages: {
-    limit: number;
-    used: number;
-    remaining: number;
-  };
-  // API calls
-  apiCalls: {
-    limit: number;
-    used: number;
-    remaining: number;
-  };
-  walletCredits: number;
-  overageRates: {
-    bundleLoads: number; // per bundle load
-    messages: number;    // per message
-    apiCalls: number;    // per API call
-  };
-  status: 'active' | 'suspended' | 'trial';
-  createdAt: string;
-  billingCycle: 'monthly' | 'quarterly' | 'annual';
-  nextBillingDate: string;
-  monthlyFee: number;
-};
-
-export type Bot = {
-  id: string;
-  clientId: string;
-  workspaceId: string;
-  name: string;
-  image: string;
-  status: 'Live' | 'Paused' | 'Needs finalization';
-  conversations: number;
-  description: string;
-  metrics: BotMetrics;
-};
-
-export type Client = {
-  id: string;
-  name: string;
-  slug: string;
-  palette: Palette;
-  login: { email: string; password: string };
-  defaultWorkspaceId?: string;
-};
-
-export type User = {
-  id: string;
-  name: string;
-  email: string;
-  role: 'admin' | 'manager' | 'agent' | 'viewer';
-  status: 'active' | 'inactive' | 'pending';
-  avatar: string;
-  lastActive: string;
-  conversationsHandled: number;
-  joinedDate: string;
-  phone?: string;
-  clientId: string;
-};
-
-export type UsageData = {
-  date: string;
-  conversations: number;
-  resolved: number;
-};
-
-export type IntentData = {
-  intent: string;
-  count: number;
-};
-
-export type MetricsData = {
-  usageByDay: Record<string, UsageData[]>;
-  botUsageByDay: Record<string, UsageData[]>;
-  topIntents: Record<string, IntentData[]>;
-  botIntents: Record<string, IntentData[]>;
-  csat: Record<string, number>;
-};
-
-export type Conversation = {
-  id: string;
-  botId: string;
-  clientId: string;
-  userId: string;
-  userName: string;
-  status: 'active' | 'resolved' | 'escalated';
-  startedAt: string;
-  endedAt?: string;
-  messages: number;
-  satisfaction?: number;
-  intent: string;
-  channel: 'webchat' | 'whatsapp' | 'facebook' | 'telegram';
-  preview: string;
-};
-
-export type BotSession = {
-  session_id: string;
-  bot_id: string;
-  client_id: string;
-  start_time: string;
-  end_time: string;
-  ip_address: string;
-  country: string;
-  language: string;
-  messages_sent: number;
-  sentiment: 'positive' | 'neutral' | 'negative';
-  escalated: 'Yes' | 'No';
-  forwarded_hr: 'Yes' | 'No';
-  full_transcript: string;
-  avg_response_time: number;
-  tokens: number;
-  tokens_eur: number;
-  category: string;
-  questions: string[];
-  user_rating: number;
-  summary: string;
-  // Enterprise analytics fields
-  intent_confidence: number;
-  resolution_type: 'self_service' | 'escalated' | 'partial' | 'unresolved';
-  completion_status: 'completed' | 'incomplete' | 'escalated' | 'partial';
-  user_type: 'new' | 'returning' | 'existing';
-  channel: 'webchat' | 'whatsapp' | 'facebook' | 'telegram';
-  device_type: 'desktop' | 'mobile' | 'tablet';
-  browser: string;
-  session_steps: number;
-  goal_achieved: boolean;
-  error_occurred: boolean;
-  bot_handoff: boolean;
-  human_cost_equivalent: number;
-  automation_saving: number;
-};
-
-export type Session = {
-  id: string;
-  userId: string;
-  userName: string;
-  clientId: string;
-  startedAt: string;
-  endedAt?: string;
-  lastActivity: string;
-  device: string;
-  browser: string;
-  location: string;
-  ip: string;
-  status: 'active' | 'idle' | 'ended';
-  actions: Array<{
-    type: string;
-    timestamp: string;
-    [key: string]: any;
-  }>;
-};
-
-export type Message = {
-  id: string;
-  conversationId: string;
-  sender: 'user' | 'bot' | 'agent';
-  senderName: string;
-  content: string;
-  timestamp: string;
-};
-
-// Data loading functions
+// Data loading functions (client-side fetch)
 let clientsData: Client[] | null = null;
 let botsData: Bot[] | null = null;
 let workspacesData: Workspace[] | null = null;
@@ -195,7 +66,6 @@ let messagesData: Message[] | null = null;
 
 export async function loadClients(): Promise<Client[]> {
   if (clientsData) return clientsData;
-  
   const response = await fetch('/data/clients.json');
   clientsData = await response.json();
   return clientsData!;
@@ -203,7 +73,6 @@ export async function loadClients(): Promise<Client[]> {
 
 export async function loadBots(): Promise<Bot[]> {
   if (botsData) return botsData;
-  
   const response = await fetch('/data/bots.json');
   botsData = await response.json();
   return botsData!;
@@ -211,7 +80,6 @@ export async function loadBots(): Promise<Bot[]> {
 
 export async function loadWorkspaces(): Promise<Workspace[]> {
   if (workspacesData) return workspacesData;
-  
   const response = await fetch('/data/workspaces.json');
   workspacesData = await response.json();
   return workspacesData!;
@@ -219,7 +87,6 @@ export async function loadWorkspaces(): Promise<Workspace[]> {
 
 export async function loadUsers(): Promise<User[]> {
   if (usersData) return usersData;
-  
   const response = await fetch('/data/users.json');
   usersData = await response.json();
   return usersData!;
@@ -227,7 +94,6 @@ export async function loadUsers(): Promise<User[]> {
 
 export async function loadMetrics(): Promise<MetricsData> {
   if (metricsData) return metricsData;
-  
   const response = await fetch('/data/metrics.json');
   metricsData = await response.json();
   return metricsData!;
@@ -235,7 +101,6 @@ export async function loadMetrics(): Promise<MetricsData> {
 
 export async function loadConversations(): Promise<Conversation[]> {
   if (conversationsData) return conversationsData;
-  
   const response = await fetch('/data/conversations.json');
   conversationsData = await response.json();
   return conversationsData!;
@@ -243,7 +108,6 @@ export async function loadConversations(): Promise<Conversation[]> {
 
 export async function loadSessions(): Promise<Session[]> {
   if (sessionsData) return sessionsData;
-  
   const response = await fetch('/data/sessions.json');
   sessionsData = await response.json();
   return sessionsData!;
@@ -251,7 +115,6 @@ export async function loadSessions(): Promise<Session[]> {
 
 export async function loadBotSessions(): Promise<BotSession[]> {
   if (botSessionsData) return botSessionsData;
-
   const response = await fetch('/data/bot_sessions.json');
   botSessionsData = await response.json();
   return botSessionsData!;
@@ -259,7 +122,6 @@ export async function loadBotSessions(): Promise<BotSession[]> {
 
 export async function loadMessages(): Promise<Message[]> {
   if (messagesData) return messagesData;
-  
   const response = await fetch('/data/messages.json');
   messagesData = await response.json();
   return messagesData!;
@@ -270,12 +132,24 @@ export async function getClients(): Promise<Client[]> {
   return loadClients();
 }
 
-export async function getClientById(id: string): Promise<Client | undefined> {
+export async function getClientById(idOrSlug: string): Promise<Client | undefined> {
   const clients = await loadClients();
-  return clients.find(c => c.id === id);
+  // Match by id OR slug to support both URL formats
+  return clients.find(c => c.id === idOrSlug || c.slug === idOrSlug);
 }
 
-export async function getBotsByClientId(clientId: string): Promise<Bot[]> {
+/**
+ * Resolves a client ID or slug to the actual client ID.
+ * Use this when you need the canonical ID for data lookups.
+ */
+export async function resolveClientId(idOrSlug: string): Promise<string | undefined> {
+  const client = await getClientById(idOrSlug);
+  return client?.id;
+}
+
+export async function getBotsByClientId(clientIdOrSlug: string): Promise<Bot[]> {
+  // Resolve slug to actual ID if needed
+  const clientId = await resolveClientId(clientIdOrSlug) || clientIdOrSlug;
   const bots = await loadBots();
   return bots.filter(b => b.clientId === clientId);
 }
@@ -285,7 +159,9 @@ export async function getBotsByWorkspaceId(workspaceId: string): Promise<Bot[]> 
   return bots.filter(b => b.workspaceId === workspaceId);
 }
 
-export async function getWorkspacesByClientId(clientId: string): Promise<Workspace[]> {
+export async function getWorkspacesByClientId(clientIdOrSlug: string): Promise<Workspace[]> {
+  // Resolve slug to actual ID if needed
+  const clientId = await resolveClientId(clientIdOrSlug) || clientIdOrSlug;
   const workspaces = await loadWorkspaces();
   return workspaces.filter(w => w.clientId === clientId);
 }
@@ -300,16 +176,18 @@ export async function getBotById(id: string): Promise<Bot | undefined> {
   return bots.find(b => b.id === id);
 }
 
-export async function getUsersByClientId(clientId: string): Promise<User[]> {
+export async function getUsersByClientId(clientIdOrSlug: string): Promise<User[]> {
+  const clientId = await resolveClientId(clientIdOrSlug) || clientIdOrSlug;
   const users = await loadUsers();
   return users.filter(u => u.clientId === clientId);
 }
 
-export async function getClientMetrics(clientId: string): Promise<{
+export async function getClientMetrics(clientIdOrSlug: string): Promise<{
   usageByDay: UsageData[];
   topIntents: IntentData[];
   csat: number;
 }> {
+  const clientId = await resolveClientId(clientIdOrSlug) || clientIdOrSlug;
   const metrics = await loadMetrics();
   return {
     usageByDay: metrics.usageByDay[clientId] || [],
@@ -329,7 +207,8 @@ export async function getBotMetrics(botId: string): Promise<{
   };
 }
 
-export async function getConversationsByClientId(clientId: string): Promise<Conversation[]> {
+export async function getConversationsByClientId(clientIdOrSlug: string): Promise<Conversation[]> {
+  const clientId = await resolveClientId(clientIdOrSlug) || clientIdOrSlug;
   const conversations = await loadConversations();
   return conversations.filter(c => c.clientId === clientId);
 }
@@ -344,12 +223,14 @@ export async function getMessagesByConversationId(conversationId: string): Promi
   return messages.filter(m => m.conversationId === conversationId);
 }
 
-export async function getSessionsByClientId(clientId: string): Promise<Session[]> {
+export async function getSessionsByClientId(clientIdOrSlug: string): Promise<Session[]> {
+  const clientId = await resolveClientId(clientIdOrSlug) || clientIdOrSlug;
   const sessions = await loadSessions();
   return sessions.filter(s => s.clientId === clientId);
 }
 
-export async function getActiveSessionsByClientId(clientId: string): Promise<Session[]> {
+export async function getActiveSessionsByClientId(clientIdOrSlug: string): Promise<Session[]> {
+  const clientId = await resolveClientId(clientIdOrSlug) || clientIdOrSlug;
   const sessions = await loadSessions();
   return sessions.filter(s => s.clientId === clientId && s.status === 'active');
 }
@@ -390,7 +271,7 @@ export async function getClientsWithBots(): Promise<any[]> {
 
   return clients.map(client => ({
     ...client,
-    mascots: bots
+    bots: bots
       .filter(bot => bot.clientId === client.id)
       .map(bot => ({
         ...bot,

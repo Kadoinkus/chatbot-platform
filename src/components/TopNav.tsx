@@ -3,14 +3,24 @@ import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { cn } from '@/lib/utils';
 import { LogOut } from 'lucide-react';
-import { signOut } from '@/lib/auth';
-export default function TopNav({ clientId }:{ clientId?: string }) {
+import { useAuth } from '@/hooks/useAuth';
+
+export default function TopNav({ clientId }: { clientId?: string }) {
   const pathname = usePathname();
+  const { signOut } = useAuth();
+
   const tabs = [
     { href: `/app/${clientId}`, label: 'Dashboard' },
     { href: `/app/${clientId}?tab=analytics`, label: 'Analytics' },
     { href: `/app/${clientId}?tab=status`, label: 'Status' }
   ];
+
+  const handleLogout = () => {
+    // Call signOut but don't wait - redirect immediately
+    signOut();
+    window.location.href = '/login';
+  };
+
   return (
     <header className="border-b bg-white/70 backdrop-blur sticky top-0 z-40">
       <div className="container h-14 flex items-center justify-between">
@@ -22,7 +32,7 @@ export default function TopNav({ clientId }:{ clientId?: string }) {
             ))}
           </nav>
         )}
-        <button onClick={() => { signOut(); window.location.replace('/login'); }} className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-black">
+        <button onClick={handleLogout} className="inline-flex items-center gap-2 text-sm text-neutral-600 hover:text-black">
           <LogOut size={16} /> Log out
         </button>
       </div>

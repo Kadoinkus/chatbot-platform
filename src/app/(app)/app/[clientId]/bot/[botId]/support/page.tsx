@@ -1,8 +1,6 @@
 'use client';
 import { getClientById, getBotById } from '@/lib/dataService';
 import { useState, useEffect } from 'react';
-import Sidebar from '@/components/Sidebar';
-import AuthGuard from '@/components/AuthGuard';
 import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Headphones, Plus, Search, Filter, AlertCircle, CheckCircle, Clock, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
@@ -97,29 +95,23 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
 
   if (loading) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page className="flex items-center justify-center">
-          <Spinner size="lg" />
-        </Page>
-      </div>
+      <Page className="flex items-center justify-center">
+        <Spinner size="lg" />
+      </Page>
     );
   }
 
   if (!client || !bot) {
     return (
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={params.clientId} />
-        <Page>
-          <PageContent>
-            <EmptyState
-              icon={<Headphones size={48} />}
-              title="Bot not found"
-              message="The requested bot could not be found."
-            />
-          </PageContent>
-        </Page>
-      </div>
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<Headphones size={48} />}
+            title="Bot not found"
+            message="The requested bot could not be found."
+          />
+        </PageContent>
+      </Page>
     );
   }
 
@@ -155,12 +147,8 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
   ];
 
   return (
-    <AuthGuard clientId={params.clientId}>
-      <div className="flex min-h-screen bg-background">
-        <Sidebar clientId={client.id} />
-
-        <Page>
-          <PageContent>
+    <Page>
+      <PageContent>
             <PageHeader
               title={`${bot.name} Support`}
               description="Manage support requests and tickets"
@@ -284,9 +272,8 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
                 ))}
               </div>
             </Card>
-          </PageContent>
-        </Page>
-      
+      </PageContent>
+
       <Modal
         isOpen={showNewTicket}
         onClose={() => setShowNewTicket(false)}
@@ -362,7 +349,6 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
           </div>
         </div>
       </Modal>
-      </div>
-    </AuthGuard>
+    </Page>
   );
 }

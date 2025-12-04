@@ -229,7 +229,7 @@ export default function WorkspaceDetailPage({
                     {bots.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {bots.map((bot) => (
-                          <BotCard key={bot.id} bot={bot} clientId={client.id} />
+                          <BotCard key={bot.id} bot={bot} clientId={client.id} workspace={workspace} />
                         ))}
                       </div>
                     ) : (

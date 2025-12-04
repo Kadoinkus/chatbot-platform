@@ -3,16 +3,17 @@ import { useState, useRef, useEffect } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import Progress from '@/components/ui/Progress';
 import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, MessageCircle, AlertTriangle, MoreVertical, Settings, Trash2, Copy, Box, Square } from 'lucide-react';
-import type { Bot } from '@/types';
+import type { Bot, Workspace, PlanType } from '@/types';
 import { getClientBrandColor } from '@/lib/brandColors';
 
 interface BotCardProps {
   bot: Bot;
   clientId: string;
   workspaceName?: string;
+  workspace?: Workspace;
 }
 
-export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) {
+export default function BotCard({ bot, clientId, workspaceName, workspace }: BotCardProps) {
   const brandColor = getClientBrandColor(bot.clientId);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -65,42 +66,61 @@ export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) 
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Mock bundle loads and chat usage - in production from server metrics
-  const bundleLoads = {
-    current: Math.floor(Math.random() * 800) + 200,
+  // Get usage data from workspace (real data) or fallback to defaults
+  const bundleLoads = workspace ? {
+    current: workspace.bundleLoads.used,
+    limit: workspace.bundleLoads.limit,
+    percentage: Math.round((workspace.bundleLoads.used / workspace.bundleLoads.limit) * 100)
+  } : {
+    current: 0,
     limit: 1000,
     percentage: 0
   };
-  bundleLoads.percentage = Math.round((bundleLoads.current / bundleLoads.limit) * 100);
-  
-  const chatUsage = {
-    current: Math.floor(Math.random() * 40000) + 5000,
+
+  const chatUsage = workspace ? {
+    current: workspace.messages.used,
+    limit: workspace.messages.limit,
+    percentage: Math.round((workspace.messages.used / workspace.messages.limit) * 100)
+  } : {
+    current: 0,
     limit: 50000,
     percentage: 0
   };
-  chatUsage.percentage = Math.round((chatUsage.current / chatUsage.limit) * 100);
 
-  // Mock billing plan data - in production this would come from props or API
-  const plans = ['Pro Plan', 'Starter', 'Pay-as-you-go', 'Prepaid Credits'];
-  const billingTypes = ['subscription', 'prepaid'];
-  const randomPlan = plans[Math.floor(Math.random() * plans.length)];
-  const randomBillingType = billingTypes[Math.floor(Math.random() * billingTypes.length)];
+  // Get billing plan from workspace
+  const workspacePlan = workspace?.plan || 'starter';
+  const hasWalletCredits = workspace && workspace.walletCredits > 0;
   
   // Determine 2D/3D mode - in production this would come from props or API
   const autoFallback = bundleLoads.percentage > 90; // Auto switch to 2D if bundle limit exceeded
   const is3DMode = !autoFallback && manualMode !== '2d';
   
-  const getBillingBadgeStyle = (plan: string, type: string) => {
-    if (type === 'prepaid') {
-      return 'badge-plan-enterprise';
+  const getPlanBadgeStyle = (plan: PlanType) => {
+    switch (plan) {
+      case 'enterprise':
+        return 'badge-plan-enterprise';
+      case 'premium':
+        return 'badge-plan-premium';
+      case 'basic':
+        return 'badge-plan-basic';
+      case 'starter':
+      default:
+        return 'badge-plan-starter';
     }
-    if (plan === 'Pro Plan') {
-      return 'badge-plan-premium';
+  };
+
+  const getPlanDisplayName = (plan: PlanType) => {
+    switch (plan) {
+      case 'enterprise':
+        return 'Enterprise';
+      case 'premium':
+        return 'Premium';
+      case 'basic':
+        return 'Basic';
+      case 'starter':
+      default:
+        return 'Starter';
     }
-    if (plan === 'Basic') {
-      return 'badge-plan-basic';
-    }
-    return 'badge-plan-starter';
   };
 
 
@@ -145,10 +165,15 @@ export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) 
                   WebkitBoxOrient: 'vertical'
                 }}>{bot.description}</p>
               </div>
-              <div className="mt-2">
-                <span className={`badge ${getBillingBadgeStyle(randomPlan, randomBillingType)}`}>
-                  {randomBillingType === 'prepaid' ? 'Prepaid Credits' : randomPlan}
+              <div className="mt-2 flex items-center gap-2">
+                <span className={`badge ${getPlanBadgeStyle(workspacePlan)}`}>
+                  {getPlanDisplayName(workspacePlan)}
                 </span>
+                {hasWalletCredits && (
+                  <span className="badge badge-plan-enterprise text-xs">
+                    +€{workspace!.walletCredits.toFixed(0)} credits
+                  </span>
+                )}
               </div>
             </div>
           </div>

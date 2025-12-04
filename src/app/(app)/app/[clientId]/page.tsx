@@ -22,7 +22,7 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
   const [selectedWorkspace, setSelectedWorkspace] = useState<string>('all');
   const [client, setClient] = useState<Client | undefined>();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [allBots, setAllBots] = useState<(Bot & { workspaceName: string })[]>([]);
+  const [allBots, setAllBots] = useState<(Bot & { workspaceName: string; workspace: Workspace })[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -37,13 +37,14 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
         setWorkspaces(workspacesData || []);
 
         // Load all bots from all workspaces
-        const botsWithWorkspace: (Bot & { workspaceName: string })[] = [];
-        for (const workspace of workspacesData || []) {
-          const bots = await getBotsByWorkspaceId(workspace.id);
+        const botsWithWorkspace: (Bot & { workspaceName: string; workspace: Workspace })[] = [];
+        for (const ws of workspacesData || []) {
+          const bots = await getBotsByWorkspaceId(ws.id);
           bots.forEach(bot => {
             botsWithWorkspace.push({
               ...bot,
-              workspaceName: workspace.name
+              workspaceName: ws.name,
+              workspace: ws
             });
           });
         }
@@ -142,6 +143,7 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
                   bot={bot}
                   clientId={client.id}
                   workspaceName={bot.workspaceName}
+                  workspace={bot.workspace}
                 />
               ))}
             </div>

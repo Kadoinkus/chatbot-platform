@@ -61,6 +61,7 @@ export const Card = forwardRef<HTMLDivElement, CardProps>(
         ref={ref}
         className={cn(
           hover ? 'card-hover' : 'card',
+          'overflow-hidden',
           paddingClasses[padding],
           className
         )}

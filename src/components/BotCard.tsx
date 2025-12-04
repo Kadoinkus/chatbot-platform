@@ -106,7 +106,7 @@ export default function BotCard({ bot, clientId, workspaceName }: BotCardProps) 
 
 
   return (
-    <div className="card-hover group relative flex flex-col">
+    <div className="card-hover group relative flex flex-col overflow-hidden">
       {/* Header Section */}
       <div className="p-6 pb-4 flex-1">
         <div className="flex items-start justify-between mb-4">

@@ -1,9 +1,9 @@
 'use client';
 
-import { useEffect, type ReactNode } from 'react';
+import { useEffect, useState, type ReactNode } from 'react';
+import { createPortal } from 'react-dom';
 import { X } from 'lucide-react';
 import { cn } from '@/lib/utils';
-import Button from './Button';
 
 export interface ModalProps {
   /** Whether the modal is open */
@@ -36,21 +36,7 @@ const sizeClasses = {
 
 /**
  * Modal component for dialogs and popups
- *
- * @example
- * <Modal
- *   isOpen={isOpen}
- *   onClose={() => setIsOpen(false)}
- *   title="Confirm Action"
- *   footer={
- *     <>
- *       <Button variant="secondary" onClick={() => setIsOpen(false)}>Cancel</Button>
- *       <Button onClick={handleConfirm}>Confirm</Button>
- *     </>
- *   }
- * >
- *   Are you sure you want to proceed?
- * </Modal>
+ * Uses React Portal to render outside component tree and prevent scroll issues
  */
 export function Modal({
   isOpen,
@@ -63,35 +49,48 @@ export function Modal({
   footer,
   className,
 }: ModalProps) {
+  const [mounted, setMounted] = useState(false);
+
+  // Only render on client side (for Portal)
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   // Handle escape key
   useEffect(() => {
+    if (!isOpen) return;
+
     const handleEscape = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         onClose();
       }
     };
 
-    if (isOpen) {
-      document.addEventListener('keydown', handleEscape);
-      document.body.style.overflow = 'hidden';
-    }
+    document.addEventListener('keydown', handleEscape);
 
     return () => {
       document.removeEventListener('keydown', handleEscape);
-      document.body.style.overflow = '';
     };
   }, [isOpen, onClose]);
 
-  if (!isOpen) {
+  // Don't render on server or if not open
+  if (!mounted || !isOpen) {
     return null;
   }
 
-  return (
-    <div className="fixed inset-0 z-modal flex items-center justify-center p-4">
+  const modalContent = (
+    <div
+      className="fixed inset-0 z-modal flex items-center justify-center p-4"
+      style={{ isolation: 'isolate' }}
+    >
       {/* Backdrop */}
       <div
         className="fixed inset-0 bg-surface-overlay animate-fade-in"
-        onClick={onClose}
+        onClick={(e) => {
+          e.preventDefault();
+          e.stopPropagation();
+          onClose();
+        }}
         aria-hidden="true"
       />
 
@@ -106,6 +105,7 @@ export function Modal({
         aria-modal="true"
         aria-labelledby={title ? 'modal-title' : undefined}
         aria-describedby={description ? 'modal-description' : undefined}
+        onClick={(e) => e.stopPropagation()}
       >
         {/* Header */}
         {(title || showClose) && (
@@ -124,7 +124,12 @@ export function Modal({
             </div>
             {showClose && (
               <button
-                onClick={onClose}
+                type="button"
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
+                  onClose();
+                }}
                 className="p-2 -m-2 text-foreground-tertiary hover:text-foreground rounded-lg hover:bg-background-hover transition-colors"
                 aria-label="Close modal"
               >
@@ -146,6 +151,9 @@ export function Modal({
       </div>
     </div>
   );
+
+  // Use Portal to render outside the component tree
+  return createPortal(modalContent, document.body);
 }
 
 export default Modal;

@@ -36,7 +36,16 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-15T09:15:00+00:00"
+    "created_at": "2025-11-15T09:15:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Welkom bij Jumbo. Hoe kan ik je helpen?", "timestamp": "2025-11-15T09:15:30+00:00"},
+      {"author": "user", "message": "Hoi! Wat zijn jullie openingstijden?", "timestamp": "2025-11-15T09:16:00+00:00"},
+      {"author": "bot", "message": "Onze winkels zijn over het algemeen geopend van maandag t/m zaterdag van 8:00 tot 21:00. De exacte tijden kunnen per winkel verschillen. Je kunt je dichtstbijzijnde winkel bekijken op https://jumbo.com/stores/hours", "timestamp": "2025-11-15T09:16:15+00:00"},
+      {"author": "user", "message": "En op zondag?", "timestamp": "2025-11-15T09:18:00+00:00"},
+      {"author": "bot", "message": "De meeste Jumbo winkels zijn ook op zondag geopend, meestal van 10:00 tot 18:00 of 12:00 tot 18:00. Dit verschilt per locatie.", "timestamp": "2025-11-15T09:18:20+00:00"},
+      {"author": "user", "message": "Top, bedankt!", "timestamp": "2025-11-15T09:21:45+00:00"},
+      {"author": "bot", "message": "Graag gedaan! Fijne dag nog!", "timestamp": "2025-11-15T09:21:50+00:00"}
+    ]
   },
   {
     "id": "sess-002",
@@ -75,7 +84,18 @@
     "glb_transfer_size": 17345088,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-15T10:30:00+00:00"
+    "created_at": "2025-11-15T10:30:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Welkom bij Jumbo. Waarmee kan ik je helpen vandaag?", "timestamp": "2025-11-15T10:30:15+00:00"},
+      {"author": "user", "message": "Hebben jullie biologische bananen?", "timestamp": "2025-11-15T10:31:00+00:00"},
+      {"author": "bot", "message": "Ja! Wij hebben biologische bananen in ons assortiment. Je kunt ze vinden in onze biologische afdeling. Bekijk ons biologische aanbod op https://jumbo.com/products/organic", "timestamp": "2025-11-15T10:31:30+00:00"},
+      {"author": "user", "message": "Ze waren niet beschikbaar bij mij. Wanneer worden ze weer aangevuld?", "timestamp": "2025-11-15T10:35:00+00:00"},
+      {"author": "bot", "message": "De voorraad wordt dagelijks aangevuld, maar de exacte timing verschilt per winkel. Ik kan je helaas geen precieze datum geven voor wanneer ze weer beschikbaar zijn.", "timestamp": "2025-11-15T10:35:45+00:00"},
+      {"author": "user", "message": "Welke andere biologische fruit hebben jullie?", "timestamp": "2025-11-15T10:40:00+00:00"},
+      {"author": "bot", "message": "We hebben een breed assortiment biologisch fruit: appels, peren, sinaasappels, citroenen, kiwi's, druiven en meer. Het aanbod kan per seizoen variëren.", "timestamp": "2025-11-15T10:40:30+00:00"},
+      {"author": "user", "message": "Oké bedankt", "timestamp": "2025-11-15T10:44:30+00:00"},
+      {"author": "bot", "message": "Geen probleem! Als je nog vragen hebt, ben ik er voor je.", "timestamp": "2025-11-15T10:44:45+00:00"}
+    ]
   },
   {
     "id": "sess-003",
@@ -114,7 +134,20 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-15T14:00:00+00:00"
+    "created_at": "2025-11-15T14:00:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Welkom bij Jumbo klantenservice. Hoe kan ik je helpen?", "timestamp": "2025-11-15T14:00:20+00:00"},
+      {"author": "user", "message": "Ik heb een beschadigd product ontvangen!", "timestamp": "2025-11-15T14:01:00+00:00"},
+      {"author": "bot", "message": "Dat spijt me om te horen! Kan je me vertellen welk product beschadigd was en wanneer je het hebt gekocht?", "timestamp": "2025-11-15T14:01:30+00:00"},
+      {"author": "user", "message": "Het was een glazen pot pasta saus, gisteren gekocht. De pot was gebarsten en alles lekte eruit.", "timestamp": "2025-11-15T14:05:00+00:00"},
+      {"author": "bot", "message": "Dat is echt vervelend. Mijn excuses hiervoor. Je hebt recht op vervanging of terugbetaling. Heb je je kassabon nog?", "timestamp": "2025-11-15T14:05:45+00:00"},
+      {"author": "user", "message": "Ik wil mijn geld terug. Hoe krijg ik dat?", "timestamp": "2025-11-15T14:10:00+00:00"},
+      {"author": "bot", "message": "Je kunt naar de klantenservice balie in de winkel gaan met het product en je kassabon. Zij kunnen je direct helpen met de terugbetaling.", "timestamp": "2025-11-15T14:10:30+00:00"},
+      {"author": "user", "message": "Hoe retourneer ik dit precies?", "timestamp": "2025-11-15T14:15:00+00:00"},
+      {"author": "bot", "message": "Voor specifieke vragen over retourneren kan ik je doorverbinden met onze klantenservice. Zij kunnen je verder helpen. Ik stuur je vraag door naar support@jumbo.com", "timestamp": "2025-11-15T14:15:30+00:00"},
+      {"author": "user", "message": "Oké, doe maar", "timestamp": "2025-11-15T14:17:45+00:00"},
+      {"author": "bot", "message": "Je vraag is doorgestuurd naar onze klantenservice. Zij nemen zo snel mogelijk contact met je op. Sterkte!", "timestamp": "2025-11-15T14:18:00+00:00"}
+    ]
   },
   {
     "id": "sess-004",
@@ -153,7 +186,14 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-16T08:45:00+00:00"
+    "created_at": "2025-11-16T08:45:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Op zoek naar een lekker recept? Ik help je graag!", "timestamp": "2025-11-16T08:45:10+00:00"},
+      {"author": "user", "message": "Welke recepten hebben jullie voor pasta?", "timestamp": "2025-11-16T08:46:00+00:00"},
+      {"author": "bot", "message": "We hebben honderden pasta recepten! Van klassieke spaghetti bolognese tot romige pasta carbonara en vegetarische opties. Bekijk onze pasta recepten op https://jumbo.com/recipes/pasta", "timestamp": "2025-11-16T08:46:30+00:00"},
+      {"author": "user", "message": "Super, ga ik bekijken!", "timestamp": "2025-11-16T08:51:30+00:00"},
+      {"author": "bot", "message": "Eet smakelijk! Als je hulp nodig hebt bij het vinden van ingrediënten, laat het me weten.", "timestamp": "2025-11-16T08:51:45+00:00"}
+    ]
   },
   {
     "id": "sess-005",
@@ -192,7 +232,18 @@
     "glb_transfer_size": 17345088,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-16T12:15:00+00:00"
+    "created_at": "2025-11-16T12:15:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Welkom bij Jumbo. Kan ik je ergens mee helpen?", "timestamp": "2025-11-16T12:15:20+00:00"},
+      {"author": "user", "message": "Waar is de dichtstbijzijnde winkel bij mij?", "timestamp": "2025-11-16T12:16:00+00:00"},
+      {"author": "bot", "message": "Je kunt onze winkelzoeker gebruiken om de dichtstbijzijnde Jumbo te vinden. Ga naar https://jumbo.com/stores/amsterdam of voer je postcode in op onze website.", "timestamp": "2025-11-16T12:16:30+00:00"},
+      {"author": "user", "message": "Hebben jullie parkeergelegenheid?", "timestamp": "2025-11-16T12:20:00+00:00"},
+      {"author": "bot", "message": "De meeste van onze grotere winkels hebben gratis parkeergelegenheid. De beschikbaarheid verschilt per locatie - je kunt dit checken op de winkelpagina.", "timestamp": "2025-11-16T12:20:30+00:00"},
+      {"author": "user", "message": "Is er ook een bakkerij afdeling?", "timestamp": "2025-11-16T12:25:00+00:00"},
+      {"author": "bot", "message": "Ja! De meeste Jumbo winkels hebben een verse bakkerij met brood, broodjes, gebak en taarten. Dagelijks vers gebakken!", "timestamp": "2025-11-16T12:25:30+00:00"},
+      {"author": "user", "message": "Top, bedankt voor de info!", "timestamp": "2025-11-16T12:27:45+00:00"},
+      {"author": "bot", "message": "Graag gedaan! Veel plezier met je bezoek aan Jumbo!", "timestamp": "2025-11-16T12:28:00+00:00"}
+    ]
   },
   {
     "id": "sess-006",
@@ -231,7 +282,12 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-16T16:30:00+00:00"
+    "created_at": "2025-11-16T16:30:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Leuk dat je er bent. Hoe kan ik je helpen?", "timestamp": "2025-11-16T16:30:05+00:00"},
+      {"author": "user", "message": "Hoi!", "timestamp": "2025-11-16T16:34:20+00:00"},
+      {"author": "bot", "message": "Hallo! Als je vragen hebt over onze producten, winkels of aanbiedingen, vraag maar gerust!", "timestamp": "2025-11-16T16:34:35+00:00"}
+    ]
   },
   {
     "id": "sess-007",
@@ -270,7 +326,20 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-17T09:00:00+00:00"
+    "created_at": "2025-11-17T09:00:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Goedemorgen! Welkom bij Jumbo. Hoe kan ik je helpen?", "timestamp": "2025-11-17T09:00:15+00:00"},
+      {"author": "user", "message": "Bezorgen jullie ook bij mij thuis?", "timestamp": "2025-11-17T09:01:00+00:00"},
+      {"author": "bot", "message": "Ja! Jumbo bezorgt in grote delen van Nederland. Voer je postcode in op https://jumbo.com/delivery om te checken of we bij jou bezorgen.", "timestamp": "2025-11-17T09:01:30+00:00"},
+      {"author": "user", "message": "Wat kost dat?", "timestamp": "2025-11-17T09:05:00+00:00"},
+      {"author": "bot", "message": "De bezorgkosten variëren van €2,50 tot €7,95 afhankelijk van het tijdslot dat je kiest. Bij bestellingen boven een bepaald bedrag is bezorging soms gratis!", "timestamp": "2025-11-17T09:05:30+00:00"},
+      {"author": "user", "message": "Hoe lang duurt de bezorging?", "timestamp": "2025-11-17T09:08:00+00:00"},
+      {"author": "bot", "message": "Je kunt zelf een bezorgtijdslot kiezen. Vaak is bezorging de volgende dag al mogelijk. Je kiest een tijdslot van 2 uur waarin we bezorgen.", "timestamp": "2025-11-17T09:08:30+00:00"},
+      {"author": "user", "message": "Kan ik mijn bestelling volgen?", "timestamp": "2025-11-17T09:12:00+00:00"},
+      {"author": "bot", "message": "Ja! Op de dag van bezorging kun je live volgen waar de bezorger is via de Jumbo app of website. Je krijgt ook updates per email.", "timestamp": "2025-11-17T09:12:30+00:00"},
+      {"author": "user", "message": "Perfect, dan ga ik een bestelling plaatsen!", "timestamp": "2025-11-17T09:14:30+00:00"},
+      {"author": "bot", "message": "Super! Veel plezier met je bestelling. Als je nog vragen hebt, ben ik er voor je!", "timestamp": "2025-11-17T09:14:45+00:00"}
+    ]
   },
   {
     "id": "sess-008",
@@ -309,7 +378,20 @@
     "glb_transfer_size": 17345088,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-17T11:30:00+00:00"
+    "created_at": "2025-11-17T11:30:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Welkom bij Jumbo klantenservice. Waarmee kan ik je helpen?", "timestamp": "2025-11-17T11:30:10+00:00"},
+      {"author": "user", "message": "Mijn bestelling klopte niet!", "timestamp": "2025-11-17T11:31:00+00:00"},
+      {"author": "bot", "message": "Dat spijt me te horen! Kun je me vertellen wat er niet klopte aan je bestelling?", "timestamp": "2025-11-17T11:31:30+00:00"},
+      {"author": "user", "message": "Ik had melk besteld maar kreeg karnemelk. En er miste ook een product.", "timestamp": "2025-11-17T11:33:00+00:00"},
+      {"author": "bot", "message": "Dat is vervelend! Je hebt recht op het juiste product of terugbetaling. Heb je het ordernummer bij de hand?", "timestamp": "2025-11-17T11:33:30+00:00"},
+      {"author": "user", "message": "Ja, het is ORD-12345. Waar is mijn geld?", "timestamp": "2025-11-17T11:36:00+00:00"},
+      {"author": "bot", "message": "Ik kan helaas geen orders inzien of terugbetalingen regelen. Voor dit specifieke probleem moet ik je doorverbinden met onze klantenservice.", "timestamp": "2025-11-17T11:36:30+00:00"},
+      {"author": "user", "message": "Ik wil met een manager spreken!", "timestamp": "2025-11-17T11:39:00+00:00"},
+      {"author": "bot", "message": "Ik begrijp je frustratie. Ik stuur je vraag door naar klantenservice@jumbo.com waar een medewerker je zo snel mogelijk zal helpen met je klacht.", "timestamp": "2025-11-17T11:39:30+00:00"},
+      {"author": "user", "message": "Oké, maar ik verwacht snel een reactie!", "timestamp": "2025-11-17T11:41:30+00:00"},
+      {"author": "bot", "message": "Begrepen! Je klacht is doorgestuurd met hoge prioriteit. Je zou binnen 24 uur een reactie moeten ontvangen. Excuses voor het ongemak.", "timestamp": "2025-11-17T11:41:45+00:00"}
+    ]
   },
   {
     "id": "sess-009",
@@ -348,7 +430,14 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-17T15:00:00+00:00"
+    "created_at": "2025-11-17T15:00:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Welkom bij Jumbo. Hoe kan ik je helpen?", "timestamp": "2025-11-17T15:00:05+00:00"},
+      {"author": "user", "message": "Hallo, sprechen Sie Deutsch?", "timestamp": "2025-11-17T15:01:00+00:00"},
+      {"author": "bot", "message": "Ja, ich kann auch auf Deutsch antworten! Wie kann ich Ihnen heute helfen?", "timestamp": "2025-11-17T15:01:30+00:00"},
+      {"author": "user", "message": "Ah super! Ich schaue nur mal vorbei.", "timestamp": "2025-11-17T15:07:30+00:00"},
+      {"author": "bot", "message": "Kein Problem! Wenn Sie Fragen haben, bin ich hier um zu helfen. Schönen Tag noch!", "timestamp": "2025-11-17T15:07:45+00:00"}
+    ]
   },
   {
     "id": "sess-010",
@@ -387,7 +476,18 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-18T10:00:00+00:00"
+    "created_at": "2025-11-18T10:00:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Goedemorgen! Welkom bij Jumbo. Hoe kan ik je helpen?", "timestamp": "2025-11-18T10:00:10+00:00"},
+      {"author": "user", "message": "Welke soorten kaas hebben jullie?", "timestamp": "2025-11-18T10:01:00+00:00"},
+      {"author": "bot", "message": "We hebben een groot assortiment kaas! Van Goudse kaas tot brie, mozzarella, feta en nog veel meer. Bekijk ons kaasaanbod op https://jumbo.com/products/cheese", "timestamp": "2025-11-18T10:01:30+00:00"},
+      {"author": "user", "message": "Hebben jullie ook lactosevrije kaas?", "timestamp": "2025-11-18T10:05:00+00:00"},
+      {"author": "bot", "message": "Ja! We hebben verschillende lactosevrije kaassoorten, waaronder lactosevrije Goudse kaas en gesmolten kaas.", "timestamp": "2025-11-18T10:05:30+00:00"},
+      {"author": "user", "message": "Wat kost die ongeveer?", "timestamp": "2025-11-18T10:09:00+00:00"},
+      {"author": "bot", "message": "De prijzen variëren per product. Lactosevrije kaas begint rond €2,50 voor een pakje. Je kunt de exacte prijzen zien in onze webshop of in de winkel.", "timestamp": "2025-11-18T10:09:30+00:00"},
+      {"author": "user", "message": "Dankje!", "timestamp": "2025-11-18T10:11:30+00:00"},
+      {"author": "bot", "message": "Graag gedaan! Eet smakelijk!", "timestamp": "2025-11-18T10:11:45+00:00"}
+    ]
   },
   {
     "id": "sess-011",
@@ -426,7 +526,16 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-18T13:30:00+00:00"
+    "created_at": "2025-11-18T13:30:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Welkom bij Jumbo. Hoe kan ik je helpen vandaag?", "timestamp": "2025-11-18T13:30:15+00:00"},
+      {"author": "user", "message": "Hey", "timestamp": "2025-11-18T13:31:00+00:00"},
+      {"author": "bot", "message": "Hoi! Waar ben je naar op zoek? Ik kan je helpen met informatie over onze producten, winkels, recepten en meer.", "timestamp": "2025-11-18T13:31:30+00:00"},
+      {"author": "user", "message": "Niks eigenlijk, was gewoon nieuwsgierig", "timestamp": "2025-11-18T13:35:00+00:00"},
+      {"author": "bot", "message": "Geen probleem! Voel je vrij om rond te kijken. Als je vragen hebt, ben ik hier om te helpen!", "timestamp": "2025-11-18T13:35:30+00:00"},
+      {"author": "user", "message": "👍", "timestamp": "2025-11-18T13:37:30+00:00"},
+      {"author": "bot", "message": "Tot de volgende keer!", "timestamp": "2025-11-18T13:37:45+00:00"}
+    ]
   },
   {
     "id": "sess-012",
@@ -465,7 +574,22 @@
     "glb_transfer_size": 17345088,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-18T17:00:00+00:00"
+    "created_at": "2025-11-18T17:00:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo, welkom bij Jumbo. Hoe kan ik je helpen?", "timestamp": "2025-11-18T17:00:20+00:00"},
+      {"author": "user", "message": "De kwaliteit van het vlees was vreselijk!", "timestamp": "2025-11-18T17:01:00+00:00"},
+      {"author": "bot", "message": "Dat spijt me om te horen. Kwaliteit is erg belangrijk voor ons. Kun je me meer vertellen over wat er mis was?", "timestamp": "2025-11-18T17:01:30+00:00"},
+      {"author": "user", "message": "Het gehakt rook al slecht terwijl de houdbaarheidsdatum nog niet verstreken was.", "timestamp": "2025-11-18T17:05:00+00:00"},
+      {"author": "bot", "message": "Dat is absoluut niet acceptabel. Heb je de verpakking en kassabon nog? Dit is belangrijk voor de klachtafhandeling.", "timestamp": "2025-11-18T17:05:30+00:00"},
+      {"author": "user", "message": "Ja, ik heb beide nog. Ik wil compensatie hiervoor!", "timestamp": "2025-11-18T17:08:00+00:00"},
+      {"author": "bot", "message": "Begrijpelijk. Je hebt recht op terugbetaling of vervanging. Voor compensatie moet ik je doorverbinden met onze klachtenafdeling.", "timestamp": "2025-11-18T17:08:30+00:00"},
+      {"author": "user", "message": "Hoe dien ik een officiële klacht in?", "timestamp": "2025-11-18T17:12:00+00:00"},
+      {"author": "bot", "message": "Ik kan je klacht direct doorsturen naar klachten@jumbo.com. Zij zullen contact met je opnemen.", "timestamp": "2025-11-18T17:12:30+00:00"},
+      {"author": "user", "message": "Wanneer krijg ik dan reactie?", "timestamp": "2025-11-18T17:16:00+00:00"},
+      {"author": "bot", "message": "Normaal gesproken binnen 2-3 werkdagen, maar ik kan geen exacte timing garanderen. Ze doen hun best om klachten snel af te handelen.", "timestamp": "2025-11-18T17:16:30+00:00"},
+      {"author": "user", "message": "Oké, stuur maar door dan", "timestamp": "2025-11-18T17:19:30+00:00"},
+      {"author": "bot", "message": "Je klacht is doorgestuurd naar onze klachtenafdeling. Je ontvangt een bevestigingsmail. Nogmaals onze excuses voor dit voorval.", "timestamp": "2025-11-18T17:19:45+00:00"}
+    ]
   },
   {
     "id": "sess-013",
@@ -504,7 +628,12 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-19T09:30:00+00:00"
+    "created_at": "2025-11-19T09:30:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Goedemorgen! Welkom bij Jumbo. Waarmee kan ik je helpen?", "timestamp": "2025-11-19T09:30:10+00:00"},
+      {"author": "user", "message": "Hoi", "timestamp": "2025-11-19T09:35:30+00:00"},
+      {"author": "bot", "message": "Hallo! Als je een vraag hebt over onze producten, winkels of services, help ik je graag!", "timestamp": "2025-11-19T09:35:45+00:00"}
+    ]
   },
   {
     "id": "sess-014",
@@ -543,7 +672,18 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-19T12:00:00+00:00"
+    "created_at": "2025-11-19T12:00:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Op zoek naar inspiratie voor het eten? Ik help je graag!", "timestamp": "2025-11-19T12:00:15+00:00"},
+      {"author": "user", "message": "Wat kan ik vanavond maken voor het avondeten?", "timestamp": "2025-11-19T12:01:00+00:00"},
+      {"author": "bot", "message": "Leuke vraag! Waar heb je zin in? Ik kan recepten suggereren voor vlees, vis, pasta, of vegetarisch.", "timestamp": "2025-11-19T12:01:30+00:00"},
+      {"author": "user", "message": "Iets snels en makkelijks?", "timestamp": "2025-11-19T12:05:00+00:00"},
+      {"author": "bot", "message": "Dan raad ik onze '30 minuten' recepten aan! Denk aan roerbak gerechten, wraps, of een snelle pasta. Bekijk ze op https://jumbo.com/recipes/quick", "timestamp": "2025-11-19T12:05:30+00:00"},
+      {"author": "user", "message": "Hebben jullie ook vegetarische opties?", "timestamp": "2025-11-19T12:09:00+00:00"},
+      {"author": "bot", "message": "Absoluut! We hebben veel vegetarische recepten: pasta pesto, groenteburgers, couscous salades en meer. Check https://jumbo.com/recipes/dinner voor ons volledige aanbod.", "timestamp": "2025-11-19T12:09:30+00:00"},
+      {"author": "user", "message": "Super, daar ga ik even kijken!", "timestamp": "2025-11-19T12:14:30+00:00"},
+      {"author": "bot", "message": "Eet smakelijk vanavond! Als je hulp nodig hebt bij ingrediënten, laat het me weten.", "timestamp": "2025-11-19T12:14:45+00:00"}
+    ]
   },
   {
     "id": "sess-015",
@@ -582,7 +722,16 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-19T15:30:00+00:00"
+    "created_at": "2025-11-19T15:30:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Welkom bij Jumbo. Hoe kan ik je helpen?", "timestamp": "2025-11-19T15:30:10+00:00"},
+      {"author": "user", "message": "Is er een Jumbo in Antwerpen?", "timestamp": "2025-11-19T15:31:00+00:00"},
+      {"author": "bot", "message": "Ja! We hebben meerdere Jumbo winkels in en rondom Antwerpen. Je kunt de dichtstbijzijnde vinden op https://jumbo.com/stores/antwerp", "timestamp": "2025-11-19T15:31:30+00:00"},
+      {"author": "user", "message": "Wat zijn de openingstijden daar?", "timestamp": "2025-11-19T15:35:00+00:00"},
+      {"author": "bot", "message": "De meeste winkels in België zijn geopend van maandag t/m zaterdag 8:00-20:00 en zondag 9:00-18:00. De exacte tijden kunnen per winkel verschillen.", "timestamp": "2025-11-19T15:35:30+00:00"},
+      {"author": "user", "message": "Top, bedankt!", "timestamp": "2025-11-19T15:44:30+00:00"},
+      {"author": "bot", "message": "Graag gedaan! Tot ziens bij Jumbo!", "timestamp": "2025-11-19T15:44:45+00:00"}
+    ]
   },
   {
     "id": "sess-016",
@@ -621,7 +770,16 @@
     "glb_transfer_size": 17345088,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-20T08:00:00+00:00"
+    "created_at": "2025-11-20T08:00:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Goedemorgen! Welkom bij Jumbo. Hoe kan ik je helpen?", "timestamp": "2025-11-20T08:00:10+00:00"},
+      {"author": "user", "message": "Hoe kan ik de Jumbo app downloaden?", "timestamp": "2025-11-20T08:01:00+00:00"},
+      {"author": "bot", "message": "De Jumbo app kun je gratis downloaden via de App Store (iPhone) of Google Play Store (Android). Je kunt ook naar https://jumbo.com/app gaan voor de directe links.", "timestamp": "2025-11-20T08:01:30+00:00"},
+      {"author": "user", "message": "Is de app gratis?", "timestamp": "2025-11-20T08:05:00+00:00"},
+      {"author": "bot", "message": "Ja, de Jumbo app is helemaal gratis! Je kunt ermee boodschappen doen, aanbiedingen bekijken, en je Extra punten beheren.", "timestamp": "2025-11-20T08:05:30+00:00"},
+      {"author": "user", "message": "Perfect, ga ik downloaden", "timestamp": "2025-11-20T08:09:30+00:00"},
+      {"author": "bot", "message": "Veel plezier met de app! Als je vragen hebt over de functies, help ik je graag.", "timestamp": "2025-11-20T08:09:45+00:00"}
+    ]
   },
   {
     "id": "sess-017",
@@ -660,7 +818,14 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-20T11:00:00+00:00"
+    "created_at": "2025-11-20T11:00:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Welkom bij Jumbo. Hoe kan ik je vandaag helpen?", "timestamp": "2025-11-20T11:00:05+00:00"},
+      {"author": "user", "message": "Hoe heet jij eigenlijk?", "timestamp": "2025-11-20T11:01:00+00:00"},
+      {"author": "bot", "message": "Ik ben de Jumbo assistent! Je kunt me alles vragen over onze winkels, producten, recepten en services.", "timestamp": "2025-11-20T11:01:30+00:00"},
+      {"author": "user", "message": "Leuk! Tot de volgende keer dan", "timestamp": "2025-11-20T11:07:30+00:00"},
+      {"author": "bot", "message": "Tot ziens! Fijne dag nog!", "timestamp": "2025-11-20T11:07:45+00:00"}
+    ]
   },
   {
     "id": "sess-018",
@@ -699,7 +864,22 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-20T14:30:00+00:00"
+    "created_at": "2025-11-20T14:30:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Welkom bij Jumbo. Hoe kan ik je helpen?", "timestamp": "2025-11-20T14:30:15+00:00"},
+      {"author": "user", "message": "Hoe kan ik iets retourneren?", "timestamp": "2025-11-20T14:31:00+00:00"},
+      {"author": "bot", "message": "Je kunt producten retourneren bij de klantenservice balie in de winkel. Neem het product en indien mogelijk de kassabon mee.", "timestamp": "2025-11-20T14:31:30+00:00"},
+      {"author": "user", "message": "Heb ik de bon per se nodig?", "timestamp": "2025-11-20T14:35:00+00:00"},
+      {"author": "bot", "message": "De kassabon is niet altijd verplicht, maar maakt de retour wel makkelijker. Zonder bon kunnen we meestal nog wel helpen, afhankelijk van het product.", "timestamp": "2025-11-20T14:35:30+00:00"},
+      {"author": "user", "message": "Wanneer krijg ik mijn geld terug?", "timestamp": "2025-11-20T14:39:00+00:00"},
+      {"author": "bot", "message": "Bij contante betaling krijg je direct je geld terug. Bij pinbetaling kan het 2-5 werkdagen duren voordat het op je rekening staat.", "timestamp": "2025-11-20T14:39:30+00:00"},
+      {"author": "user", "message": "Kan ik online aankopen in de winkel retourneren?", "timestamp": "2025-11-20T14:43:00+00:00"},
+      {"author": "bot", "message": "Voor online aankopen gelden speciale retourregels. Het hangt af van het type product. Hiervoor kan ik je het beste doorverwijzen naar onze klantenservice.", "timestamp": "2025-11-20T14:43:30+00:00"},
+      {"author": "user", "message": "Kun je me doorverbinden?", "timestamp": "2025-11-20T14:47:00+00:00"},
+      {"author": "bot", "message": "Natuurlijk! Ik stuur je vraag door naar retour@jumbo.com. Zij kunnen je precies vertellen wat de mogelijkheden zijn voor jouw situatie.", "timestamp": "2025-11-20T14:47:30+00:00"},
+      {"author": "user", "message": "Oké bedankt", "timestamp": "2025-11-20T14:49:30+00:00"},
+      {"author": "bot", "message": "Graag gedaan! Je ontvangt zo snel mogelijk reactie. Fijne dag!", "timestamp": "2025-11-20T14:49:45+00:00"}
+    ]
   },
   {
     "id": "sess-019",
@@ -738,7 +918,18 @@
     "glb_transfer_size": 17345088,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-20T18:00:00+00:00"
+    "created_at": "2025-11-20T18:00:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Hallo! Welkom bij Jumbo. Hoe kan ik je helpen?", "timestamp": "2025-11-20T18:00:10+00:00"},
+      {"author": "user", "message": "Hoe werken de Extra punten?", "timestamp": "2025-11-20T18:01:00+00:00"},
+      {"author": "bot", "message": "Met Jumbo Extra spaar je punten bij elke aankoop! Je spaart automatisch 1 punt per euro die je uitgeeft. Deze punten kun je inwisselen voor korting of producten. Meer info: https://jumbo.com/extra/points", "timestamp": "2025-11-20T18:01:30+00:00"},
+      {"author": "user", "message": "Hoe kan ik ze inwisselen?", "timestamp": "2025-11-20T18:05:00+00:00"},
+      {"author": "bot", "message": "Je kunt je punten inwisselen bij de kassa door je Extra kaart te scannen en te kiezen voor korting. Of wissel ze online in voor cadeaubonnen en producten via de app of website.", "timestamp": "2025-11-20T18:05:30+00:00"},
+      {"author": "user", "message": "Verlopen de punten?", "timestamp": "2025-11-20T18:09:00+00:00"},
+      {"author": "bot", "message": "Punten blijven 2 jaar geldig vanaf het moment van sparen. Zolang je regelmatig bij Jumbo winkelt, verlopen ze niet snel!", "timestamp": "2025-11-20T18:09:30+00:00"},
+      {"author": "user", "message": "Super, dankjewel!", "timestamp": "2025-11-20T18:11:30+00:00"},
+      {"author": "bot", "message": "Graag gedaan! Veel plezier met sparen!", "timestamp": "2025-11-20T18:11:45+00:00"}
+    ]
   },
   {
     "id": "sess-020",
@@ -777,6 +968,15 @@
     "glb_transfer_size": 0,
     "analysis_processed": true,
     "analysis_status": "succeeded",
-    "created_at": "2025-11-21T10:30:00+00:00"
+    "created_at": "2025-11-21T10:30:00+00:00",
+    "full_transcript": [
+      {"author": "bot", "message": "Goedemorgen! Welkom bij Jumbo. Hoe kan ik je helpen?", "timestamp": "2025-11-21T10:30:10+00:00"},
+      {"author": "user", "message": "Welke aanbiedingen hebben jullie deze week?", "timestamp": "2025-11-21T10:31:00+00:00"},
+      {"author": "bot", "message": "Deze week hebben we veel leuke acties! Bekijk onze actuele aanbiedingen op https://jumbo.com/aanbiedingen - daar vind je alle kortingen en speciale deals.", "timestamp": "2025-11-21T10:31:30+00:00"},
+      {"author": "user", "message": "Wanneer komen er nieuwe aanbiedingen?", "timestamp": "2025-11-21T10:35:00+00:00"},
+      {"author": "bot", "message": "Onze nieuwe aanbiedingen starten elke maandag en lopen tot en met zondag. De nieuwe folder is meestal al op zondag online te bekijken!", "timestamp": "2025-11-21T10:35:30+00:00"},
+      {"author": "user", "message": "Top, ga ik bekijken!", "timestamp": "2025-11-21T10:39:30+00:00"},
+      {"author": "bot", "message": "Veel plezier met het shoppen! Als je vragen hebt over specifieke aanbiedingen, help ik je graag.", "timestamp": "2025-11-21T10:39:45+00:00"}
+    ]
   }
 ]

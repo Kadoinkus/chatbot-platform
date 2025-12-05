@@ -9,6 +9,7 @@ import type {
   ChatSession,
   ChatSessionAnalysis,
   ChatSessionWithAnalysis,
+  TranscriptMessage,
 } from '@/types';
 import type {
   ChatSessionOperations,
@@ -76,6 +77,7 @@ interface RawChatSession {
   analysis_processed?: boolean;
   analysis_status?: string | null;
   created_at: string;
+  full_transcript?: TranscriptMessage[] | null;
 }
 
 // Map raw JSON to Supabase-aligned type
@@ -130,6 +132,8 @@ function mapToChatSession(raw: RawChatSession): ChatSession {
     // GLB bundle tracking for new vs returning users
     glb_source: raw.glb_source || null,
     glb_transfer_size: raw.glb_transfer_size || null,
+    // Full conversation transcript
+    full_transcript: raw.full_transcript || null,
   };
 }
 

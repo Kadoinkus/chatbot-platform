@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import {
@@ -32,7 +32,9 @@ import {
   Tablet,
   RefreshCw,
   ExternalLink,
-  Mail
+  Mail,
+  Eye,
+  X
 } from 'lucide-react';
 
 import { getClientById, getBotById } from '@/lib/dataService';
@@ -42,7 +44,7 @@ import { getChartColors, GREY, GREYS } from '@/lib/chartColors';
 import { tooltipStyle } from '@/lib/chartStyles';
 import type { Client, Bot, ChatSessionWithAnalysis } from '@/types';
 import type { OverviewMetrics, SentimentBreakdown, CategoryBreakdown, LanguageBreakdown, CountryBreakdown, TimeSeriesDataPoint, QuestionAnalytics, DeviceBreakdown, SentimentTimeSeriesDataPoint, HourlyBreakdown, AnimationStats } from '@/lib/db/analytics';
-import { Page, PageContent, PageHeader, Card, Button, Input, Spinner, EmptyState } from '@/components/ui';
+import { Page, PageContent, PageHeader, Card, Button, Input, Spinner, EmptyState, Modal } from '@/components/ui';
 
 // Import Cell directly (doesn't work well with dynamic import)
 import { Cell } from 'recharts';
@@ -97,6 +99,39 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   const [sentimentTimeSeries, setSentimentTimeSeries] = useState<SentimentTimeSeriesDataPoint[]>([]);
   const [hourlyBreakdown, setHourlyBreakdown] = useState<HourlyBreakdown[]>([]);
   const [animationStats, setAnimationStats] = useState<AnimationStats | null>(null);
+  const [selectedTranscript, setSelectedTranscript] = useState<ChatSessionWithAnalysis | null>(null);
+
+  // Ref to preserve scroll position when opening modal
+  const scrollPositionRef = useRef<number>(0);
+
+  // Handle opening transcript modal while preserving scroll position
+  const handleOpenTranscript = useCallback((session: ChatSessionWithAnalysis) => {
+    // Store current scroll position FIRST
+    scrollPositionRef.current = window.scrollY;
+
+    // Lock scroll position by fixing the body BEFORE state change
+    const scrollY = window.scrollY;
+    document.body.style.position = 'fixed';
+    document.body.style.top = `-${scrollY}px`;
+    document.body.style.width = '100%';
+
+    setSelectedTranscript(session);
+  }, []);
+
+  // Handle closing transcript modal
+  const handleCloseTranscript = useCallback(() => {
+    const scrollPos = scrollPositionRef.current;
+
+    // Remove fixed positioning
+    document.body.style.position = '';
+    document.body.style.top = '';
+    document.body.style.width = '';
+
+    // Restore scroll position
+    window.scrollTo(0, scrollPos);
+
+    setSelectedTranscript(null);
+  }, []);
 
   const brandColor = useMemo(() => {
     return client ? getClientBrandColor(client.id) : '#6B7280';
@@ -216,6 +251,24 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
   const formatPercent = (value: number) => {
     return `${value.toFixed(1)}%`;
+  };
+
+  // Calculate if a color is light or dark (for text contrast)
+  const isLightColor = (hexColor: string): boolean => {
+    // Remove # if present
+    const hex = hexColor.replace('#', '');
+    // Parse RGB values
+    const r = parseInt(hex.substring(0, 2), 16);
+    const g = parseInt(hex.substring(2, 4), 16);
+    const b = parseInt(hex.substring(4, 6), 16);
+    // Calculate relative luminance (perceived brightness)
+    const luminance = (0.299 * r + 0.587 * g + 0.114 * b) / 255;
+    return luminance > 0.5;
+  };
+
+  // Determine text color based on background
+  const getContrastTextColor = (bgColor: string): string => {
+    return isLightColor(bgColor) ? '#1F2937' : '#FFFFFF';
   };
 
   // Loading state
@@ -949,6 +1002,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                       <th className="text-left py-3 px-4 text-foreground-secondary font-medium">Category</th>
                       <th className="text-left py-3 px-4 text-foreground-secondary font-medium">Sentiment</th>
                       <th className="text-left py-3 px-4 text-foreground-secondary font-medium">Status</th>
+                      <th className="text-center py-3 px-4 text-foreground-secondary font-medium">View</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -979,6 +1033,25 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                           }`}>
                             {session.analysis?.resolution_status || 'Unknown'}
                           </span>
+                        </td>
+                        <td className="py-3 px-4 text-center">
+                          {session.full_transcript && session.full_transcript.length > 0 ? (
+                            <button
+                              type="button"
+                              onClick={(e) => {
+                                e.preventDefault();
+                                e.stopPropagation();
+                                handleOpenTranscript(session);
+                              }}
+                              className="inline-flex items-center justify-center p-2 rounded-lg hover:bg-background-tertiary transition-colors"
+                              style={{ color: brandColor }}
+                              title="View conversation"
+                            >
+                              <Eye size={16} />
+                            </button>
+                          ) : (
+                            <span className="text-foreground-tertiary">-</span>
+                          )}
                         </td>
                       </tr>
                     ))}
@@ -1938,6 +2011,51 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
             </Card>
           </div>
         )}
+
+        {/* Transcript Modal */}
+        <Modal
+          isOpen={!!selectedTranscript}
+          onClose={handleCloseTranscript}
+          title="Conversation Transcript"
+          description={selectedTranscript ? `${new Date(selectedTranscript.session_started_at).toLocaleDateString()} • ${selectedTranscript.total_messages} messages • ${selectedTranscript.analysis?.category || 'Unknown category'}` : ''}
+          size="lg"
+        >
+          {selectedTranscript?.full_transcript && (
+            <div className="flex flex-col gap-3 max-h-[60vh] overflow-y-auto pr-2">
+              {selectedTranscript.full_transcript.map((msg, index) => {
+                const userTextColor = getContrastTextColor(brandColor);
+                const userTimestampColor = isLightColor(brandColor) ? 'rgba(31, 41, 55, 0.6)' : 'rgba(255, 255, 255, 0.7)';
+
+                return (
+                  <div
+                    key={index}
+                    className={`flex ${msg.author === 'user' ? 'justify-end' : 'justify-start'}`}
+                  >
+                    <div
+                      className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
+                        msg.author === 'user'
+                          ? 'rounded-br-md'
+                          : 'rounded-bl-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
+                      }`}
+                      style={msg.author === 'user' ? {
+                        backgroundColor: brandColor,
+                        color: userTextColor,
+                      } : undefined}
+                    >
+                      <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
+                      <p
+                        className={`text-xs mt-1 ${msg.author === 'bot' ? 'text-gray-500 dark:text-gray-400' : ''}`}
+                        style={msg.author === 'user' ? { color: userTimestampColor } : undefined}
+                      >
+                        {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                      </p>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </Modal>
       </PageContent>
     </Page>
   );

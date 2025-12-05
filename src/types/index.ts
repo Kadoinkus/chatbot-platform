@@ -373,6 +373,18 @@ export type ChatSession = {
   // GLB bundle tracking for new vs returning users
   glb_source: 'cdn_fetch' | 'memory_cache' | string | null;
   glb_transfer_size: number | null;
+  // Full conversation transcript as JSON array
+  full_transcript: TranscriptMessage[] | null;
+};
+
+/**
+ * Single message in a transcript (matches Supabase format)
+ */
+export type TranscriptMessage = {
+  author: 'user' | 'bot';
+  message: string;
+  timestamp: string;
+  easter?: string; // Easter egg triggered (empty string if none)
 };
 
 /**

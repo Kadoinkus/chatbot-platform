@@ -35,7 +35,7 @@ import {
 import { getClientById, getBotById } from '@/lib/dataService';
 import { getAnalyticsForClient } from '@/lib/db/analytics';
 import { getClientBrandColor } from '@/lib/brandColors';
-import { getChartColors } from '@/lib/chartColors';
+import { getChartColors, GREY } from '@/lib/chartColors';
 import { tooltipStyle } from '@/lib/chartStyles';
 import type { Client, Bot, ChatSessionWithAnalysis } from '@/types';
 import type { OverviewMetrics, SentimentBreakdown, CategoryBreakdown, LanguageBreakdown, CountryBreakdown, TimeSeriesDataPoint, QuestionAnalytics, DeviceBreakdown, SentimentTimeSeriesDataPoint, HourlyBreakdown, AnimationStats } from '@/lib/db/analytics';
@@ -1145,56 +1145,291 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </Card>
             </div>
 
-            {/* Cost Over Time */}
+            {/* Cost Breakdown per Session */}
             <Card>
-              <h3 className="font-semibold text-foreground mb-4">Cost Over Time</h3>
-              <div className="h-[280px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart data={timeSeries}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                      tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    />
-                    <YAxis
-                      tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                      tickFormatter={(value) => `€${value.toFixed(2)}`}
-                    />
-                    <Tooltip
-                      {...tooltipStyle}
-                      formatter={(value) => [`€${Number(value).toFixed(4)}`, 'Cost']}
-                    />
-                    <Area
-                      type="monotone"
-                      dataKey="cost"
-                      stroke={brandColor}
-                      fill={brandColor}
-                      fillOpacity={0.2}
-                      strokeWidth={2}
-                    />
-                  </AreaChart>
-                </ResponsiveContainer>
+              <h3 className="font-semibold text-foreground mb-4">Cost Breakdown per Session</h3>
+              <p className="text-sm text-foreground-secondary mb-4">Conversation costs vs. analysis costs per session (stacked)</p>
+              <div className="h-[320px]">
+                {sessions.length > 0 ? (
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart
+                      data={sessions.map((s, i) => ({
+                        session: `#${i + 1}`,
+                        conversation: s.total_cost_eur || 0,
+                        analysis: s.analysis?.analytics_total_cost_eur || 0,
+                        conversationTokens: s.total_tokens || 0,
+                        analysisTokens: s.analysis?.analytics_total_tokens || 0,
+                        messages: s.total_messages || 0,
+                      }))}
+                    >
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis
+                        dataKey="session"
+                        tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
+                      />
+                      <YAxis
+                        tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+                        tickFormatter={(value) => `€${value.toFixed(3)}`}
+                      />
+                      <Tooltip
+                        {...tooltipStyle}
+                        content={({ active, payload, label }) => {
+                          if (!active || !payload || !payload.length) return null;
+                          const data = payload[0]?.payload;
+                          return (
+                            <div className="bg-surface-elevated border border-border rounded-lg p-3 shadow-lg">
+                              <p className="font-semibold text-foreground mb-2">Session {label}</p>
+                              <div className="space-y-1 text-sm">
+                                <p className="text-foreground">
+                                  <span style={{ color: brandColor }}>●</span> Conversation: €{data?.conversation?.toFixed(4)} ({formatNumber(data?.conversationTokens || 0)} tokens)
+                                </p>
+                                <p className="text-foreground">
+                                  <span style={{ color: GREY[500] }}>●</span> Analysis: €{data?.analysis?.toFixed(4)} ({formatNumber(data?.analysisTokens || 0)} tokens)
+                                </p>
+                                <p className="text-foreground-secondary pt-1 border-t border-border mt-1">
+                                  Total: €{((data?.conversation || 0) + (data?.analysis || 0)).toFixed(4)} ({formatNumber((data?.conversationTokens || 0) + (data?.analysisTokens || 0))} tokens)
+                                </p>
+                              </div>
+                            </div>
+                          );
+                        }}
+                      />
+                      <Legend
+                        formatter={(value) => (
+                          <span style={{ color: 'var(--text-primary)' }}>
+                            {value === 'conversation' ? 'Conversation Cost' : 'Analysis Cost'}
+                          </span>
+                        )}
+                      />
+                      <Bar dataKey="conversation" stackId="cost" fill={brandColor} name="conversation" />
+                      <Bar dataKey="analysis" stackId="cost" fill={GREY[500]} name="analysis" radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                ) : (
+                  <div className="h-full flex items-center justify-center">
+                    <p className="text-foreground-secondary">No session data available</p>
+                  </div>
+                )}
               </div>
             </Card>
 
-            {/* Token Usage */}
+            {/* Input vs Output Tokens & LLM Model Usage */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Input vs Output Tokens */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-4">Input vs Output Tokens</h3>
+                <p className="text-sm text-foreground-secondary mb-4">Output tokens typically cost 3-4x more than input</p>
+                <div className="h-[250px]">
+                  {(() => {
+                    const inputTokens = sessions.reduce((sum, s) => sum + (s.input_tokens || 0), 0);
+                    const outputTokens = sessions.reduce((sum, s) => sum + (s.output_tokens || 0), 0);
+                    const tokenData = [
+                      { name: 'Input (Prompts)', value: inputTokens, fill: brandColor },
+                      { name: 'Output (Responses)', value: outputTokens, fill: GREY[500] }
+                    ];
+
+                    return inputTokens + outputTokens > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={tokenData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={50}
+                            outerRadius={80}
+                            paddingAngle={2}
+                            dataKey="value"
+                            label={({ name, percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
+                            labelLine={false}
+                          >
+                            {tokenData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            {...tooltipStyle}
+                            formatter={(value) => [formatNumber(Number(value)), 'Tokens']}
+                          />
+                          <Legend
+                            formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <p className="text-foreground-secondary">No token data available</p>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </Card>
+
+              {/* LLM Model Usage */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-4">LLM Model Usage</h3>
+                <p className="text-sm text-foreground-secondary mb-4">Models used for session analysis</p>
+                <div className="h-[250px]">
+                  {(() => {
+                    const modelCounts: Record<string, number> = {};
+                    sessions.forEach(s => {
+                      const model = s.analysis?.analytics_model_used || 'Unknown';
+                      modelCounts[model] = (modelCounts[model] || 0) + 1;
+                    });
+                    const modelData = Object.entries(modelCounts)
+                      .map(([model, count]) => ({ name: model, value: count }))
+                      .sort((a, b) => b.value - a.value);
+                    const colors = getChartColors(brandColor, modelData.length);
+
+                    return modelData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={modelData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={50}
+                            outerRadius={80}
+                            paddingAngle={2}
+                            dataKey="value"
+                            label={({ name, percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
+                            labelLine={false}
+                          >
+                            {modelData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={colors[index]} />
+                            ))}
+                          </Pie>
+                          <Tooltip
+                            {...tooltipStyle}
+                            formatter={(value) => [`${value} sessions`, 'Usage']}
+                          />
+                          <Legend
+                            formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <p className="text-foreground-secondary">No model data available</p>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </Card>
+            </div>
+
+            {/* Cost by Resolution Status */}
             <Card>
-              <h3 className="font-semibold text-foreground mb-4">Token Usage Over Time</h3>
-              <div className="h-[280px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={timeSeries}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis
-                      dataKey="date"
-                      tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                      tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                    />
-                    <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                    <Tooltip {...tooltipStyle} />
-                    <Bar dataKey="tokens" fill={brandColor} radius={[4, 4, 0, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
+              <h3 className="font-semibold text-foreground mb-4">Cost by Resolution Status</h3>
+              <p className="text-sm text-foreground-secondary mb-4">Compare costs between resolved, partial, and unresolved conversations</p>
+              <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+                {(() => {
+                  const resolved = sessions.filter(s => s.analysis?.resolution_status === 'resolved');
+                  const partial = sessions.filter(s => s.analysis?.resolution_status === 'partial');
+                  const unresolved = sessions.filter(s => s.analysis?.resolution_status === 'unresolved');
+
+                  const resolvedCost = resolved.reduce((sum, s) => sum + (s.total_cost_eur || 0), 0);
+                  const partialCost = partial.reduce((sum, s) => sum + (s.total_cost_eur || 0), 0);
+                  const unresolvedCost = unresolved.reduce((sum, s) => sum + (s.total_cost_eur || 0), 0);
+
+                  const avgResolvedCost = resolved.length > 0 ? resolvedCost / resolved.length : 0;
+                  const avgPartialCost = partial.length > 0 ? partialCost / partial.length : 0;
+                  const avgUnresolvedCost = unresolved.length > 0 ? unresolvedCost / unresolved.length : 0;
+
+                  return (
+                    <>
+                      <div className="p-4 bg-background-secondary rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: brandColor }} />
+                          <p className="text-sm font-medium text-foreground">Resolved</p>
+                        </div>
+                        <p className="text-2xl font-bold text-foreground">{formatCurrency(avgResolvedCost)}</p>
+                        <p className="text-sm text-foreground-secondary">avg per session ({resolved.length} sessions)</p>
+                        <p className="text-xs text-foreground-tertiary mt-1">Total: {formatCurrency(resolvedCost)}</p>
+                      </div>
+                      <div className="p-4 bg-background-secondary rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: GREY[400] }} />
+                          <p className="text-sm font-medium text-foreground">Partial</p>
+                        </div>
+                        <p className="text-2xl font-bold text-foreground">{formatCurrency(avgPartialCost)}</p>
+                        <p className="text-sm text-foreground-secondary">avg per session ({partial.length} sessions)</p>
+                        <p className="text-xs text-foreground-tertiary mt-1">Total: {formatCurrency(partialCost)}</p>
+                      </div>
+                      <div className="p-4 bg-background-secondary rounded-lg">
+                        <div className="flex items-center gap-2 mb-2">
+                          <div className="w-3 h-3 rounded-full" style={{ backgroundColor: GREY[600] }} />
+                          <p className="text-sm font-medium text-foreground">Unresolved</p>
+                        </div>
+                        <p className="text-2xl font-bold text-foreground">{formatCurrency(avgUnresolvedCost)}</p>
+                        <p className="text-sm text-foreground-secondary">avg per session ({unresolved.length} sessions)</p>
+                        <p className="text-xs text-foreground-tertiary mt-1">Total: {formatCurrency(unresolvedCost)}</p>
+                      </div>
+                    </>
+                  );
+                })()}
+              </div>
+            </Card>
+
+            {/* Most Expensive Sessions */}
+            <Card>
+              <h3 className="font-semibold text-foreground mb-4">Most Expensive Sessions</h3>
+              <p className="text-sm text-foreground-secondary mb-4">Top sessions by total cost - identify outliers and optimization opportunities</p>
+              <div className="overflow-x-auto">
+                <table className="w-full">
+                  <thead>
+                    <tr className="border-b border-border">
+                      <th className="text-left py-2 px-3 text-sm font-medium text-foreground-secondary">Session</th>
+                      <th className="text-right py-2 px-3 text-sm font-medium text-foreground-secondary">Total Cost</th>
+                      <th className="text-right py-2 px-3 text-sm font-medium text-foreground-secondary">Tokens</th>
+                      <th className="text-right py-2 px-3 text-sm font-medium text-foreground-secondary">Messages</th>
+                      <th className="text-left py-2 px-3 text-sm font-medium text-foreground-secondary">Resolution</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {sessions
+                      .map((s, i) => ({
+                        ...s,
+                        index: i + 1,
+                        totalCost: (s.total_cost_eur || 0) + (s.analysis?.analytics_total_cost_eur || 0)
+                      }))
+                      .sort((a, b) => b.totalCost - a.totalCost)
+                      .slice(0, 5)
+                      .map((session) => (
+                        <tr key={session.id} className="border-b border-border hover:bg-background-hover">
+                          <td className="py-2 px-3">
+                            <span className="text-sm font-medium text-foreground">#{session.index}</span>
+                          </td>
+                          <td className="py-2 px-3 text-right">
+                            <span className="text-sm font-semibold" style={{ color: brandColor }}>
+                              {formatCurrency(session.totalCost)}
+                            </span>
+                          </td>
+                          <td className="py-2 px-3 text-right">
+                            <span className="text-sm text-foreground">{formatNumber(session.total_tokens || 0)}</span>
+                          </td>
+                          <td className="py-2 px-3 text-right">
+                            <span className="text-sm text-foreground">{session.total_messages || 0}</span>
+                          </td>
+                          <td className="py-2 px-3">
+                            <span className={`text-xs px-2 py-1 rounded-full ${
+                              session.analysis?.resolution_status === 'resolved'
+                                ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-400'
+                                : session.analysis?.resolution_status === 'partial'
+                                ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400'
+                                : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-400'
+                            }`}>
+                              {session.analysis?.resolution_status || 'unknown'}
+                            </span>
+                          </td>
+                        </tr>
+                      ))}
+                  </tbody>
+                </table>
+                {sessions.length === 0 && (
+                  <div className="text-center py-8">
+                    <p className="text-foreground-secondary">No session data available</p>
+                  </div>
+                )}
               </div>
             </Card>
           </div>

@@ -28,20 +28,5 @@
       "email": "hitapes@demo.app",
       "password": "hitapes123"
     }
-  },
-  {
-    "id": "demo-happiness",
-    "name": "Happinessbureau",
-    "slug": "demo-happiness",
-    "isDemo": true,
-    "palette": {
-      "primary": "#EF4444",
-      "primaryDark": "#DC2626",
-      "accent": "#111827"
-    },
-    "login": {
-      "email": "happiness@demo.app",
-      "password": "happy123"
-    }
   }
 ]

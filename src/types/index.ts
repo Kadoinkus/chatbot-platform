@@ -318,3 +318,115 @@ export type CounterSummary = {
  * @deprecated Use `Bot` instead. Mascot was the old name for Bot.
  */
 export type Mascot = Bot;
+
+// =============================================================================
+// Chat Session Analytics (Supabase-aligned)
+// =============================================================================
+
+/**
+ * Chat session from Supabase chat_sessions table
+ * Represents a single conversation session with aggregated data
+ */
+export type ChatSession = {
+  id: string;
+  mascot_id: string; // Maps to bot_id in platform
+  client_id: string;
+  session_started_at: string;
+  session_ended_at: string | null;
+  first_message_at: string | null;
+  last_message_at: string | null;
+  visitor_ip_hash: string | null;
+  visitor_country: string | null;
+  visitor_city: string | null;
+  visitor_region: string | null;
+  visitor_timezone: string | null;
+  visitor_language: string | null;
+  device_type: string | null;
+  browser_name: string | null;
+  browser_version: string | null;
+  os_name: string | null;
+  os_version: string | null;
+  is_mobile: boolean;
+  screen_width: number | null;
+  screen_height: number | null;
+  referrer_url: string | null;
+  referrer_domain: string | null;
+  landing_page_url: string | null;
+  utm_source: string | null;
+  utm_medium: string | null;
+  utm_campaign: string | null;
+  utm_content: string | null;
+  utm_term: string | null;
+  total_messages: number;
+  user_messages: number;
+  bot_messages: number;
+  total_tokens: number;
+  input_tokens: number;
+  output_tokens: number;
+  total_cost_eur: number;
+  average_response_time_ms: number | null;
+  session_duration_seconds: number | null;
+  status: 'active' | 'ended' | 'timeout' | 'error';
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * Sentiment type for chat session analysis
+ */
+export type AnalysisSentiment = 'positive' | 'neutral' | 'negative';
+
+/**
+ * Resolution status for chat session
+ */
+export type ResolutionStatus = 'resolved' | 'partial' | 'unresolved';
+
+/**
+ * Session outcome type
+ */
+export type SessionOutcome = 'completed' | 'abandoned' | 'error' | 'timeout';
+
+/**
+ * Engagement level
+ */
+export type EngagementLevel = 'low' | 'medium' | 'high';
+
+/**
+ * Conversation type
+ */
+export type ConversationType = 'casual' | 'goal_driven' | 'support' | 'sales';
+
+/**
+ * Chat session analysis from Supabase chat_session_analyses table
+ * AI-generated post-session analysis
+ */
+export type ChatSessionAnalysis = {
+  session_id: string;
+  mascot_id: string;
+  language: string | null;
+  sentiment: AnalysisSentiment | null;
+  escalated: boolean;
+  forwarded_email: boolean;
+  forwarded_url: boolean;
+  url_links: string[];
+  email_links: string[];
+  category: string | null;
+  questions: string[];
+  unanswered_questions: string[];
+  summary: string | null;
+  session_outcome: SessionOutcome | null;
+  resolution_status: ResolutionStatus | null;
+  engagement_level: EngagementLevel | null;
+  conversation_type: ConversationType | null;
+  analytics_total_tokens: number | null;
+  analytics_total_cost_eur: number | null;
+  analytics_model_used: string | null;
+  created_at: string;
+};
+
+/**
+ * Combined chat session with analysis
+ */
+export type ChatSessionWithAnalysis = ChatSession & {
+  analysis: ChatSessionAnalysis | null;
+};

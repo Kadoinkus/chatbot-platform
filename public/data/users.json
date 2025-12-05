@@ -73,17 +73,5 @@
     "joinedDate": "2023-01-10",
     "phone": "+1 (555) 345-6789",
     "clientId": "demo-hitapes"
-  },
-  {
-    "id": "7",
-    "name": "Maria Garcia",
-    "email": "maria@happiness.com",
-    "role": "manager",
-    "status": "active",
-    "avatar": "https://api.dicebear.com/7.x/avataaars/svg?seed=Maria",
-    "lastActive": "30 minutes ago",
-    "conversationsHandled": 456,
-    "joinedDate": "2023-02-15",
-    "clientId": "demo-happiness"
   }
 ]

@@ -63,38 +63,6 @@
       { "date": "2025-11-25", "conversations": 88, "resolved": 72 },
       { "date": "2025-11-26", "conversations": 92, "resolved": 76 },
       { "date": "2025-11-27", "conversations": 100, "resolved": 84 }
-    ],
-    "demo-happiness": [
-      { "date": "2025-10-29", "conversations": 15, "resolved": 11 },
-      { "date": "2025-10-30", "conversations": 18, "resolved": 14 },
-      { "date": "2025-10-31", "conversations": 14, "resolved": 10 },
-      { "date": "2025-11-01", "conversations": 20, "resolved": 15 },
-      { "date": "2025-11-02", "conversations": 18, "resolved": 14 },
-      { "date": "2025-11-03", "conversations": 22, "resolved": 16 },
-      { "date": "2025-11-04", "conversations": 25, "resolved": 20 },
-      { "date": "2025-11-05", "conversations": 27, "resolved": 22 },
-      { "date": "2025-11-06", "conversations": 30, "resolved": 24 },
-      { "date": "2025-11-07", "conversations": 28, "resolved": 23 },
-      { "date": "2025-11-08", "conversations": 25, "resolved": 20 },
-      { "date": "2025-11-09", "conversations": 32, "resolved": 26 },
-      { "date": "2025-11-10", "conversations": 22, "resolved": 17 },
-      { "date": "2025-11-11", "conversations": 28, "resolved": 22 },
-      { "date": "2025-11-12", "conversations": 35, "resolved": 28 },
-      { "date": "2025-11-13", "conversations": 38, "resolved": 31 },
-      { "date": "2025-11-14", "conversations": 32, "resolved": 25 },
-      { "date": "2025-11-15", "conversations": 40, "resolved": 33 },
-      { "date": "2025-11-16", "conversations": 42, "resolved": 35 },
-      { "date": "2025-11-17", "conversations": 30, "resolved": 24 },
-      { "date": "2025-11-18", "conversations": 35, "resolved": 28 },
-      { "date": "2025-11-19", "conversations": 38, "resolved": 31 },
-      { "date": "2025-11-20", "conversations": 45, "resolved": 38 },
-      { "date": "2025-11-21", "conversations": 40, "resolved": 32 },
-      { "date": "2025-11-22", "conversations": 48, "resolved": 40 },
-      { "date": "2025-11-23", "conversations": 50, "resolved": 42 },
-      { "date": "2025-11-24", "conversations": 38, "resolved": 30 },
-      { "date": "2025-11-25", "conversations": 45, "resolved": 36 },
-      { "date": "2025-11-26", "conversations": 52, "resolved": 44 },
-      { "date": "2025-11-27", "conversations": 55, "resolved": 46 }
     ]
   },
   "botUsageByDay": {
@@ -161,6 +129,38 @@
       { "date": "2025-11-25", "conversations": 43, "resolved": 36 },
       { "date": "2025-11-26", "conversations": 47, "resolved": 40 },
       { "date": "2025-11-27", "conversations": 48, "resolved": 41 }
+    ],
+    "m5": [
+      { "date": "2025-10-29", "conversations": 48, "resolved": 38 },
+      { "date": "2025-10-30", "conversations": 52, "resolved": 42 },
+      { "date": "2025-10-31", "conversations": 45, "resolved": 36 },
+      { "date": "2025-11-01", "conversations": 60, "resolved": 48 },
+      { "date": "2025-11-02", "conversations": 55, "resolved": 45 },
+      { "date": "2025-11-03", "conversations": 62, "resolved": 50 },
+      { "date": "2025-11-04", "conversations": 70, "resolved": 55 },
+      { "date": "2025-11-05", "conversations": 68, "resolved": 54 },
+      { "date": "2025-11-06", "conversations": 75, "resolved": 63 },
+      { "date": "2025-11-07", "conversations": 80, "resolved": 66 },
+      { "date": "2025-11-08", "conversations": 72, "resolved": 58 },
+      { "date": "2025-11-09", "conversations": 78, "resolved": 64 },
+      { "date": "2025-11-10", "conversations": 65, "resolved": 52 },
+      { "date": "2025-11-11", "conversations": 70, "resolved": 56 },
+      { "date": "2025-11-12", "conversations": 82, "resolved": 68 },
+      { "date": "2025-11-13", "conversations": 85, "resolved": 70 },
+      { "date": "2025-11-14", "conversations": 78, "resolved": 62 },
+      { "date": "2025-11-15", "conversations": 88, "resolved": 72 },
+      { "date": "2025-11-16", "conversations": 92, "resolved": 76 },
+      { "date": "2025-11-17", "conversations": 68, "resolved": 55 },
+      { "date": "2025-11-18", "conversations": 75, "resolved": 60 },
+      { "date": "2025-11-19", "conversations": 85, "resolved": 70 },
+      { "date": "2025-11-20", "conversations": 90, "resolved": 75 },
+      { "date": "2025-11-21", "conversations": 82, "resolved": 66 },
+      { "date": "2025-11-22", "conversations": 95, "resolved": 78 },
+      { "date": "2025-11-23", "conversations": 98, "resolved": 82 },
+      { "date": "2025-11-24", "conversations": 75, "resolved": 60 },
+      { "date": "2025-11-25", "conversations": 88, "resolved": 72 },
+      { "date": "2025-11-26", "conversations": 92, "resolved": 76 },
+      { "date": "2025-11-27", "conversations": 100, "resolved": 84 }
     ]
   },
   "topIntents": {
@@ -183,13 +183,6 @@
       { "intent": "Technical support", "count": 95 },
       { "intent": "Custom orders", "count": 72 },
       { "intent": "Account setup", "count": 48 }
-    ],
-    "demo-happiness": [
-      { "intent": "Workshop info", "count": 125 },
-      { "intent": "Booking", "count": 98 },
-      { "intent": "Case studies", "count": 75 },
-      { "intent": "HR policies", "count": 62 },
-      { "intent": "Training materials", "count": 45 }
     ]
   },
   "botIntents": {
@@ -210,33 +203,41 @@
       { "intent": "Loyalty program", "count": 58 },
       { "intent": "Employee onboarding", "count": 52 },
       { "intent": "Vacancies", "count": 45 }
+    ],
+    "m5": [
+      { "intent": "Pricing", "count": 185 },
+      { "intent": "Shipping tapes", "count": 145 },
+      { "intent": "Supported formats", "count": 120 },
+      { "intent": "Technical support", "count": 95 },
+      { "intent": "Custom orders", "count": 72 },
+      { "intent": "Account setup", "count": 48 }
     ]
   },
   "csat": {
     "demo-jumbo": 4.6,
-    "demo-hitapes": 4.8,
-    "demo-happiness": 4.4
+    "demo-hitapes": 4.8
   },
   "botCsat": {
     "m1": 4.5,
-    "m2": 4.7
+    "m2": 4.7,
+    "m5": 4.8
   },
   "responseTimeAvg": {
     "demo-jumbo": 1.8,
-    "demo-hitapes": 2.1,
-    "demo-happiness": 1.5
+    "demo-hitapes": 2.1
   },
   "botResponseTimeAvg": {
     "m1": 1.6,
-    "m2": 2.0
+    "m2": 2.0,
+    "m5": 1.1
   },
   "resolutionRate": {
     "demo-jumbo": 84.2,
-    "demo-hitapes": 82.5,
-    "demo-happiness": 80.8
+    "demo-hitapes": 82.5
   },
   "botResolutionRate": {
     "m1": 85.0,
-    "m2": 83.5
+    "m2": 83.5,
+    "m5": 82.5
   }
 }

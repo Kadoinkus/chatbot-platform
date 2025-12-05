@@ -100,7 +100,7 @@
   },
   {
     "id": "conv8",
-    "botId": "m3",
+    "botId": "m5",
     "clientId": "demo-hitapes",
     "userId": "user8",
     "userName": "Lisa Anderson",
@@ -115,7 +115,7 @@
   },
   {
     "id": "conv9",
-    "botId": "m3",
+    "botId": "m5",
     "clientId": "demo-hitapes",
     "userId": "user9",
     "userName": "Michael Davis",
@@ -130,7 +130,7 @@
   },
   {
     "id": "conv10",
-    "botId": "m3",
+    "botId": "m5",
     "clientId": "demo-hitapes",
     "userId": "user10",
     "userName": "Anna Garcia",
@@ -143,7 +143,7 @@
   },
   {
     "id": "conv11",
-    "botId": "m3",
+    "botId": "m5",
     "clientId": "demo-hitapes",
     "userId": "user11",
     "userName": "Kevin Lee",
@@ -158,7 +158,7 @@
   },
   {
     "id": "conv12",
-    "botId": "m4",
+    "botId": "m6",
     "clientId": "demo-hitapes",
     "userId": "user12",
     "userName": "Sarah Thompson",
@@ -168,64 +168,6 @@
     "intent": "Account setup",
     "channel": "webchat",
     "preview": "I'm having trouble creating my business account"
-  },
-  {
-    "id": "conv13",
-    "botId": "m5",
-    "clientId": "demo-happiness",
-    "userId": "user13",
-    "userName": "Tom Martinez",
-    "status": "resolved",
-    "startedAt": "2025-11-27T11:30:00Z",
-    "endedAt": "2025-11-27T11:45:00Z",
-    "messages": 7,
-    "satisfaction": 4,
-    "intent": "Workshop info",
-    "channel": "webchat",
-    "preview": "What topics are covered in the leadership workshop?"
-  },
-  {
-    "id": "conv14",
-    "botId": "m6",
-    "clientId": "demo-happiness",
-    "userId": "user14",
-    "userName": "Jennifer White",
-    "status": "resolved",
-    "startedAt": "2025-11-27T13:45:00Z",
-    "endedAt": "2025-11-27T14:00:00Z",
-    "messages": 6,
-    "satisfaction": 5,
-    "intent": "Booking",
-    "channel": "webchat",
-    "preview": "I'd like to book a team building session for 15 people"
-  },
-  {
-    "id": "conv15",
-    "botId": "m6",
-    "clientId": "demo-happiness",
-    "userId": "user15",
-    "userName": "Daniel Rodriguez",
-    "status": "active",
-    "startedAt": "2025-11-27T15:00:00Z",
-    "messages": 3,
-    "intent": "Case studies",
-    "channel": "webchat",
-    "preview": "Can you share success stories from previous workshops?"
-  },
-  {
-    "id": "conv16",
-    "botId": "m5",
-    "clientId": "demo-happiness",
-    "userId": "user16",
-    "userName": "Rachel Green",
-    "status": "resolved",
-    "startedAt": "2025-11-27T09:15:00Z",
-    "endedAt": "2025-11-27T09:30:00Z",
-    "messages": 5,
-    "satisfaction": 4,
-    "intent": "HR policies",
-    "channel": "facebook",
-    "preview": "What's the remote work policy for new employees?"
   },
   {
     "id": "conv17",
@@ -259,7 +201,7 @@
   },
   {
     "id": "conv19",
-    "botId": "m3",
+    "botId": "m5",
     "clientId": "demo-hitapes",
     "userId": "user19",
     "userName": "Brian Wilson",
@@ -271,21 +213,6 @@
     "intent": "Custom orders",
     "channel": "telegram",
     "preview": "Can you handle custom tape conversion projects?"
-  },
-  {
-    "id": "conv20",
-    "botId": "m6",
-    "clientId": "demo-happiness",
-    "userId": "user20",
-    "userName": "Nicole Adams",
-    "status": "resolved",
-    "startedAt": "2025-11-26T10:30:00Z",
-    "endedAt": "2025-11-26T10:50:00Z",
-    "messages": 9,
-    "satisfaction": 5,
-    "intent": "Training materials",
-    "channel": "webchat",
-    "preview": "Do you provide training materials after workshops?"
   },
   {
     "id": "conv21",

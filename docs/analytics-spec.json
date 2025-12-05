@@ -1,0 +1,1326 @@
+{
+  "version": "1.0",
+  "description": "Analytics Dashboard Specification - Based on Supabase Schema",
+  "last_updated": "2025-12-05",
+
+  "global_config": {
+    "default_date_range": "last_30_days",
+    "date_range_options": ["today", "last_7_days", "last_30_days", "last_90_days", "custom"],
+    "refresh_interval_seconds": 300,
+    "exclude_dev_sessions": true,
+    "timezone": "client_timezone",
+    "comparison_period": "previous_period",
+    "demo_clients": ["demo-jumbo", "demo-hitapes"]
+  },
+
+  "data_sources": {
+    "description": "Maps to actual Supabase tables and columns",
+    "tables": {
+      "chat_sessions": {
+        "primary_key": "id",
+        "foreign_keys": {
+          "mascot_id": "bots.id",
+          "client_id": "clients.id"
+        },
+        "key_columns": [
+          "id", "mascot_id", "client_id", "domain",
+          "session_start", "session_end", "first_message_at", "last_message_at",
+          "is_active", "end_reason", "is_dev",
+          "country", "city", "device_type", "browser", "os",
+          "referrer_url", "page_url", "user_id",
+          "total_bot_messages", "total_user_messages",
+          "total_tokens", "total_cost_eur", "average_response_time_ms",
+          "easter_eggs_triggered", "glb_source",
+          "created_at"
+        ]
+      },
+      "chat_session_analyses": {
+        "primary_key": "session_id",
+        "key_columns": [
+          "session_id", "mascot_id",
+          "language", "sentiment", "escalated",
+          "forwarded_email", "forwarded_url", "url_links", "email_links",
+          "category", "questions", "unanswered_questions",
+          "summary", "session_outcome", "resolution_status",
+          "engagement_level", "conversation_type",
+          "analytics_total_tokens", "analytics_total_cost_eur", "analytics_model_used",
+          "created_at"
+        ]
+      },
+      "chat_messages": {
+        "primary_key": "id",
+        "key_columns": [
+          "id", "session_id", "mascot_id",
+          "message", "author", "timestamp",
+          "response_time_ms", "total_tokens", "cost_eur", "model_used",
+          "response_animation", "easter_egg_animation", "wait_sequence", "has_easter_egg",
+          "error_message", "created_at"
+        ]
+      }
+    }
+  },
+
+  "tabs": {
+    "overview": {
+      "tab_number": 1,
+      "id": "overview",
+      "title": "Overview",
+      "icon": "LayoutDashboard",
+      "visible_to_client": true,
+      "description": "Key metrics and trends at a glance",
+
+      "sections": [
+        {
+          "id": "key_metrics",
+          "title": null,
+          "layout": "grid-4",
+          "metrics": [
+            {
+              "id": "total_conversations",
+              "label": "Total Conversations",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(*)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "show_sparkline": true,
+              "sparkline_source": "GROUP BY DATE(created_at)",
+              "show_comparison": true,
+              "comparison_label": "vs previous period"
+            },
+            {
+              "id": "resolution_rate",
+              "label": "Resolution Rate",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(resolution_status = 'resolved') / COUNT(*) * 100",
+                "join": "chat_sessions ON session_id = id",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "format": "{value}%",
+              "decimals": 1,
+              "show_comparison": true,
+              "good_direction": "up"
+            },
+            {
+              "id": "avg_response_time",
+              "label": "Avg Response Time",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "AVG(average_response_time_ms)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "format": "{value}ms",
+              "show_comparison": true,
+              "good_direction": "down"
+            },
+            {
+              "id": "unique_users",
+              "label": "Unique Users",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(DISTINCT user_id)",
+                "filter": "is_dev = false AND user_id IS NOT NULL"
+              },
+              "chart_type": "big_number",
+              "show_comparison": true
+            }
+          ]
+        },
+        {
+          "id": "trends",
+          "title": "Conversations Over Time",
+          "layout": "full-width",
+          "metrics": [
+            {
+              "id": "conversations_over_time",
+              "label": "Daily Conversations",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(*)",
+                "group_by": "DATE(created_at)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "area_chart",
+              "x_axis": "date",
+              "y_axis": "count",
+              "fill_color": "primary",
+              "show_average_line": true
+            }
+          ]
+        },
+        {
+          "id": "quick_stats",
+          "title": "Quick Stats",
+          "layout": "grid-3",
+          "metrics": [
+            {
+              "id": "sentiment_summary",
+              "label": "Sentiment Overview",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*) GROUP BY sentiment"
+              },
+              "chart_type": "donut",
+              "segments": [
+                { "key": "positive", "color": "#22c55e", "label": "Positive" },
+                { "key": "neutral", "color": "#6b7280", "label": "Neutral" },
+                { "key": "negative", "color": "#ef4444", "label": "Negative" }
+              ]
+            },
+            {
+              "id": "resolution_summary",
+              "label": "Resolution Status",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*) GROUP BY resolution_status"
+              },
+              "chart_type": "donut",
+              "segments": [
+                { "key": "resolved", "color": "#22c55e", "label": "Resolved" },
+                { "key": "partial", "color": "#f59e0b", "label": "Partial" },
+                { "key": "unresolved", "color": "#ef4444", "label": "Unresolved" },
+                { "key": "no_goal", "color": "#6b7280", "label": "No Goal" }
+              ]
+            },
+            {
+              "id": "top_categories",
+              "label": "Top Categories",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*) GROUP BY category ORDER BY count DESC",
+                "limit": 5
+              },
+              "chart_type": "horizontal_bar"
+            }
+          ]
+        }
+      ]
+    },
+
+    "conversations": {
+      "tab_number": 2,
+      "id": "conversations",
+      "title": "Conversations",
+      "icon": "MessageSquare",
+      "visible_to_client": true,
+      "description": "Understand conversation quality and outcomes",
+
+      "filters": [
+        { "id": "sentiment", "label": "Sentiment", "source": "chat_session_analyses.sentiment", "type": "multi_select" },
+        { "id": "resolution_status", "label": "Resolution", "source": "chat_session_analyses.resolution_status", "type": "multi_select" },
+        { "id": "language", "label": "Language", "source": "chat_session_analyses.language", "type": "multi_select" }
+      ],
+
+      "sections": [
+        {
+          "id": "key_metrics",
+          "title": null,
+          "layout": "grid-4",
+          "metrics": [
+            {
+              "id": "total_messages",
+              "label": "Total Messages",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "SUM(total_bot_messages + total_user_messages)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "show_comparison": true
+            },
+            {
+              "id": "avg_messages_per_session",
+              "label": "Avg Messages/Session",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "AVG(total_bot_messages + total_user_messages)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "format": "{value}",
+              "decimals": 1,
+              "show_comparison": true
+            },
+            {
+              "id": "avg_session_duration",
+              "label": "Avg Duration",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "AVG(EXTRACT(EPOCH FROM (last_message_at - first_message_at)))",
+                "filter": "is_dev = false AND first_message_at IS NOT NULL AND last_message_at IS NOT NULL"
+              },
+              "chart_type": "big_number",
+              "format": "duration",
+              "show_comparison": true
+            },
+            {
+              "id": "escalation_rate",
+              "label": "Escalation Rate",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(escalated = true) / COUNT(*) * 100"
+              },
+              "chart_type": "big_number",
+              "format": "{value}%",
+              "decimals": 1,
+              "show_comparison": true,
+              "good_direction": "down"
+            }
+          ]
+        },
+        {
+          "id": "outcomes",
+          "title": "Outcomes & Quality",
+          "layout": "grid-3",
+          "metrics": [
+            {
+              "id": "session_outcomes",
+              "label": "Session Outcomes",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*) GROUP BY session_outcome"
+              },
+              "chart_type": "donut",
+              "segments": [
+                { "key": "completed", "color": "#22c55e", "label": "Completed" },
+                { "key": "abandoned", "color": "#ef4444", "label": "Abandoned" }
+              ],
+              "show_percentages": true
+            },
+            {
+              "id": "resolution_status",
+              "label": "Resolution Status",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*) GROUP BY resolution_status"
+              },
+              "chart_type": "donut",
+              "segments": [
+                { "key": "resolved", "color": "#22c55e", "label": "Resolved" },
+                { "key": "partial", "color": "#f59e0b", "label": "Partial" },
+                { "key": "unresolved", "color": "#ef4444", "label": "Unresolved" },
+                { "key": "no_goal", "color": "#6b7280", "label": "No Goal" }
+              ],
+              "show_percentages": true
+            },
+            {
+              "id": "sentiment_distribution",
+              "label": "Sentiment",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*) GROUP BY sentiment"
+              },
+              "chart_type": "donut",
+              "segments": [
+                { "key": "positive", "color": "#22c55e", "label": "Positive" },
+                { "key": "neutral", "color": "#6b7280", "label": "Neutral" },
+                { "key": "negative", "color": "#ef4444", "label": "Negative" }
+              ],
+              "show_percentages": true
+            }
+          ]
+        },
+        {
+          "id": "engagement",
+          "title": "Engagement & Behavior",
+          "layout": "grid-2",
+          "metrics": [
+            {
+              "id": "engagement_level",
+              "label": "Engagement Level",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*) GROUP BY engagement_level"
+              },
+              "chart_type": "horizontal_bar",
+              "segments": [
+                { "key": "high", "color": "#22c55e", "label": "High" },
+                { "key": "medium", "color": "#f59e0b", "label": "Medium" },
+                { "key": "low", "color": "#ef4444", "label": "Low" }
+              ],
+              "show_percentages": true
+            },
+            {
+              "id": "conversation_type",
+              "label": "Conversation Type",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*) GROUP BY conversation_type"
+              },
+              "chart_type": "donut",
+              "segments": [
+                { "key": "goal_driven", "color": "#3b82f6", "label": "Goal-Driven" },
+                { "key": "casual", "color": "#8b5cf6", "label": "Casual" }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "sentiment_trend",
+          "title": "Sentiment Over Time",
+          "layout": "full-width",
+          "metrics": [
+            {
+              "id": "sentiment_over_time",
+              "label": "Sentiment Trend",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*) GROUP BY DATE(created_at), sentiment"
+              },
+              "chart_type": "stacked_area",
+              "x_axis": "date",
+              "y_axis": "percentage",
+              "stack_by": "sentiment",
+              "colors": {
+                "positive": "#22c55e",
+                "neutral": "#6b7280",
+                "negative": "#ef4444"
+              },
+              "normalize": true
+            }
+          ]
+        },
+        {
+          "id": "response_performance",
+          "title": "Response Performance",
+          "layout": "grid-2",
+          "metrics": [
+            {
+              "id": "response_time_distribution",
+              "label": "Response Time Distribution",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "HISTOGRAM(average_response_time_ms, buckets: [500, 1000, 2000, 3000])",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "histogram",
+              "buckets": ["< 500ms", "500-1000ms", "1000-2000ms", "2000-3000ms", "> 3000ms"],
+              "x_axis": "response_time_bucket",
+              "y_axis": "count"
+            },
+            {
+              "id": "response_time_trend",
+              "label": "Response Time Trend",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "AVG(average_response_time_ms) GROUP BY DATE(created_at)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "line_chart",
+              "x_axis": "date",
+              "y_axis": "ms",
+              "show_target_line": 1500,
+              "target_label": "Target: 1.5s"
+            }
+          ]
+        },
+        {
+          "id": "forwarded_resources",
+          "title": "Forwarded Resources",
+          "layout": "grid-2",
+          "collapsible": true,
+          "default_collapsed": false,
+          "metrics": [
+            {
+              "id": "top_forwarded_urls",
+              "label": "Top URLs Shared",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "UNNEST(url_links) GROUP BY url ORDER BY count DESC",
+                "filter": "forwarded_url = true"
+              },
+              "chart_type": "ranked_table",
+              "columns": [
+                { "key": "url", "label": "URL", "truncate": 50 },
+                { "key": "count", "label": "Count", "align": "right" }
+              ],
+              "limit": 10
+            },
+            {
+              "id": "top_forwarded_emails",
+              "label": "Top Emails Shared",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "UNNEST(email_links) GROUP BY email ORDER BY count DESC",
+                "filter": "forwarded_email = true"
+              },
+              "chart_type": "ranked_table",
+              "columns": [
+                { "key": "email", "label": "Email" },
+                { "key": "count", "label": "Count", "align": "right" }
+              ],
+              "limit": 10
+            }
+          ]
+        },
+        {
+          "id": "languages",
+          "title": "Languages",
+          "layout": "full-width",
+          "collapsible": true,
+          "default_collapsed": true,
+          "metrics": [
+            {
+              "id": "language_distribution",
+              "label": "Language Distribution",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*) GROUP BY language ORDER BY count DESC"
+              },
+              "chart_type": "horizontal_bar",
+              "limit": 10,
+              "show_percentages": true
+            }
+          ]
+        },
+        {
+          "id": "recent_sessions",
+          "title": "Recent Sessions",
+          "layout": "full-width",
+          "metrics": [
+            {
+              "id": "recent_summaries",
+              "label": "Session Feed",
+              "source": {
+                "table": "chat_session_analyses",
+                "columns": ["session_id", "created_at", "summary", "sentiment", "resolution_status", "engagement_level"],
+                "order_by": "created_at DESC"
+              },
+              "chart_type": "feed_table",
+              "columns": [
+                { "key": "created_at", "label": "Time", "format": "relative", "width": 100 },
+                { "key": "summary", "label": "Summary", "truncate": 100 },
+                { "key": "sentiment", "label": "Sentiment", "format": "badge", "width": 90 },
+                { "key": "resolution_status", "label": "Resolution", "format": "badge", "width": 100 },
+                { "key": "engagement_level", "label": "Engagement", "format": "badge", "width": 90 }
+              ],
+              "limit": 25,
+              "row_click_action": "open_transcript_modal",
+              "paginated": true
+            }
+          ]
+        }
+      ]
+    },
+
+    "questions_and_gaps": {
+      "tab_number": 3,
+      "id": "questions_and_gaps",
+      "title": "Questions & Gaps",
+      "icon": "HelpCircle",
+      "visible_to_client": true,
+      "description": "Identify knowledge gaps and improve your bot",
+      "highlight_badge": "Actionable",
+
+      "filters": [
+        { "id": "category", "label": "Category", "source": "chat_session_analyses.category", "type": "multi_select" }
+      ],
+
+      "sections": [
+        {
+          "id": "gap_overview",
+          "title": null,
+          "layout": "grid-4",
+          "metrics": [
+            {
+              "id": "total_questions",
+              "label": "Questions Asked",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "SUM(JSONB_ARRAY_LENGTH(questions))",
+                "filter": "questions IS NOT NULL"
+              },
+              "chart_type": "big_number",
+              "show_comparison": true
+            },
+            {
+              "id": "total_unanswered",
+              "label": "Unanswered",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "SUM(JSONB_ARRAY_LENGTH(unanswered_questions))",
+                "filter": "unanswered_questions IS NOT NULL"
+              },
+              "chart_type": "big_number",
+              "show_comparison": true,
+              "color": "red",
+              "alert_if": "value > 0"
+            },
+            {
+              "id": "knowledge_gap_rate",
+              "label": "Gap Rate",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "SUM(JSONB_ARRAY_LENGTH(unanswered_questions)) / NULLIF(SUM(JSONB_ARRAY_LENGTH(questions)), 0) * 100"
+              },
+              "chart_type": "big_number",
+              "format": "{value}%",
+              "decimals": 1,
+              "show_comparison": true,
+              "good_direction": "down",
+              "color_thresholds": {
+                "green": "< 5",
+                "yellow": "5-15",
+                "red": "> 15"
+              }
+            },
+            {
+              "id": "sessions_with_gaps",
+              "label": "Sessions with Gaps",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*)",
+                "filter": "JSONB_ARRAY_LENGTH(unanswered_questions) > 0"
+              },
+              "chart_type": "big_number",
+              "show_comparison": true
+            }
+          ]
+        },
+        {
+          "id": "gap_trend",
+          "title": "Questions vs Unanswered Trend",
+          "layout": "full-width",
+          "metrics": [
+            {
+              "id": "questions_vs_unanswered",
+              "label": "Questions vs Unanswered Over Time",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "SUM(JSONB_ARRAY_LENGTH(questions)), SUM(JSONB_ARRAY_LENGTH(unanswered_questions)) GROUP BY DATE(created_at)"
+              },
+              "chart_type": "combo_chart",
+              "series": [
+                { "key": "questions", "type": "bar", "color": "#3b82f6", "label": "Questions" },
+                { "key": "unanswered", "type": "line", "color": "#ef4444", "label": "Unanswered" }
+              ],
+              "x_axis": "date"
+            }
+          ]
+        },
+        {
+          "id": "unanswered_priority",
+          "title": "Unanswered Questions - Priority List",
+          "layout": "full-width",
+          "highlight": true,
+          "highlight_color": "#fef3c7",
+          "description": "Add these to your knowledge base to improve resolution",
+          "metrics": [
+            {
+              "id": "unanswered_questions_list",
+              "label": "Unanswered Questions",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "UNNEST(unanswered_questions) AS question GROUP BY question ORDER BY COUNT(*) DESC"
+              },
+              "chart_type": "priority_table",
+              "columns": [
+                { "key": "rank", "label": "#", "width": 50 },
+                { "key": "question", "label": "Question" },
+                { "key": "count", "label": "Times Asked", "align": "right", "width": 120 }
+              ],
+              "limit": 30,
+              "export_button": true,
+              "export_filename": "unanswered_questions_{date}"
+            }
+          ]
+        },
+        {
+          "id": "most_asked",
+          "title": "Most Asked Questions",
+          "layout": "full-width",
+          "collapsible": true,
+          "default_collapsed": false,
+          "metrics": [
+            {
+              "id": "most_asked_questions_list",
+              "label": "Top Questions",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "UNNEST(questions) AS question GROUP BY question ORDER BY COUNT(*) DESC"
+              },
+              "chart_type": "ranked_table",
+              "columns": [
+                { "key": "rank", "label": "#", "width": 50 },
+                { "key": "question", "label": "Question" },
+                { "key": "count", "label": "Count", "align": "right", "width": 100 }
+              ],
+              "limit": 20
+            }
+          ]
+        },
+        {
+          "id": "category_analysis",
+          "title": "Category Analysis",
+          "layout": "grid-2",
+          "metrics": [
+            {
+              "id": "category_distribution",
+              "label": "Question Categories",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*) GROUP BY category ORDER BY count DESC"
+              },
+              "chart_type": "horizontal_bar",
+              "show_percentages": true
+            },
+            {
+              "id": "category_gap_rates",
+              "label": "Gap Rate by Category",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "SUM(JSONB_ARRAY_LENGTH(unanswered_questions)) / NULLIF(SUM(JSONB_ARRAY_LENGTH(questions)), 0) * 100 GROUP BY category ORDER BY gap_rate DESC"
+              },
+              "chart_type": "horizontal_bar",
+              "format": "percentage",
+              "color_by_value": true,
+              "color_scale": ["#22c55e", "#f59e0b", "#ef4444"]
+            }
+          ]
+        }
+      ]
+    },
+
+    "audience": {
+      "tab_number": 4,
+      "id": "audience",
+      "title": "Audience",
+      "icon": "Users",
+      "visible_to_client": true,
+      "description": "Understand who's using your chatbot",
+
+      "filters": [
+        { "id": "country", "label": "Country", "source": "chat_sessions.country", "type": "multi_select" },
+        { "id": "device_type", "label": "Device", "source": "chat_sessions.device_type", "type": "multi_select" }
+      ],
+
+      "sections": [
+        {
+          "id": "user_overview",
+          "title": null,
+          "layout": "grid-4",
+          "metrics": [
+            {
+              "id": "unique_users",
+              "label": "Unique Users",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(DISTINCT user_id)",
+                "filter": "is_dev = false AND user_id IS NOT NULL"
+              },
+              "chart_type": "big_number",
+              "show_comparison": true
+            },
+            {
+              "id": "new_users",
+              "label": "New Users",
+              "description": "Users with first session in this period",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(DISTINCT user_id)",
+                "filter": "is_dev = false AND user_id IS NOT NULL",
+                "subquery": "user_id NOT IN (SELECT DISTINCT user_id FROM chat_sessions WHERE created_at < {date_range_start})"
+              },
+              "chart_type": "big_number",
+              "show_comparison": true
+            },
+            {
+              "id": "returning_users",
+              "label": "Returning Users",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(DISTINCT user_id)",
+                "filter": "is_dev = false AND user_id IS NOT NULL",
+                "subquery": "user_id IN (SELECT DISTINCT user_id FROM chat_sessions WHERE created_at < {date_range_start})"
+              },
+              "chart_type": "big_number",
+              "show_comparison": true
+            },
+            {
+              "id": "sessions_per_user",
+              "label": "Sessions/User",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(*) / NULLIF(COUNT(DISTINCT user_id), 0)",
+                "filter": "is_dev = false AND user_id IS NOT NULL"
+              },
+              "chart_type": "big_number",
+              "format": "{value}",
+              "decimals": 1,
+              "show_comparison": true
+            }
+          ]
+        },
+        {
+          "id": "user_composition",
+          "title": "User Composition",
+          "layout": "grid-2",
+          "metrics": [
+            {
+              "id": "new_vs_returning",
+              "label": "New vs Returning",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "calculated from new_users and returning_users"
+              },
+              "chart_type": "donut",
+              "segments": [
+                { "key": "new", "color": "#3b82f6", "label": "New Users" },
+                { "key": "returning", "color": "#8b5cf6", "label": "Returning Users" }
+              ]
+            },
+            {
+              "id": "users_over_time",
+              "label": "Users Over Time",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(DISTINCT user_id) GROUP BY DATE(created_at)",
+                "filter": "is_dev = false AND user_id IS NOT NULL"
+              },
+              "chart_type": "area_chart",
+              "x_axis": "date",
+              "y_axis": "count"
+            }
+          ]
+        },
+        {
+          "id": "geography",
+          "title": "Geography",
+          "layout": "grid-2",
+          "metrics": [
+            {
+              "id": "top_countries",
+              "label": "Top Countries",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(*) GROUP BY country ORDER BY count DESC",
+                "filter": "is_dev = false AND country IS NOT NULL"
+              },
+              "chart_type": "horizontal_bar",
+              "limit": 10,
+              "show_percentages": true
+            },
+            {
+              "id": "top_cities",
+              "label": "Top Cities",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(*) GROUP BY city ORDER BY count DESC",
+                "filter": "is_dev = false AND city IS NOT NULL"
+              },
+              "chart_type": "horizontal_bar",
+              "limit": 10,
+              "show_percentages": true
+            }
+          ]
+        },
+        {
+          "id": "devices",
+          "title": "Devices & Technology",
+          "layout": "grid-3",
+          "metrics": [
+            {
+              "id": "device_type",
+              "label": "Device Type",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(*) GROUP BY device_type",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "donut",
+              "segments": [
+                { "key": "desktop", "color": "#3b82f6", "label": "Desktop" },
+                { "key": "mobile", "color": "#22c55e", "label": "Mobile" },
+                { "key": "tablet", "color": "#f59e0b", "label": "Tablet" }
+              ]
+            },
+            {
+              "id": "browser",
+              "label": "Browser",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(*) GROUP BY browser ORDER BY count DESC",
+                "filter": "is_dev = false AND browser IS NOT NULL"
+              },
+              "chart_type": "horizontal_bar",
+              "limit": 5
+            },
+            {
+              "id": "os",
+              "label": "Operating System",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(*) GROUP BY os ORDER BY count DESC",
+                "filter": "is_dev = false AND os IS NOT NULL"
+              },
+              "chart_type": "horizontal_bar",
+              "limit": 5
+            }
+          ]
+        },
+        {
+          "id": "traffic_sources",
+          "title": "Traffic Sources",
+          "layout": "grid-2",
+          "metrics": [
+            {
+              "id": "top_referrers",
+              "label": "Top Referrers",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(*) GROUP BY COALESCE(EXTRACT_DOMAIN(referrer_url), 'Direct') ORDER BY count DESC",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "horizontal_bar",
+              "limit": 10
+            },
+            {
+              "id": "top_pages",
+              "label": "Top Pages",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(*) GROUP BY page_url ORDER BY count DESC",
+                "filter": "is_dev = false AND page_url IS NOT NULL"
+              },
+              "chart_type": "ranked_table",
+              "columns": [
+                { "key": "page_url", "label": "Page", "truncate": 50 },
+                { "key": "count", "label": "Sessions", "align": "right" }
+              ],
+              "limit": 10
+            }
+          ]
+        },
+        {
+          "id": "timing",
+          "title": "When Users Chat",
+          "layout": "full-width",
+          "metrics": [
+            {
+              "id": "peak_hours_heatmap",
+              "label": "Activity Heatmap",
+              "description": "Darker = more conversations",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(*) GROUP BY EXTRACT(hour FROM created_at), EXTRACT(dow FROM created_at)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "heatmap",
+              "x_axis": {
+                "field": "hour",
+                "labels": ["12am", "1am", "2am", "3am", "4am", "5am", "6am", "7am", "8am", "9am", "10am", "11am", "12pm", "1pm", "2pm", "3pm", "4pm", "5pm", "6pm", "7pm", "8pm", "9pm", "10pm", "11pm"]
+              },
+              "y_axis": {
+                "field": "day_of_week",
+                "labels": ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"]
+              },
+              "color_scale": "blues"
+            }
+          ]
+        }
+      ]
+    },
+
+    "animations": {
+      "tab_number": 5,
+      "id": "animations",
+      "title": "Mascot & Animations",
+      "icon": "Sparkles",
+      "visible_to_client": true,
+      "description": "See how your mascot engages users",
+
+      "sections": [
+        {
+          "id": "animation_overview",
+          "title": null,
+          "layout": "grid-3",
+          "metrics": [
+            {
+              "id": "total_easter_eggs",
+              "label": "Easter Eggs Triggered",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "SUM(easter_eggs_triggered)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "show_comparison": true
+            },
+            {
+              "id": "sessions_with_easter_eggs",
+              "label": "Sessions with Easter Eggs",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(*)",
+                "filter": "is_dev = false AND easter_eggs_triggered > 0"
+              },
+              "chart_type": "big_number",
+              "show_comparison": true
+            },
+            {
+              "id": "easter_egg_rate",
+              "label": "Easter Egg Rate",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "COUNT(easter_eggs_triggered > 0) / COUNT(*) * 100",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "format": "{value}%",
+              "decimals": 1
+            }
+          ]
+        },
+        {
+          "id": "response_animations",
+          "title": "Response Animations",
+          "layout": "full-width",
+          "metrics": [
+            {
+              "id": "response_animation_breakdown",
+              "label": "Response Animations Distribution",
+              "source": {
+                "table": "chat_messages",
+                "aggregation": "COUNT(*) GROUP BY response_animation ORDER BY count DESC",
+                "filter": "author = 'bot' AND response_animation IS NOT NULL"
+              },
+              "chart_type": "horizontal_bar",
+              "limit": 15,
+              "show_percentages": true
+            }
+          ]
+        },
+        {
+          "id": "easter_eggs",
+          "title": "Easter Egg Details",
+          "layout": "grid-2",
+          "metrics": [
+            {
+              "id": "easter_egg_animations",
+              "label": "Easter Egg Animations",
+              "source": {
+                "table": "chat_messages",
+                "aggregation": "COUNT(*) GROUP BY easter_egg_animation ORDER BY count DESC",
+                "filter": "has_easter_egg = true AND easter_egg_animation IS NOT NULL"
+              },
+              "chart_type": "horizontal_bar"
+            },
+            {
+              "id": "easter_eggs_over_time",
+              "label": "Easter Eggs Over Time",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "SUM(easter_eggs_triggered) GROUP BY DATE(created_at)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "line_chart",
+              "x_axis": "date",
+              "y_axis": "count"
+            }
+          ]
+        },
+        {
+          "id": "wait_sequences",
+          "title": "Wait Sequences",
+          "layout": "full-width",
+          "collapsible": true,
+          "default_collapsed": true,
+          "metrics": [
+            {
+              "id": "wait_sequence_usage",
+              "label": "Wait Sequence Distribution",
+              "source": {
+                "table": "chat_messages",
+                "aggregation": "COUNT(*) GROUP BY wait_sequence ORDER BY count DESC",
+                "filter": "author = 'bot' AND wait_sequence IS NOT NULL"
+              },
+              "chart_type": "horizontal_bar"
+            }
+          ]
+        }
+      ]
+    },
+
+    "true_costs": {
+      "tab_number": 6,
+      "id": "true_costs",
+      "title": "True Costs",
+      "icon": "Euro",
+      "visible_to_client": false,
+      "requires_role": ["super_admin", "admin"],
+      "description": "Internal cost analysis - not visible to clients",
+
+      "sections": [
+        {
+          "id": "cost_overview",
+          "title": null,
+          "layout": "grid-4",
+          "metrics": [
+            {
+              "id": "total_cost",
+              "label": "Total AI Cost",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "SUM(total_cost_eur)",
+                "filter": "is_dev = false",
+                "additional": "+ SUM(chat_session_analyses.analytics_total_cost_eur)"
+              },
+              "chart_type": "big_number",
+              "format": "€{value}",
+              "decimals": 2,
+              "show_sparkline": true,
+              "show_comparison": true
+            },
+            {
+              "id": "chat_cost",
+              "label": "Chat Cost",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "SUM(total_cost_eur)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "format": "€{value}",
+              "decimals": 2,
+              "show_comparison": true
+            },
+            {
+              "id": "analysis_cost",
+              "label": "Analysis Cost",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "SUM(analytics_total_cost_eur)"
+              },
+              "chart_type": "big_number",
+              "format": "€{value}",
+              "decimals": 2,
+              "show_comparison": true
+            },
+            {
+              "id": "cost_per_conversation",
+              "label": "Cost/Conversation",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "(SUM(total_cost_eur) + SUM(analytics_total_cost_eur)) / COUNT(*)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "format": "€{value}",
+              "decimals": 4,
+              "show_comparison": true,
+              "good_direction": "down"
+            }
+          ]
+        },
+        {
+          "id": "cost_breakdown",
+          "title": "Cost Breakdown",
+          "layout": "grid-2",
+          "metrics": [
+            {
+              "id": "chat_vs_analysis_cost",
+              "label": "Chat vs Analysis Cost",
+              "source": {
+                "chat": "SUM(chat_sessions.total_cost_eur)",
+                "analysis": "SUM(chat_session_analyses.analytics_total_cost_eur)"
+              },
+              "chart_type": "donut",
+              "segments": [
+                { "key": "chat", "color": "#3b82f6", "label": "Chat Messages" },
+                { "key": "analysis", "color": "#8b5cf6", "label": "Session Analysis" }
+              ]
+            },
+            {
+              "id": "cost_over_time",
+              "label": "Cost Over Time",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "SUM(total_cost_eur), SUM(analytics_total_cost_eur) GROUP BY DATE(created_at)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "stacked_area",
+              "x_axis": "date",
+              "y_axis": "cost_eur",
+              "stack_by": ["chat", "analysis"]
+            }
+          ]
+        },
+        {
+          "id": "token_usage",
+          "title": "Token Usage",
+          "layout": "grid-4",
+          "metrics": [
+            {
+              "id": "total_tokens",
+              "label": "Total Tokens",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "SUM(total_tokens)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "abbreviate": true,
+              "show_comparison": true
+            },
+            {
+              "id": "prompt_tokens",
+              "label": "Prompt Tokens",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "SUM(total_prompt_tokens)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "abbreviate": true
+            },
+            {
+              "id": "completion_tokens",
+              "label": "Completion Tokens",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "SUM(total_completion_tokens)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "abbreviate": true
+            },
+            {
+              "id": "analysis_tokens",
+              "label": "Analysis Tokens",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "SUM(analytics_total_tokens)"
+              },
+              "chart_type": "big_number",
+              "abbreviate": true
+            }
+          ]
+        },
+        {
+          "id": "model_analysis",
+          "title": "Model Usage",
+          "layout": "grid-2",
+          "metrics": [
+            {
+              "id": "chat_model_usage",
+              "label": "Chat Models",
+              "source": {
+                "table": "chat_messages",
+                "aggregation": "COUNT(*) GROUP BY model_used ORDER BY count DESC",
+                "filter": "author = 'bot' AND model_used IS NOT NULL"
+              },
+              "chart_type": "donut"
+            },
+            {
+              "id": "analysis_model_usage",
+              "label": "Analysis Models",
+              "source": {
+                "table": "chat_session_analyses",
+                "aggregation": "COUNT(*) GROUP BY analytics_model_used ORDER BY count DESC",
+                "filter": "analytics_model_used IS NOT NULL"
+              },
+              "chart_type": "donut"
+            }
+          ]
+        },
+        {
+          "id": "efficiency_metrics",
+          "title": "Efficiency Metrics",
+          "layout": "grid-3",
+          "metrics": [
+            {
+              "id": "tokens_per_session",
+              "label": "Avg Tokens/Session",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "AVG(total_tokens)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "decimals": 0,
+              "show_comparison": true,
+              "good_direction": "down"
+            },
+            {
+              "id": "cost_per_resolved",
+              "label": "Cost/Resolved Session",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "SUM(total_cost_eur) / COUNT(*)",
+                "join": "chat_session_analyses ON id = session_id",
+                "filter": "is_dev = false AND resolution_status = 'resolved'"
+              },
+              "chart_type": "big_number",
+              "format": "€{value}",
+              "decimals": 4,
+              "good_direction": "down"
+            },
+            {
+              "id": "prompt_completion_ratio",
+              "label": "Prompt/Completion Ratio",
+              "source": {
+                "table": "chat_sessions",
+                "aggregation": "SUM(total_prompt_tokens) / NULLIF(SUM(total_completion_tokens), 0)",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "big_number",
+              "format": "{value}:1",
+              "decimals": 1,
+              "description": "Higher = more context, less output"
+            }
+          ]
+        },
+        {
+          "id": "expensive_sessions",
+          "title": "Most Expensive Sessions",
+          "layout": "full-width",
+          "description": "Sessions to review for optimization",
+          "metrics": [
+            {
+              "id": "expensive_sessions_table",
+              "label": "Top 20 Most Expensive",
+              "source": {
+                "table": "chat_sessions",
+                "columns": ["id", "created_at", "total_bot_messages", "total_tokens", "total_cost_eur"],
+                "join": "chat_session_analyses ON id = session_id",
+                "order_by": "total_cost_eur DESC",
+                "filter": "is_dev = false"
+              },
+              "chart_type": "ranked_table",
+              "columns": [
+                { "key": "id", "label": "Session", "truncate": 8, "width": 100 },
+                { "key": "created_at", "label": "Date", "format": "datetime", "width": 150 },
+                { "key": "total_bot_messages", "label": "Messages", "align": "right", "width": 90 },
+                { "key": "total_tokens", "label": "Tokens", "align": "right", "abbreviate": true, "width": 90 },
+                { "key": "total_cost_eur", "label": "Cost", "align": "right", "format": "€{value}", "width": 90 },
+                { "key": "resolution_status", "label": "Resolution", "format": "badge", "width": 100 }
+              ],
+              "limit": 20,
+              "row_click_action": "open_transcript_modal"
+            }
+          ]
+        }
+      ]
+    }
+  },
+
+  "summary": {
+    "total_tabs": 6,
+    "client_visible_tabs": 5,
+    "admin_only_tabs": 1,
+    "total_sections": 25,
+    "total_metrics": 67,
+    "tabs_list": [
+      { "id": "overview", "title": "Overview", "metrics_count": 10 },
+      { "id": "conversations", "title": "Conversations", "metrics_count": 17 },
+      { "id": "questions_and_gaps", "title": "Questions & Gaps", "metrics_count": 9 },
+      { "id": "audience", "title": "Audience", "metrics_count": 13 },
+      { "id": "animations", "title": "Mascot & Animations", "metrics_count": 7 },
+      { "id": "true_costs", "title": "True Costs", "metrics_count": 11 }
+    ]
+  }
+}

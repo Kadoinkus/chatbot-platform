@@ -8,6 +8,11 @@
  *   import { db } from '@/lib/db';
  *   const client = await db.clients.getById('demo-jumbo');
  *
+ * For analytics with hybrid routing (demo vs real clients):
+ *   import { analytics, getAnalyticsForClient } from '@/lib/db';
+ *   const clientAnalytics = getAnalyticsForClient('demo-jumbo'); // Uses mock
+ *   const realAnalytics = getAnalyticsForClient('real-client');  // Uses Supabase
+ *
  * Toggle via environment:
  *   USE_MOCK_DATA=true  -> Uses JSON files from public/data/
  *   USE_MOCK_DATA=false -> Uses Supabase (default in production)
@@ -36,6 +41,34 @@ export const {
   sessions,
   metrics,
 } = db;
+
+// Analytics data layer with hybrid routing
+export {
+  analytics,
+  getAnalyticsForClient,
+  getAnalyticsForBot,
+  isDemoClient,
+  mockAnalytics,
+  supabaseAnalytics,
+} from './analytics';
+
+// Re-export analytics types
+export type {
+  AnalyticsOperations,
+  ChatSessionOperations,
+  ChatSessionAnalysisOperations,
+  AnalyticsAggregations,
+  ChatSessionFilters,
+  DateRange,
+  OverviewMetrics,
+  SentimentBreakdown,
+  CategoryBreakdown,
+  LanguageBreakdown,
+  DeviceBreakdown,
+  CountryBreakdown,
+  TimeSeriesDataPoint,
+  QuestionAnalytics,
+} from './analytics';
 
 // Log which mode we're using (server-side only, won't show in browser)
 if (typeof window === 'undefined') {

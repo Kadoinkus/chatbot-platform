@@ -88,35 +88,5 @@
       "resolutionRate": 0,
       "csat": 0
     }
-  },
-  {
-    "id": "m7",
-    "clientId": "demo-happiness",
-    "workspaceId": "ws_fashionhub_sales",
-    "name": "Stella",
-    "image": "/images/client-mascots/m7-stella.png",
-    "status": "Live",
-    "conversations": 567,
-    "description": "Fashion advisor and sales assistant",
-    "metrics": {
-      "responseTime": 1.1,
-      "resolutionRate": 83,
-      "csat": 4.7
-    }
-  },
-  {
-    "id": "m8",
-    "clientId": "demo-happiness",
-    "workspaceId": "ws_fashionhub_personal",
-    "name": "Joy",
-    "image": "/images/client-mascots/m8-joy.png",
-    "status": "Live",
-    "conversations": 234,
-    "description": "Personal styling consultant for VIP customers",
-    "metrics": {
-      "responseTime": 0.7,
-      "resolutionRate": 92,
-      "csat": 4.9
-    }
   }
 ]

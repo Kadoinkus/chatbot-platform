@@ -843,10 +843,10 @@ export const aggregations: AnalyticsAggregations = {
   async getAnimationStatsByBotId(botId: string, dateRange?: DateRange): Promise<AnimationStats> {
     const supabase = requireSupabase();
 
-    // Get messages with animation data
+    // Get messages with animation data (include session_id for easter egg % calculation)
     let messagesQuery = supabase
       .from('chat_messages')
-      .select('response_animation, easter_egg_animation, has_easter_egg, wait_sequence')
+      .select('session_id, response_animation, easter_egg_animation, has_easter_egg, wait_sequence')
       .eq('mascot_id', botId)
       .eq('author', 'bot');
 
@@ -859,14 +859,21 @@ export const aggregations: AnalyticsAggregations = {
     const { data: messagesData, error: messagesError } = await messagesQuery;
     if (messagesError) throw messagesError;
 
-    // Count animations
+    // Count animations and track sessions with easter eggs
     const animationCounts: Record<string, number> = {};
     const easterEggCounts: Record<string, number> = {};
     const waitSequenceCounts: Record<string, number> = {};
+    const allSessions = new Set<string>();
+    const sessionsWithEasterEggs = new Set<string>();
     let totalTriggers = 0;
     let easterEggsTriggered = 0;
 
-    (messagesData || []).forEach((m: { response_animation?: string; easter_egg_animation?: string; has_easter_egg?: boolean; wait_sequence?: string }) => {
+    (messagesData || []).forEach((m: { session_id?: string; response_animation?: string; easter_egg_animation?: string; has_easter_egg?: boolean; wait_sequence?: string }) => {
+      // Track all unique sessions
+      if (m.session_id) {
+        allSessions.add(m.session_id);
+      }
+
       if (m.response_animation) {
         animationCounts[m.response_animation] = (animationCounts[m.response_animation] || 0) + 1;
         totalTriggers += 1;
@@ -874,6 +881,10 @@ export const aggregations: AnalyticsAggregations = {
       if (m.has_easter_egg && m.easter_egg_animation) {
         easterEggCounts[m.easter_egg_animation] = (easterEggCounts[m.easter_egg_animation] || 0) + 1;
         easterEggsTriggered += 1;
+        // Track sessions that have easter eggs
+        if (m.session_id) {
+          sessionsWithEasterEggs.add(m.session_id);
+        }
       }
       if (m.wait_sequence) {
         waitSequenceCounts[m.wait_sequence] = (waitSequenceCounts[m.wait_sequence] || 0) + 1;
@@ -897,6 +908,8 @@ export const aggregations: AnalyticsAggregations = {
     return {
       totalTriggers,
       easterEggsTriggered,
+      sessionsWithEasterEggs: sessionsWithEasterEggs.size,
+      totalSessions: allSessions.size,
       topAnimations,
       topEasterEggs,
       waitSequences,

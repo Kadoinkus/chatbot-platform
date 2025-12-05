@@ -624,10 +624,11 @@ export const aggregations: AnalyticsAggregations = {
     const sessionIds = new Set(botSessions.map(s => s.id));
     const filteredMessages = messages.filter(m => sessionIds.has(m.session_id));
 
-    // Count animations
+    // Count animations and track sessions with easter eggs
     const animationCounts: Record<string, number> = {};
     const easterEggCounts: Record<string, number> = {};
     const waitSequenceCounts: Record<string, number> = {};
+    const sessionsWithEasterEggs = new Set<string>();
     let totalTriggers = 0;
     let easterEggsTriggered = 0;
 
@@ -639,17 +640,13 @@ export const aggregations: AnalyticsAggregations = {
       if (m.has_easter_egg && m.easter_egg_animation) {
         easterEggCounts[m.easter_egg_animation] = (easterEggCounts[m.easter_egg_animation] || 0) + 1;
         easterEggsTriggered += 1;
+        // Track sessions that have easter eggs
+        sessionsWithEasterEggs.add(m.session_id);
       }
       if (m.wait_sequence) {
         waitSequenceCounts[m.wait_sequence] = (waitSequenceCounts[m.wait_sequence] || 0) + 1;
       }
     });
-
-    // Also count from session-level easter_eggs_triggered
-    const sessionEasterEggs = botSessions.reduce((sum, s) => {
-      const raw = (chatSessionsData as RawChatSession[]).find(r => r.id === s.id);
-      return sum + (raw?.easter_eggs_triggered || 0);
-    }, 0);
 
     const topAnimations = Object.entries(animationCounts)
       .map(([animation, count]) => ({ animation, count }))
@@ -667,7 +664,9 @@ export const aggregations: AnalyticsAggregations = {
 
     return {
       totalTriggers,
-      easterEggsTriggered: Math.max(easterEggsTriggered, sessionEasterEggs),
+      easterEggsTriggered,
+      sessionsWithEasterEggs: sessionsWithEasterEggs.size,
+      totalSessions: sessionIds.size,
       topAnimations,
       topEasterEggs,
       waitSequences,

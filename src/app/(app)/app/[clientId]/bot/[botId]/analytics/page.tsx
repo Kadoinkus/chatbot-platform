@@ -591,9 +591,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                       <Legend
                         formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
                       />
-                      <Area type="monotone" dataKey="positive" stackId="1" stroke="#22C55E" fill="#22C55E" fillOpacity={0.6} name="Positive" />
-                      <Area type="monotone" dataKey="neutral" stackId="1" stroke="#6B7280" fill="#6B7280" fillOpacity={0.6} name="Neutral" />
-                      <Area type="monotone" dataKey="negative" stackId="1" stroke="#EF4444" fill="#EF4444" fillOpacity={0.6} name="Negative" />
+                      <Area type="monotone" dataKey="positive" stackId="1" stroke={sentimentColors[0]} fill={sentimentColors[0]} fillOpacity={0.6} name="Positive" />
+                      <Area type="monotone" dataKey="neutral" stackId="1" stroke={sentimentColors[2]} fill={sentimentColors[2]} fillOpacity={0.6} name="Neutral" />
+                      <Area type="monotone" dataKey="negative" stackId="1" stroke={sentimentColors[1]} fill={sentimentColors[1]} fillOpacity={0.6} name="Negative" />
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
@@ -917,10 +917,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <Card className="p-4">
                 <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                   <TrendingUp size={16} />
-                  <span className="text-sm">Easter Egg Rate</span>
+                  <span className="text-sm">Easter Egg % per Session</span>
                 </div>
                 <p className="text-2xl font-bold text-foreground">
-                  {animationStats?.totalTriggers ? formatPercent((animationStats.easterEggsTriggered / animationStats.totalTriggers) * 100) : '0%'}
+                  {animationStats?.totalSessions ? formatPercent((animationStats.sessionsWithEasterEggs / animationStats.totalSessions) * 100) : '0%'}
                 </p>
               </Card>
 
@@ -1027,15 +1027,15 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
                 <div className="h-[280px]">
                   {(() => {
-                    const sessionsWithEasterEggs = sessions.filter(s => (s.easter_eggs_triggered || 0) > 0).length;
-                    const sessionsWithoutEasterEggs = sessions.length - sessionsWithEasterEggs;
+                    const sessionsWithEasterEggs = animationStats?.sessionsWithEasterEggs || 0;
+                    const totalSessions = animationStats?.totalSessions || 0;
+                    const sessionsWithoutEasterEggs = totalSessions - sessionsWithEasterEggs;
                     const easterEggData = [
                       { name: 'With Easter Eggs', value: sessionsWithEasterEggs, color: brandColor },
                       { name: 'Without Easter Eggs', value: sessionsWithoutEasterEggs, color: '#71717A' }
                     ];
-                    const percentage = sessions.length > 0 ? ((sessionsWithEasterEggs / sessions.length) * 100).toFixed(1) : 0;
 
-                    return sessions.length > 0 ? (
+                    return totalSessions > 0 ? (
                       <ResponsiveContainer width="100%" height="100%">
                         <PieChart>
                           <Pie
@@ -1067,16 +1067,16 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                   <div className="p-4 bg-background-secondary rounded-lg">
                     <p className="text-sm text-foreground-secondary mb-1">Sessions with Easter Eggs</p>
                     <p className="text-2xl font-bold text-foreground">
-                      {sessions.filter(s => (s.easter_eggs_triggered || 0) > 0).length} of {sessions.length}
+                      {animationStats?.sessionsWithEasterEggs || 0} of {animationStats?.totalSessions || 0}
                     </p>
                     <p className="text-sm font-medium" style={{ color: brandColor }}>
-                      {sessions.length > 0 ? ((sessions.filter(s => (s.easter_eggs_triggered || 0) > 0).length / sessions.length) * 100).toFixed(1) : 0}% discovery rate
+                      {animationStats?.totalSessions ? ((animationStats.sessionsWithEasterEggs / animationStats.totalSessions) * 100).toFixed(1) : 0}% discovery rate
                     </p>
                   </div>
                   <div className="p-4 bg-background-secondary rounded-lg">
                     <p className="text-sm text-foreground-secondary mb-1">Avg Easter Eggs per Session</p>
                     <p className="text-2xl font-bold text-foreground">
-                      {sessions.length > 0 ? (sessions.reduce((sum, s) => sum + (s.easter_eggs_triggered || 0), 0) / sessions.length).toFixed(2) : 0}
+                      {animationStats?.totalSessions ? (animationStats.easterEggsTriggered / animationStats.totalSessions).toFixed(2) : 0}
                     </p>
                   </div>
                 </div>

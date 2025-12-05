@@ -107,6 +107,8 @@ export interface ConversationTypeBreakdown {
 export interface AnimationStats {
   totalTriggers: number;
   easterEggsTriggered: number;
+  sessionsWithEasterEggs: number;
+  totalSessions: number;
   topAnimations: { animation: string; count: number }[];
   topEasterEggs: { animation: string; count: number }[];
   waitSequences: { sequence: string; count: number }[];

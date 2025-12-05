@@ -47,14 +47,27 @@ import type { Client, Bot, ChatSessionWithAnalysis } from '@/types';
 import type { OverviewMetrics, SentimentBreakdown, CategoryBreakdown, LanguageBreakdown, CountryBreakdown, TimeSeriesDataPoint, QuestionAnalytics, DeviceBreakdown, SentimentTimeSeriesDataPoint, HourlyBreakdown, AnimationStats } from '@/lib/db/analytics';
 import { Page, PageContent, PageHeader, Card, Button, Input, Spinner, EmptyState, Modal } from '@/components/ui';
 
-// Import Cell and Legend directly (don't work well with dynamic import)
+// Shared chart components
+import {
+  TimeSeriesAreaChart,
+  SentimentAreaChart,
+  StackedBarChart,
+  VerticalBarChart,
+  HorizontalBarChart,
+  HourlyBarChart,
+  DonutChart,
+  safeString,
+  formatAxisDate,
+  formatAxisCurrency,
+  type CustomTooltipContent,
+} from '@/components/analytics/charts';
+
+// Import Cell and Legend directly for remaining raw charts
 import { Cell, Legend } from 'recharts';
 
-// Dynamically import other Recharts components
-const AreaChart = dynamic(() => import('recharts').then(mod => mod.AreaChart), { ssr: false });
+// Dynamically import Recharts components still needed for custom implementations
 const BarChart = dynamic(() => import('recharts').then(mod => mod.BarChart), { ssr: false });
 const PieChart = dynamic(() => import('recharts').then(mod => mod.PieChart), { ssr: false });
-const Area = dynamic(() => import('recharts').then(mod => mod.Area), { ssr: false });
 const Bar = dynamic(() => import('recharts').then(mod => mod.Bar), { ssr: false });
 const Pie = dynamic(() => import('recharts').then(mod => mod.Pie), { ssr: false });
 const XAxis = dynamic(() => import('recharts').then(mod => mod.XAxis), { ssr: false });
@@ -829,39 +842,15 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     });
 
                     return (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <AreaChart data={enhancedTimeSeries}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                          <XAxis
-                            dataKey="date"
-                            tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                            tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                          />
-                          <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                          <Tooltip {...tooltipStyle} />
-                          <Legend
-                            formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value === 'returning' ? 'Returning' : 'New'}</span>}
-                          />
-                          <Area
-                            type="monotone"
-                            dataKey="returning"
-                            stackId="1"
-                            stroke={GREY[500]}
-                            fill={GREY[500]}
-                            fillOpacity={0.6}
-                            name="returning"
-                          />
-                          <Area
-                            type="monotone"
-                            dataKey="new"
-                            stackId="1"
-                            stroke={brandColor}
-                            fill={brandColor}
-                            fillOpacity={0.6}
-                            name="new"
-                          />
-                        </AreaChart>
-                      </ResponsiveContainer>
+                      <TimeSeriesAreaChart
+                        data={enhancedTimeSeries}
+                        series={[
+                          { key: 'returning', name: 'Returning', color: GREY[500] },
+                          { key: 'new', name: 'New', color: brandColor },
+                        ]}
+                        height={280}
+                        brandColor={brandColor}
+                      />
                     );
                   })()}
                 </div>
@@ -875,38 +864,19 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     const newUsers = sessions.filter(s => s.glb_source === 'cdn_fetch' || (s.glb_transfer_size && s.glb_transfer_size > 0)).length;
                     const recurringUsers = sessions.length - newUsers;
                     const userData = [
-                      { name: 'Returning', value: recurringUsers, fill: GREY[500] },
-                      { name: 'New', value: newUsers, fill: brandColor }
+                      { name: 'Returning', value: recurringUsers, color: GREY[500] },
+                      { name: 'New', value: newUsers, color: brandColor }
                     ];
 
-                    return sessions.length > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={userData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={55}
-                            outerRadius={85}
-                            paddingAngle={2}
-                            dataKey="value"
-                            label={({ percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
-                            labelLine={false}
-                          >
-                            {userData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.fill} />
-                            ))}
-                          </Pie>
-                          <Tooltip {...tooltipStyle} formatter={(value) => [`${value} users`, '']} />
-                          <Legend
-                            formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <p className="text-foreground-secondary">No data available</p>
-                      </div>
+                    return (
+                      <DonutChart
+                        data={userData}
+                        height={280}
+                        brandColor={brandColor}
+                        innerRadius={55}
+                        outerRadius={85}
+                        showLabels={true}
+                      />
                     );
                   })()}
                 </div>
@@ -919,26 +889,14 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <Card className="lg:col-span-2">
                 <h3 className="font-semibold text-foreground mb-4">Top Categories</h3>
                 <div className="h-[240px]">
-                  {categories.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={categories.slice(0, 6)} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                        <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                        <YAxis
-                          type="category"
-                          dataKey="category"
-                          tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                          width={120}
-                        />
-                        <Tooltip {...tooltipStyle} />
-                        <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-full flex items-center justify-center">
-                      <p className="text-foreground-secondary">No category data available</p>
-                    </div>
-                  )}
+                  <HorizontalBarChart
+                    data={categories.slice(0, 6).map(c => ({ name: c.category, value: c.count }))}
+                    dataKey="value"
+                    nameKey="name"
+                    height={240}
+                    brandColor={brandColor}
+                    yAxisWidth={120}
+                  />
                 </div>
               </Card>
 
@@ -1049,24 +1007,11 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <Card>
                 <h3 className="font-semibold text-foreground mb-4">Sentiment Over Time</h3>
                 <div className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={sentimentTimeSeries}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      />
-                      <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                      <Tooltip {...tooltipStyle} />
-                      <Legend
-                        formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
-                      />
-                      <Area type="monotone" dataKey="positive" stackId="1" stroke={sentimentColors[0]} fill={sentimentColors[0]} fillOpacity={0.6} name="Positive" />
-                      <Area type="monotone" dataKey="neutral" stackId="1" stroke={sentimentColors[2]} fill={sentimentColors[2]} fillOpacity={0.6} name="Neutral" />
-                      <Area type="monotone" dataKey="negative" stackId="1" stroke={sentimentColors[1]} fill={sentimentColors[1]} fillOpacity={0.6} name="Negative" />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  <SentimentAreaChart
+                    data={sentimentTimeSeries}
+                    height={280}
+                    brandColor={brandColor}
+                  />
                 </div>
               </Card>
 
@@ -1074,27 +1019,11 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <Card>
                 <h3 className="font-semibold text-foreground mb-4">Resolution Status</h3>
                 <div className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={resolutionData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={2}
-                        dataKey="value"
-                      >
-                        {resolutionData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <Tooltip {...tooltipStyle} />
-                      <Legend
-                        formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  <DonutChart
+                    data={resolutionData.map(d => ({ name: d.name, value: d.value, color: d.fill }))}
+                    height={280}
+                    brandColor={brandColor}
+                  />
                 </div>
               </Card>
             </div>
@@ -1105,22 +1034,11 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <Card>
                 <h3 className="font-semibold text-foreground mb-4">Peak Hours</h3>
                 <div className="h-[200px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={hourlyBreakdown}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                      <XAxis
-                        dataKey="hour"
-                        tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                        tickFormatter={(value) => `${value ?? ''}:00`}
-                      />
-                      <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                      <Tooltip
-                        {...tooltipStyle}
-                        labelFormatter={(value) => `${value ?? ''}:00 - ${value ?? ''}:59`}
-                      />
-                      <Bar dataKey="count" fill={brandColor} radius={[4, 4, 0, 0]} name="Sessions" />
-                    </BarChart>
-                  </ResponsiveContainer>
+                  <HourlyBarChart
+                    data={hourlyBreakdown}
+                    height={200}
+                    brandColor={brandColor}
+                  />
                 </div>
               </Card>
 
@@ -1148,26 +1066,18 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     });
 
                     const durationData = Object.entries(buckets).map(([range, count]) => ({
-                      range,
-                      count,
+                      name: range,
+                      value: count,
                     }));
 
                     return (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={durationData}>
-                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                          <XAxis
-                            dataKey="range"
-                            tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                          />
-                          <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                          <Tooltip
-                            {...tooltipStyle}
-                            formatter={(value) => [`${value} sessions`, 'Count']}
-                          />
-                          <Bar dataKey="count" fill={brandColor} radius={[4, 4, 0, 0]} name="Sessions" />
-                        </BarChart>
-                      </ResponsiveContainer>
+                      <VerticalBarChart
+                        data={durationData}
+                        dataKey="value"
+                        xAxisKey="name"
+                        height={200}
+                        brandColor={brandColor}
+                      />
                     );
                   })()}
                 </div>
@@ -1644,52 +1554,28 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <Card>
                 <h3 className="font-semibold text-foreground mb-4">Countries</h3>
                 <div className="h-[240px]">
-                  {countries.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={countries.slice(0, 6)} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                        <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                        <YAxis
-                          type="category"
-                          dataKey="country"
-                          tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                          width={70}
-                        />
-                        <Tooltip {...tooltipStyle} formatter={(value) => [`${value} sessions`, 'Sessions']} />
-                        <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-full flex items-center justify-center">
-                      <p className="text-foreground-secondary">No country data available</p>
-                    </div>
-                  )}
+                  <HorizontalBarChart
+                    data={countries.slice(0, 6).map(c => ({ name: c.country, value: c.count }))}
+                    dataKey="value"
+                    nameKey="name"
+                    height={240}
+                    brandColor={brandColor}
+                    yAxisWidth={70}
+                  />
                 </div>
               </Card>
 
               <Card>
                 <h3 className="font-semibold text-foreground mb-4">Languages</h3>
                 <div className="h-[240px]">
-                  {languages.length > 0 ? (
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={languages.slice(0, 6).map(l => ({ ...l, name: l.language }))} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                        <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} tickFormatter={(v) => `${v}%`} />
-                        <YAxis
-                          type="category"
-                          dataKey="name"
-                          tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                          width={70}
-                        />
-                        <Tooltip {...tooltipStyle} formatter={(value) => [`${Number(value).toFixed(1)}%`, 'Percentage']} />
-                        <Bar dataKey="percentage" fill={brandColor} radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  ) : (
-                    <div className="h-full flex items-center justify-center">
-                      <p className="text-foreground-secondary">No language data available</p>
-                    </div>
-                  )}
+                  <HorizontalBarChart
+                    data={languages.slice(0, 6).map(l => ({ name: l.language, value: l.percentage }))}
+                    dataKey="value"
+                    nameKey="name"
+                    height={240}
+                    brandColor={brandColor}
+                    yAxisWidth={70}
+                  />
                 </div>
               </Card>
             </div>
@@ -1840,21 +1726,15 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 <h3 className="font-semibold text-foreground mb-4">Top Response Animations</h3>
                 {animationStats?.topAnimations && animationStats.topAnimations.length > 0 ? (
                   <div className="h-[280px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={animationStats.topAnimations} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                        <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                        <YAxis
-                          dataKey="animation"
-                          type="category"
-                          width={140}
-                          tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                          tickFormatter={(value) => String(value || '').replace(/_/g, ' ').replace('2type T', '')}
-                        />
-                        <Tooltip {...tooltipStyle} />
-                        <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <HorizontalBarChart
+                      data={animationStats.topAnimations.map(a => ({ name: a.animation, value: a.count }))}
+                      dataKey="value"
+                      nameKey="name"
+                      nameFormatter={(v) => safeString(v).replace(/_/g, ' ').replace('2type T', '')}
+                      height={280}
+                      brandColor={brandColor}
+                      yAxisWidth={140}
+                    />
                   </div>
                 ) : (
                   <div className="h-[280px] flex items-center justify-center">
@@ -1867,21 +1747,15 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 <h3 className="font-semibold text-foreground mb-4">Easter Egg Triggers</h3>
                 {animationStats?.topEasterEggs && animationStats.topEasterEggs.length > 0 ? (
                   <div className="h-[280px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={animationStats.topEasterEggs} layout="vertical">
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                        <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                        <YAxis
-                          dataKey="animation"
-                          type="category"
-                          width={140}
-                          tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                          tickFormatter={(value) => String(value || '').replace('easter_', '').replace(/_/g, ' ')}
-                        />
-                        <Tooltip {...tooltipStyle} />
-                        <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <HorizontalBarChart
+                      data={animationStats.topEasterEggs.map(e => ({ name: e.animation, value: e.count }))}
+                      dataKey="value"
+                      nameKey="name"
+                      nameFormatter={(v) => safeString(v).replace('easter_', '').replace(/_/g, ' ')}
+                      height={280}
+                      brandColor={brandColor}
+                      yAxisWidth={140}
+                    />
                   </div>
                 ) : (
                   <div className="h-[280px] flex items-center justify-center">
@@ -1899,23 +1773,14 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 <p className="text-sm text-foreground-secondary mb-4">Idle animation playlists triggered</p>
                 {animationStats?.waitSequences && animationStats.waitSequences.length > 0 ? (
                   <div className="h-[220px]">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={animationStats.waitSequences}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                        <XAxis
-                          dataKey="sequence"
-                          tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                          tickFormatter={(value) => `Playlist ${String(value || '').toUpperCase()}`}
-                        />
-                        <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                        <Tooltip
-                          {...tooltipStyle}
-                          formatter={(value) => [value, 'Times Played']}
-                          labelFormatter={(label) => `Wait Playlist ${String(label || '').toUpperCase()}`}
-                        />
-                        <Bar dataKey="count" fill={brandColor} radius={[4, 4, 0, 0]} />
-                      </BarChart>
-                    </ResponsiveContainer>
+                    <VerticalBarChart
+                      data={animationStats.waitSequences.map(w => ({ name: w.sequence, value: w.count }))}
+                      dataKey="value"
+                      xAxisKey="name"
+                      xAxisFormatter={(v) => `Playlist ${safeString(v).toUpperCase()}`}
+                      height={220}
+                      brandColor={brandColor}
+                    />
                   </div>
                 ) : (
                   <div className="h-[220px] flex items-center justify-center">
@@ -1940,34 +1805,15 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                       { name: 'Without Easter Eggs', value: sessionsWithoutEasterEggs, color: '#71717A' }
                     ];
 
-                    return totalSessions > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={easterEggData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={50}
-                            outerRadius={80}
-                            paddingAngle={2}
-                            dataKey="value"
-                            label={({ name, percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
-                            labelLine={false}
-                          >
-                            {easterEggData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.color} />
-                            ))}
-                          </Pie>
-                          <Tooltip {...tooltipStyle} />
-                          <Legend
-                            formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <p className="text-foreground-secondary">No session data available</p>
-                      </div>
+                    return (
+                      <DonutChart
+                        data={easterEggData}
+                        height={220}
+                        brandColor={brandColor}
+                        innerRadius={50}
+                        outerRadius={80}
+                        showLabels={true}
+                      />
                     );
                   })()}
                 </div>
@@ -2041,66 +1887,43 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <h3 className="font-semibold text-foreground mb-4">Cost Breakdown per Session</h3>
               <p className="text-sm text-foreground-secondary mb-4">Conversation costs vs. analysis costs per session (stacked)</p>
               <div className="h-[320px]">
-                {sessions.length > 0 ? (
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart
-                      data={sessions.map((s, i) => ({
-                        session: `#${i + 1}`,
-                        conversation: s.total_cost_eur || 0,
-                        analysis: s.analysis?.analytics_total_cost_eur || 0,
-                        conversationTokens: s.total_tokens || 0,
-                        analysisTokens: s.analysis?.analytics_total_tokens || 0,
-                        messages: s.total_messages || 0,
-                      }))}
-                    >
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                      <XAxis
-                        dataKey="session"
-                        tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                      />
-                      <YAxis
-                        tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                        tickFormatter={(value) => `€${(Number(value) || 0).toFixed(3)}`}
-                      />
-                      <Tooltip
-                        {...tooltipStyle}
-                        content={({ active, payload, label }) => {
-                          if (!active || !payload || !payload.length) return null;
-                          const data = payload[0]?.payload;
-                          return (
-                            <div className="bg-surface-elevated border border-border rounded-lg p-3 shadow-lg">
-                              <p className="font-semibold text-foreground mb-2">Session {label}</p>
-                              <div className="space-y-1 text-sm">
-                                <p className="text-foreground">
-                                  <span style={{ color: brandColor }}>●</span> Conversation: €{data?.conversation?.toFixed(4)} ({formatNumber(data?.conversationTokens || 0)} tokens)
-                                </p>
-                                <p className="text-foreground">
-                                  <span style={{ color: GREY[500] }}>●</span> Analysis: €{data?.analysis?.toFixed(4)} ({formatNumber(data?.analysisTokens || 0)} tokens)
-                                </p>
-                                <p className="text-foreground-secondary pt-1 border-t border-border mt-1">
-                                  Total: €{((data?.conversation || 0) + (data?.analysis || 0)).toFixed(4)} ({formatNumber((data?.conversationTokens || 0) + (data?.analysisTokens || 0))} tokens)
-                                </p>
-                              </div>
-                            </div>
-                          );
-                        }}
-                      />
-                      <Legend
-                        formatter={(value) => (
-                          <span style={{ color: 'var(--text-primary)' }}>
-                            {value === 'conversation' ? 'Conversation Cost' : 'Analysis Cost'}
-                          </span>
-                        )}
-                      />
-                      <Bar dataKey="conversation" stackId="cost" fill={brandColor} name="conversation" />
-                      <Bar dataKey="analysis" stackId="cost" fill={GREY[500]} name="analysis" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                ) : (
-                  <div className="h-full flex items-center justify-center">
-                    <p className="text-foreground-secondary">No session data available</p>
-                  </div>
-                )}
+                <StackedBarChart
+                  data={sessions.map((s, i) => ({
+                    session: `#${i + 1}`,
+                    conversation: s.total_cost_eur || 0,
+                    analysis: s.analysis?.analytics_total_cost_eur || 0,
+                    conversationTokens: s.total_tokens || 0,
+                    analysisTokens: s.analysis?.analytics_total_tokens || 0,
+                  }))}
+                  series={[
+                    { key: 'conversation', name: 'Conversation Cost', color: brandColor },
+                    { key: 'analysis', name: 'Analysis Cost', color: GREY[500] },
+                  ]}
+                  xAxisKey="session"
+                  yAxisFormatter={(v) => formatAxisCurrency(v, 3)}
+                  height={320}
+                  brandColor={brandColor}
+                  customTooltip={({ active, payload, label }) => {
+                    if (!active || !payload || !payload.length) return null;
+                    const data = payload[0]?.payload as Record<string, number>;
+                    return (
+                      <div className="bg-surface-elevated border border-border rounded-lg p-3 shadow-lg">
+                        <p className="font-semibold text-foreground mb-2">Session {label}</p>
+                        <div className="space-y-1 text-sm">
+                          <p className="text-foreground">
+                            <span style={{ color: brandColor }}>●</span> Conversation: €{data?.conversation?.toFixed(4)} ({formatNumber(data?.conversationTokens || 0)} tokens)
+                          </p>
+                          <p className="text-foreground">
+                            <span style={{ color: GREY[500] }}>●</span> Analysis: €{data?.analysis?.toFixed(4)} ({formatNumber(data?.analysisTokens || 0)} tokens)
+                          </p>
+                          <p className="text-foreground-secondary pt-1 border-t border-border mt-1">
+                            Total: €{((data?.conversation || 0) + (data?.analysis || 0)).toFixed(4)} ({formatNumber((data?.conversationTokens || 0) + (data?.analysisTokens || 0))} tokens)
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  }}
+                />
               </div>
             </Card>
 
@@ -2115,41 +1938,19 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     const inputTokens = sessions.reduce((sum, s) => sum + (s.input_tokens || 0), 0);
                     const outputTokens = sessions.reduce((sum, s) => sum + (s.output_tokens || 0), 0);
                     const tokenData = [
-                      { name: 'Input (Prompts)', value: inputTokens, fill: brandColor },
-                      { name: 'Output (Responses)', value: outputTokens, fill: GREY[500] }
+                      { name: 'Input (Prompts)', value: inputTokens, color: brandColor },
+                      { name: 'Output (Responses)', value: outputTokens, color: GREY[500] }
                     ];
 
-                    return inputTokens + outputTokens > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={tokenData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={50}
-                            outerRadius={80}
-                            paddingAngle={2}
-                            dataKey="value"
-                            label={({ name, percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
-                            labelLine={false}
-                          >
-                            {tokenData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={entry.fill} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            {...tooltipStyle}
-                            formatter={(value) => [formatNumber(Number(value)), 'Tokens']}
-                          />
-                          <Legend
-                            formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <p className="text-foreground-secondary">No token data available</p>
-                      </div>
+                    return (
+                      <DonutChart
+                        data={tokenData}
+                        height={250}
+                        brandColor={brandColor}
+                        innerRadius={50}
+                        outerRadius={80}
+                        showLabels={true}
+                      />
                     );
                   })()}
                 </div>
@@ -2169,39 +1970,16 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     const modelData = Object.entries(modelCounts)
                       .map(([model, count]) => ({ name: model, value: count }))
                       .sort((a, b) => b.value - a.value);
-                    const colors = getChartColors(brandColor, modelData.length);
 
-                    return modelData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <PieChart>
-                          <Pie
-                            data={modelData}
-                            cx="50%"
-                            cy="50%"
-                            innerRadius={50}
-                            outerRadius={80}
-                            paddingAngle={2}
-                            dataKey="value"
-                            label={({ name, percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
-                            labelLine={false}
-                          >
-                            {modelData.map((entry, index) => (
-                              <Cell key={`cell-${index}`} fill={colors[index]} />
-                            ))}
-                          </Pie>
-                          <Tooltip
-                            {...tooltipStyle}
-                            formatter={(value) => [`${value} sessions`, 'Usage']}
-                          />
-                          <Legend
-                            formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
-                          />
-                        </PieChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <p className="text-foreground-secondary">No model data available</p>
-                      </div>
+                    return (
+                      <DonutChart
+                        data={modelData}
+                        height={250}
+                        brandColor={brandColor}
+                        innerRadius={50}
+                        outerRadius={80}
+                        showLabels={true}
+                      />
                     );
                   })()}
                 </div>

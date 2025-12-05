@@ -42,12 +42,13 @@ import { getAnalyticsForClient } from '@/lib/db/analytics';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { getChartColors, GREY, GREYS } from '@/lib/chartColors';
 import { tooltipStyle } from '@/lib/chartStyles';
+import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
 import type { Client, Bot, ChatSessionWithAnalysis } from '@/types';
 import type { OverviewMetrics, SentimentBreakdown, CategoryBreakdown, LanguageBreakdown, CountryBreakdown, TimeSeriesDataPoint, QuestionAnalytics, DeviceBreakdown, SentimentTimeSeriesDataPoint, HourlyBreakdown, AnimationStats } from '@/lib/db/analytics';
 import { Page, PageContent, PageHeader, Card, Button, Input, Spinner, EmptyState, Modal } from '@/components/ui';
 
-// Import Cell directly (doesn't work well with dynamic import)
-import { Cell } from 'recharts';
+// Import Cell and Legend directly (don't work well with dynamic import)
+import { Cell, Legend } from 'recharts';
 
 // Dynamically import other Recharts components
 const AreaChart = dynamic(() => import('recharts').then(mod => mod.AreaChart), { ssr: false });
@@ -61,7 +62,6 @@ const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: fa
 const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.CartesianGrid), { ssr: false });
 const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
 const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
-const Legend = dynamic(() => import('recharts').then(mod => mod.Legend), { ssr: false });
 
 // Tab configuration matching the analytics spec
 const TABS = [
@@ -100,9 +100,22 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   const [hourlyBreakdown, setHourlyBreakdown] = useState<HourlyBreakdown[]>([]);
   const [animationStats, setAnimationStats] = useState<AnimationStats | null>(null);
   const [selectedTranscript, setSelectedTranscript] = useState<ChatSessionWithAnalysis | null>(null);
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
 
   // Ref to preserve scroll position when opening modal
   const scrollPositionRef = useRef<number>(0);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
+
+  // Close export dropdown when clicking outside
+  useEffect(() => {
+    function handleClickOutside(event: MouseEvent) {
+      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
+        setShowExportDropdown(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
 
   // Handle opening transcript modal while preserving scroll position
   const handleOpenTranscript = useCallback((session: ChatSessionWithAnalysis) => {
@@ -132,6 +145,252 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
     setSelectedTranscript(null);
   }, []);
+
+  // Get current date range for exports
+  const getExportDateRange = useCallback(() => {
+    let startDate: Date, endDate: Date;
+    if (useCustomRange && customDateRange.start && customDateRange.end) {
+      startDate = new Date(customDateRange.start);
+      endDate = new Date(customDateRange.end);
+    } else {
+      endDate = new Date();
+      startDate = new Date();
+      startDate.setDate(startDate.getDate() - dateRange);
+    }
+    return { startDate, endDate };
+  }, [useCustomRange, customDateRange, dateRange]);
+
+  // Handle export for current tab
+  const handleExport = useCallback((format: ExportFormat) => {
+    const { startDate, endDate } = getExportDateRange();
+    const mascotId = params.botId;
+    const startDateStr = startDate.toISOString().split('T')[0];
+    const endDateStr = endDate.toISOString().split('T')[0];
+
+    const exportFn = format === 'csv' ? exportToCSV :
+                     format === 'json' ? exportToJSON :
+                     exportToXLSX;
+
+    switch (activeTab) {
+      case 'overview': {
+        const data = timeSeries.map(ts => ({
+          mascot_id: mascotId,
+          date: ts.date,
+          sessions: ts.sessions,
+          messages: ts.messages,
+          tokens: ts.tokens,
+          cost_eur: ts.cost,
+          start_date: startDateStr,
+          end_date: endDateStr,
+        }));
+        const filename = generateExportFilename('overview', mascotId, startDate, endDate);
+        exportFn(data, filename, 'Overview');
+        break;
+      }
+
+      case 'conversations': {
+        const data = sessions.map(s => ({
+          session_id: s.id,
+          mascot_id: s.mascot_id,
+          start_date: s.session_started_at,
+          end_date: s.session_ended_at || '',
+          duration_seconds: s.session_duration_seconds || 0,
+          total_messages: s.total_messages,
+          user_messages: s.user_messages,
+          bot_messages: s.bot_messages,
+          sentiment: s.analysis?.sentiment || '',
+          category: s.analysis?.category || '',
+          resolution_status: s.analysis?.resolution_status || '',
+          country: s.visitor_country || '',
+          language: s.analysis?.language || '',
+          device_type: s.device_type || '',
+          total_tokens: s.total_tokens,
+          total_cost_eur: s.total_cost_eur,
+          full_transcript: s.full_transcript ? JSON.stringify(s.full_transcript) : '',
+          export_start_date: startDateStr,
+          export_end_date: endDateStr,
+        }));
+        const filename = generateExportFilename('conversations', mascotId, startDate, endDate);
+        exportFn(data, filename, 'Conversations');
+        break;
+      }
+
+      case 'questions': {
+        // Combine questions, unanswered questions, URL handoffs, and email handoffs
+        const questionData = questions.map(q => ({
+          type: 'question',
+          session_id: '',
+          mascot_id: mascotId,
+          content: q.question,
+          category: '',
+          frequency: q.frequency,
+          answered: q.answered ? 'Yes' : 'No',
+          start_date: startDateStr,
+          end_date: endDateStr,
+        }));
+
+        const unansweredData = unansweredQuestions.map(q => ({
+          type: 'unanswered_question',
+          session_id: '',
+          mascot_id: mascotId,
+          content: q.question,
+          category: '',
+          frequency: q.frequency,
+          answered: 'No',
+          start_date: startDateStr,
+          end_date: endDateStr,
+        }));
+
+        // URL handoffs
+        const urlHandoffs: { destination: string; category: string; count: number }[] = [];
+        sessions.forEach(s => {
+          s.analysis?.url_links?.forEach(url => {
+            const existing = urlHandoffs.find(h => h.destination === url);
+            if (existing) {
+              existing.count++;
+            } else {
+              urlHandoffs.push({ destination: url, category: s.analysis?.category || 'Unknown', count: 1 });
+            }
+          });
+        });
+        const urlData = urlHandoffs.map(h => ({
+          type: 'url_handoff',
+          session_id: '',
+          mascot_id: mascotId,
+          content: h.destination,
+          category: h.category,
+          frequency: h.count,
+          answered: '',
+          start_date: startDateStr,
+          end_date: endDateStr,
+        }));
+
+        // Email handoffs
+        const emailHandoffs: { destination: string; category: string; count: number }[] = [];
+        sessions.forEach(s => {
+          s.analysis?.email_links?.forEach(email => {
+            const existing = emailHandoffs.find(h => h.destination === email);
+            if (existing) {
+              existing.count++;
+            } else {
+              emailHandoffs.push({ destination: email, category: s.analysis?.category || 'Unknown', count: 1 });
+            }
+          });
+        });
+        const emailData = emailHandoffs.map(h => ({
+          type: 'email_handoff',
+          session_id: '',
+          mascot_id: mascotId,
+          content: h.destination,
+          category: h.category,
+          frequency: h.count,
+          answered: '',
+          start_date: startDateStr,
+          end_date: endDateStr,
+        }));
+
+        const allData = [...questionData, ...unansweredData, ...urlData, ...emailData];
+        const filename = generateExportFilename('questions_gaps', mascotId, startDate, endDate);
+        exportFn(allData, filename, 'Questions & Gaps');
+        break;
+      }
+
+      case 'audience': {
+        // Combine countries, languages, devices
+        const countryData = countries.map(c => ({
+          type: 'country',
+          name: c.country,
+          count: c.count,
+          percentage: c.percentage,
+          mascot_id: mascotId,
+          start_date: startDateStr,
+          end_date: endDateStr,
+        }));
+
+        const languageData = languages.map(l => ({
+          type: 'language',
+          name: l.language,
+          count: l.count,
+          percentage: l.percentage,
+          mascot_id: mascotId,
+          start_date: startDateStr,
+          end_date: endDateStr,
+        }));
+
+        const deviceData = devices.map(d => ({
+          type: 'device',
+          name: d.deviceType,
+          count: d.count,
+          percentage: d.percentage,
+          mascot_id: mascotId,
+          start_date: startDateStr,
+          end_date: endDateStr,
+        }));
+
+        const allData = [...countryData, ...languageData, ...deviceData];
+        const filename = generateExportFilename('audience', mascotId, startDate, endDate);
+        exportFn(allData, filename, 'Audience');
+        break;
+      }
+
+      case 'animations': {
+        if (!animationStats) break;
+        const animationData = [
+          ...animationStats.topAnimations.map(a => ({
+            type: 'animation',
+            name: a.animation,
+            count: a.count,
+            mascot_id: mascotId,
+            start_date: startDateStr,
+            end_date: endDateStr,
+          })),
+          ...animationStats.topEasterEggs.map(e => ({
+            type: 'easter_egg',
+            name: e.animation,
+            count: e.count,
+            mascot_id: mascotId,
+            start_date: startDateStr,
+            end_date: endDateStr,
+          })),
+          ...animationStats.waitSequences.map(w => ({
+            type: 'wait_sequence',
+            name: w.sequence,
+            count: w.count,
+            mascot_id: mascotId,
+            start_date: startDateStr,
+            end_date: endDateStr,
+          })),
+        ];
+        const filename = generateExportFilename('animations', mascotId, startDate, endDate);
+        exportFn(animationData, filename, 'Animations');
+        break;
+      }
+
+      case 'costs': {
+        const data = sessions.map(s => ({
+          session_id: s.id,
+          mascot_id: s.mascot_id,
+          date: s.session_started_at,
+          total_tokens: s.total_tokens,
+          input_tokens: s.input_tokens,
+          output_tokens: s.output_tokens,
+          total_cost_eur: s.total_cost_eur,
+          analytics_cost_eur: s.analysis?.analytics_total_cost_eur || 0,
+          combined_cost_eur: s.total_cost_eur + (s.analysis?.analytics_total_cost_eur || 0),
+          start_date: startDateStr,
+          end_date: endDateStr,
+        }));
+        const filename = generateExportFilename('costs', mascotId, startDate, endDate);
+        exportFn(data, filename, 'Costs');
+        break;
+      }
+
+      default:
+        break;
+    }
+
+    setShowExportDropdown(false);
+  }, [activeTab, sessions, timeSeries, questions, unansweredQuestions, countries, languages, devices, animationStats, params.botId, getExportDateRange]);
 
   const brandColor = useMemo(() => {
     return client ? getClientBrandColor(client.id) : '#6B7280';
@@ -329,7 +588,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         />
 
         {/* Header Card */}
-        <Card className="mb-6">
+        <Card className="mb-6 overflow-visible">
           <div className="flex items-start justify-between mb-6">
             <div className="flex items-center gap-4">
               <img
@@ -344,11 +603,39 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </div>
             </div>
 
-            <div className="flex gap-2">
-              <Button variant="secondary">
+            <div className="relative" ref={exportDropdownRef}>
+              <Button
+                variant="secondary"
+                onClick={() => setShowExportDropdown(!showExportDropdown)}
+              >
                 <Download size={16} />
                 Export
+                <ChevronDown size={14} className={`ml-1 transition-transform ${showExportDropdown ? 'rotate-180' : ''}`} />
               </Button>
+
+              {/* Export Dropdown */}
+              {showExportDropdown && (
+                <div className="absolute right-0 top-full mt-1 bg-surface-elevated rounded-lg shadow-lg border border-border py-1 z-[100] min-w-[100px]">
+                  <button
+                    onClick={() => handleExport('csv')}
+                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-background-hover transition-colors"
+                  >
+                    .csv
+                  </button>
+                  <button
+                    onClick={() => handleExport('xlsx')}
+                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-background-hover transition-colors"
+                  >
+                    .xlsx
+                  </button>
+                  <button
+                    onClick={() => handleExport('json')}
+                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-background-hover transition-colors"
+                  >
+                    .json
+                  </button>
+                </div>
+              )}
             </div>
           </div>
 
@@ -824,12 +1111,12 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                       <XAxis
                         dataKey="hour"
                         tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                        tickFormatter={(value) => `${value}:00`}
+                        tickFormatter={(value) => `${value ?? ''}:00`}
                       />
                       <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
                       <Tooltip
                         {...tooltipStyle}
-                        labelFormatter={(value) => `${value}:00 - ${value}:59`}
+                        labelFormatter={(value) => `${value ?? ''}:00 - ${value ?? ''}:59`}
                       />
                       <Bar dataKey="count" fill={brandColor} radius={[4, 4, 0, 0]} name="Sessions" />
                     </BarChart>
@@ -1150,17 +1437,24 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* URL Handoffs */}
               <Card>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">URL Handoffs</h3>
-                  <span
-                    className="px-2 py-1 rounded-full text-xs font-medium"
-                    style={{ backgroundColor: `${brandColor}20`, color: brandColor }}
-                  >
-                    {(() => {
-                      const sessionsWithUrls = sessions.filter(s => s.analysis?.url_links && s.analysis.url_links.length > 0).length;
-                      return `${formatPercent((sessionsWithUrls / (sessions.length || 1)) * 100)} of sessions`;
-                    })()}
-                  </span>
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: `${brandColor}15` }}
+                    >
+                      <ExternalLink size={20} style={{ color: brandColor }} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">URL Handoffs</h3>
+                      <p className="text-xs text-foreground-tertiary">
+                        {(() => {
+                          const sessionsWithUrls = sessions.filter(s => s.analysis?.url_links && s.analysis.url_links.length > 0).length;
+                          return `${sessionsWithUrls} sessions (${formatPercent((sessionsWithUrls / (sessions.length || 1)) * 100)})`;
+                        })()}
+                      </p>
+                    </div>
+                  </div>
                 </div>
                 <div className="space-y-3">
                   {(() => {
@@ -1181,12 +1475,12 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                       });
                     });
 
-                    const sorted = urlHandoffs.sort((a, b) => b.count - a.count).slice(0, 6);
+                    const sorted = urlHandoffs.sort((a, b) => b.count - a.count).slice(0, 5);
 
                     if (sorted.length === 0) {
                       return (
-                        <div className="text-center py-6 text-foreground-secondary">
-                          <ExternalLink size={24} className="mx-auto mb-2 opacity-50" />
+                        <div className="text-center py-8 text-foreground-secondary">
+                          <ExternalLink size={32} className="mx-auto mb-3 opacity-30" />
                           <p className="text-sm">No URL forwards yet</p>
                         </div>
                       );
@@ -1195,14 +1489,33 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     return sorted.map((h, i) => (
                       <div
                         key={i}
-                        className="flex items-center justify-between p-3 rounded-lg"
-                        style={{ backgroundColor: `${brandColor}10` }}
+                        className="group p-4 rounded-xl border border-border hover:border-transparent hover:shadow-md transition-all"
+                        style={{ ['--hover-bg' as string]: `${brandColor}08` }}
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${brandColor}08`}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-foreground truncate">{h.category}</p>
-                          <p className="text-xs text-foreground-tertiary truncate">{h.destination}</p>
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span
+                                className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
+                                style={{ backgroundColor: `${brandColor}15`, color: brandColor }}
+                              >
+                                {h.category}
+                              </span>
+                              <span className="text-xs text-foreground-tertiary">→</span>
+                            </div>
+                            <p className="text-sm font-medium text-foreground break-all leading-relaxed">
+                              {h.destination}
+                            </p>
+                          </div>
+                          <div
+                            className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-semibold text-sm"
+                            style={{ backgroundColor: `${brandColor}15`, color: brandColor }}
+                          >
+                            {h.count}
+                          </div>
                         </div>
-                        <span className="text-sm font-medium ml-3" style={{ color: brandColor }}>{h.count}x</span>
                       </div>
                     ));
                   })()}
@@ -1211,14 +1524,21 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
               {/* Email Handoffs */}
               <Card>
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">Email Handoffs</h3>
-                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-background-tertiary text-foreground-secondary">
-                    {(() => {
-                      const sessionsWithEmails = sessions.filter(s => s.analysis?.email_links && s.analysis.email_links.length > 0).length;
-                      return `${formatPercent((sessionsWithEmails / (sessions.length || 1)) * 100)} of sessions`;
-                    })()}
-                  </span>
+                <div className="flex items-center justify-between mb-5">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-background-tertiary">
+                      <Mail size={20} className="text-foreground-secondary" />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Email Handoffs</h3>
+                      <p className="text-xs text-foreground-tertiary">
+                        {(() => {
+                          const sessionsWithEmails = sessions.filter(s => s.analysis?.email_links && s.analysis.email_links.length > 0).length;
+                          return `${sessionsWithEmails} sessions (${formatPercent((sessionsWithEmails / (sessions.length || 1)) * 100)})`;
+                        })()}
+                      </p>
+                    </div>
+                  </div>
                 </div>
                 <div className="space-y-3">
                   {(() => {
@@ -1233,24 +1553,38 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                       });
                     });
 
-                    const sorted = emailHandoffs.sort((a, b) => b.count - a.count).slice(0, 6);
+                    const sorted = emailHandoffs.sort((a, b) => b.count - a.count).slice(0, 5);
 
                     if (sorted.length === 0) {
                       return (
-                        <div className="text-center py-6 text-foreground-secondary">
-                          <Mail size={24} className="mx-auto mb-2 opacity-50" />
+                        <div className="text-center py-8 text-foreground-secondary">
+                          <Mail size={32} className="mx-auto mb-3 opacity-30" />
                           <p className="text-sm">No email forwards yet</p>
                         </div>
                       );
                     }
 
                     return sorted.map((h, i) => (
-                      <div key={i} className="flex items-center justify-between p-3 bg-background-secondary rounded-lg">
-                        <div className="min-w-0 flex-1">
-                          <p className="text-sm font-medium text-foreground truncate">{h.category}</p>
-                          <p className="text-xs text-foreground-tertiary truncate">{h.destination}</p>
+                      <div
+                        key={i}
+                        className="group p-4 rounded-xl border border-border hover:bg-background-secondary hover:border-transparent hover:shadow-md transition-all"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0 flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-background-tertiary text-foreground-secondary">
+                                {h.category}
+                              </span>
+                              <span className="text-xs text-foreground-tertiary">→</span>
+                            </div>
+                            <p className="text-sm font-medium text-foreground break-all leading-relaxed">
+                              {h.destination}
+                            </p>
+                          </div>
+                          <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-semibold text-sm bg-background-tertiary text-foreground-secondary">
+                            {h.count}
+                          </div>
                         </div>
-                        <span className="text-sm font-medium text-foreground-secondary ml-3">{h.count}x</span>
                       </div>
                     ));
                   })()}
@@ -1515,7 +1849,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                           type="category"
                           width={140}
                           tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                          tickFormatter={(value) => value.replace(/_/g, ' ').replace('2type T', '')}
+                          tickFormatter={(value) => String(value || '').replace(/_/g, ' ').replace('2type T', '')}
                         />
                         <Tooltip {...tooltipStyle} />
                         <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
@@ -1542,7 +1876,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                           type="category"
                           width={140}
                           tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                          tickFormatter={(value) => value.replace('easter_', '').replace(/_/g, ' ')}
+                          tickFormatter={(value) => String(value || '').replace('easter_', '').replace(/_/g, ' ')}
                         />
                         <Tooltip {...tooltipStyle} />
                         <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
@@ -1571,13 +1905,13 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                         <XAxis
                           dataKey="sequence"
                           tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                          tickFormatter={(value) => `Playlist ${value.toUpperCase()}`}
+                          tickFormatter={(value) => `Playlist ${String(value || '').toUpperCase()}`}
                         />
                         <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
                         <Tooltip
                           {...tooltipStyle}
-                          formatter={(value, name) => [value, 'Times Played']}
-                          labelFormatter={(label) => `Wait Playlist ${label.toUpperCase()}`}
+                          formatter={(value) => [value, 'Times Played']}
+                          labelFormatter={(label) => `Wait Playlist ${String(label || '').toUpperCase()}`}
                         />
                         <Bar dataKey="count" fill={brandColor} radius={[4, 4, 0, 0]} />
                       </BarChart>
@@ -1726,7 +2060,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                       />
                       <YAxis
                         tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                        tickFormatter={(value) => `€${value.toFixed(3)}`}
+                        tickFormatter={(value) => `€${(Number(value) || 0).toFixed(3)}`}
                       />
                       <Tooltip
                         {...tooltipStyle}

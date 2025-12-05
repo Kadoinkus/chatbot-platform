@@ -24,44 +24,57 @@ import type {
   CountryBreakdown,
   TimeSeriesDataPoint,
   QuestionAnalytics,
+  SentimentTimeSeriesDataPoint,
+  HourlyBreakdown,
+  EngagementBreakdown,
+  ConversationTypeBreakdown,
+  AnimationStats,
+  ChatMessage,
 } from './types';
 
 // Static imports of mock data
 import chatSessionsData from '../../../../public/data/chat_sessions.json';
 import chatSessionAnalysesData from '../../../../public/data/chat_session_analyses.json';
+import chatMessagesData from '../../../../public/data/chat_messages.json';
 
 // Type for raw JSON data (different from Supabase schema)
 interface RawChatSession {
   id: string;
   mascot_id: string;
   client_id: string;
-  domain?: string;
+  domain?: string | null;
+  widget_version?: string | null;
   session_start: string;
   session_end: string;
-  first_message_at?: string;
-  last_message_at?: string;
+  last_activity?: string | null;
+  first_message_at?: string | null;
+  last_message_at?: string | null;
   is_active?: boolean;
-  end_reason?: string;
-  ip_address?: string;
-  country?: string;
-  city?: string;
-  user_agent?: string;
-  device_type?: string;
-  browser?: string;
-  os?: string;
-  referrer_url?: string;
-  page_url?: string;
-  user_id?: string;
+  end_reason?: string | null;
+  ip_address?: string | null;
+  country?: string | null;
+  city?: string | null;
+  user_agent?: string | null;
+  device_type?: string | null;
+  browser?: string | null;
+  os?: string | null;
+  referrer_url?: string | null;
+  page_url?: string | null;
+  user_id?: string | null;
   total_bot_messages?: number;
   total_user_messages?: number;
   total_tokens?: number;
   total_prompt_tokens?: number;
   total_completion_tokens?: number;
+  total_cost_usd?: number;
   total_cost_eur?: number;
   average_response_time_ms?: number;
   easter_eggs_triggered?: number;
   is_dev?: boolean;
-  glb_source?: string;
+  glb_source?: string | null;
+  glb_transfer_size?: number;
+  analysis_processed?: boolean;
+  analysis_status?: string | null;
   created_at: string;
 }
 
@@ -111,6 +124,7 @@ function mapToChatSession(raw: RawChatSession): ChatSession {
     average_response_time_ms: raw.average_response_time_ms || null,
     session_duration_seconds: durationSeconds,
     status: raw.is_active ? 'active' : 'ended',
+    easter_eggs_triggered: raw.easter_eggs_triggered || 0,
     created_at: raw.created_at,
     updated_at: raw.created_at,
   };
@@ -119,6 +133,7 @@ function mapToChatSession(raw: RawChatSession): ChatSession {
 // Cache for transformed data
 let cachedSessions: ChatSession[] | null = null;
 let cachedAnalyses: ChatSessionAnalysis[] | null = null;
+let cachedMessages: ChatMessage[] | null = null;
 
 function getChatSessions(): ChatSession[] {
   if (!cachedSessions) {
@@ -132,6 +147,13 @@ function getChatSessionAnalyses(): ChatSessionAnalysis[] {
     cachedAnalyses = chatSessionAnalysesData as ChatSessionAnalysis[];
   }
   return cachedAnalyses;
+}
+
+function getChatMessages(): ChatMessage[] {
+  if (!cachedMessages) {
+    cachedMessages = chatMessagesData as ChatMessage[];
+  }
+  return cachedMessages;
 }
 
 // Helper to filter sessions by date range
@@ -497,5 +519,158 @@ export const aggregations: AnalyticsAggregations = {
         answered: false,
       }))
       .sort((a, b) => b.frequency - a.frequency);
+  },
+
+  async getSentimentTimeSeriesByBotId(botId: string, dateRange?: DateRange): Promise<SentimentTimeSeriesDataPoint[]> {
+    const botAnalyses = await analyses.getByBotId(botId, { dateRange });
+
+    // Group by date
+    const byDate: Record<string, { positive: number; neutral: number; negative: number }> = {};
+
+    botAnalyses.forEach(a => {
+      const date = a.created_at.split('T')[0];
+      if (!byDate[date]) {
+        byDate[date] = { positive: 0, neutral: 0, negative: 0 };
+      }
+      if (a.sentiment === 'positive') byDate[date].positive += 1;
+      else if (a.sentiment === 'neutral') byDate[date].neutral += 1;
+      else if (a.sentiment === 'negative') byDate[date].negative += 1;
+    });
+
+    return Object.entries(byDate)
+      .map(([date, data]) => ({
+        date,
+        positive: data.positive,
+        neutral: data.neutral,
+        negative: data.negative,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  },
+
+  async getHourlyBreakdownByBotId(botId: string, dateRange?: DateRange): Promise<HourlyBreakdown[]> {
+    const botSessions = await chatSessions.getByBotId(botId, { dateRange });
+    const total = botSessions.length;
+
+    // Count sessions by hour
+    const hourCounts: Record<number, number> = {};
+    for (let i = 0; i < 24; i++) {
+      hourCounts[i] = 0;
+    }
+
+    botSessions.forEach(s => {
+      const hour = new Date(s.session_started_at).getHours();
+      hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+    });
+
+    return Object.entries(hourCounts)
+      .map(([hour, count]) => ({
+        hour: parseInt(hour),
+        count,
+        percentage: total > 0 ? (count / total) * 100 : 0,
+      }))
+      .sort((a, b) => a.hour - b.hour);
+  },
+
+  async getEngagementByBotId(botId: string, dateRange?: DateRange): Promise<EngagementBreakdown[]> {
+    const botAnalyses = await analyses.getByBotId(botId, { dateRange });
+    const total = botAnalyses.length;
+
+    const engagementCounts = {
+      low: 0,
+      medium: 0,
+      high: 0,
+    };
+
+    botAnalyses.forEach(a => {
+      const level = (a as { engagement_level?: string }).engagement_level;
+      if (level === 'low' || level === 'medium' || level === 'high') {
+        engagementCounts[level] += 1;
+      }
+    });
+
+    return [
+      { level: 'low' as const, count: engagementCounts.low, percentage: total > 0 ? (engagementCounts.low / total) * 100 : 0 },
+      { level: 'medium' as const, count: engagementCounts.medium, percentage: total > 0 ? (engagementCounts.medium / total) * 100 : 0 },
+      { level: 'high' as const, count: engagementCounts.high, percentage: total > 0 ? (engagementCounts.high / total) * 100 : 0 },
+    ];
+  },
+
+  async getConversationTypesByBotId(botId: string, dateRange?: DateRange): Promise<ConversationTypeBreakdown[]> {
+    const botAnalyses = await analyses.getByBotId(botId, { dateRange });
+    const total = botAnalyses.length;
+
+    const typeCounts = {
+      casual: 0,
+      goal_driven: 0,
+    };
+
+    botAnalyses.forEach(a => {
+      const type = (a as { conversation_type?: string }).conversation_type;
+      if (type === 'casual') typeCounts.casual += 1;
+      else if (type === 'goal_driven') typeCounts.goal_driven += 1;
+    });
+
+    return [
+      { type: 'casual' as const, count: typeCounts.casual, percentage: total > 0 ? (typeCounts.casual / total) * 100 : 0 },
+      { type: 'goal_driven' as const, count: typeCounts.goal_driven, percentage: total > 0 ? (typeCounts.goal_driven / total) * 100 : 0 },
+    ];
+  },
+
+  async getAnimationStatsByBotId(botId: string, dateRange?: DateRange): Promise<AnimationStats> {
+    const botSessions = await chatSessions.getByBotId(botId, { dateRange });
+    const messages = getChatMessages().filter(m => m.mascot_id === botId);
+
+    // Get session IDs in date range
+    const sessionIds = new Set(botSessions.map(s => s.id));
+    const filteredMessages = messages.filter(m => sessionIds.has(m.session_id));
+
+    // Count animations
+    const animationCounts: Record<string, number> = {};
+    const easterEggCounts: Record<string, number> = {};
+    const waitSequenceCounts: Record<string, number> = {};
+    let totalTriggers = 0;
+    let easterEggsTriggered = 0;
+
+    filteredMessages.forEach(m => {
+      if (m.response_animation) {
+        animationCounts[m.response_animation] = (animationCounts[m.response_animation] || 0) + 1;
+        totalTriggers += 1;
+      }
+      if (m.has_easter_egg && m.easter_egg_animation) {
+        easterEggCounts[m.easter_egg_animation] = (easterEggCounts[m.easter_egg_animation] || 0) + 1;
+        easterEggsTriggered += 1;
+      }
+      if (m.wait_sequence) {
+        waitSequenceCounts[m.wait_sequence] = (waitSequenceCounts[m.wait_sequence] || 0) + 1;
+      }
+    });
+
+    // Also count from session-level easter_eggs_triggered
+    const sessionEasterEggs = botSessions.reduce((sum, s) => {
+      const raw = (chatSessionsData as RawChatSession[]).find(r => r.id === s.id);
+      return sum + (raw?.easter_eggs_triggered || 0);
+    }, 0);
+
+    const topAnimations = Object.entries(animationCounts)
+      .map(([animation, count]) => ({ animation, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const topEasterEggs = Object.entries(easterEggCounts)
+      .map(([animation, count]) => ({ animation, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const waitSequences = Object.entries(waitSequenceCounts)
+      .map(([sequence, count]) => ({ sequence, count }))
+      .sort((a, b) => a.sequence.localeCompare(b.sequence)); // Sort alphabetically (a, b, c, d)
+
+    return {
+      totalTriggers,
+      easterEggsTriggered: Math.max(easterEggsTriggered, sessionEasterEggs),
+      topAnimations,
+      topEasterEggs,
+      waitSequences,
+    };
   },
 };

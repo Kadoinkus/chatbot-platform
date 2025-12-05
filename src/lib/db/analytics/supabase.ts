@@ -25,6 +25,11 @@ import type {
   CountryBreakdown,
   TimeSeriesDataPoint,
   QuestionAnalytics,
+  SentimentTimeSeriesDataPoint,
+  HourlyBreakdown,
+  EngagementBreakdown,
+  ConversationTypeBreakdown,
+  AnimationStats,
 } from './types';
 
 // Helper to check if Supabase is configured
@@ -691,5 +696,210 @@ export const aggregations: AnalyticsAggregations = {
         answered: false,
       }))
       .sort((a, b) => b.frequency - a.frequency);
+  },
+
+  async getSentimentTimeSeriesByBotId(botId: string, dateRange?: DateRange): Promise<SentimentTimeSeriesDataPoint[]> {
+    const supabase = requireSupabase();
+
+    let query = supabase
+      .from('chat_session_analyses')
+      .select('created_at, sentiment')
+      .eq('mascot_id', botId);
+
+    if (dateRange) {
+      query = query
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString());
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const byDate: Record<string, { positive: number; neutral: number; negative: number }> = {};
+
+    (data || []).forEach(a => {
+      const date = a.created_at.split('T')[0];
+      if (!byDate[date]) {
+        byDate[date] = { positive: 0, neutral: 0, negative: 0 };
+      }
+      if (a.sentiment === 'positive') byDate[date].positive += 1;
+      else if (a.sentiment === 'neutral') byDate[date].neutral += 1;
+      else if (a.sentiment === 'negative') byDate[date].negative += 1;
+    });
+
+    return Object.entries(byDate)
+      .map(([date, d]) => ({
+        date,
+        positive: d.positive,
+        neutral: d.neutral,
+        negative: d.negative,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  },
+
+  async getHourlyBreakdownByBotId(botId: string, dateRange?: DateRange): Promise<HourlyBreakdown[]> {
+    const supabase = requireSupabase();
+
+    let query = supabase
+      .from('chat_sessions')
+      .select('session_started_at')
+      .eq('mascot_id', botId);
+
+    if (dateRange) {
+      query = query
+        .gte('session_started_at', dateRange.start.toISOString())
+        .lte('session_started_at', dateRange.end.toISOString());
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const total = data?.length || 0;
+    const hourCounts: Record<number, number> = {};
+    for (let i = 0; i < 24; i++) {
+      hourCounts[i] = 0;
+    }
+
+    (data || []).forEach(s => {
+      const hour = new Date(s.session_started_at).getHours();
+      hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+    });
+
+    return Object.entries(hourCounts)
+      .map(([hour, count]) => ({
+        hour: parseInt(hour),
+        count,
+        percentage: total > 0 ? (count / total) * 100 : 0,
+      }))
+      .sort((a, b) => a.hour - b.hour);
+  },
+
+  async getEngagementByBotId(botId: string, dateRange?: DateRange): Promise<EngagementBreakdown[]> {
+    const supabase = requireSupabase();
+
+    let query = supabase
+      .from('chat_session_analyses')
+      .select('engagement_level')
+      .eq('mascot_id', botId);
+
+    if (dateRange) {
+      query = query
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString());
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const total = data?.length || 0;
+    const counts = { low: 0, medium: 0, high: 0 };
+
+    (data || []).forEach(a => {
+      const level = a.engagement_level as string;
+      if (level === 'low' || level === 'medium' || level === 'high') {
+        counts[level] += 1;
+      }
+    });
+
+    return [
+      { level: 'low' as const, count: counts.low, percentage: total > 0 ? (counts.low / total) * 100 : 0 },
+      { level: 'medium' as const, count: counts.medium, percentage: total > 0 ? (counts.medium / total) * 100 : 0 },
+      { level: 'high' as const, count: counts.high, percentage: total > 0 ? (counts.high / total) * 100 : 0 },
+    ];
+  },
+
+  async getConversationTypesByBotId(botId: string, dateRange?: DateRange): Promise<ConversationTypeBreakdown[]> {
+    const supabase = requireSupabase();
+
+    let query = supabase
+      .from('chat_session_analyses')
+      .select('conversation_type')
+      .eq('mascot_id', botId);
+
+    if (dateRange) {
+      query = query
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString());
+    }
+
+    const { data, error } = await query;
+    if (error) throw error;
+
+    const total = data?.length || 0;
+    const counts = { casual: 0, goal_driven: 0 };
+
+    (data || []).forEach(a => {
+      const type = a.conversation_type as string;
+      if (type === 'casual') counts.casual += 1;
+      else if (type === 'goal_driven') counts.goal_driven += 1;
+    });
+
+    return [
+      { type: 'casual' as const, count: counts.casual, percentage: total > 0 ? (counts.casual / total) * 100 : 0 },
+      { type: 'goal_driven' as const, count: counts.goal_driven, percentage: total > 0 ? (counts.goal_driven / total) * 100 : 0 },
+    ];
+  },
+
+  async getAnimationStatsByBotId(botId: string, dateRange?: DateRange): Promise<AnimationStats> {
+    const supabase = requireSupabase();
+
+    // Get messages with animation data
+    let messagesQuery = supabase
+      .from('chat_messages')
+      .select('response_animation, easter_egg_animation, has_easter_egg, wait_sequence')
+      .eq('mascot_id', botId)
+      .eq('author', 'bot');
+
+    if (dateRange) {
+      messagesQuery = messagesQuery
+        .gte('created_at', dateRange.start.toISOString())
+        .lte('created_at', dateRange.end.toISOString());
+    }
+
+    const { data: messagesData, error: messagesError } = await messagesQuery;
+    if (messagesError) throw messagesError;
+
+    // Count animations
+    const animationCounts: Record<string, number> = {};
+    const easterEggCounts: Record<string, number> = {};
+    const waitSequenceCounts: Record<string, number> = {};
+    let totalTriggers = 0;
+    let easterEggsTriggered = 0;
+
+    (messagesData || []).forEach((m: { response_animation?: string; easter_egg_animation?: string; has_easter_egg?: boolean; wait_sequence?: string }) => {
+      if (m.response_animation) {
+        animationCounts[m.response_animation] = (animationCounts[m.response_animation] || 0) + 1;
+        totalTriggers += 1;
+      }
+      if (m.has_easter_egg && m.easter_egg_animation) {
+        easterEggCounts[m.easter_egg_animation] = (easterEggCounts[m.easter_egg_animation] || 0) + 1;
+        easterEggsTriggered += 1;
+      }
+      if (m.wait_sequence) {
+        waitSequenceCounts[m.wait_sequence] = (waitSequenceCounts[m.wait_sequence] || 0) + 1;
+      }
+    });
+
+    const topAnimations = Object.entries(animationCounts)
+      .map(([animation, count]) => ({ animation, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const topEasterEggs = Object.entries(easterEggCounts)
+      .map(([animation, count]) => ({ animation, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const waitSequences = Object.entries(waitSequenceCounts)
+      .map(([sequence, count]) => ({ sequence, count }))
+      .sort((a, b) => a.sequence.localeCompare(b.sequence));
+
+    return {
+      totalTriggers,
+      easterEggsTriggered,
+      topAnimations,
+      topEasterEggs,
+      waitSequences,
+    };
   },
 };

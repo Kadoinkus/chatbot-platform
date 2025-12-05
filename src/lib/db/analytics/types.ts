@@ -79,10 +79,57 @@ export interface TimeSeriesDataPoint {
   cost: number;
 }
 
+export interface SentimentTimeSeriesDataPoint {
+  date: string;
+  positive: number;
+  neutral: number;
+  negative: number;
+}
+
+export interface HourlyBreakdown {
+  hour: number;
+  count: number;
+  percentage: number;
+}
+
+export interface EngagementBreakdown {
+  level: 'low' | 'medium' | 'high';
+  count: number;
+  percentage: number;
+}
+
+export interface ConversationTypeBreakdown {
+  type: 'casual' | 'goal_driven';
+  count: number;
+  percentage: number;
+}
+
+export interface AnimationStats {
+  totalTriggers: number;
+  easterEggsTriggered: number;
+  topAnimations: { animation: string; count: number }[];
+  topEasterEggs: { animation: string; count: number }[];
+  waitSequences: { sequence: string; count: number }[];
+}
+
 export interface QuestionAnalytics {
   question: string;
   frequency: number;
   answered: boolean;
+}
+
+export interface ChatMessage {
+  id: string;
+  session_id: string;
+  mascot_id: string;
+  message: string;
+  author: 'user' | 'bot';
+  timestamp: string;
+  response_time_ms: number | null;
+  response_animation: string | null;
+  easter_egg_animation: string | null;
+  wait_sequence: string | null;
+  has_easter_egg: boolean;
 }
 
 // Chat session operations
@@ -182,6 +229,31 @@ export interface AnalyticsAggregations {
    * Get unanswered questions for a bot
    */
   getUnansweredQuestionsByBotId(botId: string, dateRange?: DateRange): Promise<QuestionAnalytics[]>;
+
+  /**
+   * Get sentiment over time for a bot
+   */
+  getSentimentTimeSeriesByBotId(botId: string, dateRange?: DateRange): Promise<SentimentTimeSeriesDataPoint[]>;
+
+  /**
+   * Get hourly session breakdown for a bot (peak hours)
+   */
+  getHourlyBreakdownByBotId(botId: string, dateRange?: DateRange): Promise<HourlyBreakdown[]>;
+
+  /**
+   * Get engagement level breakdown for a bot
+   */
+  getEngagementByBotId(botId: string, dateRange?: DateRange): Promise<EngagementBreakdown[]>;
+
+  /**
+   * Get conversation type breakdown for a bot
+   */
+  getConversationTypesByBotId(botId: string, dateRange?: DateRange): Promise<ConversationTypeBreakdown[]>;
+
+  /**
+   * Get animation statistics for a bot
+   */
+  getAnimationStatsByBotId(botId: string, dateRange?: DateRange): Promise<AnimationStats>;
 }
 
 // Complete analytics operations interface

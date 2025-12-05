@@ -105,6 +105,12 @@ export type {
   CountryBreakdown,
   TimeSeriesDataPoint,
   QuestionAnalytics,
+  SentimentTimeSeriesDataPoint,
+  HourlyBreakdown,
+  EngagementBreakdown,
+  ConversationTypeBreakdown,
+  AnimationStats,
+  ChatMessage,
 } from './types';
 
 // Export both implementations for direct access if needed

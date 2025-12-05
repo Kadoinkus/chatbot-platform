@@ -367,6 +367,7 @@ export type ChatSession = {
   average_response_time_ms: number | null;
   session_duration_seconds: number | null;
   status: 'active' | 'ended' | 'timeout' | 'error';
+  easter_eggs_triggered: number;
   created_at: string;
   updated_at: string;
 };

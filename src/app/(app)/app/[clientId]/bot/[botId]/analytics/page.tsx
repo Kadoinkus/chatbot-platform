@@ -38,7 +38,7 @@ import { getClientBrandColor } from '@/lib/brandColors';
 import { getChartColors } from '@/lib/chartColors';
 import { tooltipStyle } from '@/lib/chartStyles';
 import type { Client, Bot, ChatSessionWithAnalysis } from '@/types';
-import type { OverviewMetrics, SentimentBreakdown, CategoryBreakdown, LanguageBreakdown, CountryBreakdown, TimeSeriesDataPoint, QuestionAnalytics, DeviceBreakdown } from '@/lib/db/analytics';
+import type { OverviewMetrics, SentimentBreakdown, CategoryBreakdown, LanguageBreakdown, CountryBreakdown, TimeSeriesDataPoint, QuestionAnalytics, DeviceBreakdown, SentimentTimeSeriesDataPoint, HourlyBreakdown, AnimationStats } from '@/lib/db/analytics';
 import { Page, PageContent, PageHeader, Card, Button, Input, Spinner, EmptyState } from '@/components/ui';
 
 // Import Cell directly (doesn't work well with dynamic import)
@@ -65,7 +65,8 @@ const TABS = [
   { id: 'questions', label: 'Questions & Gaps', icon: HelpCircle },
   { id: 'audience', label: 'Audience', icon: Globe },
   { id: 'animations', label: 'Animations', icon: Sparkles },
-  { id: 'costs', label: 'True Costs', icon: Receipt }
+  { id: 'costs', label: 'True Costs', icon: Receipt },
+  { id: 'custom', label: 'Custom Metrics', icon: Filter }
 ];
 
 export default function BotAnalyticsPage({ params }: { params: { clientId: string; botId: string } }) {
@@ -90,6 +91,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   const [questions, setQuestions] = useState<QuestionAnalytics[]>([]);
   const [unansweredQuestions, setUnansweredQuestions] = useState<QuestionAnalytics[]>([]);
   const [sessions, setSessions] = useState<ChatSessionWithAnalysis[]>([]);
+  const [sentimentTimeSeries, setSentimentTimeSeries] = useState<SentimentTimeSeriesDataPoint[]>([]);
+  const [hourlyBreakdown, setHourlyBreakdown] = useState<HourlyBreakdown[]>([]);
+  const [animationStats, setAnimationStats] = useState<AnimationStats | null>(null);
 
   const brandColor = useMemo(() => {
     return client ? getClientBrandColor(client.id) : '#6B7280';
@@ -146,7 +150,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           timeSeriesData,
           questionsData,
           unansweredData,
-          sessionsData
+          sessionsData,
+          sentimentTimeSeriesData,
+          hourlyBreakdownData,
+          animationStatsData
         ] = await Promise.all([
           analytics.aggregations.getOverviewByBotId(params.botId, dateRangeFilter),
           analytics.aggregations.getSentimentByBotId(params.botId, dateRangeFilter),
@@ -157,7 +164,10 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           analytics.aggregations.getTimeSeriesByBotId(params.botId, dateRangeFilter),
           analytics.aggregations.getQuestionsByBotId(params.botId, dateRangeFilter),
           analytics.aggregations.getUnansweredQuestionsByBotId(params.botId, dateRangeFilter),
-          analytics.chatSessions.getWithAnalysisByBotId(params.botId, { dateRange: dateRangeFilter })
+          analytics.chatSessions.getWithAnalysisByBotId(params.botId, { dateRange: dateRangeFilter }),
+          analytics.aggregations.getSentimentTimeSeriesByBotId(params.botId, dateRangeFilter),
+          analytics.aggregations.getHourlyBreakdownByBotId(params.botId, dateRangeFilter),
+          analytics.aggregations.getAnimationStatsByBotId(params.botId, dateRangeFilter)
         ]);
 
         setOverview(overviewData);
@@ -170,6 +180,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         setQuestions(questionsData);
         setUnansweredQuestions(unansweredData);
         setSessions(sessionsData);
+        setSentimentTimeSeries(sentimentTimeSeriesData);
+        setHourlyBreakdown(hourlyBreakdownData);
+        setAnimationStats(animationStatsData);
 
       } catch (error) {
         console.error('Error loading analytics:', error);
@@ -403,7 +416,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* KPI Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-5 gap-4">
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="p-4">
                 <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                   <Users size={16} />
@@ -436,14 +449,6 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                   <span className="text-sm">Resolution Rate</span>
                 </div>
                 <p className="text-2xl font-bold text-foreground">{formatPercent(overview?.resolutionRate || 0)}</p>
-              </Card>
-
-              <Card className="p-4">
-                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
-                  <DollarSign size={16} />
-                  <span className="text-sm">Total Cost</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{formatCurrency(overview?.totalCostEur || 0)}</p>
               </Card>
             </div>
 
@@ -567,30 +572,81 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </Card>
             </div>
 
-            {/* Resolution Status */}
+            {/* Charts Grid */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Sentiment Over Time */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-4">Sentiment Over Time</h3>
+                <div className="h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={sentimentTimeSeries}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis
+                        dataKey="date"
+                        tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                      />
+                      <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                      <Tooltip {...tooltipStyle} />
+                      <Legend
+                        formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
+                      />
+                      <Area type="monotone" dataKey="positive" stackId="1" stroke="#22C55E" fill="#22C55E" fillOpacity={0.6} name="Positive" />
+                      <Area type="monotone" dataKey="neutral" stackId="1" stroke="#6B7280" fill="#6B7280" fillOpacity={0.6} name="Neutral" />
+                      <Area type="monotone" dataKey="negative" stackId="1" stroke="#EF4444" fill="#EF4444" fillOpacity={0.6} name="Negative" />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              {/* Resolution Status */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-4">Resolution Status</h3>
+                <div className="h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <PieChart>
+                      <Pie
+                        data={resolutionData}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {resolutionData.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                      <Tooltip {...tooltipStyle} />
+                      <Legend
+                        formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+            </div>
+
+            {/* Peak Hours */}
             <Card>
-              <h3 className="font-semibold text-foreground mb-4">Resolution Status</h3>
-              <div className="h-[280px]">
+              <h3 className="font-semibold text-foreground mb-4">Peak Hours</h3>
+              <div className="h-[200px]">
                 <ResponsiveContainer width="100%" height="100%">
-                  <PieChart>
-                    <Pie
-                      data={resolutionData}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={60}
-                      outerRadius={100}
-                      paddingAngle={2}
-                      dataKey="value"
-                    >
-                      {resolutionData.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip {...tooltipStyle} />
-                    <Legend
-                      formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
+                  <BarChart data={hourlyBreakdown}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                    <XAxis
+                      dataKey="hour"
+                      tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
+                      tickFormatter={(value) => `${value}:00`}
                     />
-                  </PieChart>
+                    <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                    <Tooltip
+                      {...tooltipStyle}
+                      labelFormatter={(value) => `${value}:00 - ${value}:59`}
+                    />
+                    <Bar dataKey="count" fill={brandColor} radius={[4, 4, 0, 0]} name="Sessions" />
+                  </BarChart>
                 </ResponsiveContainer>
               </div>
             </Card>
@@ -649,7 +705,44 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
         {activeTab === 'questions' && (
           <div className="space-y-6">
-            {/* Questions Overview */}
+            {/* KPI Cards */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="p-4">
+                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                  <HelpCircle size={16} />
+                  <span className="text-sm">Total Questions</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{formatNumber(questions.length)}</p>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                  <AlertTriangle size={16} />
+                  <span className="text-sm">Unanswered</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{formatNumber(unansweredQuestions.length)}</p>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                  <CheckCircle size={16} />
+                  <span className="text-sm">Answer Rate</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">
+                  {formatPercent(questions.length > 0 ? ((questions.length - unansweredQuestions.length) / questions.length) * 100 : 0)}
+                </p>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                  <BarChart3 size={16} />
+                  <span className="text-sm">Top Category</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground truncate">{categories[0]?.category || '-'}</p>
+              </Card>
+            </div>
+
+            {/* Questions Lists */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <h3 className="font-semibold text-foreground mb-4">Top Questions Asked</h3>
@@ -803,14 +896,209 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
         {activeTab === 'animations' && (
           <div className="space-y-6">
-            <Card>
-              <div className="text-center py-12">
-                <Sparkles size={48} className="mx-auto mb-4 text-foreground-tertiary" />
-                <h3 className="text-lg font-semibold text-foreground mb-2">Animation Analytics</h3>
-                <p className="text-foreground-secondary max-w-md mx-auto">
-                  Track mascot animation performance, engagement triggers, and user interaction patterns.
-                  This feature is coming soon.
+            {/* Animation KPIs */}
+            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+              <Card className="p-4">
+                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                  <Sparkles size={16} />
+                  <span className="text-sm">Total Triggers</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{formatNumber(animationStats?.totalTriggers || 0)}</p>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                  <Users size={16} />
+                  <span className="text-sm">Unique Animations</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{animationStats?.topAnimations?.length || 0}</p>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                  <TrendingUp size={16} />
+                  <span className="text-sm">Easter Egg Rate</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">
+                  {animationStats?.totalTriggers ? formatPercent((animationStats.easterEggsTriggered / animationStats.totalTriggers) * 100) : '0%'}
                 </p>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                  <CheckCircle size={16} />
+                  <span className="text-sm">Easter Eggs Found</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">{formatNumber(animationStats?.easterEggsTriggered || 0)}</p>
+              </Card>
+            </div>
+
+            {/* Top Animations Chart */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              <Card>
+                <h3 className="font-semibold text-foreground mb-4">Top Response Animations</h3>
+                {animationStats?.topAnimations && animationStats.topAnimations.length > 0 ? (
+                  <div className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={animationStats.topAnimations} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                        <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                        <YAxis
+                          dataKey="animation"
+                          type="category"
+                          width={140}
+                          tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
+                          tickFormatter={(value) => value.replace(/_/g, ' ').replace('2type T', '')}
+                        />
+                        <Tooltip {...tooltipStyle} />
+                        <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-[280px] flex items-center justify-center">
+                    <p className="text-foreground-secondary">No animation data available</p>
+                  </div>
+                )}
+              </Card>
+
+              <Card>
+                <h3 className="font-semibold text-foreground mb-4">Easter Egg Triggers</h3>
+                {animationStats?.topEasterEggs && animationStats.topEasterEggs.length > 0 ? (
+                  <div className="h-[280px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={animationStats.topEasterEggs} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                        <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                        <YAxis
+                          dataKey="animation"
+                          type="category"
+                          width={140}
+                          tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
+                          tickFormatter={(value) => value.replace('easter_', '').replace(/_/g, ' ')}
+                        />
+                        <Tooltip {...tooltipStyle} />
+                        <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-[280px] flex items-center justify-center">
+                    <p className="text-foreground-secondary">No easter eggs triggered yet</p>
+                  </div>
+                )}
+              </Card>
+            </div>
+
+            {/* Wait Sequence Distribution */}
+            <Card>
+              <h3 className="font-semibold text-foreground mb-4">Wait Sequence Distribution</h3>
+              <p className="text-sm text-foreground-secondary mb-4">Idle animation playlists triggered after each bot response</p>
+              {animationStats?.waitSequences && animationStats.waitSequences.length > 0 ? (
+                <div className="h-[280px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={animationStats.waitSequences}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis
+                        dataKey="sequence"
+                        tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+                        tickFormatter={(value) => `Playlist ${value.toUpperCase()}`}
+                      />
+                      <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                      <Tooltip
+                        {...tooltipStyle}
+                        formatter={(value, name) => [value, 'Times Played']}
+                        labelFormatter={(label) => `Wait Playlist ${label.toUpperCase()}`}
+                      />
+                      <Bar dataKey="count" fill={brandColor} radius={[4, 4, 0, 0]} />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              ) : (
+                <div className="h-[280px] flex items-center justify-center">
+                  <p className="text-foreground-secondary">No wait sequence data available</p>
+                </div>
+              )}
+            </Card>
+
+            {/* Easter Eggs in Conversations */}
+            <Card>
+              <h3 className="font-semibold text-foreground mb-4">Easter Eggs in Conversations</h3>
+              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <div className="h-[280px]">
+                  {(() => {
+                    const sessionsWithEasterEggs = sessions.filter(s => (s.easter_eggs_triggered || 0) > 0).length;
+                    const sessionsWithoutEasterEggs = sessions.length - sessionsWithEasterEggs;
+                    const easterEggData = [
+                      { name: 'With Easter Eggs', value: sessionsWithEasterEggs, color: brandColor },
+                      { name: 'Without Easter Eggs', value: sessionsWithoutEasterEggs, color: '#71717A' }
+                    ];
+                    const percentage = sessions.length > 0 ? ((sessionsWithEasterEggs / sessions.length) * 100).toFixed(1) : 0;
+
+                    return sessions.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={easterEggData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={60}
+                            outerRadius={100}
+                            paddingAngle={2}
+                            dataKey="value"
+                            label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+                            labelLine={false}
+                          >
+                            {easterEggData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.color} />
+                            ))}
+                          </Pie>
+                          <Tooltip {...tooltipStyle} />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <p className="text-foreground-secondary">No session data available</p>
+                      </div>
+                    );
+                  })()}
+                </div>
+                <div className="flex flex-col justify-center space-y-4">
+                  <div className="p-4 bg-background-secondary rounded-lg">
+                    <p className="text-sm text-foreground-secondary mb-1">Sessions with Easter Eggs</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {sessions.filter(s => (s.easter_eggs_triggered || 0) > 0).length} of {sessions.length}
+                    </p>
+                    <p className="text-sm font-medium" style={{ color: brandColor }}>
+                      {sessions.length > 0 ? ((sessions.filter(s => (s.easter_eggs_triggered || 0) > 0).length / sessions.length) * 100).toFixed(1) : 0}% discovery rate
+                    </p>
+                  </div>
+                  <div className="p-4 bg-background-secondary rounded-lg">
+                    <p className="text-sm text-foreground-secondary mb-1">Avg Easter Eggs per Session</p>
+                    <p className="text-2xl font-bold text-foreground">
+                      {sessions.length > 0 ? (sessions.reduce((sum, s) => sum + (s.easter_eggs_triggered || 0), 0) / sessions.length).toFixed(2) : 0}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </Card>
+
+            {/* Animation Performance Summary */}
+            <Card>
+              <h3 className="font-semibold text-foreground mb-4">Animation Performance Summary</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <div className="text-center p-4 bg-background-secondary rounded-lg">
+                  <p className="text-3xl font-bold text-foreground mb-1">{formatNumber(animationStats?.totalTriggers || 0)}</p>
+                  <p className="text-sm text-foreground-secondary">Total Animation Plays</p>
+                </div>
+                <div className="text-center p-4 bg-background-secondary rounded-lg">
+                  <p className="text-3xl font-bold text-foreground mb-1">{animationStats?.topAnimations?.length || 0}</p>
+                  <p className="text-sm text-foreground-secondary">Different Animations Used</p>
+                </div>
+                <div className="text-center p-4 bg-background-secondary rounded-lg">
+                  <p className="text-3xl font-bold text-foreground mb-1">{animationStats?.topEasterEggs?.length || 0}</p>
+                  <p className="text-sm text-foreground-secondary">Easter Egg Types Found</p>
+                </div>
               </div>
             </Card>
           </div>
@@ -907,6 +1195,26 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     <Bar dataKey="tokens" fill={brandColor} radius={[4, 4, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
+              </div>
+            </Card>
+          </div>
+        )}
+
+        {activeTab === 'custom' && (
+          <div className="space-y-6">
+            {/* Empty State */}
+            <Card>
+              <div className="text-center py-16">
+                <Filter size={48} className="mx-auto mb-4 text-foreground-tertiary" />
+                <h3 className="text-lg font-semibold text-foreground mb-2">Custom Metrics</h3>
+                <p className="text-foreground-secondary max-w-md mx-auto mb-6">
+                  Create custom analytics dashboards tailored to your business needs.
+                  Track specific KPIs, set up custom filters, and build personalized reports.
+                </p>
+                <Button variant="secondary" disabled>
+                  <Filter size={16} />
+                  Create Custom Metric
+                </Button>
               </div>
             </Card>
           </div>

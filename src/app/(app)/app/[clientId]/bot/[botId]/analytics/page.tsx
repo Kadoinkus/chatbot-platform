@@ -30,7 +30,9 @@ import {
   Smartphone,
   Monitor,
   Tablet,
-  RefreshCw
+  RefreshCw,
+  ExternalLink,
+  Mail
 } from 'lucide-react';
 
 import { getClientById, getBotById } from '@/lib/dataService';
@@ -1071,99 +1073,113 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </Card>
             </div>
 
-            {/* Forwarded Resources - URLs and Emails */}
+            {/* Handoff Analysis - Split into URL and Email */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Top Forwarded URLs */}
+              {/* URL Handoffs */}
               <Card>
-                <h3 className="font-semibold text-foreground mb-2">Top Forwarded URLs</h3>
-                <p className="text-sm text-foreground-tertiary mb-4">External resources the bot directs users to</p>
-                <div className="h-[200px]">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-foreground">URL Handoffs</h3>
+                  <span
+                    className="px-2 py-1 rounded-full text-xs font-medium"
+                    style={{ backgroundColor: `${brandColor}20`, color: brandColor }}
+                  >
+                    {(() => {
+                      const sessionsWithUrls = sessions.filter(s => s.analysis?.url_links && s.analysis.url_links.length > 0).length;
+                      return `${formatPercent((sessionsWithUrls / (sessions.length || 1)) * 100)} of sessions`;
+                    })()}
+                  </span>
+                </div>
+                <div className="space-y-3">
                   {(() => {
-                    const urlCounts: Record<string, number> = {};
+                    const urlHandoffs: { category: string; destination: string; count: number }[] = [];
+
                     sessions.forEach(s => {
+                      const category = s.analysis?.category || 'Uncategorized';
                       s.analysis?.url_links?.forEach(url => {
+                        let shortUrl = url;
                         try {
                           const parsed = new URL(url);
-                          const shortUrl = parsed.hostname + parsed.pathname;
-                          urlCounts[shortUrl] = (urlCounts[shortUrl] || 0) + 1;
-                        } catch {
-                          urlCounts[url] = (urlCounts[url] || 0) + 1;
-                        }
+                          shortUrl = parsed.hostname + parsed.pathname;
+                        } catch {}
+
+                        const existing = urlHandoffs.find(h => h.category === category && h.destination === shortUrl);
+                        if (existing) existing.count++;
+                        else urlHandoffs.push({ category, destination: shortUrl, count: 1 });
                       });
                     });
-                    const urlData = Object.entries(urlCounts)
-                      .map(([url, count]) => ({ url, count }))
-                      .sort((a, b) => b.count - a.count)
-                      .slice(0, 5);
 
-                    return urlData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={urlData} layout="vertical">
-                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                          <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                          <YAxis
-                            type="category"
-                            dataKey="url"
-                            tick={{ fontSize: 10, fill: 'var(--text-secondary)' }}
-                            width={140}
-                            tickFormatter={(value) => value.length > 25 ? value.substring(0, 25) + '...' : value}
-                          />
-                          <Tooltip
-                            {...tooltipStyle}
-                            formatter={(value) => [`${value} times`, 'Forwarded']}
-                          />
-                          <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <p className="text-foreground-secondary">No URL forwards yet</p>
+                    const sorted = urlHandoffs.sort((a, b) => b.count - a.count).slice(0, 6);
+
+                    if (sorted.length === 0) {
+                      return (
+                        <div className="text-center py-6 text-foreground-secondary">
+                          <ExternalLink size={24} className="mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">No URL forwards yet</p>
+                        </div>
+                      );
+                    }
+
+                    return sorted.map((h, i) => (
+                      <div
+                        key={i}
+                        className="flex items-center justify-between p-3 rounded-lg"
+                        style={{ backgroundColor: `${brandColor}10` }}
+                      >
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-foreground truncate">{h.category}</p>
+                          <p className="text-xs text-foreground-tertiary truncate">{h.destination}</p>
+                        </div>
+                        <span className="text-sm font-medium ml-3" style={{ color: brandColor }}>{h.count}x</span>
                       </div>
-                    );
+                    ));
                   })()}
                 </div>
               </Card>
 
-              {/* Top Forwarded Emails */}
+              {/* Email Handoffs */}
               <Card>
-                <h3 className="font-semibold text-foreground mb-2">Top Forwarded Emails</h3>
-                <p className="text-sm text-foreground-tertiary mb-4">Contact emails shared with users</p>
-                <div className="h-[200px]">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-foreground">Email Handoffs</h3>
+                  <span className="px-2 py-1 rounded-full text-xs font-medium bg-background-tertiary text-foreground-secondary">
+                    {(() => {
+                      const sessionsWithEmails = sessions.filter(s => s.analysis?.email_links && s.analysis.email_links.length > 0).length;
+                      return `${formatPercent((sessionsWithEmails / (sessions.length || 1)) * 100)} of sessions`;
+                    })()}
+                  </span>
+                </div>
+                <div className="space-y-3">
                   {(() => {
-                    const emailCounts: Record<string, number> = {};
+                    const emailHandoffs: { category: string; destination: string; count: number }[] = [];
+
                     sessions.forEach(s => {
+                      const category = s.analysis?.category || 'Uncategorized';
                       s.analysis?.email_links?.forEach(email => {
-                        emailCounts[email] = (emailCounts[email] || 0) + 1;
+                        const existing = emailHandoffs.find(h => h.category === category && h.destination === email);
+                        if (existing) existing.count++;
+                        else emailHandoffs.push({ category, destination: email, count: 1 });
                       });
                     });
-                    const emailData = Object.entries(emailCounts)
-                      .map(([email, count]) => ({ email, count }))
-                      .sort((a, b) => b.count - a.count)
-                      .slice(0, 5);
 
-                    return emailData.length > 0 ? (
-                      <ResponsiveContainer width="100%" height="100%">
-                        <BarChart data={emailData} layout="vertical">
-                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
-                          <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                          <YAxis
-                            type="category"
-                            dataKey="email"
-                            tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                            width={140}
-                          />
-                          <Tooltip
-                            {...tooltipStyle}
-                            formatter={(value) => [`${value} times`, 'Forwarded']}
-                          />
-                          <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
-                        </BarChart>
-                      </ResponsiveContainer>
-                    ) : (
-                      <div className="h-full flex items-center justify-center">
-                        <p className="text-foreground-secondary">No email forwards yet</p>
+                    const sorted = emailHandoffs.sort((a, b) => b.count - a.count).slice(0, 6);
+
+                    if (sorted.length === 0) {
+                      return (
+                        <div className="text-center py-6 text-foreground-secondary">
+                          <Mail size={24} className="mx-auto mb-2 opacity-50" />
+                          <p className="text-sm">No email forwards yet</p>
+                        </div>
+                      );
+                    }
+
+                    return sorted.map((h, i) => (
+                      <div key={i} className="flex items-center justify-between p-3 bg-background-secondary rounded-lg">
+                        <div className="min-w-0 flex-1">
+                          <p className="text-sm font-medium text-foreground truncate">{h.category}</p>
+                          <p className="text-xs text-foreground-tertiary truncate">{h.destination}</p>
+                        </div>
+                        <span className="text-sm font-medium text-foreground-secondary ml-3">{h.count}x</span>
                       </div>
-                    );
+                    ));
                   })()}
                 </div>
               </Card>

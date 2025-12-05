@@ -127,6 +127,9 @@ function mapToChatSession(raw: RawChatSession): ChatSession {
     easter_eggs_triggered: raw.easter_eggs_triggered || 0,
     created_at: raw.created_at,
     updated_at: raw.created_at,
+    // GLB bundle tracking for new vs returning users
+    glb_source: raw.glb_source || null,
+    glb_transfer_size: raw.glb_transfer_size || null,
   };
 }
 

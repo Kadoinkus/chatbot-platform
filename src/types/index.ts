@@ -370,6 +370,9 @@ export type ChatSession = {
   easter_eggs_triggered: number;
   created_at: string;
   updated_at: string;
+  // GLB bundle tracking for new vs returning users
+  glb_source: 'cdn_fetch' | 'memory_cache' | string | null;
+  glb_transfer_size: number | null;
 };
 
 /**

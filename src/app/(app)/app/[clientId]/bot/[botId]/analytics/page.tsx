@@ -29,7 +29,8 @@ import {
   MapPin,
   Smartphone,
   Monitor,
-  Tablet
+  Tablet,
+  RefreshCw
 } from 'lucide-react';
 
 import { getClientById, getBotById } from '@/lib/dataService';
@@ -415,121 +416,229 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         {/* Tab Content */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
-            {/* KPI Cards */}
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="p-4">
-                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
-                  <Users size={16} />
-                  <span className="text-sm">Total Sessions</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{formatNumber(overview?.totalSessions || 0)}</p>
-              </Card>
+            {/* Key KPIs */}
+            {(() => {
+              const newUsers = sessions.filter(s => s.glb_source === 'cdn_fetch' || (s.glb_transfer_size && s.glb_transfer_size > 0)).length;
+              const recurringUsers = sessions.filter(s => s.glb_source === 'memory_cache' || (s.glb_source !== 'cdn_fetch' && !s.glb_transfer_size)).length;
+              const totalUsers = sessions.length || 1;
+              const returnRate = (recurringUsers / totalUsers) * 100;
 
-              <Card className="p-4">
-                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
-                  <MessageSquare size={16} />
-                  <span className="text-sm">Total Messages</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{formatNumber(overview?.totalMessages || 0)}</p>
-              </Card>
+              return (
+                <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                  <Card className="p-4">
+                    <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                      <Users size={16} />
+                      <span className="text-sm">Total Sessions</span>
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">{formatNumber(overview?.totalSessions || 0)}</p>
+                    <p className="text-xs text-foreground-tertiary mt-1">{formatNumber(overview?.totalMessages || 0)} messages</p>
+                  </Card>
 
-              <Card className="p-4">
-                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
-                  <Clock size={16} />
-                  <span className="text-sm">Avg Response</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">
-                  {((overview?.averageResponseTimeMs || 0) / 1000).toFixed(1)}s
-                </p>
-              </Card>
+                  <Card className="p-4">
+                    <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                      <RefreshCw size={16} />
+                      <span className="text-sm">Return Rate</span>
+                    </div>
+                    <p className="text-2xl font-bold" style={{ color: brandColor }}>{formatPercent(returnRate)}</p>
+                    <p className="text-xs text-foreground-tertiary mt-1">{formatNumber(recurringUsers)} returning, {formatNumber(newUsers)} new</p>
+                  </Card>
 
-              <Card className="p-4">
-                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
-                  <CheckCircle size={16} />
-                  <span className="text-sm">Resolution Rate</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{formatPercent(overview?.resolutionRate || 0)}</p>
-              </Card>
-            </div>
+                  <Card className="p-4">
+                    <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                      <CheckCircle size={16} />
+                      <span className="text-sm">Resolution Rate</span>
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">{formatPercent(overview?.resolutionRate || 0)}</p>
+                    <p className="text-xs text-foreground-tertiary mt-1">issues resolved</p>
+                  </Card>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Sessions Over Time */}
-              <Card>
+                  <Card className="p-4">
+                    <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                      <Download size={16} />
+                      <span className="text-sm">Bundle Loads</span>
+                    </div>
+                    <p className="text-2xl font-bold text-foreground">{formatNumber(newUsers)}</p>
+                    <p className="text-xs text-foreground-tertiary mt-1">GLB downloads from CDN</p>
+                  </Card>
+                </div>
+              );
+            })()}
+
+            {/* Main Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Sessions Over Time - Larger */}
+              <Card className="lg:col-span-2">
                 <h3 className="font-semibold text-foreground mb-4">Sessions Over Time</h3>
                 <div className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <AreaChart data={timeSeries}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                      <XAxis
-                        dataKey="date"
-                        tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                        tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
-                      />
-                      <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                      <Tooltip {...tooltipStyle} />
-                      <Area
-                        type="monotone"
-                        dataKey="sessions"
-                        stroke={brandColor}
-                        fill={brandColor}
-                        fillOpacity={0.2}
-                        strokeWidth={2}
-                      />
-                    </AreaChart>
-                  </ResponsiveContainer>
+                  {(() => {
+                    // Enhance timeSeries with new vs recurring data
+                    const enhancedTimeSeries = timeSeries.map(day => {
+                      const daySessions = sessions.filter(s => {
+                        const sessionDate = new Date(s.session_started_at || s.created_at).toISOString().split('T')[0];
+                        return sessionDate === day.date;
+                      });
+                      const newCount = daySessions.filter(s => s.glb_source === 'cdn_fetch' || (s.glb_transfer_size && s.glb_transfer_size > 0)).length;
+                      const returningCount = daySessions.length - newCount;
+                      return {
+                        ...day,
+                        new: newCount,
+                        returning: returningCount
+                      };
+                    });
+
+                    return (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <AreaChart data={enhancedTimeSeries}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                          <XAxis
+                            dataKey="date"
+                            tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+                            tickFormatter={(value) => new Date(value).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })}
+                          />
+                          <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                          <Tooltip {...tooltipStyle} />
+                          <Legend
+                            formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value === 'returning' ? 'Returning' : 'New'}</span>}
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="returning"
+                            stackId="1"
+                            stroke={GREY[500]}
+                            fill={GREY[500]}
+                            fillOpacity={0.6}
+                            name="returning"
+                          />
+                          <Area
+                            type="monotone"
+                            dataKey="new"
+                            stackId="1"
+                            stroke={brandColor}
+                            fill={brandColor}
+                            fillOpacity={0.6}
+                            name="new"
+                          />
+                        </AreaChart>
+                      </ResponsiveContainer>
+                    );
+                  })()}
                 </div>
               </Card>
 
-              {/* Sentiment Distribution */}
+              {/* User Breakdown Donut */}
               <Card>
-                <h3 className="font-semibold text-foreground mb-4">Sentiment Distribution</h3>
+                <h3 className="font-semibold text-foreground mb-4">User Breakdown</h3>
                 <div className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <PieChart>
-                      <Pie
-                        data={sentimentChartData}
-                        cx="50%"
-                        cy="50%"
-                        innerRadius={60}
-                        outerRadius={100}
-                        paddingAngle={2}
-                        dataKey="value"
-                      >
-                        {sentimentChartData.map((entry, index) => (
-                          <Cell key={`cell-${index}`} fill={entry.fill} />
-                        ))}
-                      </Pie>
-                      <Tooltip {...tooltipStyle} />
-                      <Legend
-                        formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
-                      />
-                    </PieChart>
-                  </ResponsiveContainer>
+                  {(() => {
+                    const newUsers = sessions.filter(s => s.glb_source === 'cdn_fetch' || (s.glb_transfer_size && s.glb_transfer_size > 0)).length;
+                    const recurringUsers = sessions.length - newUsers;
+                    const userData = [
+                      { name: 'Returning', value: recurringUsers, fill: GREY[500] },
+                      { name: 'New', value: newUsers, fill: brandColor }
+                    ];
+
+                    return sessions.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <PieChart>
+                          <Pie
+                            data={userData}
+                            cx="50%"
+                            cy="50%"
+                            innerRadius={55}
+                            outerRadius={85}
+                            paddingAngle={2}
+                            dataKey="value"
+                            label={({ percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
+                            labelLine={false}
+                          >
+                            {userData.map((entry, index) => (
+                              <Cell key={`cell-${index}`} fill={entry.fill} />
+                            ))}
+                          </Pie>
+                          <Tooltip {...tooltipStyle} formatter={(value) => [`${value} users`, '']} />
+                          <Legend
+                            formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
+                          />
+                        </PieChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <p className="text-foreground-secondary">No data available</p>
+                      </div>
+                    );
+                  })()}
                 </div>
               </Card>
             </div>
 
-            {/* Categories */}
-            <Card>
-              <h3 className="font-semibold text-foreground mb-4">Top Categories</h3>
-              <div className="h-[300px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={categories.slice(0, 8)} layout="vertical">
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                    <YAxis
-                      type="category"
-                      dataKey="category"
-                      tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                      width={150}
-                    />
-                    <Tooltip {...tooltipStyle} />
-                    <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
-                  </BarChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
+            {/* Bottom Row - Categories & Quick Stats */}
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+              {/* Categories - 2 cols */}
+              <Card className="lg:col-span-2">
+                <h3 className="font-semibold text-foreground mb-4">Top Categories</h3>
+                <div className="h-[240px]">
+                  {categories.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={categories.slice(0, 6)} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                        <YAxis
+                          type="category"
+                          dataKey="category"
+                          tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
+                          width={120}
+                        />
+                        <Tooltip {...tooltipStyle} />
+                        <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-foreground-secondary">No category data available</p>
+                    </div>
+                  )}
+                </div>
+              </Card>
+
+              {/* Quick Insights */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-4">Quick Insights</h3>
+                <div className="space-y-4">
+                  <div className="p-3 bg-background-secondary rounded-lg">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-foreground-secondary">Top Country</span>
+                      <Globe size={14} className="text-foreground-tertiary" />
+                    </div>
+                    <p className="text-lg font-semibold text-foreground">{countries[0]?.country || 'N/A'}</p>
+                  </div>
+                  <div className="p-3 bg-background-secondary rounded-lg">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-foreground-secondary">Top Language</span>
+                      <MessageSquare size={14} className="text-foreground-tertiary" />
+                    </div>
+                    <p className="text-lg font-semibold text-foreground">{languages[0]?.language || 'N/A'}</p>
+                  </div>
+                  <div className="p-3 bg-background-secondary rounded-lg">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-foreground-secondary">Mobile Users</span>
+                      <Smartphone size={14} className="text-foreground-tertiary" />
+                    </div>
+                    <p className="text-lg font-semibold text-foreground">
+                      {formatPercent(devices.find(d => d.deviceType?.toLowerCase() === 'mobile')?.percentage || 0)}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-background-secondary rounded-lg">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-foreground-secondary">Positive Sentiment</span>
+                      <ThumbsUp size={14} className="text-foreground-tertiary" />
+                    </div>
+                    <p className="text-lg font-semibold text-foreground">
+                      {sentiment ? formatPercent((sentiment.positive / (sentiment.positive + sentiment.neutral + sentiment.negative)) * 100) : 'N/A'}
+                    </p>
+                  </div>
+                </div>
+              </Card>
+            </div>
           </div>
         )}
 
@@ -791,104 +900,200 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
         {activeTab === 'audience' && (
           <div className="space-y-6">
-            {/* Audience KPIs */}
+            {/* Audience KPIs - Meaningful metrics */}
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
               <Card className="p-4">
                 <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                   <Globe size={16} />
-                  <span className="text-sm">Countries</span>
+                  <span className="text-sm">Top Country</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{countries.length}</p>
+                <p className="text-2xl font-bold text-foreground">{countries[0]?.country || 'N/A'}</p>
+                <p className="text-sm text-foreground-secondary">{countries[0] ? `${formatPercent((countries[0].count / sessions.length) * 100)} of sessions` : ''}</p>
               </Card>
 
               <Card className="p-4">
                 <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                   <MessageSquare size={16} />
-                  <span className="text-sm">Languages</span>
+                  <span className="text-sm">Top Language</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{languages.length}</p>
-              </Card>
-
-              <Card className="p-4">
-                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
-                  <Monitor size={16} />
-                  <span className="text-sm">Device Types</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{devices.length}</p>
+                <p className="text-2xl font-bold text-foreground">{languages[0]?.language || 'N/A'}</p>
+                <p className="text-sm text-foreground-secondary">{languages[0] ? `${formatPercent(languages[0].percentage)} of sessions` : ''}</p>
               </Card>
 
               <Card className="p-4">
                 <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                   <Smartphone size={16} />
-                  <span className="text-sm">Mobile Users</span>
+                  <span className="text-sm">Mobile</span>
                 </div>
                 <p className="text-2xl font-bold text-foreground">
                   {formatPercent(devices.find(d => d.deviceType?.toLowerCase() === 'mobile')?.percentage || 0)}
                 </p>
+                <p className="text-sm text-foreground-secondary">of all users</p>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                  <Monitor size={16} />
+                  <span className="text-sm">Desktop</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">
+                  {formatPercent(devices.find(d => d.deviceType?.toLowerCase() === 'desktop')?.percentage || 0)}
+                </p>
+                <p className="text-sm text-foreground-secondary">of all users</p>
               </Card>
             </div>
 
+            {/* Geographic - Countries & Languages */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Countries */}
               <Card>
-                <h3 className="font-semibold text-foreground mb-4">Top Countries</h3>
-                <div className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={countries.slice(0, 8)} layout="vertical">
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                      <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                      <YAxis
-                        type="category"
-                        dataKey="country"
-                        tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                        width={80}
-                      />
-                      <Tooltip {...tooltipStyle} />
-                      <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
+                <h3 className="font-semibold text-foreground mb-4">Countries</h3>
+                <div className="h-[240px]">
+                  {countries.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={countries.slice(0, 6)} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                        <YAxis
+                          type="category"
+                          dataKey="country"
+                          tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+                          width={70}
+                        />
+                        <Tooltip {...tooltipStyle} formatter={(value) => [`${value} sessions`, 'Sessions']} />
+                        <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-foreground-secondary">No country data available</p>
+                    </div>
+                  )}
                 </div>
               </Card>
 
-              {/* Languages */}
               <Card>
                 <h3 className="font-semibold text-foreground mb-4">Languages</h3>
-                <div className="space-y-3">
-                  {languages.slice(0, 8).map((lang, index) => (
-                    <div key={index} className="flex items-center justify-between">
-                      <span className="text-sm text-foreground">{lang.language}</span>
-                      <div className="flex items-center gap-3">
-                        <div className="w-32 h-2 bg-background-tertiary rounded-full overflow-hidden">
-                          <div
-                            className="h-full rounded-full"
-                            style={{ width: `${lang.percentage}%`, backgroundColor: brandColor }}
-                          />
-                        </div>
-                        <span className="text-sm text-foreground-secondary w-12 text-right">
-                          {formatPercent(lang.percentage)}
-                        </span>
-                      </div>
+                <div className="h-[240px]">
+                  {languages.length > 0 ? (
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={languages.slice(0, 6).map(l => ({ ...l, name: l.language }))} layout="vertical">
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                        <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} tickFormatter={(v) => `${v}%`} />
+                        <YAxis
+                          type="category"
+                          dataKey="name"
+                          tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+                          width={70}
+                        />
+                        <Tooltip {...tooltipStyle} formatter={(value) => [`${Number(value).toFixed(1)}%`, 'Percentage']} />
+                        <Bar dataKey="percentage" fill={brandColor} radius={[0, 4, 4, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  ) : (
+                    <div className="h-full flex items-center justify-center">
+                      <p className="text-foreground-secondary">No language data available</p>
                     </div>
-                  ))}
+                  )}
                 </div>
               </Card>
             </div>
 
-            {/* Devices */}
+            {/* Technology Stack - Device, Browser, OS */}
             <Card>
-              <h3 className="font-semibold text-foreground mb-4">Device Distribution</h3>
-              <div className="grid grid-cols-3 gap-4">
-                {devices.map((device, index) => {
-                  const Icon = device.deviceType?.toLowerCase() === 'mobile' ? Smartphone :
-                             device.deviceType?.toLowerCase() === 'tablet' ? Tablet : Monitor;
-                  return (
-                    <div key={index} className="text-center p-4 bg-background-secondary rounded-lg">
-                      <Icon size={32} className="mx-auto mb-2 text-foreground-secondary" />
-                      <p className="text-2xl font-bold text-foreground">{formatPercent(device.percentage)}</p>
-                      <p className="text-sm text-foreground-secondary">{device.deviceType || 'Unknown'}</p>
-                    </div>
-                  );
-                })}
+              <h3 className="font-semibold text-foreground mb-4">Technology Stack</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                {/* Devices */}
+                <div className="pb-4 md:pb-0 border-b md:border-b-0 md:border-r border-border md:pr-6">
+                  <p className="text-sm font-medium text-foreground-secondary mb-3">Devices</p>
+                  <div className="space-y-2">
+                    {devices.map((device, index) => (
+                      <div key={index} className="flex items-center gap-3">
+                        <div className="flex-1">
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-foreground">{device.deviceType || 'Unknown'}</span>
+                            <span className="text-foreground-secondary">{formatPercent(device.percentage)}</span>
+                          </div>
+                          <div className="h-2 bg-background-tertiary rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{ width: `${device.percentage}%`, backgroundColor: brandColor }}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Browsers */}
+                <div className="pb-4 md:pb-0 border-b md:border-b-0 md:border-r border-border md:pr-6">
+                  <p className="text-sm font-medium text-foreground-secondary mb-3">Browsers</p>
+                  <div className="space-y-2">
+                    {(() => {
+                      const browserCounts: Record<string, number> = {};
+                      sessions.forEach(s => {
+                        const browser = s.browser_name || 'Unknown';
+                        browserCounts[browser] = (browserCounts[browser] || 0) + 1;
+                      });
+                      const total = sessions.length || 1;
+                      return Object.entries(browserCounts)
+                        .map(([name, count]) => ({ name, percentage: (count / total) * 100 }))
+                        .sort((a, b) => b.percentage - a.percentage)
+                        .slice(0, 4)
+                        .map((browser, index) => (
+                          <div key={index} className="flex items-center gap-3">
+                            <div className="flex-1">
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="text-foreground">{browser.name}</span>
+                                <span className="text-foreground-secondary">{formatPercent(browser.percentage)}</span>
+                              </div>
+                              <div className="h-2 bg-background-tertiary rounded-full overflow-hidden">
+                                <div
+                                  className="h-full rounded-full transition-all"
+                                  style={{ width: `${browser.percentage}%`, backgroundColor: brandColor }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ));
+                    })()}
+                  </div>
+                </div>
+
+                {/* Operating Systems */}
+                <div>
+                  <p className="text-sm font-medium text-foreground-secondary mb-3">Operating Systems</p>
+                  <div className="space-y-2">
+                    {(() => {
+                      const osCounts: Record<string, number> = {};
+                      sessions.forEach(s => {
+                        const os = s.os_name || 'Unknown';
+                        osCounts[os] = (osCounts[os] || 0) + 1;
+                      });
+                      const total = sessions.length || 1;
+                      return Object.entries(osCounts)
+                        .map(([name, count]) => ({ name, percentage: (count / total) * 100 }))
+                        .sort((a, b) => b.percentage - a.percentage)
+                        .slice(0, 4)
+                        .map((os, index) => (
+                          <div key={index} className="flex items-center gap-3">
+                            <div className="flex-1">
+                              <div className="flex justify-between text-sm mb-1">
+                                <span className="text-foreground">{os.name}</span>
+                                <span className="text-foreground-secondary">{formatPercent(os.percentage)}</span>
+                              </div>
+                              <div className="h-2 bg-background-tertiary rounded-full overflow-hidden">
+                                <div
+                                  className="h-full rounded-full transition-all"
+                                  style={{ width: `${os.percentage}%`, backgroundColor: brandColor }}
+                                />
+                              </div>
+                            </div>
+                          </div>
+                        ));
+                    })()}
+                  </div>
+                </div>
               </div>
             </Card>
           </div>
@@ -990,42 +1195,46 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </Card>
             </div>
 
-            {/* Wait Sequence Distribution */}
-            <Card>
-              <h3 className="font-semibold text-foreground mb-4">Wait Sequence Distribution</h3>
-              <p className="text-sm text-foreground-secondary mb-4">Idle animation playlists triggered after each bot response</p>
-              {animationStats?.waitSequences && animationStats.waitSequences.length > 0 ? (
-                <div className="h-[280px]">
-                  <ResponsiveContainer width="100%" height="100%">
-                    <BarChart data={animationStats.waitSequences}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                      <XAxis
-                        dataKey="sequence"
-                        tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
-                        tickFormatter={(value) => `Playlist ${value.toUpperCase()}`}
-                      />
-                      <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                      <Tooltip
-                        {...tooltipStyle}
-                        formatter={(value, name) => [value, 'Times Played']}
-                        labelFormatter={(label) => `Wait Playlist ${label.toUpperCase()}`}
-                      />
-                      <Bar dataKey="count" fill={brandColor} radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              ) : (
-                <div className="h-[280px] flex items-center justify-center">
-                  <p className="text-foreground-secondary">No wait sequence data available</p>
-                </div>
-              )}
-            </Card>
+            {/* Wait Sequence & Easter Eggs */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Wait Sequence Distribution */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-2">Wait Sequence Distribution</h3>
+                <p className="text-sm text-foreground-secondary mb-4">Idle animation playlists triggered</p>
+                {animationStats?.waitSequences && animationStats.waitSequences.length > 0 ? (
+                  <div className="h-[220px]">
+                    <ResponsiveContainer width="100%" height="100%">
+                      <BarChart data={animationStats.waitSequences}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                        <XAxis
+                          dataKey="sequence"
+                          tick={{ fontSize: 12, fill: 'var(--text-secondary)' }}
+                          tickFormatter={(value) => `Playlist ${value.toUpperCase()}`}
+                        />
+                        <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                        <Tooltip
+                          {...tooltipStyle}
+                          formatter={(value, name) => [value, 'Times Played']}
+                          labelFormatter={(label) => `Wait Playlist ${label.toUpperCase()}`}
+                        />
+                        <Bar dataKey="count" fill={brandColor} radius={[4, 4, 0, 0]} />
+                      </BarChart>
+                    </ResponsiveContainer>
+                  </div>
+                ) : (
+                  <div className="h-[220px] flex items-center justify-center">
+                    <p className="text-foreground-secondary">No wait sequence data available</p>
+                  </div>
+                )}
+              </Card>
 
-            {/* Easter Eggs in Conversations */}
-            <Card>
-              <h3 className="font-semibold text-foreground mb-4">Easter Eggs in Conversations</h3>
-              <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                <div className="h-[280px]">
+              {/* Easter Eggs in Conversations */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-2">Easter Eggs in Conversations</h3>
+                <p className="text-sm text-foreground-secondary mb-4">
+                  {animationStats?.sessionsWithEasterEggs || 0} of {animationStats?.totalSessions || 0} sessions ({animationStats?.totalSessions ? ((animationStats.sessionsWithEasterEggs / animationStats.totalSessions) * 100).toFixed(1) : 0}%)
+                </p>
+                <div className="h-[220px]">
                   {(() => {
                     const sessionsWithEasterEggs = animationStats?.sessionsWithEasterEggs || 0;
                     const totalSessions = animationStats?.totalSessions || 0;
@@ -1042,11 +1251,11 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                             data={easterEggData}
                             cx="50%"
                             cy="50%"
-                            innerRadius={60}
-                            outerRadius={100}
+                            innerRadius={50}
+                            outerRadius={80}
                             paddingAngle={2}
                             dataKey="value"
-                            label={({ name, percent }) => `${name}: ${((percent || 0) * 100).toFixed(0)}%`}
+                            label={({ name, percent }) => `${((percent || 0) * 100).toFixed(0)}%`}
                             labelLine={false}
                           >
                             {easterEggData.map((entry, index) => (
@@ -1054,6 +1263,9 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                             ))}
                           </Pie>
                           <Tooltip {...tooltipStyle} />
+                          <Legend
+                            formatter={(value) => <span style={{ color: 'var(--text-primary)' }}>{value}</span>}
+                          />
                         </PieChart>
                       </ResponsiveContainer>
                     ) : (
@@ -1063,25 +1275,8 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     );
                   })()}
                 </div>
-                <div className="flex flex-col justify-center space-y-4">
-                  <div className="p-4 bg-background-secondary rounded-lg">
-                    <p className="text-sm text-foreground-secondary mb-1">Sessions with Easter Eggs</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {animationStats?.sessionsWithEasterEggs || 0} of {animationStats?.totalSessions || 0}
-                    </p>
-                    <p className="text-sm font-medium" style={{ color: brandColor }}>
-                      {animationStats?.totalSessions ? ((animationStats.sessionsWithEasterEggs / animationStats.totalSessions) * 100).toFixed(1) : 0}% discovery rate
-                    </p>
-                  </div>
-                  <div className="p-4 bg-background-secondary rounded-lg">
-                    <p className="text-sm text-foreground-secondary mb-1">Avg Easter Eggs per Session</p>
-                    <p className="text-2xl font-bold text-foreground">
-                      {animationStats?.totalSessions ? (animationStats.easterEggsTriggered / animationStats.totalSessions).toFixed(2) : 0}
-                    </p>
-                  </div>
-                </div>
-              </div>
-            </Card>
+              </Card>
+            </div>
 
             {/* Animation Performance Summary */}
             <Card>

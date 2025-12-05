@@ -36,7 +36,7 @@ import {
 import { getClientById, getBotById } from '@/lib/dataService';
 import { getAnalyticsForClient } from '@/lib/db/analytics';
 import { getClientBrandColor } from '@/lib/brandColors';
-import { getChartColors, GREY } from '@/lib/chartColors';
+import { getChartColors, GREY, GREYS } from '@/lib/chartColors';
 import { tooltipStyle } from '@/lib/chartStyles';
 import type { Client, Bot, ChatSessionWithAnalysis } from '@/types';
 import type { OverviewMetrics, SentimentBreakdown, CategoryBreakdown, LanguageBreakdown, CountryBreakdown, TimeSeriesDataPoint, QuestionAnalytics, DeviceBreakdown, SentimentTimeSeriesDataPoint, HourlyBreakdown, AnimationStats } from '@/lib/db/analytics';
@@ -649,11 +649,46 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <Card className="p-4">
                 <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                   <Clock size={16} />
-                  <span className="text-sm">Avg Duration</span>
+                  <span className="text-sm">Avg Session Time</span>
                 </div>
                 <p className="text-2xl font-bold text-foreground">
                   {formatDuration(overview?.averageSessionDurationSeconds || 0)}
                 </p>
+                <p className="text-xs text-foreground-tertiary mt-1">widget open duration</p>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                  <MessageSquare size={16} />
+                  <span className="text-sm">Avg Engagement</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">
+                  {(() => {
+                    const engagementTimes = sessions
+                      .filter(s => s.first_message_at && s.last_message_at)
+                      .map(s => {
+                        const first = new Date(s.first_message_at!).getTime();
+                        const last = new Date(s.last_message_at!).getTime();
+                        return (last - first) / 1000;
+                      });
+                    const avg = engagementTimes.length > 0
+                      ? engagementTimes.reduce((a, b) => a + b, 0) / engagementTimes.length
+                      : 0;
+                    return formatDuration(avg);
+                  })()}
+                </p>
+                <p className="text-xs text-foreground-tertiary mt-1">first to last message</p>
+              </Card>
+
+              <Card className="p-4">
+                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
+                  <ThumbsUp size={16} />
+                  <span className="text-sm">Positive Rate</span>
+                </div>
+                <p className="text-2xl font-bold text-foreground">
+                  {sentiment ? formatPercent((sentiment.positive / (sentiment.positive + sentiment.neutral + sentiment.negative)) * 100) : '0%'}
+                </p>
+                <p className="text-xs text-foreground-tertiary mt-1">{sentiment?.positive || 0} positive sessions</p>
               </Card>
 
               <Card className="p-4">
@@ -662,22 +697,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                   <span className="text-sm">Escalation Rate</span>
                 </div>
                 <p className="text-2xl font-bold text-foreground">{formatPercent(overview?.escalationRate || 0)}</p>
-              </Card>
-
-              <Card className="p-4">
-                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
-                  <ThumbsUp size={16} />
-                  <span className="text-sm">Positive</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{sentiment?.positive || 0}</p>
-              </Card>
-
-              <Card className="p-4">
-                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
-                  <ThumbsDown size={16} />
-                  <span className="text-sm">Negative</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{sentiment?.negative || 0}</p>
+                <p className="text-xs text-foreground-tertiary mt-1">to human support</p>
               </Card>
             </div>
 
@@ -737,26 +757,181 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </Card>
             </div>
 
-            {/* Peak Hours */}
+            {/* Peak Hours & Session Duration */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Peak Hours */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-4">Peak Hours</h3>
+                <div className="h-[200px]">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <BarChart data={hourlyBreakdown}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                      <XAxis
+                        dataKey="hour"
+                        tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
+                        tickFormatter={(value) => `${value}:00`}
+                      />
+                      <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                      <Tooltip
+                        {...tooltipStyle}
+                        labelFormatter={(value) => `${value}:00 - ${value}:59`}
+                      />
+                      <Bar dataKey="count" fill={brandColor} radius={[4, 4, 0, 0]} name="Sessions" />
+                    </BarChart>
+                  </ResponsiveContainer>
+                </div>
+              </Card>
+
+              {/* Session Duration Distribution */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-4">Session Duration</h3>
+                <div className="h-[200px]">
+                  {(() => {
+                    // Group sessions by duration buckets
+                    const buckets = {
+                      '< 1 min': 0,
+                      '1-3 min': 0,
+                      '3-5 min': 0,
+                      '5-10 min': 0,
+                      '10+ min': 0,
+                    };
+
+                    sessions.forEach(s => {
+                      const duration = s.session_duration_seconds || 0;
+                      if (duration < 60) buckets['< 1 min']++;
+                      else if (duration < 180) buckets['1-3 min']++;
+                      else if (duration < 300) buckets['3-5 min']++;
+                      else if (duration < 600) buckets['5-10 min']++;
+                      else buckets['10+ min']++;
+                    });
+
+                    const durationData = Object.entries(buckets).map(([range, count]) => ({
+                      range,
+                      count,
+                    }));
+
+                    return (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={durationData}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
+                          <XAxis
+                            dataKey="range"
+                            tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
+                          />
+                          <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                          <Tooltip
+                            {...tooltipStyle}
+                            formatter={(value) => [`${value} sessions`, 'Count']}
+                          />
+                          <Bar dataKey="count" fill={brandColor} radius={[4, 4, 0, 0]} name="Sessions" />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    );
+                  })()}
+                </div>
+              </Card>
+            </div>
+
+            {/* Session Breakdown - Unified Card */}
             <Card>
-              <h3 className="font-semibold text-foreground mb-4">Peak Hours</h3>
-              <div className="h-[200px]">
-                <ResponsiveContainer width="100%" height="100%">
-                  <BarChart data={hourlyBreakdown}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
-                    <XAxis
-                      dataKey="hour"
-                      tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
-                      tickFormatter={(value) => `${value}:00`}
-                    />
-                    <YAxis tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
-                    <Tooltip
-                      {...tooltipStyle}
-                      labelFormatter={(value) => `${value}:00 - ${value}:59`}
-                    />
-                    <Bar dataKey="count" fill={brandColor} radius={[4, 4, 0, 0]} name="Sessions" />
-                  </BarChart>
-                </ResponsiveContainer>
+              <h3 className="font-semibold text-foreground mb-4">Session Breakdown</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 md:gap-8">
+                {/* Outcomes */}
+                <div className="pb-4 md:pb-0 border-b md:border-b-0 md:border-r border-border md:pr-6">
+                  <p className="text-sm font-medium text-foreground-secondary mb-3">Outcomes</p>
+                  <div className="space-y-2">
+                    {(() => {
+                      const total = sessions.length || 1;
+                      const outcomes = [
+                        { name: 'Completed', count: sessions.filter(s => s.analysis?.session_outcome === 'completed').length },
+                        { name: 'Abandoned', count: sessions.filter(s => s.analysis?.session_outcome === 'abandoned').length },
+                        { name: 'Timeout', count: sessions.filter(s => s.analysis?.session_outcome === 'timeout').length },
+                        { name: 'Error', count: sessions.filter(s => s.analysis?.session_outcome === 'error').length },
+                      ].filter(o => o.count > 0);
+
+                      const barColors = [brandColor, GREYS[4], GREYS[5], GREYS[6]];
+                      return outcomes.map((outcome, i) => (
+                        <div key={i}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-foreground">{outcome.name}</span>
+                            <span className="text-foreground-secondary">{formatPercent((outcome.count / total) * 100)}</span>
+                          </div>
+                          <div className="h-2 bg-background-tertiary rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{ width: `${(outcome.count / total) * 100}%`, backgroundColor: barColors[i % barColors.length] }}
+                            />
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+
+                {/* Engagement */}
+                <div className="pb-4 md:pb-0 border-b md:border-b-0 md:border-r border-border md:pr-6">
+                  <p className="text-sm font-medium text-foreground-secondary mb-3">Engagement</p>
+                  <div className="space-y-2">
+                    {(() => {
+                      const total = sessions.length || 1;
+                      const levels = [
+                        { name: 'High', count: sessions.filter(s => s.analysis?.engagement_level === 'high').length },
+                        { name: 'Medium', count: sessions.filter(s => s.analysis?.engagement_level === 'medium').length },
+                        { name: 'Low', count: sessions.filter(s => s.analysis?.engagement_level === 'low').length },
+                      ];
+
+                      const barColors = [brandColor, GREYS[4], GREYS[5]];
+                      return levels.map((level, i) => (
+                        <div key={i}>
+                          <div className="flex justify-between text-sm mb-1">
+                            <span className="text-foreground">{level.name}</span>
+                            <span className="text-foreground-secondary">{formatPercent((level.count / total) * 100)}</span>
+                          </div>
+                          <div className="h-2 bg-background-tertiary rounded-full overflow-hidden">
+                            <div
+                              className="h-full rounded-full transition-all"
+                              style={{ width: `${(level.count / total) * 100}%`, backgroundColor: barColors[i % barColors.length] }}
+                            />
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
+                </div>
+
+                {/* Conversation Types */}
+                <div>
+                  <p className="text-sm font-medium text-foreground-secondary mb-3">Conversation Types</p>
+                  <div className="space-y-2">
+                    {(() => {
+                      const total = sessions.length || 1;
+                      const typeCounts: Record<string, number> = {};
+                      sessions.forEach(s => {
+                        const type = s.analysis?.conversation_type;
+                        if (type) typeCounts[type] = (typeCounts[type] || 0) + 1;
+                      });
+
+                      const barColors = [brandColor, GREYS[4], GREYS[5], GREYS[6]];
+                      return Object.entries(typeCounts)
+                        .sort((a, b) => b[1] - a[1])
+                        .slice(0, 4)
+                        .map(([type, count], i) => (
+                          <div key={i}>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="text-foreground">{type.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}</span>
+                              <span className="text-foreground-secondary">{formatPercent((count / total) * 100)}</span>
+                            </div>
+                            <div className="h-2 bg-background-tertiary rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full transition-all"
+                                style={{ width: `${(count / total) * 100}%`, backgroundColor: barColors[i % barColors.length] }}
+                              />
+                            </div>
+                          </div>
+                        ));
+                    })()}
+                  </div>
+                </div>
               </div>
             </Card>
 
@@ -892,6 +1067,104 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                       <p>All questions answered!</p>
                     </div>
                   )}
+                </div>
+              </Card>
+            </div>
+
+            {/* Forwarded Resources - URLs and Emails */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Top Forwarded URLs */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-2">Top Forwarded URLs</h3>
+                <p className="text-sm text-foreground-tertiary mb-4">External resources the bot directs users to</p>
+                <div className="h-[200px]">
+                  {(() => {
+                    const urlCounts: Record<string, number> = {};
+                    sessions.forEach(s => {
+                      s.analysis?.url_links?.forEach(url => {
+                        try {
+                          const parsed = new URL(url);
+                          const shortUrl = parsed.hostname + parsed.pathname;
+                          urlCounts[shortUrl] = (urlCounts[shortUrl] || 0) + 1;
+                        } catch {
+                          urlCounts[url] = (urlCounts[url] || 0) + 1;
+                        }
+                      });
+                    });
+                    const urlData = Object.entries(urlCounts)
+                      .map(([url, count]) => ({ url, count }))
+                      .sort((a, b) => b.count - a.count)
+                      .slice(0, 5);
+
+                    return urlData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={urlData} layout="vertical">
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                          <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                          <YAxis
+                            type="category"
+                            dataKey="url"
+                            tick={{ fontSize: 10, fill: 'var(--text-secondary)' }}
+                            width={140}
+                            tickFormatter={(value) => value.length > 25 ? value.substring(0, 25) + '...' : value}
+                          />
+                          <Tooltip
+                            {...tooltipStyle}
+                            formatter={(value) => [`${value} times`, 'Forwarded']}
+                          />
+                          <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <p className="text-foreground-secondary">No URL forwards yet</p>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </Card>
+
+              {/* Top Forwarded Emails */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-2">Top Forwarded Emails</h3>
+                <p className="text-sm text-foreground-tertiary mb-4">Contact emails shared with users</p>
+                <div className="h-[200px]">
+                  {(() => {
+                    const emailCounts: Record<string, number> = {};
+                    sessions.forEach(s => {
+                      s.analysis?.email_links?.forEach(email => {
+                        emailCounts[email] = (emailCounts[email] || 0) + 1;
+                      });
+                    });
+                    const emailData = Object.entries(emailCounts)
+                      .map(([email, count]) => ({ email, count }))
+                      .sort((a, b) => b.count - a.count)
+                      .slice(0, 5);
+
+                    return emailData.length > 0 ? (
+                      <ResponsiveContainer width="100%" height="100%">
+                        <BarChart data={emailData} layout="vertical">
+                          <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" horizontal={false} />
+                          <XAxis type="number" tick={{ fontSize: 12, fill: 'var(--text-secondary)' }} />
+                          <YAxis
+                            type="category"
+                            dataKey="email"
+                            tick={{ fontSize: 11, fill: 'var(--text-secondary)' }}
+                            width={140}
+                          />
+                          <Tooltip
+                            {...tooltipStyle}
+                            formatter={(value) => [`${value} times`, 'Forwarded']}
+                          />
+                          <Bar dataKey="count" fill={brandColor} radius={[0, 4, 4, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-full flex items-center justify-center">
+                        <p className="text-foreground-secondary">No email forwards yet</p>
+                      </div>
+                    );
+                  })()}
                 </div>
               </Card>
             </div>

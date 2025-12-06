@@ -5,16 +5,14 @@ import { clients } from '@/lib/data';
 import { getAnalyticsForClient } from '@/lib/db/analytics';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { getContrastTextColor } from '@/lib/chartColors';
-import type { ChatSessionWithAnalysis, Workspace, Bot } from '@/types';
+import type { ChatSessionWithAnalysis, Workspace } from '@/types';
 import {
   Search,
   Download,
   MessageSquare,
-  User,
   Clock,
   CheckCircle,
   AlertCircle,
-  Eye,
   ThumbsUp,
   ThumbsDown,
   Minus,
@@ -27,10 +25,6 @@ import {
   Smartphone,
   Monitor,
   Tablet,
-  ExternalLink,
-  Mail,
-  ChevronLeft,
-  ChevronRight,
 } from 'lucide-react';
 import {
   Page,
@@ -40,19 +34,24 @@ import {
   Input,
   Select,
   Card,
-  Table,
-  TableHeader,
-  TableBody,
-  TableRow,
-  TableHead,
-  TableCell,
   EmptyState,
   Spinner,
   Modal,
 } from '@/components/ui';
-import { MobileTable, MobileCard, MobileBadge } from '@/components/analytics/MobileTable';
+import { KpiCard, KpiGrid, TabNavigation } from '@/components/analytics';
 
-// Tab configuration - matching bot analytics exactly
+// Tab Components
+import {
+  OverviewTab,
+  ConversationsTab,
+  QuestionsTab,
+  AudienceTab,
+  AnimationsTab,
+  CostsTab,
+  CustomTab,
+} from './components';
+
+// Tab configuration
 const TABS = [
   { id: 'overview', label: 'Overview', icon: BarChart3 },
   { id: 'conversations', label: 'Conversations', icon: MessageSquare },
@@ -64,7 +63,7 @@ const TABS = [
 ];
 
 export default function ConversationHistoryPage({ params }: { params: { clientId: string } }) {
-  const client = clients.find(c => c.id === params.clientId);
+  const client = clients.find((c) => c.id === params.clientId);
 
   // Tab state
   const [activeTab, setActiveTab] = useState('overview');
@@ -92,9 +91,12 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   const ITEMS_PER_PAGE = 10;
 
   // Get bot info by mascot_id
-  const getBotInfo = useCallback((mascotId: string): Bot | undefined => {
-    return client?.bots.find(b => b.id === mascotId);
-  }, [client?.bots]);
+  const getBotInfo = useCallback(
+    (mascotId: string) => {
+      return client?.bots.find((b) => b.id === mascotId);
+    },
+    [client?.bots]
+  );
 
   // Get date range filter
   const getDateRangeFilter = useCallback(() => {
@@ -130,10 +132,9 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
       try {
         const analytics = getAnalyticsForClient(params.clientId);
         const dateFilter = getDateRangeFilter();
-        const sessionsData = await analytics.chatSessions.getWithAnalysisByClientId(
-          params.clientId,
-          { dateRange: dateFilter }
-        );
+        const sessionsData = await analytics.chatSessions.getWithAnalysisByClientId(params.clientId, {
+          dateRange: dateFilter,
+        });
         setSessions(sessionsData);
       } catch (error) {
         console.error('Error loading sessions:', error);
@@ -162,7 +163,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     loadWorkspaces();
   }, [params.clientId, client]);
 
-  // Open transcript modal
+  // Modal handlers
   const handleOpenTranscript = useCallback((session: ChatSessionWithAnalysis) => {
     scrollPositionRef.current = window.scrollY;
     document.body.style.position = 'fixed';
@@ -171,7 +172,6 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     setSelectedSession(session);
   }, []);
 
-  // Close transcript modal
   const handleCloseTranscript = useCallback(() => {
     const scrollPos = scrollPositionRef.current;
     document.body.style.position = '';
@@ -181,10 +181,18 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     setSelectedSession(null);
   }, []);
 
+  const handleOpenQuestions = useCallback(
+    (session: ChatSessionWithAnalysis, type: 'asked' | 'unanswered') => {
+      setQuestionsSession(session);
+      setQuestionsType(type);
+    },
+    []
+  );
+
   // Filter sessions
   const filteredSessions = useMemo(() => {
     if (!client) return [];
-    return sessions.filter(session => {
+    return sessions.filter((session) => {
       if (selectedBot !== 'all' && session.mascot_id !== selectedBot) return false;
 
       if (selectedStatus !== 'all') {
@@ -203,7 +211,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
       if (searchTerm) {
         const searchLower = searchTerm.toLowerCase();
-        const transcriptText = session.full_transcript?.map(m => m.message).join(' ') || '';
+        const transcriptText = session.full_transcript?.map((m) => m.message).join(' ') || '';
         const summary = session.analysis?.summary || '';
         const category = session.analysis?.category || '';
 
@@ -225,25 +233,26 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     setCurrentPage(1);
   }, [selectedBot, selectedStatus, selectedWorkspace, searchTerm, activeTab]);
 
-  // Pagination calculations
+  // Pagination
   const totalPages = Math.ceil(filteredSessions.length / ITEMS_PER_PAGE);
   const paginatedSessions = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
     return filteredSessions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredSessions, currentPage, ITEMS_PER_PAGE]);
+  }, [filteredSessions, currentPage]);
 
   // Calculate stats
   const stats = useMemo(() => {
     const total = filteredSessions.length;
-    const resolved = filteredSessions.filter(s => s.analysis?.resolution_status === 'resolved').length;
-    const avgDuration = total > 0
-      ? filteredSessions.reduce((sum, s) => sum + (s.session_duration_seconds || 0), 0) / total / 60
-      : 0;
+    const resolved = filteredSessions.filter((s) => s.analysis?.resolution_status === 'resolved').length;
+    const avgDuration =
+      total > 0
+        ? filteredSessions.reduce((sum, s) => sum + (s.session_duration_seconds || 0), 0) / total / 60
+        : 0;
 
     const sentimentCounts = {
-      positive: filteredSessions.filter(s => s.analysis?.sentiment === 'positive').length,
-      neutral: filteredSessions.filter(s => s.analysis?.sentiment === 'neutral').length,
-      negative: filteredSessions.filter(s => s.analysis?.sentiment === 'negative').length,
+      positive: filteredSessions.filter((s) => s.analysis?.sentiment === 'positive').length,
+      neutral: filteredSessions.filter((s) => s.analysis?.sentiment === 'neutral').length,
+      negative: filteredSessions.filter((s) => s.analysis?.sentiment === 'negative').length,
     };
 
     return {
@@ -259,21 +268,6 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   const brandColor = useMemo(() => {
     return client ? getClientBrandColor(client.id) : '#6B7280';
   }, [client]);
-
-  // Early return for no client
-  if (!client) {
-    return (
-      <Page>
-        <PageContent>
-          <EmptyState
-            icon={<MessageSquare size={48} />}
-            title="Client not found"
-            message="The requested client could not be found."
-          />
-        </PageContent>
-      </Page>
-    );
-  }
 
   // Helper functions
   const formatTimestamp = (dateStr: string) => {
@@ -298,12 +292,6 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   const formatCost = (cost: number | null | undefined) => {
     if (!cost) return '-';
     return `€${cost.toFixed(4)}`;
-  };
-
-  const getLastMessage = (session: ChatSessionWithAnalysis) => {
-    const transcript = session.full_transcript;
-    if (!transcript || transcript.length === 0) return 'No messages';
-    return transcript[transcript.length - 1].message;
   };
 
   const getStatusIcon = (session: ChatSessionWithAnalysis) => {
@@ -354,7 +342,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   // Filter options
   const botOptions = [
     { value: 'all', label: 'All Bots' },
-    ...client.bots.map(bot => ({ value: bot.id, label: bot.name }))
+    ...(client?.bots.map((bot) => ({ value: bot.id, label: bot.name })) || []),
   ];
 
   const statusOptions = [
@@ -367,7 +355,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
   const workspaceOptions = [
     { value: 'all', label: 'All Workspaces' },
-    ...workspaces.map(w => ({ value: w.id, label: w.name }))
+    ...workspaces.map((w) => ({ value: w.id, label: w.name })),
   ];
 
   const dateRangeOptions = [
@@ -377,655 +365,40 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     { value: '90days', label: 'Last 90 days' },
   ];
 
-  // Render table headers based on active tab
-  const renderTableHeaders = () => {
-    switch (activeTab) {
-      case 'overview':
-        return (
-          <>
-            <TableHead>Session</TableHead>
-            <TableHead>Bot</TableHead>
-            <TableHead>Messages</TableHead>
-            <TableHead>Duration</TableHead>
-            <TableHead>Status</TableHead>
-            <TableHead>Sentiment</TableHead>
-            <TableHead>Date</TableHead>
-            <TableHead>Transcript</TableHead>
-          </>
-        );
-      case 'conversations':
-        return (
-          <>
-            <TableHead>Session</TableHead>
-            <TableHead>Bot</TableHead>
-            <TableHead>Category</TableHead>
-            <TableHead>Outcome</TableHead>
-            <TableHead>Engagement</TableHead>
-            <TableHead>Type</TableHead>
-            <TableHead>Transcript</TableHead>
-          </>
-        );
-      case 'questions':
-        return (
-          <>
-            <TableHead>Session</TableHead>
-            <TableHead>Bot</TableHead>
-            <TableHead>Questions</TableHead>
-            <TableHead>Gaps</TableHead>
-            <TableHead>URLs</TableHead>
-            <TableHead>Emails</TableHead>
-            <TableHead>Transcript</TableHead>
-          </>
-        );
-      case 'audience':
-        return (
-          <>
-            <TableHead>Session</TableHead>
-            <TableHead>Bot</TableHead>
-            <TableHead>Country</TableHead>
-            <TableHead>Language</TableHead>
-            <TableHead>Device</TableHead>
-            <TableHead>Browser</TableHead>
-            <TableHead>Transcript</TableHead>
-          </>
-        );
-      case 'animations':
-        return (
-          <>
-            <TableHead>Session</TableHead>
-            <TableHead>Bot</TableHead>
-            <TableHead>Easter Egg</TableHead>
-            <TableHead>User Type</TableHead>
-            <TableHead>GLB Load</TableHead>
-            <TableHead>Transcript</TableHead>
-          </>
-        );
-      case 'costs':
-        return (
-          <>
-            <TableHead>Session</TableHead>
-            <TableHead>Bot</TableHead>
-            <TableHead>Chat Tokens</TableHead>
-            <TableHead>Chat Cost</TableHead>
-            <TableHead>Analysis Cost</TableHead>
-            <TableHead>Total Cost</TableHead>
-            <TableHead>Transcript</TableHead>
-          </>
-        );
-      case 'custom':
-        return (
-          <>
-            <TableHead>Session</TableHead>
-            <TableHead>Bot</TableHead>
-            <TableHead>Custom Field 1</TableHead>
-            <TableHead>Custom Field 2</TableHead>
-            <TableHead>Transcript</TableHead>
-          </>
-        );
-      default:
-        return null;
-    }
+  // Early return for no client
+  if (!client) {
+    return (
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<MessageSquare size={48} />}
+            title="Client not found"
+            message="The requested client could not be found."
+          />
+        </PageContent>
+      </Page>
+    );
+  }
+
+  // Shared tab props
+  const baseTabProps = {
+    sessions: filteredSessions,
+    paginatedSessions,
+    brandColor,
+    getBotInfo,
+    onOpenTranscript: handleOpenTranscript,
+    formatTimestamp,
+    formatDuration,
+    formatCost,
+    currentPage,
+    totalPages,
+    totalItems: filteredSessions.length,
+    itemsPerPage: ITEMS_PER_PAGE,
+    onPageChange: setCurrentPage,
   };
 
-  // Render table row based on active tab
-  const renderTableRow = (session: ChatSessionWithAnalysis) => {
-    const bot = getBotInfo(session.mascot_id);
-
-    const sessionCell = (
-      <TableCell>
-        <div>
-          <p className="font-medium text-sm text-foreground">
-            {session.visitor_country || 'Unknown'}
-          </p>
-          <p className="text-xs text-foreground-tertiary">
-            {session.id.slice(0, 8)}...
-          </p>
-        </div>
-      </TableCell>
-    );
-
-    const botCell = (
-      <TableCell>
-        <div className="flex items-center gap-2">
-          {bot?.image ? (
-            <div
-              className="w-6 h-6 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: brandColor }}
-            >
-              <img
-                src={bot.image}
-                alt={bot.name}
-                className="w-5 h-5 rounded-full object-cover"
-              />
-            </div>
-          ) : null}
-          <p className="text-sm text-foreground">{bot?.name || 'Unknown'}</p>
-        </div>
-      </TableCell>
-    );
-
-    const actionsCell = (
-      <TableCell>
-        <button
-          onClick={() => handleOpenTranscript(session)}
-          className="flex items-center gap-1 text-sm text-info-600 dark:text-info-500 hover:text-info-700 dark:hover:text-info-400"
-        >
-          <Eye size={14} />
-          View
-        </button>
-      </TableCell>
-    );
-
-    switch (activeTab) {
-      case 'overview':
-        return (
-          <>
-            {sessionCell}
-            {botCell}
-            <TableCell>
-              <p className="text-sm text-foreground">{session.total_messages}</p>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-foreground">{formatDuration(session.session_duration_seconds)}</p>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-2">
-                {getStatusIcon(session)}
-                <span className="text-sm text-foreground">{getStatusLabel(session)}</span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-1">
-                {getSentimentIcon(session.analysis?.sentiment)}
-                <span className="text-sm text-foreground capitalize">
-                  {session.analysis?.sentiment || '-'}
-                </span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-foreground">{formatTimestamp(session.session_started_at)}</p>
-            </TableCell>
-            {actionsCell}
-          </>
-        );
-
-      case 'conversations':
-        return (
-          <>
-            {sessionCell}
-            {botCell}
-            <TableCell>
-              <p className="text-sm text-foreground">{session.analysis?.category || '-'}</p>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-foreground capitalize">{session.analysis?.session_outcome || '-'}</p>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-foreground capitalize">{session.analysis?.engagement_level || '-'}</p>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-foreground capitalize">{session.analysis?.conversation_type || '-'}</p>
-            </TableCell>
-            {actionsCell}
-          </>
-        );
-
-      case 'questions':
-        return (
-          <>
-            {sessionCell}
-            {botCell}
-            <TableCell>
-              {session.analysis?.questions && session.analysis.questions.length > 0 ? (
-                <button
-                  onClick={() => {
-                    setQuestionsSession(session);
-                    setQuestionsType('asked');
-                  }}
-                  className="text-sm text-info-600 dark:text-info-500 hover:underline text-left"
-                >
-                  {session.analysis.questions.length} question{session.analysis.questions.length !== 1 ? 's' : ''}
-                </button>
-              ) : (
-                <p className="text-sm text-foreground-tertiary">-</p>
-              )}
-            </TableCell>
-            <TableCell>
-              {session.analysis?.unanswered_questions && session.analysis.unanswered_questions.length > 0 ? (
-                <button
-                  onClick={() => {
-                    setQuestionsSession(session);
-                    setQuestionsType('unanswered');
-                  }}
-                  className="text-sm text-warning-600 dark:text-warning-500 hover:underline text-left"
-                >
-                  {session.analysis.unanswered_questions.length} gap{session.analysis.unanswered_questions.length !== 1 ? 's' : ''}
-                </button>
-              ) : (
-                <p className="text-sm text-foreground-tertiary">-</p>
-              )}
-            </TableCell>
-            <TableCell>
-              {session.analysis?.url_links && session.analysis.url_links.length > 0 ? (
-                <div className="space-y-1 max-w-[200px]">
-                  {session.analysis.url_links.slice(0, 2).map((url, i) => (
-                    <a
-                      key={i}
-                      href={url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="flex items-center gap-1 text-sm text-info-600 dark:text-info-500 hover:underline truncate"
-                    >
-                      <ExternalLink size={12} className="flex-shrink-0" />
-                      <span className="truncate">{url.replace(/^https?:\/\//, '')}</span>
-                    </a>
-                  ))}
-                  {session.analysis.url_links.length > 2 && (
-                    <p className="text-xs text-foreground-tertiary">+{session.analysis.url_links.length - 2} more</p>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-foreground-tertiary">-</p>
-              )}
-            </TableCell>
-            <TableCell>
-              {session.analysis?.email_links && session.analysis.email_links.length > 0 ? (
-                <div className="space-y-1 max-w-[200px]">
-                  {session.analysis.email_links.slice(0, 2).map((email, i) => (
-                    <a
-                      key={i}
-                      href={`mailto:${email}`}
-                      className="flex items-center gap-1 text-sm text-info-600 dark:text-info-500 hover:underline truncate"
-                    >
-                      <Mail size={12} className="flex-shrink-0" />
-                      <span className="truncate">{email}</span>
-                    </a>
-                  ))}
-                  {session.analysis.email_links.length > 2 && (
-                    <p className="text-xs text-foreground-tertiary">+{session.analysis.email_links.length - 2} more</p>
-                  )}
-                </div>
-              ) : (
-                <p className="text-sm text-foreground-tertiary">-</p>
-              )}
-            </TableCell>
-            {actionsCell}
-          </>
-        );
-
-      case 'audience':
-        return (
-          <>
-            {sessionCell}
-            {botCell}
-            <TableCell>
-              <p className="text-sm text-foreground">{session.visitor_country || '-'}</p>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-foreground">{session.analysis?.language || '-'}</p>
-            </TableCell>
-            <TableCell>
-              <div className="flex items-center gap-1">
-                {getDeviceIcon(session.device_type)}
-                <span className="text-sm text-foreground capitalize">{session.device_type || '-'}</span>
-              </div>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-foreground">{session.browser_name || '-'}</p>
-            </TableCell>
-            {actionsCell}
-          </>
-        );
-
-      case 'animations':
-        // Extract easter egg names from transcript
-        const easterEggNames = session.full_transcript
-          ?.filter(msg => msg.easter && msg.easter.trim() !== '')
-          .map(msg => msg.easter as string) || [];
-        const uniqueEasterEggs = [...new Set(easterEggNames)];
-        const easterEggCount = session.easter_eggs_triggered || 0;
-
-        return (
-          <>
-            {sessionCell}
-            {botCell}
-            <TableCell>
-              {uniqueEasterEggs.length > 0 ? (
-                <p className="text-sm text-foreground">{uniqueEasterEggs.join(', ')}</p>
-              ) : easterEggCount > 0 ? (
-                <p className="text-sm text-foreground">{easterEggCount} triggered</p>
-              ) : (
-                <p className="text-sm text-foreground-tertiary">-</p>
-              )}
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-foreground">
-                {session.glb_source === 'cdn_fetch' ? 'New visitor' : session.glb_source === 'memory_cache' ? 'Returning' : '-'}
-              </p>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-foreground">
-                {session.glb_source ? (
-                  session.glb_transfer_size ? `${(session.glb_transfer_size / 1024).toFixed(1)} KB` : session.glb_source
-                ) : '-'}
-              </p>
-            </TableCell>
-            {actionsCell}
-          </>
-        );
-
-      case 'costs':
-        const analysisCost = session.analysis?.analytics_total_cost_eur || 0;
-        const chatCost = session.total_cost_eur || 0;
-        const totalCost = chatCost + analysisCost;
-        return (
-          <>
-            {sessionCell}
-            {botCell}
-            <TableCell>
-              <p className="text-sm text-foreground">{session.total_tokens?.toLocaleString() || '-'}</p>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-foreground">{formatCost(chatCost)}</p>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-foreground">{formatCost(analysisCost)}</p>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm font-medium text-foreground">{formatCost(totalCost)}</p>
-            </TableCell>
-            {actionsCell}
-          </>
-        );
-
-      case 'custom':
-        return (
-          <>
-            {sessionCell}
-            {botCell}
-            <TableCell>
-              <p className="text-sm text-foreground-tertiary">-</p>
-            </TableCell>
-            <TableCell>
-              <p className="text-sm text-foreground-tertiary">-</p>
-            </TableCell>
-            {actionsCell}
-          </>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  // Render mobile card based on active tab
-  const renderMobileCard = (session: ChatSessionWithAnalysis) => {
-    const bot = getBotInfo(session.mascot_id);
-
-    // Common card header for all tabs
-    const cardHeader = (
-      <div className="flex justify-between items-start mb-3">
-        <div className="flex items-center gap-2">
-          {bot?.image && (
-            <div
-              className="w-8 h-8 rounded-full flex items-center justify-center"
-              style={{ backgroundColor: brandColor }}
-            >
-              <img src={bot.image} alt={bot.name} className="w-7 h-7 rounded-full object-cover" />
-            </div>
-          )}
-          <div>
-            <p className="font-medium text-sm text-foreground">{bot?.name || 'Unknown'}</p>
-            <p className="text-xs text-foreground-tertiary">{session.visitor_country || 'Unknown'}</p>
-          </div>
-        </div>
-        <button
-          onClick={(e) => {
-            e.stopPropagation();
-            handleOpenTranscript(session);
-          }}
-          className="flex items-center gap-1 text-sm px-2 py-1 rounded-lg hover:bg-background-tertiary"
-          style={{ color: brandColor }}
-        >
-          <Eye size={14} />
-          View
-        </button>
-      </div>
-    );
-
-    switch (activeTab) {
-      case 'overview':
-        return (
-          <MobileCard>
-            {cardHeader}
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div>
-                <p className="text-xs text-foreground-tertiary">Messages</p>
-                <p className="text-sm font-medium text-foreground">{session.total_messages}</p>
-              </div>
-              <div>
-                <p className="text-xs text-foreground-tertiary">Duration</p>
-                <p className="text-sm font-medium text-foreground">{formatDuration(session.session_duration_seconds)}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <MobileBadge variant={
-                session.analysis?.resolution_status === 'resolved' ? 'success' :
-                session.analysis?.resolution_status === 'partial' ? 'warning' :
-                session.analysis?.escalated ? 'error' : 'default'
-              }>
-                {getStatusIcon(session)}
-                <span className="ml-1">{getStatusLabel(session)}</span>
-              </MobileBadge>
-              <MobileBadge variant={
-                session.analysis?.sentiment === 'positive' ? 'success' :
-                session.analysis?.sentiment === 'negative' ? 'error' : 'default'
-              }>
-                {getSentimentIcon(session.analysis?.sentiment)}
-                <span className="ml-1 capitalize">{session.analysis?.sentiment || 'Unknown'}</span>
-              </MobileBadge>
-              <span className="text-xs text-foreground-tertiary ml-auto">{formatTimestamp(session.session_started_at)}</span>
-            </div>
-          </MobileCard>
-        );
-
-      case 'conversations':
-        return (
-          <MobileCard>
-            {cardHeader}
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div>
-                <p className="text-xs text-foreground-tertiary">Category</p>
-                <p className="text-sm font-medium text-foreground">{session.analysis?.category || '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-foreground-tertiary">Type</p>
-                <p className="text-sm font-medium text-foreground capitalize">{session.analysis?.conversation_type || '-'}</p>
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap">
-              <MobileBadge variant={
-                session.analysis?.session_outcome === 'completed' ? 'success' :
-                session.analysis?.session_outcome === 'abandoned' ? 'warning' : 'default'
-              }>
-                <span className="capitalize">{session.analysis?.session_outcome || '-'}</span>
-              </MobileBadge>
-              <MobileBadge variant={
-                session.analysis?.engagement_level === 'high' ? 'success' :
-                session.analysis?.engagement_level === 'low' ? 'error' : 'default'
-              }>
-                <span className="capitalize">{session.analysis?.engagement_level || '-'} engagement</span>
-              </MobileBadge>
-            </div>
-          </MobileCard>
-        );
-
-      case 'questions':
-        return (
-          <MobileCard>
-            {cardHeader}
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div>
-                <p className="text-xs text-foreground-tertiary">Questions</p>
-                {session.analysis?.questions?.length ? (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setQuestionsSession(session);
-                      setQuestionsType('asked');
-                    }}
-                    className="text-sm font-medium text-info-600 dark:text-info-500"
-                  >
-                    {session.analysis.questions.length} question{session.analysis.questions.length !== 1 ? 's' : ''}
-                  </button>
-                ) : (
-                  <p className="text-sm text-foreground-tertiary">-</p>
-                )}
-              </div>
-              <div>
-                <p className="text-xs text-foreground-tertiary">Gaps</p>
-                {session.analysis?.unanswered_questions?.length ? (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setQuestionsSession(session);
-                      setQuestionsType('unanswered');
-                    }}
-                    className="text-sm font-medium text-warning-600 dark:text-warning-500"
-                  >
-                    {session.analysis.unanswered_questions.length} gap{session.analysis.unanswered_questions.length !== 1 ? 's' : ''}
-                  </button>
-                ) : (
-                  <p className="text-sm text-foreground-tertiary">-</p>
-                )}
-              </div>
-            </div>
-            <div className="flex items-center gap-2 flex-wrap text-xs">
-              {session.analysis?.url_links?.length ? (
-                <span className="flex items-center gap-1 text-info-600 dark:text-info-500">
-                  <ExternalLink size={12} /> {session.analysis.url_links.length} URL{session.analysis.url_links.length !== 1 ? 's' : ''}
-                </span>
-              ) : null}
-              {session.analysis?.email_links?.length ? (
-                <span className="flex items-center gap-1 text-info-600 dark:text-info-500">
-                  <Mail size={12} /> {session.analysis.email_links.length} Email{session.analysis.email_links.length !== 1 ? 's' : ''}
-                </span>
-              ) : null}
-            </div>
-          </MobileCard>
-        );
-
-      case 'audience':
-        return (
-          <MobileCard>
-            {cardHeader}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-xs text-foreground-tertiary">Country</p>
-                <p className="text-sm font-medium text-foreground">{session.visitor_country || '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-foreground-tertiary">Language</p>
-                <p className="text-sm font-medium text-foreground">{session.analysis?.language || '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-foreground-tertiary">Device</p>
-                <div className="flex items-center gap-1">
-                  {getDeviceIcon(session.device_type)}
-                  <span className="text-sm font-medium text-foreground capitalize">{session.device_type || '-'}</span>
-                </div>
-              </div>
-              <div>
-                <p className="text-xs text-foreground-tertiary">Browser</p>
-                <p className="text-sm font-medium text-foreground">{session.browser_name || '-'}</p>
-              </div>
-            </div>
-          </MobileCard>
-        );
-
-      case 'animations': {
-        const easterEggNames = session.full_transcript
-          ?.filter(msg => msg.easter && msg.easter.trim() !== '')
-          .map(msg => msg.easter as string) || [];
-        const uniqueEasterEggs = [...new Set(easterEggNames)];
-        const easterEggCount = session.easter_eggs_triggered || 0;
-
-        return (
-          <MobileCard>
-            {cardHeader}
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <p className="text-xs text-foreground-tertiary">Easter Eggs</p>
-                <p className="text-sm font-medium text-foreground">
-                  {uniqueEasterEggs.length > 0 ? uniqueEasterEggs.join(', ') :
-                   easterEggCount > 0 ? `${easterEggCount} triggered` : '-'}
-                </p>
-              </div>
-              <div>
-                <p className="text-xs text-foreground-tertiary">User Type</p>
-                <p className="text-sm font-medium text-foreground">
-                  {session.glb_source === 'cdn_fetch' ? 'New visitor' :
-                   session.glb_source === 'memory_cache' ? 'Returning' : '-'}
-                </p>
-              </div>
-              <div className="col-span-2">
-                <p className="text-xs text-foreground-tertiary">GLB Load</p>
-                <p className="text-sm font-medium text-foreground">
-                  {session.glb_source ? (
-                    session.glb_transfer_size ? `${(session.glb_transfer_size / 1024).toFixed(1)} KB` : session.glb_source
-                  ) : '-'}
-                </p>
-              </div>
-            </div>
-          </MobileCard>
-        );
-      }
-
-      case 'costs': {
-        const analysisCost = session.analysis?.analytics_total_cost_eur || 0;
-        const chatCost = session.total_cost_eur || 0;
-        const totalCost = chatCost + analysisCost;
-
-        return (
-          <MobileCard>
-            {cardHeader}
-            <div className="grid grid-cols-2 gap-3 mb-3">
-              <div>
-                <p className="text-xs text-foreground-tertiary">Chat Tokens</p>
-                <p className="text-sm font-medium text-foreground">{session.total_tokens?.toLocaleString() || '-'}</p>
-              </div>
-              <div>
-                <p className="text-xs text-foreground-tertiary">Chat Cost</p>
-                <p className="text-sm font-medium text-foreground">{formatCost(chatCost)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-foreground-tertiary">Analysis Cost</p>
-                <p className="text-sm font-medium text-foreground">{formatCost(analysisCost)}</p>
-              </div>
-              <div>
-                <p className="text-xs text-foreground-tertiary">Total Cost</p>
-                <p className="text-sm font-bold" style={{ color: brandColor }}>{formatCost(totalCost)}</p>
-              </div>
-            </div>
-          </MobileCard>
-        );
-      }
-
-      case 'custom':
-        return (
-          <MobileCard>
-            {cardHeader}
-            <p className="text-sm text-foreground-tertiary text-center py-4">No custom fields configured</p>
-          </MobileCard>
-        );
-
-      default:
-        return null;
-    }
-  };
-
-  // Render table
-  const renderTable = () => {
+  // Render active tab content
+  const renderTabContent = () => {
     if (loading) {
       return (
         <Card className="flex items-center justify-center py-12">
@@ -1040,118 +413,46 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
         <EmptyState
           icon={<MessageSquare size={48} />}
           title="No conversations found"
-          message={sessions.length === 0 ? "No conversations yet for this time period" : "Try adjusting your search or filters"}
+          message={
+            sessions.length === 0
+              ? 'No conversations yet for this time period'
+              : 'Try adjusting your search or filters'
+          }
         />
       );
     }
 
-    return (
-      <>
-        {/* Desktop Table */}
-        <Card padding="none" className="overflow-hidden hidden lg:block">
-          <Table>
-            <TableHeader>
-              <TableRow>
-                {renderTableHeaders()}
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {paginatedSessions.map((session) => (
-                <TableRow key={session.id}>
-                  {renderTableRow(session)}
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-
-          <div className="px-6 py-4 flex items-center justify-between bg-background-secondary border-t border-border">
-            <p className="text-sm text-foreground-secondary">
-              Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredSessions.length)} of {filteredSessions.length}
-            </p>
-            {totalPages > 1 && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="p-1.5 rounded-lg hover:bg-background-hover disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft size={18} className="text-foreground-secondary" />
-                </button>
-                <div className="flex items-center gap-1">
-                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                    <button
-                      key={page}
-                      onClick={() => setCurrentPage(page)}
-                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                        currentPage === page
-                          ? 'text-white'
-                          : 'text-foreground-secondary hover:bg-background-hover'
-                      }`}
-                      style={currentPage === page ? { backgroundColor: brandColor } : {}}
-                    >
-                      {page}
-                    </button>
-                  ))}
-                </div>
-                <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="p-1.5 rounded-lg hover:bg-background-hover disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight size={18} className="text-foreground-secondary" />
-                </button>
-              </div>
-            )}
-          </div>
-        </Card>
-
-        {/* Mobile Cards */}
-        <div className="lg:hidden space-y-3">
-          {paginatedSessions.map((session) => (
-            <div key={session.id}>
-              {renderMobileCard(session)}
-            </div>
-          ))}
-
-          {/* Mobile Pagination */}
-          <div className="flex items-center justify-between py-4">
-            <p className="text-sm text-foreground-secondary">
-              {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredSessions.length)} of {filteredSessions.length}
-            </p>
-            {totalPages > 1 && (
-              <div className="flex items-center gap-2">
-                <button
-                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                  disabled={currentPage === 1}
-                  className="p-2 rounded-lg bg-background-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronLeft size={20} className="text-foreground-secondary" />
-                </button>
-                <span className="text-sm font-medium text-foreground px-2">
-                  {currentPage} / {totalPages}
-                </span>
-                <button
-                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                  disabled={currentPage === totalPages}
-                  className="p-2 rounded-lg bg-background-secondary disabled:opacity-50 disabled:cursor-not-allowed"
-                >
-                  <ChevronRight size={20} className="text-foreground-secondary" />
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
-      </>
-    );
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <OverviewTab
+            {...baseTabProps}
+            getStatusIcon={getStatusIcon}
+            getStatusLabel={getStatusLabel}
+            getSentimentIcon={getSentimentIcon}
+          />
+        );
+      case 'conversations':
+        return <ConversationsTab {...baseTabProps} />;
+      case 'questions':
+        return <QuestionsTab {...baseTabProps} onOpenQuestions={handleOpenQuestions} />;
+      case 'audience':
+        return <AudienceTab {...baseTabProps} getDeviceIcon={getDeviceIcon} />;
+      case 'animations':
+        return <AnimationsTab {...baseTabProps} />;
+      case 'costs':
+        return <CostsTab {...baseTabProps} />;
+      case 'custom':
+        return <CustomTab {...baseTabProps} />;
+      default:
+        return null;
+    }
   };
 
   return (
     <Page>
       <PageContent>
-        <PageHeader
-          title="Conversations"
-          description="View and manage all customer conversations"
-        />
+        <PageHeader title="Conversations" description="View and manage all customer conversations" />
 
         {/* Filters Bar */}
         <Card className="mb-6">
@@ -1194,9 +495,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
               onChange={(e) => setDateRange(e.target.value)}
             />
 
-            <Button icon={<Download size={18} />}>
-              Export
-            </Button>
+            <Button icon={<Download size={18} />}>Export</Button>
           </div>
 
           {/* Mobile: Stacked layout */}
@@ -1244,23 +543,25 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
           </div>
         </Card>
 
-        {/* Stats Overview */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
-          <Card padding="sm">
-            <p className="text-xs sm:text-sm text-foreground-secondary mb-1">Total Conversations</p>
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{stats.total}</p>
-          </Card>
-          <Card padding="sm">
-            <p className="text-xs sm:text-sm text-foreground-secondary mb-1">Resolved</p>
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{stats.resolved}</p>
-            <p className="text-xs text-foreground-tertiary mt-1 hidden sm:block">{stats.resolutionRate.toFixed(0)}% resolution rate</p>
-          </Card>
-          <Card padding="sm">
-            <p className="text-xs sm:text-sm text-foreground-secondary mb-1">Avg Duration</p>
-            <p className="text-xl sm:text-2xl font-bold text-foreground">{stats.avgDuration.toFixed(1)} min</p>
-          </Card>
-          <Card padding="sm">
-            <p className="text-xs sm:text-sm text-foreground-secondary mb-1">Sentiment</p>
+        {/* Stats Overview - Using shared KpiCard */}
+        <KpiGrid className="mb-6">
+          <KpiCard
+            icon={MessageSquare}
+            label="Total Conversations"
+            value={stats.total}
+          />
+          <KpiCard
+            icon={CheckCircle}
+            label="Resolved"
+            value={stats.resolved}
+            subtitle={`${stats.resolutionRate.toFixed(0)}% resolution rate`}
+          />
+          <KpiCard
+            icon={Clock}
+            label="Avg Duration"
+            value={`${stats.avgDuration.toFixed(1)} min`}
+          />
+          <KpiCard label="Sentiment">
             <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
               <span className="flex items-center gap-1 text-xs sm:text-sm">
                 <ThumbsUp size={14} className="text-success-600 dark:text-success-500" />
@@ -1275,87 +576,49 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
                 {stats.sentimentCounts.negative}
               </span>
             </div>
-          </Card>
-        </div>
+          </KpiCard>
+        </KpiGrid>
 
-        {/* Tabs - Mobile Dropdown */}
-        <div className="lg:hidden mb-6">
-          <select
-            value={activeTab}
-            onChange={(e) => setActiveTab(e.target.value)}
-            className="w-full p-3 rounded-lg border border-border bg-surface text-foreground font-medium"
-            style={{ borderColor: brandColor }}
-          >
-            {TABS.map((tab) => (
-              <option key={tab.id} value={tab.id}>{tab.label}</option>
-            ))}
-          </select>
-        </div>
+        {/* Tab Navigation - Using shared component */}
+        <TabNavigation
+          tabs={TABS}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          brandColor={brandColor}
+        />
 
-        {/* Tabs - Desktop Horizontal */}
-        <Card className="mb-6 p-0 hidden lg:block">
-          <div className="border-b border-border">
-            <nav className="flex space-x-8 px-6 overflow-x-auto" aria-label="Tabs">
-              {TABS.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                      activeTab === tab.id
-                        ? 'border-interactive text-foreground'
-                        : 'border-transparent text-foreground-tertiary hover:text-foreground-secondary hover:border-border'
-                    }`}
-                    style={activeTab === tab.id ? { borderBottomColor: brandColor } : {}}
-                  >
-                    <Icon size={16} />
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </Card>
-
-        {/* Table Content */}
-        {renderTable()}
+        {/* Tab Content */}
+        {renderTabContent()}
 
         {/* Transcript Modal */}
-        <Modal
-          isOpen={!!selectedSession}
-          onClose={handleCloseTranscript}
-          title="Transcript"
-          size="lg"
-        >
+        <Modal isOpen={!!selectedSession} onClose={handleCloseTranscript} title="Transcript" size="lg">
           {selectedSession && (
             <div className="max-h-[60vh] overflow-y-auto space-y-3">
               {selectedSession.full_transcript?.map((msg, i) => {
                 const userTextColor = getContrastTextColor(brandColor);
 
                 return (
-                  <div
-                    key={i}
-                    className={`flex ${msg.author === 'user' ? 'justify-end' : 'justify-start'}`}
-                  >
+                  <div key={i} className={`flex ${msg.author === 'user' ? 'justify-end' : 'justify-start'}`}>
                     <div
                       className={`max-w-[80%] rounded-2xl px-4 py-2.5 ${
                         msg.author === 'user'
                           ? 'rounded-br-md'
                           : 'rounded-bl-md bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100'
                       }`}
-                      style={msg.author === 'user' ? {
-                        backgroundColor: brandColor,
-                        color: userTextColor,
-                      } : undefined}
+                      style={
+                        msg.author === 'user'
+                          ? {
+                              backgroundColor: brandColor,
+                              color: userTextColor,
+                            }
+                          : undefined
+                      }
                     >
                       <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
                     </div>
                   </div>
                 );
-              }) || (
-                <p className="text-center text-foreground-tertiary">No transcript available</p>
-              )}
+              }) || <p className="text-center text-foreground-tertiary">No transcript available</p>}
             </div>
           )}
         </Modal>
@@ -1370,9 +633,10 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
           {questionsSession && (
             <div className="max-h-[60vh] overflow-y-auto">
               {(() => {
-                const questions = questionsType === 'asked'
-                  ? questionsSession.analysis?.questions
-                  : questionsSession.analysis?.unanswered_questions;
+                const questions =
+                  questionsType === 'asked'
+                    ? questionsSession.analysis?.questions
+                    : questionsSession.analysis?.unanswered_questions;
 
                 if (!questions || questions.length === 0) {
                   return (
@@ -1385,15 +649,12 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
                 return (
                   <ul className="space-y-3">
                     {questions.map((question, i) => (
-                      <li
-                        key={i}
-                        className="flex gap-3 p-3 bg-background-secondary rounded-lg"
-                      >
+                      <li key={i} className="flex gap-3 p-3 bg-background-secondary rounded-lg">
                         <span
                           className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
                           style={{
                             backgroundColor: questionsType === 'asked' ? brandColor : '#F59E0B',
-                            color: questionsType === 'asked' ? getContrastTextColor(brandColor) : '#000'
+                            color: questionsType === 'asked' ? getContrastTextColor(brandColor) : '#000',
                           }}
                         >
                           {i + 1}

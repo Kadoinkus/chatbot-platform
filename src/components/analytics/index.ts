@@ -9,3 +9,4 @@ export * from './utils';
 export * from './KpiCard';
 export * from './MobileTable';
 export * from './ChartContainer';
+export * from './TabNavigation';

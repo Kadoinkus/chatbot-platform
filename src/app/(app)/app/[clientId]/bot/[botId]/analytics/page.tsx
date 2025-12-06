@@ -61,6 +61,7 @@ import {
   formatAxisCurrency,
   type CustomTooltipContent,
 } from '@/components/analytics/charts';
+import { TabNavigation } from '@/components/analytics';
 
 // Tab components
 import {
@@ -793,48 +794,13 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           )}
         </Card>
 
-        {/* Tab Navigation */}
-        <Card className="mb-6 p-0">
-          {/* Mobile: Dropdown selector */}
-          <div className="lg:hidden p-4">
-            <select
-              value={activeTab}
-              onChange={(e) => setActiveTab(e.target.value)}
-              className="w-full p-3 rounded-lg border border-border bg-surface text-foreground font-medium"
-              style={{ borderColor: brandColor }}
-            >
-              {TABS.map((tab) => (
-                <option key={tab.id} value={tab.id}>
-                  {tab.label}
-                </option>
-              ))}
-            </select>
-          </div>
-
-          {/* Desktop: Horizontal tabs */}
-          <div className="hidden lg:block border-b border-border">
-            <nav className="flex space-x-8 px-6 overflow-x-auto" aria-label="Tabs">
-              {TABS.map((tab) => {
-                const Icon = tab.icon;
-                return (
-                  <button
-                    key={tab.id}
-                    onClick={() => setActiveTab(tab.id)}
-                    className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                      activeTab === tab.id
-                        ? 'border-interactive text-foreground'
-                        : 'border-transparent text-foreground-tertiary hover:text-foreground-secondary hover:border-border'
-                    }`}
-                    style={activeTab === tab.id ? { borderBottomColor: brandColor } : {}}
-                  >
-                    <Icon size={16} />
-                    {tab.label}
-                  </button>
-                );
-              })}
-            </nav>
-          </div>
-        </Card>
+        {/* Tab Navigation - Using shared component */}
+        <TabNavigation
+          tabs={TABS}
+          activeTab={activeTab}
+          onTabChange={setActiveTab}
+          brandColor={brandColor}
+        />
 
         {/* Tab Content */}
         {activeTab === 'overview' && (

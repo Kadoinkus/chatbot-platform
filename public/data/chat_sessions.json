@@ -94,7 +94,7 @@
       {"author": "user", "message": "Welke andere biologische fruit hebben jullie?", "timestamp": "2025-11-15T10:40:00+00:00"},
       {"author": "bot", "message": "We hebben een breed assortiment biologisch fruit: appels, peren, sinaasappels, citroenen, kiwi's, druiven en meer. Het aanbod kan per seizoen variëren.", "timestamp": "2025-11-15T10:40:30+00:00"},
       {"author": "user", "message": "Oké bedankt", "timestamp": "2025-11-15T10:44:30+00:00"},
-      {"author": "bot", "message": "Geen probleem! Als je nog vragen hebt, ben ik er voor je.", "timestamp": "2025-11-15T10:44:45+00:00"}
+      {"author": "bot", "message": "Geen probleem! Als je nog vragen hebt, ben ik er voor je.", "timestamp": "2025-11-15T10:44:45+00:00", "easter": "meditate"}
     ]
   },
   {
@@ -242,7 +242,7 @@
       {"author": "user", "message": "Is er ook een bakkerij afdeling?", "timestamp": "2025-11-16T12:25:00+00:00"},
       {"author": "bot", "message": "Ja! De meeste Jumbo winkels hebben een verse bakkerij met brood, broodjes, gebak en taarten. Dagelijks vers gebakken!", "timestamp": "2025-11-16T12:25:30+00:00"},
       {"author": "user", "message": "Top, bedankt voor de info!", "timestamp": "2025-11-16T12:27:45+00:00"},
-      {"author": "bot", "message": "Graag gedaan! Veel plezier met je bezoek aan Jumbo!", "timestamp": "2025-11-16T12:28:00+00:00"}
+      {"author": "bot", "message": "Graag gedaan! Veel plezier met je bezoek aan Jumbo!", "timestamp": "2025-11-16T12:28:00+00:00", "easter": "showLaptop"}
     ]
   },
   {
@@ -436,7 +436,7 @@
       {"author": "user", "message": "Hallo, sprechen Sie Deutsch?", "timestamp": "2025-11-17T15:01:00+00:00"},
       {"author": "bot", "message": "Ja, ich kann auch auf Deutsch antworten! Wie kann ich Ihnen heute helfen?", "timestamp": "2025-11-17T15:01:30+00:00"},
       {"author": "user", "message": "Ah super! Ich schaue nur mal vorbei.", "timestamp": "2025-11-17T15:07:30+00:00"},
-      {"author": "bot", "message": "Kein Problem! Wenn Sie Fragen haben, bin ich hier um zu helfen. Schönen Tag noch!", "timestamp": "2025-11-17T15:07:45+00:00"}
+      {"author": "bot", "message": "Kein Problem! Wenn Sie Fragen haben, bin ich hier um zu helfen. Schönen Tag noch!", "timestamp": "2025-11-17T15:07:45+00:00", "easter": "meditate"}
     ]
   },
   {
@@ -682,7 +682,7 @@
       {"author": "user", "message": "Hebben jullie ook vegetarische opties?", "timestamp": "2025-11-19T12:09:00+00:00"},
       {"author": "bot", "message": "Absoluut! We hebben veel vegetarische recepten: pasta pesto, groenteburgers, couscous salades en meer. Check https://jumbo.com/recipes/dinner voor ons volledige aanbod.", "timestamp": "2025-11-19T12:09:30+00:00"},
       {"author": "user", "message": "Super, daar ga ik even kijken!", "timestamp": "2025-11-19T12:14:30+00:00"},
-      {"author": "bot", "message": "Eet smakelijk vanavond! Als je hulp nodig hebt bij ingrediënten, laat het me weten.", "timestamp": "2025-11-19T12:14:45+00:00"}
+      {"author": "bot", "message": "Eet smakelijk vanavond! Als je hulp nodig hebt bij ingrediënten, laat het me weten.", "timestamp": "2025-11-19T12:14:45+00:00", "easter": "showLaptop"}
     ]
   },
   {
@@ -928,7 +928,7 @@
       {"author": "user", "message": "Verlopen de punten?", "timestamp": "2025-11-20T18:09:00+00:00"},
       {"author": "bot", "message": "Punten blijven 2 jaar geldig vanaf het moment van sparen. Zolang je regelmatig bij Jumbo winkelt, verlopen ze niet snel!", "timestamp": "2025-11-20T18:09:30+00:00"},
       {"author": "user", "message": "Super, dankjewel!", "timestamp": "2025-11-20T18:11:30+00:00"},
-      {"author": "bot", "message": "Graag gedaan! Veel plezier met sparen!", "timestamp": "2025-11-20T18:11:45+00:00"}
+      {"author": "bot", "message": "Graag gedaan! Veel plezier met sparen!", "timestamp": "2025-11-20T18:11:45+00:00", "easter": "meditate"}
     ]
   },
   {

@@ -10,7 +10,9 @@
       "Bash(dir:*)",
       "Bash(find:*)",
       "Bash(ls:*)",
-      "Bash(head:*)"
+      "Bash(head:*)",
+      "Bash(cat:*)",
+      "Bash(git -C \"/c/Users/31640/Documents/notsoAI-MVP/chatbot-platform\" log --oneline --all)"
     ],
     "deny": [],
     "ask": []

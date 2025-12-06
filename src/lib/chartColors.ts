@@ -41,6 +41,70 @@ export const GREY = {
 } as const;
 
 /**
+ * Semantic colors for status indicators and fixed-meaning chart segments.
+ * Use these for consistent meaning across the application.
+ */
+export const SEMANTIC_COLORS = {
+  success: '#10B981',    // Green - answered, resolved, positive
+  warning: '#F59E0B',    // Amber - unanswered, partial, pending
+  error: '#EF4444',      // Red - failed, negative, unresolved
+  info: '#3B82F6',       // Blue - informational
+  neutral: '#71717A',    // Grey - secondary data, inactive
+} as const;
+
+/**
+ * Calculate the relative luminance of a color
+ * @param hex - Hex color code (with or without #)
+ * @returns Luminance value between 0 (black) and 1 (white)
+ */
+export function getLuminance(hex: string): number {
+  const color = hex.replace('#', '');
+  const r = parseInt(color.substring(0, 2), 16) / 255;
+  const g = parseInt(color.substring(2, 4), 16) / 255;
+  const b = parseInt(color.substring(4, 6), 16) / 255;
+
+  // Convert to linear RGB
+  const linearR = r <= 0.03928 ? r / 12.92 : Math.pow((r + 0.055) / 1.055, 2.4);
+  const linearG = g <= 0.03928 ? g / 12.92 : Math.pow((g + 0.055) / 1.055, 2.4);
+  const linearB = b <= 0.03928 ? b / 12.92 : Math.pow((b + 0.055) / 1.055, 2.4);
+
+  // Calculate luminance using WCAG formula
+  return 0.2126 * linearR + 0.7152 * linearG + 0.0722 * linearB;
+}
+
+/**
+ * Get the best contrasting text color (black or white) for a given background
+ * @param backgroundColor - Hex color code of the background
+ * @returns '#ffffff' for dark backgrounds, '#000000' for light backgrounds
+ */
+export function getContrastTextColor(backgroundColor: string): string {
+  const luminance = getLuminance(backgroundColor);
+  // Use 0.5 as threshold (can be adjusted for preference)
+  return luminance > 0.5 ? '#000000' : '#ffffff';
+}
+
+/**
+ * Ensure a color has sufficient contrast for text on white/light backgrounds
+ * If the color is too light, darken it to ensure readability
+ * @param color - Hex color code to check
+ * @param minLuminanceRatio - Minimum luminance difference (0-1, default 0.4)
+ * @returns Original color if readable, darkened version if too light
+ */
+export function ensureReadableColor(color: string, minLuminanceRatio: number = 0.4): string {
+  const luminance = getLuminance(color);
+
+  // If color is too light (high luminance), darken it
+  if (luminance > (1 - minLuminanceRatio)) {
+    // Calculate how much to darken
+    const targetLuminance = 1 - minLuminanceRatio;
+    const darkenAmount = (luminance - targetLuminance) / luminance;
+    return darkenColor(color, Math.min(darkenAmount + 0.2, 0.5));
+  }
+
+  return color;
+}
+
+/**
  * Lighten a hex color by mixing with white
  * @param hex - Hex color code (with or without #)
  * @param percent - Amount to lighten (0-1, where 1 is pure white)

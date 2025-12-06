@@ -40,7 +40,7 @@ import {
 import { getClientById, getBotById } from '@/lib/dataService';
 import { getAnalyticsForClient } from '@/lib/db/analytics';
 import { getClientBrandColor } from '@/lib/brandColors';
-import { getChartColors, GREY, GREYS } from '@/lib/chartColors';
+import { getChartColors, GREY, GREYS, getContrastTextColor, ensureReadableColor } from '@/lib/chartColors';
 import { tooltipStyle } from '@/lib/chartStyles';
 import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
 import type { Client, Bot, ChatSessionWithAnalysis } from '@/types';
@@ -118,6 +118,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   // Ref to preserve scroll position when opening modal
   const scrollPositionRef = useRef<number>(0);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
+
 
   // Close export dropdown when clicking outside
   useEffect(() => {
@@ -408,6 +409,11 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   const brandColor = useMemo(() => {
     return client ? getClientBrandColor(client.id) : '#6B7280';
   }, [client]);
+
+  // Readable brand color for text on light backgrounds
+  const readableBrandColor = useMemo(() => {
+    return ensureReadableColor(brandColor);
+  }, [brandColor]);
 
   // Load data
   useEffect(() => {
@@ -1298,16 +1304,88 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </Card>
             </div>
 
+            {/* Charts Row */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Question Frequency Chart */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-4">Question Frequency</h3>
+                <HorizontalBarChart
+                  data={questions.slice(0, 8).map(q => ({
+                    name: q.question.length > 40 ? q.question.substring(0, 40) + '...' : q.question,
+                    value: q.frequency
+                  }))}
+                  dataKey="value"
+                  nameKey="name"
+                  height={280}
+                  brandColor={brandColor}
+                  yAxisWidth={180}
+                />
+              </Card>
+
+              {/* Answered vs Unanswered Donut */}
+              <Card>
+                <h3 className="font-semibold text-foreground mb-4">Answer Rate</h3>
+                <DonutChart
+                  data={[
+                    {
+                      name: 'Answered',
+                      value: questions.length - unansweredQuestions.length,
+                      color: brandColor
+                    },
+                    {
+                      name: 'Unanswered',
+                      value: unansweredQuestions.length,
+                      color: GREY[500]
+                    }
+                  ]}
+                  height={280}
+                  brandColor={brandColor}
+                  showLabels={true}
+                />
+              </Card>
+            </div>
+
             {/* Questions Lists */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
-                <h3 className="font-semibold text-foreground mb-4">Top Questions Asked</h3>
-                <div className="space-y-3">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: `${brandColor}15` }}
+                    >
+                      <HelpCircle size={20} style={{ color: brandColor }} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Top Questions Asked</h3>
+                      <p className="text-xs text-foreground-tertiary">
+                        {questions.length > 10 ? `Showing top 10 of ${questions.length}` : `${questions.length} questions`}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+                <div className="max-h-[260px] overflow-y-auto space-y-2 snap-y snap-mandatory overscroll-contain">
                   {questions.slice(0, 10).map((q, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-background-secondary rounded-lg">
-                      <span className="text-sm text-foreground flex-1 mr-4">{q.question}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm font-medium text-foreground-secondary">{q.frequency}x</span>
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-3 rounded-xl border border-border hover:shadow-sm transition-all snap-start snap-always h-[56px]"
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${brandColor}08`}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <div
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
+                        style={{ backgroundColor: `${brandColor}15`, color: readableBrandColor }}
+                      >
+                        {index + 1}
+                      </div>
+                      <span className="text-sm text-foreground flex-1 line-clamp-1">{q.question}</span>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span
+                          className="text-sm font-semibold px-2 py-0.5 rounded-md"
+                          style={{ backgroundColor: brandColor, color: getContrastTextColor(brandColor) }}
+                        >
+                          {q.frequency}×
+                        </span>
                         {q.answered ? (
                           <CheckCircle size={16} className="text-green-500" />
                         ) : (
@@ -1321,22 +1399,58 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
               <Card>
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-semibold text-foreground">Unanswered Questions</h3>
-                  <span className="px-2 py-1 bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-400 rounded-full text-xs font-medium">
+                  <div className="flex items-center gap-3">
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: `${brandColor}15` }}
+                    >
+                      <AlertTriangle size={20} style={{ color: brandColor }} />
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-foreground">Unanswered Questions</h3>
+                      <p className="text-xs text-foreground-tertiary">Knowledge gaps to address</p>
+                    </div>
+                  </div>
+                  <span
+                    className="px-3 py-1.5 rounded-full text-xs font-bold"
+                    style={{ backgroundColor: brandColor, color: getContrastTextColor(brandColor) }}
+                  >
                     {unansweredQuestions.length} gaps
                   </span>
                 </div>
-                <div className="space-y-3">
+                <div className="max-h-[260px] overflow-y-auto space-y-2 snap-y snap-mandatory overscroll-contain">
                   {unansweredQuestions.slice(0, 10).map((q, index) => (
-                    <div key={index} className="flex items-center justify-between p-3 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg border border-yellow-200 dark:border-yellow-900/30">
-                      <span className="text-sm text-foreground flex-1 mr-4">{q.question}</span>
-                      <span className="text-sm font-medium text-yellow-600 dark:text-yellow-400">{q.frequency}x</span>
+                    <div
+                      key={index}
+                      className="flex items-center gap-3 p-3 rounded-xl border border-border hover:shadow-sm transition-all snap-start snap-always h-[56px]"
+                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${brandColor}08`}
+                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                    >
+                      <div
+                        className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
+                        style={{ backgroundColor: `${brandColor}15`, color: readableBrandColor }}
+                      >
+                        {index + 1}
+                      </div>
+                      <span className="text-sm text-foreground flex-1 line-clamp-1">{q.question}</span>
+                      <span
+                        className="text-sm font-semibold px-2 py-0.5 rounded-md flex-shrink-0"
+                        style={{ backgroundColor: brandColor, color: getContrastTextColor(brandColor) }}
+                      >
+                        {q.frequency}×
+                      </span>
                     </div>
                   ))}
                   {unansweredQuestions.length === 0 && (
-                    <div className="text-center py-8 text-foreground-secondary">
-                      <CheckCircle size={32} className="mx-auto mb-2 text-green-500" />
-                      <p>All questions answered!</p>
+                    <div className="text-center py-8">
+                      <div
+                        className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3"
+                        style={{ backgroundColor: `${brandColor}15` }}
+                      >
+                        <CheckCircle size={32} style={{ color: brandColor }} />
+                      </div>
+                      <p className="font-medium text-foreground">All questions answered!</p>
+                      <p className="text-sm text-foreground-tertiary mt-1">Great job keeping up with user queries</p>
                     </div>
                   )}
                 </div>
@@ -1366,7 +1480,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     </div>
                   </div>
                 </div>
-                <div className="space-y-3">
+                <div className="max-h-[324px] overflow-y-auto space-y-3 snap-y snap-mandatory overscroll-contain">
                   {(() => {
                     const urlHandoffs: { category: string; destination: string; count: number }[] = [];
 
@@ -1399,8 +1513,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     return sorted.map((h, i) => (
                       <div
                         key={i}
-                        className="group p-4 rounded-xl border border-border hover:border-transparent hover:shadow-md transition-all"
-                        style={{ ['--hover-bg' as string]: `${brandColor}08` }}
+                        className="group p-4 rounded-xl border border-border hover:shadow-md transition-all snap-start snap-always h-[100px]"
                         onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${brandColor}08`}
                         onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
@@ -1408,20 +1521,19 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 mb-2">
                               <span
-                                className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium"
-                                style={{ backgroundColor: `${brandColor}15`, color: brandColor }}
+                                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold"
+                                style={{ backgroundColor: brandColor, color: getContrastTextColor(brandColor) }}
                               >
                                 {h.category}
                               </span>
-                              <span className="text-xs text-foreground-tertiary">→</span>
                             </div>
-                            <p className="text-sm font-medium text-foreground break-all leading-relaxed">
+                            <p className="text-sm font-medium text-foreground break-all leading-relaxed line-clamp-2">
                               {h.destination}
                             </p>
                           </div>
                           <div
                             className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-semibold text-sm"
-                            style={{ backgroundColor: `${brandColor}15`, color: brandColor }}
+                            style={{ backgroundColor: `${brandColor}15`, color: readableBrandColor }}
                           >
                             {h.count}
                           </div>
@@ -1436,8 +1548,11 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               <Card>
                 <div className="flex items-center justify-between mb-5">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-xl flex items-center justify-center bg-background-tertiary">
-                      <Mail size={20} className="text-foreground-secondary" />
+                    <div
+                      className="w-10 h-10 rounded-xl flex items-center justify-center"
+                      style={{ backgroundColor: `${brandColor}15` }}
+                    >
+                      <Mail size={20} style={{ color: brandColor }} />
                     </div>
                     <div>
                       <h3 className="font-semibold text-foreground">Email Handoffs</h3>
@@ -1450,7 +1565,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     </div>
                   </div>
                 </div>
-                <div className="space-y-3">
+                <div className="max-h-[324px] overflow-y-auto space-y-3 snap-y snap-mandatory overscroll-contain">
                   {(() => {
                     const emailHandoffs: { category: string; destination: string; count: number }[] = [];
 
@@ -1477,21 +1592,28 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     return sorted.map((h, i) => (
                       <div
                         key={i}
-                        className="group p-4 rounded-xl border border-border hover:bg-background-secondary hover:border-transparent hover:shadow-md transition-all"
+                        className="group p-4 rounded-xl border border-border hover:shadow-md transition-all snap-start snap-always h-[100px]"
+                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${brandColor}08`}
+                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
                       >
                         <div className="flex items-start justify-between gap-3">
                           <div className="min-w-0 flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <span className="inline-flex items-center px-2.5 py-1 rounded-full text-xs font-medium bg-background-tertiary text-foreground-secondary">
+                              <span
+                                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold"
+                                style={{ backgroundColor: brandColor, color: getContrastTextColor(brandColor) }}
+                              >
                                 {h.category}
                               </span>
-                              <span className="text-xs text-foreground-tertiary">→</span>
                             </div>
-                            <p className="text-sm font-medium text-foreground break-all leading-relaxed">
+                            <p className="text-sm font-medium text-foreground break-all leading-relaxed line-clamp-2">
                               {h.destination}
                             </p>
                           </div>
-                          <div className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-semibold text-sm bg-background-tertiary text-foreground-secondary">
+                          <div
+                            className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-semibold text-sm"
+                            style={{ backgroundColor: `${brandColor}15`, color: readableBrandColor }}
+                          >
                             {h.count}
                           </div>
                         </div>

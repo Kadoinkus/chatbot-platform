@@ -679,6 +679,16 @@ body {
     from { transform: translateY(-10px); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
   }
+
+  /* Scroll snap utilities for premium card list scrolling */
+  .scroll-snap-y {
+    scroll-snap-type: y mandatory;
+  }
+
+  .scroll-snap-start {
+    scroll-snap-align: start;
+    scroll-snap-stop: always; /* Forces stopping at each card - no skipping */
+  }
 }
 
 /* ============================================================================

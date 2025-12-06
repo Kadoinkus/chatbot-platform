@@ -114,6 +114,11 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   const [animationStats, setAnimationStats] = useState<AnimationStats | null>(null);
   const [selectedTranscript, setSelectedTranscript] = useState<ChatSessionWithAnalysis | null>(null);
   const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const [sessionIdsModal, setSessionIdsModal] = useState<{ open: boolean; title: string; sessionIds: string[] }>({
+    open: false,
+    title: '',
+    sessionIds: [],
+  });
 
   // Ref to preserve scroll position when opening modal
   const scrollPositionRef = useRef<number>(0);
@@ -158,6 +163,35 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     window.scrollTo(0, scrollPos);
 
     setSelectedTranscript(null);
+  }, []);
+
+  // Find session IDs for a question
+  const findSessionsForQuestion = useCallback((questionText: string) => {
+    return sessions
+      .filter(s => s.analysis?.questions?.some(q =>
+        q.toLowerCase().includes(questionText.toLowerCase()) ||
+        questionText.toLowerCase().includes(q.toLowerCase())
+      ))
+      .map(s => s.id);
+  }, [sessions]);
+
+  // Find session IDs for a URL handoff
+  const findSessionsForUrl = useCallback((url: string) => {
+    return sessions
+      .filter(s => s.analysis?.url_links?.some(u => u.includes(url) || url.includes(u)))
+      .map(s => s.id);
+  }, [sessions]);
+
+  // Find session IDs for an email handoff
+  const findSessionsForEmail = useCallback((email: string) => {
+    return sessions
+      .filter(s => s.analysis?.email_links?.includes(email))
+      .map(s => s.id);
+  }, [sessions]);
+
+  // Copy session ID to clipboard
+  const copyToClipboard = useCallback((text: string) => {
+    navigator.clipboard.writeText(text);
   }, []);
 
   // Get current date range for exports
@@ -1200,6 +1234,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-border">
+                      <th className="text-left py-3 px-4 text-foreground-secondary font-medium">Session ID</th>
                       <th className="text-left py-3 px-4 text-foreground-secondary font-medium">Date</th>
                       <th className="text-left py-3 px-4 text-foreground-secondary font-medium">Messages</th>
                       <th className="text-left py-3 px-4 text-foreground-secondary font-medium">Category</th>
@@ -1211,6 +1246,15 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                   <tbody>
                     {sessions.slice(0, 10).map((session) => (
                       <tr key={session.id} className="border-b border-border hover:bg-background-hover">
+                        <td className="py-3 px-4">
+                          <button
+                            onClick={() => copyToClipboard(session.id)}
+                            className="font-mono text-xs text-foreground-secondary hover:text-foreground transition-colors"
+                            title="Click to copy"
+                          >
+                            {session.id.slice(0, 8)}...
+                          </button>
+                        </td>
                         <td className="py-3 px-4 text-foreground">
                           {new Date(session.session_started_at).toLocaleDateString()}
                         </td>
@@ -1345,147 +1389,92 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </Card>
             </div>
 
-            {/* Questions Lists */}
+            {/* Questions Lists - Clean Simple Design with Scroll */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: `${brandColor}15` }}
-                    >
-                      <HelpCircle size={20} style={{ color: brandColor }} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Top Questions Asked</h3>
-                      <p className="text-xs text-foreground-tertiary">
-                        {questions.length > 10 ? `Showing top 10 of ${questions.length}` : `${questions.length} questions`}
-                      </p>
-                    </div>
-                  </div>
+                  <h3 className="font-semibold text-foreground">Top Questions</h3>
+                  {questions.length > 5 && (
+                    <span className="text-xs text-foreground-tertiary">{questions.length} total</span>
+                  )}
                 </div>
-                <div className="max-h-[260px] overflow-y-auto space-y-2 snap-y snap-mandatory overscroll-contain">
-                  {questions.slice(0, 10).map((q, index) => (
-                    <div
+                <div className="max-h-[200px] overflow-y-auto space-y-1">
+                  {questions.map((q, index) => (
+                    <button
                       key={index}
-                      className="flex items-center gap-3 p-3 rounded-xl border border-border hover:shadow-sm transition-all snap-start snap-always h-[56px]"
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${brandColor}08`}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      onClick={() => setSessionIdsModal({
+                        open: true,
+                        title: q.question,
+                        sessionIds: findSessionsForQuestion(q.question),
+                      })}
+                      className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-background-hover transition-colors text-left"
                     >
-                      <div
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                        style={{ backgroundColor: `${brandColor}15`, color: readableBrandColor }}
-                      >
-                        {index + 1}
-                      </div>
-                      <span className="text-sm text-foreground flex-1 line-clamp-1">{q.question}</span>
+                      <span className="text-sm text-foreground line-clamp-1 flex-1 mr-3">{q.question}</span>
                       <div className="flex items-center gap-2 flex-shrink-0">
-                        <span
-                          className="text-sm font-semibold px-2 py-0.5 rounded-md"
-                          style={{ backgroundColor: brandColor, color: getContrastTextColor(brandColor) }}
-                        >
-                          {q.frequency}×
-                        </span>
+                        <span className="text-sm text-foreground-secondary">{q.frequency}×</span>
                         {q.answered ? (
-                          <CheckCircle size={16} className="text-green-500" />
+                          <CheckCircle size={14} className="text-success-500" />
                         ) : (
-                          <AlertTriangle size={16} className="text-yellow-500" />
+                          <AlertTriangle size={14} className="text-warning-500" />
                         )}
                       </div>
-                    </div>
+                    </button>
                   ))}
+                  {questions.length === 0 && (
+                    <p className="text-sm text-foreground-tertiary text-center py-6">No questions yet</p>
+                  )}
                 </div>
               </Card>
 
               <Card>
                 <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: `${brandColor}15` }}
-                    >
-                      <AlertTriangle size={20} style={{ color: brandColor }} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Unanswered Questions</h3>
-                      <p className="text-xs text-foreground-tertiary">Knowledge gaps to address</p>
-                    </div>
-                  </div>
-                  <span
-                    className="px-3 py-1.5 rounded-full text-xs font-bold"
-                    style={{ backgroundColor: brandColor, color: getContrastTextColor(brandColor) }}
-                  >
-                    {unansweredQuestions.length} gaps
-                  </span>
+                  <h3 className="font-semibold text-foreground">Unanswered Questions</h3>
+                  {unansweredQuestions.length > 0 && (
+                    <span className="text-xs text-warning-600 dark:text-warning-500 font-medium">
+                      {unansweredQuestions.length} gaps
+                    </span>
+                  )}
                 </div>
-                <div className="max-h-[260px] overflow-y-auto space-y-2 snap-y snap-mandatory overscroll-contain">
-                  {unansweredQuestions.slice(0, 10).map((q, index) => (
-                    <div
+                <div className="max-h-[200px] overflow-y-auto space-y-1">
+                  {unansweredQuestions.map((q, index) => (
+                    <button
                       key={index}
-                      className="flex items-center gap-3 p-3 rounded-xl border border-border hover:shadow-sm transition-all snap-start snap-always h-[56px]"
-                      onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${brandColor}08`}
-                      onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                      onClick={() => setSessionIdsModal({
+                        open: true,
+                        title: q.question,
+                        sessionIds: findSessionsForQuestion(q.question),
+                      })}
+                      className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-background-hover transition-colors text-left"
                     >
-                      <div
-                        className="w-7 h-7 rounded-lg flex items-center justify-center text-xs font-bold flex-shrink-0"
-                        style={{ backgroundColor: `${brandColor}15`, color: readableBrandColor }}
-                      >
-                        {index + 1}
-                      </div>
-                      <span className="text-sm text-foreground flex-1 line-clamp-1">{q.question}</span>
-                      <span
-                        className="text-sm font-semibold px-2 py-0.5 rounded-md flex-shrink-0"
-                        style={{ backgroundColor: brandColor, color: getContrastTextColor(brandColor) }}
-                      >
-                        {q.frequency}×
-                      </span>
-                    </div>
+                      <span className="text-sm text-foreground line-clamp-1 flex-1 mr-3">{q.question}</span>
+                      <span className="text-sm text-foreground-secondary flex-shrink-0">{q.frequency}×</span>
+                    </button>
                   ))}
                   {unansweredQuestions.length === 0 && (
-                    <div className="text-center py-8">
-                      <div
-                        className="w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-3"
-                        style={{ backgroundColor: `${brandColor}15` }}
-                      >
-                        <CheckCircle size={32} style={{ color: brandColor }} />
-                      </div>
-                      <p className="font-medium text-foreground">All questions answered!</p>
-                      <p className="text-sm text-foreground-tertiary mt-1">Great job keeping up with user queries</p>
+                    <div className="text-center py-6">
+                      <CheckCircle size={24} className="text-success-500 mx-auto mb-2" />
+                      <p className="text-sm text-foreground-secondary">All questions answered</p>
                     </div>
                   )}
                 </div>
               </Card>
             </div>
 
-            {/* Handoff Analysis - Split into URL and Email */}
+            {/* Handoffs - Clean Simple Design with Scroll */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* URL Handoffs */}
               <Card>
-                <div className="flex items-center justify-between mb-5">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: `${brandColor}15` }}
-                    >
-                      <ExternalLink size={20} style={{ color: brandColor }} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">URL Handoffs</h3>
-                      <p className="text-xs text-foreground-tertiary">
-                        {(() => {
-                          const sessionsWithUrls = sessions.filter(s => s.analysis?.url_links && s.analysis.url_links.length > 0).length;
-                          return `${sessionsWithUrls} sessions (${formatPercent((sessionsWithUrls / (sessions.length || 1)) * 100)})`;
-                        })()}
-                      </p>
-                    </div>
-                  </div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-foreground">URL Handoffs</h3>
+                  <span className="text-xs text-foreground-tertiary">
+                    {sessions.filter(s => s.analysis?.url_links && s.analysis.url_links.length > 0).length} sessions
+                  </span>
                 </div>
-                <div className="max-h-[324px] overflow-y-auto space-y-3 snap-y snap-mandatory overscroll-contain">
+                <div className="max-h-[200px] overflow-y-auto space-y-1">
                   {(() => {
-                    const urlHandoffs: { category: string; destination: string; count: number }[] = [];
+                    const urlHandoffs: { destination: string; fullUrl: string; count: number }[] = [];
 
                     sessions.forEach(s => {
-                      const category = s.analysis?.category || 'Uncategorized';
                       s.analysis?.url_links?.forEach(url => {
                         let shortUrl = url;
                         try {
@@ -1493,52 +1482,33 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                           shortUrl = parsed.hostname + parsed.pathname;
                         } catch {}
 
-                        const existing = urlHandoffs.find(h => h.category === category && h.destination === shortUrl);
+                        const existing = urlHandoffs.find(h => h.destination === shortUrl);
                         if (existing) existing.count++;
-                        else urlHandoffs.push({ category, destination: shortUrl, count: 1 });
+                        else urlHandoffs.push({ destination: shortUrl, fullUrl: url, count: 1 });
                       });
                     });
 
-                    const sorted = urlHandoffs.sort((a, b) => b.count - a.count).slice(0, 5);
+                    const sorted = urlHandoffs.sort((a, b) => b.count - a.count);
 
                     if (sorted.length === 0) {
                       return (
-                        <div className="text-center py-8 text-foreground-secondary">
-                          <ExternalLink size={32} className="mx-auto mb-3 opacity-30" />
-                          <p className="text-sm">No URL forwards yet</p>
-                        </div>
+                        <p className="text-sm text-foreground-tertiary text-center py-6">No URL handoffs yet</p>
                       );
                     }
 
                     return sorted.map((h, i) => (
-                      <div
+                      <button
                         key={i}
-                        className="group p-4 rounded-xl border border-border hover:shadow-md transition-all snap-start snap-always h-[100px]"
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${brandColor}08`}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        onClick={() => setSessionIdsModal({
+                          open: true,
+                          title: h.destination,
+                          sessionIds: findSessionsForUrl(h.fullUrl),
+                        })}
+                        className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-background-hover transition-colors text-left"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span
-                                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold"
-                                style={{ backgroundColor: brandColor, color: getContrastTextColor(brandColor) }}
-                              >
-                                {h.category}
-                              </span>
-                            </div>
-                            <p className="text-sm font-medium text-foreground break-all leading-relaxed line-clamp-2">
-                              {h.destination}
-                            </p>
-                          </div>
-                          <div
-                            className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-semibold text-sm"
-                            style={{ backgroundColor: `${brandColor}15`, color: readableBrandColor }}
-                          >
-                            {h.count}
-                          </div>
-                        </div>
-                      </div>
+                        <span className="text-sm text-foreground line-clamp-1 flex-1 mr-3">{h.destination}</span>
+                        <span className="text-sm text-foreground-secondary flex-shrink-0">{h.count}×</span>
+                      </button>
                     ));
                   })()}
                 </div>
@@ -1546,78 +1516,45 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
               {/* Email Handoffs */}
               <Card>
-                <div className="flex items-center justify-between mb-5">
-                  <div className="flex items-center gap-3">
-                    <div
-                      className="w-10 h-10 rounded-xl flex items-center justify-center"
-                      style={{ backgroundColor: `${brandColor}15` }}
-                    >
-                      <Mail size={20} style={{ color: brandColor }} />
-                    </div>
-                    <div>
-                      <h3 className="font-semibold text-foreground">Email Handoffs</h3>
-                      <p className="text-xs text-foreground-tertiary">
-                        {(() => {
-                          const sessionsWithEmails = sessions.filter(s => s.analysis?.email_links && s.analysis.email_links.length > 0).length;
-                          return `${sessionsWithEmails} sessions (${formatPercent((sessionsWithEmails / (sessions.length || 1)) * 100)})`;
-                        })()}
-                      </p>
-                    </div>
-                  </div>
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-foreground">Email Handoffs</h3>
+                  <span className="text-xs text-foreground-tertiary">
+                    {sessions.filter(s => s.analysis?.email_links && s.analysis.email_links.length > 0).length} sessions
+                  </span>
                 </div>
-                <div className="max-h-[324px] overflow-y-auto space-y-3 snap-y snap-mandatory overscroll-contain">
+                <div className="max-h-[200px] overflow-y-auto space-y-1">
                   {(() => {
-                    const emailHandoffs: { category: string; destination: string; count: number }[] = [];
+                    const emailHandoffs: { destination: string; count: number }[] = [];
 
                     sessions.forEach(s => {
-                      const category = s.analysis?.category || 'Uncategorized';
                       s.analysis?.email_links?.forEach(email => {
-                        const existing = emailHandoffs.find(h => h.category === category && h.destination === email);
+                        const existing = emailHandoffs.find(h => h.destination === email);
                         if (existing) existing.count++;
-                        else emailHandoffs.push({ category, destination: email, count: 1 });
+                        else emailHandoffs.push({ destination: email, count: 1 });
                       });
                     });
 
-                    const sorted = emailHandoffs.sort((a, b) => b.count - a.count).slice(0, 5);
+                    const sorted = emailHandoffs.sort((a, b) => b.count - a.count);
 
                     if (sorted.length === 0) {
                       return (
-                        <div className="text-center py-8 text-foreground-secondary">
-                          <Mail size={32} className="mx-auto mb-3 opacity-30" />
-                          <p className="text-sm">No email forwards yet</p>
-                        </div>
+                        <p className="text-sm text-foreground-tertiary text-center py-6">No email handoffs yet</p>
                       );
                     }
 
                     return sorted.map((h, i) => (
-                      <div
+                      <button
                         key={i}
-                        className="group p-4 rounded-xl border border-border hover:shadow-md transition-all snap-start snap-always h-[100px]"
-                        onMouseEnter={(e) => e.currentTarget.style.backgroundColor = `${brandColor}08`}
-                        onMouseLeave={(e) => e.currentTarget.style.backgroundColor = 'transparent'}
+                        onClick={() => setSessionIdsModal({
+                          open: true,
+                          title: h.destination,
+                          sessionIds: findSessionsForEmail(h.destination),
+                        })}
+                        className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-background-hover transition-colors text-left"
                       >
-                        <div className="flex items-start justify-between gap-3">
-                          <div className="min-w-0 flex-1">
-                            <div className="flex items-center gap-2 mb-2">
-                              <span
-                                className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold"
-                                style={{ backgroundColor: brandColor, color: getContrastTextColor(brandColor) }}
-                              >
-                                {h.category}
-                              </span>
-                            </div>
-                            <p className="text-sm font-medium text-foreground break-all leading-relaxed line-clamp-2">
-                              {h.destination}
-                            </p>
-                          </div>
-                          <div
-                            className="flex-shrink-0 w-10 h-10 rounded-lg flex items-center justify-center font-semibold text-sm"
-                            style={{ backgroundColor: `${brandColor}15`, color: readableBrandColor }}
-                          >
-                            {h.count}
-                          </div>
-                        </div>
-                      </div>
+                        <span className="text-sm text-foreground line-clamp-1 flex-1 mr-3">{h.destination}</span>
+                        <span className="text-sm text-foreground-secondary flex-shrink-0">{h.count}×</span>
+                      </button>
                     ));
                   })()}
                 </div>
@@ -2289,6 +2226,43 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               })}
             </div>
           )}
+        </Modal>
+
+        {/* Session IDs Modal */}
+        <Modal
+          isOpen={sessionIdsModal.open}
+          onClose={() => setSessionIdsModal({ open: false, title: '', sessionIds: [] })}
+          title="Related Sessions"
+          description={sessionIdsModal.title}
+          size="md"
+        >
+          <div className="space-y-2">
+            <p className="text-sm text-foreground-secondary mb-3">
+              Click a session ID to copy it, then search in the Conversations tab.
+            </p>
+            {sessionIdsModal.sessionIds.length > 0 ? (
+              <div className="max-h-[300px] overflow-y-auto space-y-1">
+                {sessionIdsModal.sessionIds.map((id, index) => (
+                  <button
+                    key={index}
+                    onClick={() => {
+                      copyToClipboard(id);
+                    }}
+                    className="w-full flex items-center justify-between py-2.5 px-3 rounded-lg hover:bg-background-hover transition-colors text-left group"
+                  >
+                    <code className="text-sm text-foreground font-mono">{id}</code>
+                    <span className="text-xs text-foreground-tertiary group-hover:text-foreground-secondary">
+                      Click to copy
+                    </span>
+                  </button>
+                ))}
+              </div>
+            ) : (
+              <p className="text-sm text-foreground-tertiary text-center py-6">
+                No matching sessions found
+              </p>
+            )}
+          </div>
         </Modal>
       </PageContent>
     </Page>

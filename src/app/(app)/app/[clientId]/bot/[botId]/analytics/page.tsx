@@ -800,8 +800,8 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
             <select
               value={activeTab}
               onChange={(e) => setActiveTab(e.target.value)}
-              className="w-full p-3 rounded-lg border border-border bg-background text-foreground font-medium text-sm appearance-none cursor-pointer focus:outline-none focus:ring-2 focus:ring-offset-2"
-              style={{ focusRingColor: brandColor } as React.CSSProperties}
+              className="w-full p-3 rounded-lg border border-border bg-surface text-foreground font-medium"
+              style={{ borderColor: brandColor }}
             >
               {TABS.map((tab) => (
                 <option key={tab.id} value={tab.id}>

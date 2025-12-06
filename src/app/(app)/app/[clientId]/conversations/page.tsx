@@ -50,6 +50,7 @@ import {
   Spinner,
   Modal,
 } from '@/components/ui';
+import { MobileTable, MobileCard, MobileBadge } from '@/components/analytics/MobileTable';
 
 // Tab configuration - matching bot analytics exactly
 const TABS = [
@@ -757,6 +758,272 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     }
   };
 
+  // Render mobile card based on active tab
+  const renderMobileCard = (session: ChatSessionWithAnalysis) => {
+    const bot = getBotInfo(session.mascot_id);
+
+    // Common card header for all tabs
+    const cardHeader = (
+      <div className="flex justify-between items-start mb-3">
+        <div className="flex items-center gap-2">
+          {bot?.image && (
+            <div
+              className="w-8 h-8 rounded-full flex items-center justify-center"
+              style={{ backgroundColor: brandColor }}
+            >
+              <img src={bot.image} alt={bot.name} className="w-7 h-7 rounded-full object-cover" />
+            </div>
+          )}
+          <div>
+            <p className="font-medium text-sm text-foreground">{bot?.name || 'Unknown'}</p>
+            <p className="text-xs text-foreground-tertiary">{session.visitor_country || 'Unknown'}</p>
+          </div>
+        </div>
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            handleOpenTranscript(session);
+          }}
+          className="flex items-center gap-1 text-sm px-2 py-1 rounded-lg hover:bg-background-tertiary"
+          style={{ color: brandColor }}
+        >
+          <Eye size={14} />
+          View
+        </button>
+      </div>
+    );
+
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <MobileCard>
+            {cardHeader}
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <p className="text-xs text-foreground-tertiary">Messages</p>
+                <p className="text-sm font-medium text-foreground">{session.total_messages}</p>
+              </div>
+              <div>
+                <p className="text-xs text-foreground-tertiary">Duration</p>
+                <p className="text-sm font-medium text-foreground">{formatDuration(session.session_duration_seconds)}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <MobileBadge variant={
+                session.analysis?.resolution_status === 'resolved' ? 'success' :
+                session.analysis?.resolution_status === 'partial' ? 'warning' :
+                session.analysis?.escalated ? 'error' : 'default'
+              }>
+                {getStatusIcon(session)}
+                <span className="ml-1">{getStatusLabel(session)}</span>
+              </MobileBadge>
+              <MobileBadge variant={
+                session.analysis?.sentiment === 'positive' ? 'success' :
+                session.analysis?.sentiment === 'negative' ? 'error' : 'default'
+              }>
+                {getSentimentIcon(session.analysis?.sentiment)}
+                <span className="ml-1 capitalize">{session.analysis?.sentiment || 'Unknown'}</span>
+              </MobileBadge>
+              <span className="text-xs text-foreground-tertiary ml-auto">{formatTimestamp(session.session_started_at)}</span>
+            </div>
+          </MobileCard>
+        );
+
+      case 'conversations':
+        return (
+          <MobileCard>
+            {cardHeader}
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <p className="text-xs text-foreground-tertiary">Category</p>
+                <p className="text-sm font-medium text-foreground">{session.analysis?.category || '-'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-foreground-tertiary">Type</p>
+                <p className="text-sm font-medium text-foreground capitalize">{session.analysis?.conversation_type || '-'}</p>
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap">
+              <MobileBadge variant={
+                session.analysis?.session_outcome === 'completed' ? 'success' :
+                session.analysis?.session_outcome === 'abandoned' ? 'warning' : 'default'
+              }>
+                <span className="capitalize">{session.analysis?.session_outcome || '-'}</span>
+              </MobileBadge>
+              <MobileBadge variant={
+                session.analysis?.engagement_level === 'high' ? 'success' :
+                session.analysis?.engagement_level === 'low' ? 'error' : 'default'
+              }>
+                <span className="capitalize">{session.analysis?.engagement_level || '-'} engagement</span>
+              </MobileBadge>
+            </div>
+          </MobileCard>
+        );
+
+      case 'questions':
+        return (
+          <MobileCard>
+            {cardHeader}
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <p className="text-xs text-foreground-tertiary">Questions</p>
+                {session.analysis?.questions?.length ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setQuestionsSession(session);
+                      setQuestionsType('asked');
+                    }}
+                    className="text-sm font-medium text-info-600 dark:text-info-500"
+                  >
+                    {session.analysis.questions.length} question{session.analysis.questions.length !== 1 ? 's' : ''}
+                  </button>
+                ) : (
+                  <p className="text-sm text-foreground-tertiary">-</p>
+                )}
+              </div>
+              <div>
+                <p className="text-xs text-foreground-tertiary">Gaps</p>
+                {session.analysis?.unanswered_questions?.length ? (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setQuestionsSession(session);
+                      setQuestionsType('unanswered');
+                    }}
+                    className="text-sm font-medium text-warning-600 dark:text-warning-500"
+                  >
+                    {session.analysis.unanswered_questions.length} gap{session.analysis.unanswered_questions.length !== 1 ? 's' : ''}
+                  </button>
+                ) : (
+                  <p className="text-sm text-foreground-tertiary">-</p>
+                )}
+              </div>
+            </div>
+            <div className="flex items-center gap-2 flex-wrap text-xs">
+              {session.analysis?.url_links?.length ? (
+                <span className="flex items-center gap-1 text-info-600 dark:text-info-500">
+                  <ExternalLink size={12} /> {session.analysis.url_links.length} URL{session.analysis.url_links.length !== 1 ? 's' : ''}
+                </span>
+              ) : null}
+              {session.analysis?.email_links?.length ? (
+                <span className="flex items-center gap-1 text-info-600 dark:text-info-500">
+                  <Mail size={12} /> {session.analysis.email_links.length} Email{session.analysis.email_links.length !== 1 ? 's' : ''}
+                </span>
+              ) : null}
+            </div>
+          </MobileCard>
+        );
+
+      case 'audience':
+        return (
+          <MobileCard>
+            {cardHeader}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-xs text-foreground-tertiary">Country</p>
+                <p className="text-sm font-medium text-foreground">{session.visitor_country || '-'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-foreground-tertiary">Language</p>
+                <p className="text-sm font-medium text-foreground">{session.analysis?.language || '-'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-foreground-tertiary">Device</p>
+                <div className="flex items-center gap-1">
+                  {getDeviceIcon(session.device_type)}
+                  <span className="text-sm font-medium text-foreground capitalize">{session.device_type || '-'}</span>
+                </div>
+              </div>
+              <div>
+                <p className="text-xs text-foreground-tertiary">Browser</p>
+                <p className="text-sm font-medium text-foreground">{session.browser_name || '-'}</p>
+              </div>
+            </div>
+          </MobileCard>
+        );
+
+      case 'animations': {
+        const easterEggNames = session.full_transcript
+          ?.filter(msg => msg.easter && msg.easter.trim() !== '')
+          .map(msg => msg.easter as string) || [];
+        const uniqueEasterEggs = [...new Set(easterEggNames)];
+        const easterEggCount = session.easter_eggs_triggered || 0;
+
+        return (
+          <MobileCard>
+            {cardHeader}
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <p className="text-xs text-foreground-tertiary">Easter Eggs</p>
+                <p className="text-sm font-medium text-foreground">
+                  {uniqueEasterEggs.length > 0 ? uniqueEasterEggs.join(', ') :
+                   easterEggCount > 0 ? `${easterEggCount} triggered` : '-'}
+                </p>
+              </div>
+              <div>
+                <p className="text-xs text-foreground-tertiary">User Type</p>
+                <p className="text-sm font-medium text-foreground">
+                  {session.glb_source === 'cdn_fetch' ? 'New visitor' :
+                   session.glb_source === 'memory_cache' ? 'Returning' : '-'}
+                </p>
+              </div>
+              <div className="col-span-2">
+                <p className="text-xs text-foreground-tertiary">GLB Load</p>
+                <p className="text-sm font-medium text-foreground">
+                  {session.glb_source ? (
+                    session.glb_transfer_size ? `${(session.glb_transfer_size / 1024).toFixed(1)} KB` : session.glb_source
+                  ) : '-'}
+                </p>
+              </div>
+            </div>
+          </MobileCard>
+        );
+      }
+
+      case 'costs': {
+        const analysisCost = session.analysis?.analytics_total_cost_eur || 0;
+        const chatCost = session.total_cost_eur || 0;
+        const totalCost = chatCost + analysisCost;
+
+        return (
+          <MobileCard>
+            {cardHeader}
+            <div className="grid grid-cols-2 gap-3 mb-3">
+              <div>
+                <p className="text-xs text-foreground-tertiary">Chat Tokens</p>
+                <p className="text-sm font-medium text-foreground">{session.total_tokens?.toLocaleString() || '-'}</p>
+              </div>
+              <div>
+                <p className="text-xs text-foreground-tertiary">Chat Cost</p>
+                <p className="text-sm font-medium text-foreground">{formatCost(chatCost)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-foreground-tertiary">Analysis Cost</p>
+                <p className="text-sm font-medium text-foreground">{formatCost(analysisCost)}</p>
+              </div>
+              <div>
+                <p className="text-xs text-foreground-tertiary">Total Cost</p>
+                <p className="text-sm font-bold" style={{ color: brandColor }}>{formatCost(totalCost)}</p>
+              </div>
+            </div>
+          </MobileCard>
+        );
+      }
+
+      case 'custom':
+        return (
+          <MobileCard>
+            {cardHeader}
+            <p className="text-sm text-foreground-tertiary text-center py-4">No custom fields configured</p>
+          </MobileCard>
+        );
+
+      default:
+        return null;
+    }
+  };
+
   // Render table
   const renderTable = () => {
     if (loading) {
@@ -779,62 +1046,102 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     }
 
     return (
-      <Card padding="none" className="overflow-hidden">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              {renderTableHeaders()}
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {paginatedSessions.map((session) => (
-              <TableRow key={session.id}>
-                {renderTableRow(session)}
+      <>
+        {/* Desktop Table */}
+        <Card padding="none" className="overflow-hidden hidden lg:block">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                {renderTableHeaders()}
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
+            </TableHeader>
+            <TableBody>
+              {paginatedSessions.map((session) => (
+                <TableRow key={session.id}>
+                  {renderTableRow(session)}
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
 
-        <div className="px-6 py-4 flex items-center justify-between bg-background-secondary border-t border-border">
-          <p className="text-sm text-foreground-secondary">
-            Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredSessions.length)} of {filteredSessions.length}
-          </p>
-          {totalPages > 1 && (
-            <div className="flex items-center gap-2">
-              <button
-                onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
-                disabled={currentPage === 1}
-                className="p-1.5 rounded-lg hover:bg-background-hover disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronLeft size={18} className="text-foreground-secondary" />
-              </button>
-              <div className="flex items-center gap-1">
-                {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
-                  <button
-                    key={page}
-                    onClick={() => setCurrentPage(page)}
-                    className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
-                      currentPage === page
-                        ? 'text-white'
-                        : 'text-foreground-secondary hover:bg-background-hover'
-                    }`}
-                    style={currentPage === page ? { backgroundColor: brandColor } : {}}
-                  >
-                    {page}
-                  </button>
-                ))}
+          <div className="px-6 py-4 flex items-center justify-between bg-background-secondary border-t border-border">
+            <p className="text-sm text-foreground-secondary">
+              Showing {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredSessions.length)} of {filteredSessions.length}
+            </p>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-1.5 rounded-lg hover:bg-background-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft size={18} className="text-foreground-secondary" />
+                </button>
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                    <button
+                      key={page}
+                      onClick={() => setCurrentPage(page)}
+                      className={`w-8 h-8 rounded-lg text-sm font-medium transition-colors ${
+                        currentPage === page
+                          ? 'text-white'
+                          : 'text-foreground-secondary hover:bg-background-hover'
+                      }`}
+                      style={currentPage === page ? { backgroundColor: brandColor } : {}}
+                    >
+                      {page}
+                    </button>
+                  ))}
+                </div>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-1.5 rounded-lg hover:bg-background-hover disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight size={18} className="text-foreground-secondary" />
+                </button>
               </div>
-              <button
-                onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
-                disabled={currentPage === totalPages}
-                className="p-1.5 rounded-lg hover:bg-background-hover disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                <ChevronRight size={18} className="text-foreground-secondary" />
-              </button>
+            )}
+          </div>
+        </Card>
+
+        {/* Mobile Cards */}
+        <div className="lg:hidden space-y-3">
+          {paginatedSessions.map((session) => (
+            <div key={session.id}>
+              {renderMobileCard(session)}
             </div>
-          )}
+          ))}
+
+          {/* Mobile Pagination */}
+          <div className="flex items-center justify-between py-4">
+            <p className="text-sm text-foreground-secondary">
+              {((currentPage - 1) * ITEMS_PER_PAGE) + 1}-{Math.min(currentPage * ITEMS_PER_PAGE, filteredSessions.length)} of {filteredSessions.length}
+            </p>
+            {totalPages > 1 && (
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                  className="p-2 rounded-lg bg-background-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronLeft size={20} className="text-foreground-secondary" />
+                </button>
+                <span className="text-sm font-medium text-foreground px-2">
+                  {currentPage} / {totalPages}
+                </span>
+                <button
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                  className="p-2 rounded-lg bg-background-secondary disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  <ChevronRight size={20} className="text-foreground-secondary" />
+                </button>
+              </div>
+            )}
+          </div>
         </div>
-      </Card>
+      </>
     );
   };
 
@@ -848,7 +1155,8 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
         {/* Filters Bar */}
         <Card className="mb-6">
-          <div className="flex flex-wrap gap-4">
+          {/* Desktop: Original inline layout */}
+          <div className="hidden lg:flex flex-wrap gap-4">
             <div className="flex-1 min-w-[300px]">
               <Input
                 icon={<Search size={20} />}
@@ -890,35 +1198,79 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
               Export
             </Button>
           </div>
+
+          {/* Mobile: Stacked layout */}
+          <div className="lg:hidden space-y-3">
+            <Input
+              icon={<Search size={20} />}
+              placeholder="Search conversations..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+            />
+
+            <div className="grid grid-cols-2 gap-3">
+              <Select
+                fullWidth
+                options={workspaceOptions}
+                value={selectedWorkspace}
+                onChange={(e) => setSelectedWorkspace(e.target.value)}
+              />
+
+              <Select
+                fullWidth
+                options={botOptions}
+                value={selectedBot}
+                onChange={(e) => setSelectedBot(e.target.value)}
+              />
+
+              <Select
+                fullWidth
+                options={statusOptions}
+                value={selectedStatus}
+                onChange={(e) => setSelectedStatus(e.target.value)}
+              />
+
+              <Select
+                fullWidth
+                options={dateRangeOptions}
+                value={dateRange}
+                onChange={(e) => setDateRange(e.target.value)}
+              />
+            </div>
+
+            <Button icon={<Download size={18} />} className="w-full">
+              Export
+            </Button>
+          </div>
         </Card>
 
         {/* Stats Overview */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-6">
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 mb-6">
           <Card padding="sm">
-            <p className="text-sm text-foreground-secondary mb-1">Total Conversations</p>
-            <p className="text-2xl font-bold text-foreground">{stats.total}</p>
+            <p className="text-xs sm:text-sm text-foreground-secondary mb-1">Total Conversations</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{stats.total}</p>
           </Card>
           <Card padding="sm">
-            <p className="text-sm text-foreground-secondary mb-1">Resolved</p>
-            <p className="text-2xl font-bold text-foreground">{stats.resolved}</p>
-            <p className="text-xs text-foreground-tertiary mt-1">{stats.resolutionRate.toFixed(0)}% resolution rate</p>
+            <p className="text-xs sm:text-sm text-foreground-secondary mb-1">Resolved</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{stats.resolved}</p>
+            <p className="text-xs text-foreground-tertiary mt-1 hidden sm:block">{stats.resolutionRate.toFixed(0)}% resolution rate</p>
           </Card>
           <Card padding="sm">
-            <p className="text-sm text-foreground-secondary mb-1">Avg Duration</p>
-            <p className="text-2xl font-bold text-foreground">{stats.avgDuration.toFixed(1)} min</p>
+            <p className="text-xs sm:text-sm text-foreground-secondary mb-1">Avg Duration</p>
+            <p className="text-xl sm:text-2xl font-bold text-foreground">{stats.avgDuration.toFixed(1)} min</p>
           </Card>
           <Card padding="sm">
-            <p className="text-sm text-foreground-secondary mb-1">Sentiment</p>
-            <div className="flex items-center gap-3 mt-1">
-              <span className="flex items-center gap-1 text-sm">
+            <p className="text-xs sm:text-sm text-foreground-secondary mb-1">Sentiment</p>
+            <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
+              <span className="flex items-center gap-1 text-xs sm:text-sm">
                 <ThumbsUp size={14} className="text-success-600 dark:text-success-500" />
                 {stats.sentimentCounts.positive}
               </span>
-              <span className="flex items-center gap-1 text-sm">
+              <span className="flex items-center gap-1 text-xs sm:text-sm">
                 <Minus size={14} className="text-foreground-tertiary" />
                 {stats.sentimentCounts.neutral}
               </span>
-              <span className="flex items-center gap-1 text-sm">
+              <span className="flex items-center gap-1 text-xs sm:text-sm">
                 <ThumbsDown size={14} className="text-error-600 dark:text-error-500" />
                 {stats.sentimentCounts.negative}
               </span>
@@ -926,8 +1278,22 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
           </Card>
         </div>
 
-        {/* Tabs */}
-        <Card className="mb-6 p-0">
+        {/* Tabs - Mobile Dropdown */}
+        <div className="lg:hidden mb-6">
+          <select
+            value={activeTab}
+            onChange={(e) => setActiveTab(e.target.value)}
+            className="w-full p-3 rounded-lg border border-border bg-surface text-foreground font-medium"
+            style={{ borderColor: brandColor }}
+          >
+            {TABS.map((tab) => (
+              <option key={tab.id} value={tab.id}>{tab.label}</option>
+            ))}
+          </select>
+        </div>
+
+        {/* Tabs - Desktop Horizontal */}
+        <Card className="mb-6 p-0 hidden lg:block">
           <div className="border-b border-border">
             <nav className="flex space-x-8 px-6 overflow-x-auto" aria-label="Tabs">
               {TABS.map((tab) => {

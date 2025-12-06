@@ -12,7 +12,8 @@
       "Bash(ls:*)",
       "Bash(head:*)",
       "Bash(cat:*)",
-      "Bash(git -C \"/c/Users/31640/Documents/notsoAI-MVP/chatbot-platform\" log --oneline --all)"
+      "Bash(git -C \"/c/Users/31640/Documents/notsoAI-MVP/chatbot-platform\" log --oneline --all)",
+      "Bash(wc:*)"
     ],
     "deny": [],
     "ask": []

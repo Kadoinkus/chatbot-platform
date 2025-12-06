@@ -10,13 +10,12 @@
  *   import { TimeSeriesAreaChart, DonutChart, VerticalBarChart } from '@/components/analytics/charts';
  */
 
-import React, { type ReactNode } from 'react';
 import {
   LineChart, Line, AreaChart, Area, BarChart, Bar,
   XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
   Legend, PieChart, Pie, Cell,
 } from 'recharts';
-import type { ContentType } from 'recharts/types/component/Tooltip';
+import type { ContentType, TooltipProps } from 'recharts/types/component/Tooltip';
 import { tooltipStyle } from '@/lib/chartStyles';
 import { getChartColors, GREY } from '@/lib/chartColors';
 
@@ -103,6 +102,9 @@ export interface NameValuePair {
   value: number;
   [key: string]: string | number;
 }
+
+export type ChartTooltipProps = TooltipProps<number, string>;
+export type CustomTooltipContent = ContentType<number, string>;
 
 // ============================================
 // Time Series Area Chart (Stacked)
@@ -359,13 +361,6 @@ export interface StackedBarSeries {
 }
 
 // Custom tooltip content type for Recharts compatibility
-export interface TooltipContentProps {
-  active?: boolean;
-  payload?: Array<{ payload: Record<string, unknown>; [key: string]: unknown }>;
-  label?: string;
-}
-export type CustomTooltipContent = (props: TooltipContentProps) => ReactNode;
-
 export interface StackedBarChartProps extends BaseChartProps {
   data: Array<{ [key: string]: string | number }>;
   series: StackedBarSeries[];
@@ -411,7 +406,7 @@ export function StackedBarChart({
           tickFormatter={yAxisFormatter}
         />
         {customTooltip ? (
-          <Tooltip content={customTooltip as ContentType<number, string>} />
+          <Tooltip content={customTooltip} />
         ) : (
           <Tooltip {...tooltipStyle} />
         )}

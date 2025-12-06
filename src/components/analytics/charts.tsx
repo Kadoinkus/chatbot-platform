@@ -95,6 +95,7 @@ export interface CategoryDataPoint {
   name: string;
   value: number;
   color?: string;
+  [key: string]: string | number | undefined;
 }
 
 export interface NameValuePair {

@@ -1,10 +1,53 @@
 'use client';
+
 import { useState, useMemo, useEffect, useRef } from 'react';
-import { getClientById, getBotsByClientId, getBotSessionsByClientId, getWorkspacesByClientId } from '@/lib/dataService';
-import type { Client, Bot, BotSession, Workspace } from '@/lib/dataService';
+import { getClientById, getBotsByClientId, getWorkspacesByClientId } from '@/lib/dataService';
+import { getAnalyticsForClient } from '@/lib/db/analytics';
+import {
+  fetchBotComparisonData,
+  calculateTotals,
+  calculateBotCosts,
+  calculateReturnRate,
+  calculateResolutionBreakdown,
+  calculateHandoffs,
+  getTopBrowser,
+  generateMultiBotTimeSeries,
+  formatDuration,
+  formatCost,
+  formatPercent,
+  formatNumber,
+  type BotWithMetrics,
+  type AggregatedMetrics,
+} from '@/lib/analytics/botComparison';
+import type { Client, Bot, Workspace } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
-import { UsageLine, IntentBars, MultiLineChart } from '@/components/Charts';
-import { Calendar, Download, Filter, TrendingUp, MessageSquare, Clock, Star, Users, AlertTriangle, CheckCircle, ChevronDown, X, BarChart3, Target, Settings, FileText } from 'lucide-react';
+import { MultiLineChart } from '@/components/Charts';
+import {
+  BotComparisonTable,
+  ProgressBar,
+  TrendIndicator,
+  type ColumnDefinition,
+} from '@/components/analytics/BotComparisonTable';
+import {
+  Calendar,
+  Download,
+  Filter,
+  TrendingUp,
+  MessageSquare,
+  Clock,
+  Star,
+  Users,
+  AlertTriangle,
+  CheckCircle,
+  ChevronDown,
+  BarChart3,
+  HelpCircle,
+  Globe,
+  Sparkles,
+  DollarSign,
+  Settings,
+  Eye,
+} from 'lucide-react';
 import {
   Page,
   PageContent,
@@ -13,35 +56,43 @@ import {
   Select,
   Spinner,
   EmptyState,
+  Modal,
 } from '@/components/ui';
 
 export default function AnalyticsDashboardPage({ params }: { params: { clientId: string } }) {
   const [client, setClient] = useState<Client | null>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [bots, setBots] = useState<Bot[]>([]);
-  const [sessions, setSessions] = useState<BotSession[]>([]);
+  const [botMetrics, setBotMetrics] = useState<BotWithMetrics[]>([]);
   const [loading, setLoading] = useState(true);
-  const [dateRange, setDateRange] = useState('7days');
+  const [metricsLoading, setMetricsLoading] = useState(false);
+  const [dateRange, setDateRange] = useState('30days');
   const [selectedWorkspace, setSelectedWorkspace] = useState<string>('all');
   const [selectedBots, setSelectedBots] = useState<string[]>(['all']);
   const [dropdownOpen, setDropdownOpen] = useState(false);
-  const [metric, setMetric] = useState('conversations');
   const [activeTab, setActiveTab] = useState('overview');
+  const [questionsModal, setQuestionsModal] = useState<{ open: boolean; questions: string[]; title: string }>({
+    open: false,
+    questions: [],
+    title: '',
+  });
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Load data
+  const brandColor = client ? getClientBrandColor(client.id) : '#3B82F6';
+
+  // Load initial data
   useEffect(() => {
     async function loadData() {
       try {
-        const clientData = await getClientById(params.clientId);
-        const workspacesData = await getWorkspacesByClientId(params.clientId);
-        const botsData = await getBotsByClientId(params.clientId);
-        const sessionsData = await getBotSessionsByClientId(params.clientId);
-        
+        const [clientData, workspacesData, botsData] = await Promise.all([
+          getClientById(params.clientId),
+          getWorkspacesByClientId(params.clientId),
+          getBotsByClientId(params.clientId),
+        ]);
+
         setClient(clientData || null);
         setWorkspaces(workspacesData);
         setBots(botsData);
-        setSessions(sessionsData);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -50,6 +101,46 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
     }
     loadData();
   }, [params.clientId]);
+
+  // Load bot metrics when selection changes
+  useEffect(() => {
+    async function loadMetrics() {
+      if (!client || bots.length === 0) return;
+
+      setMetricsLoading(true);
+      try {
+        // Filter bots based on selection
+        let filteredBotList = bots;
+        if (selectedWorkspace !== 'all') {
+          filteredBotList = filteredBotList.filter(b => b.workspaceId === selectedWorkspace);
+        }
+        if (!selectedBots.includes('all') && selectedBots.length > 0) {
+          filteredBotList = filteredBotList.filter(b => selectedBots.includes(b.id));
+        }
+
+        // Convert date range to DateRange object
+        const now = new Date();
+        const daysMap: Record<string, number> = {
+          'today': 1,
+          '7days': 7,
+          '30days': 30,
+          '90days': 90,
+        };
+        const days = daysMap[dateRange] || 30;
+        const start = new Date(now);
+        start.setDate(now.getDate() - days);
+        const dateRangeParam = { start, end: now };
+
+        const metrics = await fetchBotComparisonData(params.clientId, filteredBotList, dateRangeParam);
+        setBotMetrics(metrics);
+      } catch (error) {
+        console.error('Error loading metrics:', error);
+      } finally {
+        setMetricsLoading(false);
+      }
+    }
+    loadMetrics();
+  }, [client, bots, selectedWorkspace, selectedBots, dateRange, params.clientId]);
 
   // Close dropdown when clicking outside
   useEffect(() => {
@@ -62,77 +153,28 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filter bots and sessions based on workspace and bot selection
-  const { filteredBots, filteredSessions } = useMemo(() => {
-    if (!bots.length) return { filteredBots: [], filteredSessions: [] };
-    
-    // First filter by workspace
-    const workspaceFilteredBots = selectedWorkspace === 'all' 
-      ? bots 
-      : bots.filter(bot => bot.workspaceId === selectedWorkspace);
-    
-    // Then filter by bot selection within workspace
-    const selectedBotsList = selectedBots.includes('all') || selectedBots.length === 0
-      ? workspaceFilteredBots 
-      : workspaceFilteredBots.filter(bot => selectedBots.includes(bot.id));
-    
-    const selectedBotIds = selectedBotsList.map(bot => bot.id);
-    const filteredSessionsList = sessions.filter(session => selectedBotIds.includes(session.bot_id));
-    
-    return { filteredBots: selectedBotsList, filteredSessions: filteredSessionsList };
-  }, [bots, sessions, selectedWorkspace, selectedBots]);
-
   // Reset bot selection when workspace changes
   useEffect(() => {
     setSelectedBots(['all']);
   }, [selectedWorkspace]);
 
-  // Calculate metrics from sessions
-  const metrics = useMemo(() => {
-    if (!filteredSessions.length) {
-      return {
-        totalConversations: 0,
-        avgResponseTime: 0,
-        avgResolutionRate: 0,
-        avgCsat: 0
-      };
-    }
-
-    const totalConversations = filteredSessions.length;
-    const avgResponseTime = filteredSessions.reduce((sum, s) => sum + s.avg_response_time, 0) / filteredSessions.length / 1000; // Convert to seconds
-    const resolvedSessions = filteredSessions.filter(s => s.resolution_type === 'self_service' || s.completion_status === 'completed').length;
-    const avgResolutionRate = (resolvedSessions / totalConversations) * 100;
-    const avgCsat = filteredSessions.reduce((sum, s) => sum + s.user_rating, 0) / filteredSessions.length;
-
-    return {
-      totalConversations,
-      avgResponseTime,
-      avgResolutionRate,
-      avgCsat
-    };
-  }, [filteredSessions]);
+  // Calculate aggregated totals
+  const totals = useMemo(() => calculateTotals(botMetrics), [botMetrics]);
 
   // Bot selection handlers
   const handleBotToggle = (botId: string) => {
     if (botId === 'all') {
-      // Toggle "All Bots" selection
       if (selectedBots.includes('all') || selectedBots.length === 0) {
-        // If "All Bots" is currently selected, deselect it (go to no selection)
         setSelectedBots([]);
       } else {
-        // If individual bots are selected, switch to "All Bots"
         setSelectedBots(['all']);
       }
     } else {
       setSelectedBots(prev => {
-        // Remove 'all' if it's selected and we're selecting individual bots
         const withoutAll = prev.filter(id => id !== 'all');
-        
         if (prev.includes(botId)) {
-          // Deselect the bot
           return withoutAll.filter(id => id !== botId);
         } else {
-          // Select the bot
           return [...withoutAll, botId];
         }
       });
@@ -140,10 +182,10 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
   };
 
   const getSelectionLabel = () => {
-    const workspaceFilteredBots = bots.filter(bot => 
+    const workspaceFilteredBots = bots.filter(bot =>
       selectedWorkspace === 'all' || bot.workspaceId === selectedWorkspace
     );
-      
+
     if (selectedBots.includes('all') || selectedBots.length === 0) {
       return 'All Bots';
     }
@@ -154,125 +196,15 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
     return `${selectedBots.length} Bots Selected`;
   };
 
-  // Calculate real advanced metrics from session data
-  const advancedMetrics = useMemo(() => {
-    if (!filteredSessions.length) {
-      return {
-        containmentRate: 0,
-        handoffRate: 0,
-        avgConversationLength: 0,
-        peakHours: [],
-        topChannels: [],
-        sentimentAnalysis: { positive: 0, neutral: 0, negative: 0 }
-      };
-    }
-
-    // Containment rate (sessions NOT handed off to humans)
-    const handoffSessions = filteredSessions.filter(s => s.bot_handoff === true).length;
-    const containmentRate = Math.round(((filteredSessions.length - handoffSessions) / filteredSessions.length) * 100);
-    const handoffRate = Math.round((handoffSessions / filteredSessions.length) * 100);
-
-    // Average conversation length (messages per session)
-    const avgConversationLength = parseFloat((filteredSessions.reduce((sum, s) => sum + s.messages_sent, 0) / filteredSessions.length).toFixed(1));
-
-    // Peak hours analysis
-    const hourCounts = filteredSessions.reduce((acc, session) => {
-      const hour = new Date(session.start_time).getHours();
-      const timeSlot = hour < 12 ? `${hour}AM` : hour === 12 ? '12PM' : `${hour - 12}PM`;
-      acc[timeSlot] = (acc[timeSlot] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    const peakHours = Object.entries(hourCounts)
-      .sort(([,a], [,b]) => b - a)
-      .slice(0, 3)
-      .map(([hour]) => hour);
-
-    // Channel distribution from real session data
-    const channelCounts = filteredSessions.reduce((acc, session) => {
-      const channel = session.channel || 'webchat';
-      acc[channel] = (acc[channel] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    const totalSessions = filteredSessions.length;
-    const topChannels = Object.entries(channelCounts)
-      .map(([name, count]) => ({
-        name: name.charAt(0).toUpperCase() + name.slice(1),
-        percentage: Math.round((count / totalSessions) * 100),
-        count
-      }))
-      .sort((a, b) => b.count - a.count);
-
-    // Sentiment analysis from real session data
-    const sentimentCounts = filteredSessions.reduce((acc, session) => {
-      const sentiment = session.sentiment || 'neutral';
-      acc[sentiment] = (acc[sentiment] || 0) + 1;
-      return acc;
-    }, {} as Record<string, number>);
-    const sentimentAnalysis = {
-      positive: Math.round(((sentimentCounts.positive || 0) / totalSessions) * 100),
-      neutral: Math.round(((sentimentCounts.neutral || 0) / totalSessions) * 100),
-      negative: Math.round(((sentimentCounts.negative || 0) / totalSessions) * 100)
-    };
-
-    return {
-      containmentRate,
-      handoffRate,
-      avgConversationLength,
-      peakHours,
-      topChannels,
-      sentimentAnalysis
-    };
-  }, [filteredSessions]);
-
-  // Calculate weekly comparison from real session data
-  const weeklyComparison = useMemo(() => {
-    if (!filteredSessions.length) return [];
-
-    const now = new Date();
-    const weeklyData = [];
-
-    for (let weekOffset = 0; weekOffset < 4; weekOffset++) {
-      const weekStart = new Date(now);
-      weekStart.setDate(now.getDate() - (weekOffset * 7) - now.getDay());
-      const weekEnd = new Date(weekStart);
-      weekEnd.setDate(weekStart.getDate() + 6);
-
-      const weekSessions = filteredSessions.filter(session => {
-        const sessionDate = new Date(session.start_time);
-        return sessionDate >= weekStart && sessionDate <= weekEnd;
-      });
-
-      const resolvedSessions = weekSessions.filter(s => 
-        s.resolution_type === 'self_service' || s.completion_status === 'completed'
-      );
-
-      const avgCsat = weekSessions.length > 0 
-        ? parseFloat((weekSessions.reduce((sum, s) => sum + s.user_rating, 0) / weekSessions.length).toFixed(1))
-        : 0;
-
-      const periodLabel = weekOffset === 0 ? 'This Week' : 
-                         weekOffset === 1 ? 'Last Week' : 
-                         `${weekOffset} Weeks Ago`;
-
-      weeklyData.push({
-        period: periodLabel,
-        conversations: weekSessions.length,
-        resolved: resolvedSessions.length,
-        csat: avgCsat
-      });
-    }
-
-    return weeklyData;
-  }, [filteredSessions]);
-
-  // Tab configuration
+  // Tab configuration - matching Conversations page
   const tabs = [
     { id: 'overview', label: 'Overview', icon: BarChart3 },
-    { id: 'performance', label: 'Performance', icon: TrendingUp },
-    { id: 'user-journey', label: 'User Journey', icon: Users },
-    { id: 'business-impact', label: 'Business Impact', icon: Target },
-    { id: 'operations', label: 'Operations', icon: Settings },
-    { id: 'reports', label: 'Reports', icon: FileText }
+    { id: 'conversations', label: 'Conversations', icon: MessageSquare },
+    { id: 'questions', label: 'Questions & Gaps', icon: HelpCircle },
+    { id: 'audience', label: 'Audience', icon: Globe },
+    { id: 'animations', label: 'Animations', icon: Sparkles },
+    { id: 'costs', label: 'True Costs', icon: DollarSign },
+    { id: 'custom', label: 'Custom', icon: Settings },
   ];
 
   if (loading) {
@@ -299,7 +231,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
 
   const workspaceOptions = [
     { value: 'all', label: 'All Workspaces' },
-    ...workspaces.map(ws => ({ value: ws.id, label: ws.name }))
+    ...workspaces.map(ws => ({ value: ws.id, label: ws.name })),
   ];
 
   const dateRangeOptions = [
@@ -307,1360 +239,1006 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
     { value: '7days', label: 'Last 7 days' },
     { value: '30days', label: 'Last 30 days' },
     { value: '90days', label: 'Last 90 days' },
-    { value: 'custom', label: 'Custom range' }
   ];
+
+  // Column definitions for each tab
+  const overviewColumns: ColumnDefinition[] = [
+    {
+      key: 'sessions',
+      header: 'Sessions',
+      render: (bot) => <span className="font-medium">{formatNumber(bot.overview.totalSessions)}</span>,
+      sortValue: (bot) => bot.overview.totalSessions,
+      align: 'right',
+    },
+    {
+      key: 'messages',
+      header: 'Messages',
+      render: (bot) => formatNumber(bot.overview.totalMessages),
+      sortValue: (bot) => bot.overview.totalMessages,
+      align: 'right',
+    },
+    {
+      key: 'duration',
+      header: 'Avg Duration',
+      render: (bot) => formatDuration(bot.overview.averageSessionDurationSeconds),
+      sortValue: (bot) => bot.overview.averageSessionDurationSeconds,
+      align: 'right',
+    },
+    {
+      key: 'resolution',
+      header: 'Resolution Rate',
+      render: (bot) => (
+        <ProgressBar
+          value={bot.overview.resolutionRate}
+          color={bot.overview.resolutionRate >= 80 ? 'success' : bot.overview.resolutionRate >= 60 ? 'warning' : 'error'}
+        />
+      ),
+      sortValue: (bot) => bot.overview.resolutionRate,
+      width: '150px',
+    },
+    {
+      key: 'returnRate',
+      header: 'Return Rate',
+      render: (bot) => {
+        const { returnRate } = calculateReturnRate(bot);
+        return formatPercent(returnRate);
+      },
+      sortValue: (bot) => calculateReturnRate(bot).returnRate,
+      align: 'right',
+    },
+  ];
+
+  const conversationsColumns: ColumnDefinition[] = [
+    {
+      key: 'sessions',
+      header: 'Sessions',
+      render: (bot) => formatNumber(bot.overview.totalSessions),
+      sortValue: (bot) => bot.overview.totalSessions,
+      align: 'right',
+    },
+    {
+      key: 'resolved',
+      header: 'Resolved',
+      render: (bot) => {
+        const { resolved } = calculateResolutionBreakdown(bot);
+        return <span className="text-success-600 dark:text-success-500">{resolved}</span>;
+      },
+      sortValue: (bot) => calculateResolutionBreakdown(bot).resolved,
+      align: 'right',
+    },
+    {
+      key: 'partial',
+      header: 'Partial',
+      render: (bot) => {
+        const { partial } = calculateResolutionBreakdown(bot);
+        return <span className="text-warning-600 dark:text-warning-500">{partial}</span>;
+      },
+      sortValue: (bot) => calculateResolutionBreakdown(bot).partial,
+      align: 'right',
+    },
+    {
+      key: 'unresolved',
+      header: 'Unresolved',
+      render: (bot) => {
+        const { unresolved } = calculateResolutionBreakdown(bot);
+        return <span className="text-error-600 dark:text-error-500">{unresolved}</span>;
+      },
+      sortValue: (bot) => calculateResolutionBreakdown(bot).unresolved,
+      align: 'right',
+    },
+    {
+      key: 'escalated',
+      header: 'Escalated',
+      render: (bot) => {
+        const { escalated } = calculateResolutionBreakdown(bot);
+        return escalated;
+      },
+      sortValue: (bot) => calculateResolutionBreakdown(bot).escalated,
+      align: 'right',
+    },
+    {
+      key: 'sentiment',
+      header: 'Sentiment',
+      render: (bot) => (
+        <div className="flex gap-1 text-xs">
+          <span className="text-success-600 dark:text-success-500">{bot.sentiment.positive}%</span>
+          <span className="text-foreground-tertiary">/</span>
+          <span className="text-foreground-secondary">{bot.sentiment.neutral}%</span>
+          <span className="text-foreground-tertiary">/</span>
+          <span className="text-error-600 dark:text-error-500">{bot.sentiment.negative}%</span>
+        </div>
+      ),
+    },
+  ];
+
+  const questionsColumns: ColumnDefinition[] = [
+    {
+      key: 'questions',
+      header: 'Questions',
+      render: (bot) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setQuestionsModal({
+              open: true,
+              questions: bot.questions.map(q => q.question),
+              title: `Questions - ${bot.botName}`,
+            });
+          }}
+          className="text-info-600 dark:text-info-500 hover:underline"
+        >
+          {bot.questions.length}
+        </button>
+      ),
+      sortValue: (bot) => bot.questions.length,
+      align: 'right',
+    },
+    {
+      key: 'answered',
+      header: 'Answered',
+      render: (bot) => {
+        const answered = bot.questions.length - bot.unanswered.length;
+        return <span className="text-success-600 dark:text-success-500">{answered}</span>;
+      },
+      sortValue: (bot) => bot.questions.length - bot.unanswered.length,
+      align: 'right',
+    },
+    {
+      key: 'unanswered',
+      header: 'Unanswered',
+      render: (bot) => (
+        <button
+          onClick={(e) => {
+            e.stopPropagation();
+            setQuestionsModal({
+              open: true,
+              questions: bot.unanswered.map(q => q.question),
+              title: `Unanswered Questions - ${bot.botName}`,
+            });
+          }}
+          className="text-error-600 dark:text-error-500 hover:underline"
+        >
+          {bot.unanswered.length}
+        </button>
+      ),
+      sortValue: (bot) => bot.unanswered.length,
+      align: 'right',
+    },
+    {
+      key: 'answerRate',
+      header: 'Answer Rate',
+      render: (bot) => {
+        const rate = bot.questions.length > 0
+          ? ((bot.questions.length - bot.unanswered.length) / bot.questions.length) * 100
+          : 0;
+        return (
+          <ProgressBar
+            value={rate}
+            color={rate >= 80 ? 'success' : rate >= 60 ? 'warning' : 'error'}
+          />
+        );
+      },
+      sortValue: (bot) => bot.questions.length > 0 ? ((bot.questions.length - bot.unanswered.length) / bot.questions.length) * 100 : 0,
+      width: '150px',
+    },
+    {
+      key: 'urlHandoffs',
+      header: 'URL Handoffs',
+      render: (bot) => calculateHandoffs(bot).urlHandoffs,
+      sortValue: (bot) => calculateHandoffs(bot).urlHandoffs,
+      align: 'right',
+    },
+    {
+      key: 'emailHandoffs',
+      header: 'Email Handoffs',
+      render: (bot) => calculateHandoffs(bot).emailHandoffs,
+      sortValue: (bot) => calculateHandoffs(bot).emailHandoffs,
+      align: 'right',
+    },
+  ];
+
+  const audienceColumns: ColumnDefinition[] = [
+    {
+      key: 'topCountry',
+      header: 'Top Country',
+      render: (bot) => bot.countries[0]?.country || '-',
+    },
+    {
+      key: 'topLanguage',
+      header: 'Top Language',
+      render: (bot) => bot.languages[0]?.language || '-',
+    },
+    {
+      key: 'mobile',
+      header: 'Mobile %',
+      render: (bot) => {
+        const mobile = bot.devices.find(d => d.deviceType === 'mobile');
+        return formatPercent(mobile?.percentage || 0);
+      },
+      sortValue: (bot) => bot.devices.find(d => d.deviceType === 'mobile')?.percentage || 0,
+      align: 'right',
+    },
+    {
+      key: 'desktop',
+      header: 'Desktop %',
+      render: (bot) => {
+        const desktop = bot.devices.find(d => d.deviceType === 'desktop');
+        return formatPercent(desktop?.percentage || 0);
+      },
+      sortValue: (bot) => bot.devices.find(d => d.deviceType === 'desktop')?.percentage || 0,
+      align: 'right',
+    },
+    {
+      key: 'topBrowser',
+      header: 'Top Browser',
+      render: (bot) => getTopBrowser(bot),
+    },
+  ];
+
+  const animationsColumns: ColumnDefinition[] = [
+    {
+      key: 'easterEggs',
+      header: 'Easter Eggs',
+      render: (bot) => formatNumber(bot.animations.easterEggsTriggered),
+      sortValue: (bot) => bot.animations.easterEggsTriggered,
+      align: 'right',
+    },
+    {
+      key: 'sessionsWithEaster',
+      header: 'Sessions w/ Easter',
+      render: (bot) => formatNumber(bot.animations.sessionsWithEasterEggs),
+      sortValue: (bot) => bot.animations.sessionsWithEasterEggs,
+      align: 'right',
+    },
+    {
+      key: 'easterRate',
+      header: 'Easter Rate',
+      render: (bot) => {
+        const rate = bot.animations.totalSessions > 0
+          ? (bot.animations.sessionsWithEasterEggs / bot.animations.totalSessions) * 100
+          : 0;
+        return formatPercent(rate);
+      },
+      sortValue: (bot) => bot.animations.totalSessions > 0 ? (bot.animations.sessionsWithEasterEggs / bot.animations.totalSessions) * 100 : 0,
+      align: 'right',
+    },
+    {
+      key: 'topEasterEgg',
+      header: 'Top Easter Egg',
+      render: (bot) => bot.animations.topEasterEggs[0]?.animation || '-',
+    },
+    {
+      key: 'newUsers',
+      header: 'New Users',
+      render: (bot) => {
+        const { newUsers } = calculateReturnRate(bot);
+        return formatNumber(newUsers);
+      },
+      sortValue: (bot) => calculateReturnRate(bot).newUsers,
+      align: 'right',
+    },
+    {
+      key: 'returningUsers',
+      header: 'Returning',
+      render: (bot) => {
+        const { returningUsers } = calculateReturnRate(bot);
+        return formatNumber(returningUsers);
+      },
+      sortValue: (bot) => calculateReturnRate(bot).returningUsers,
+      align: 'right',
+    },
+  ];
+
+  const costsColumns: ColumnDefinition[] = [
+    {
+      key: 'sessions',
+      header: 'Sessions',
+      render: (bot) => formatNumber(bot.overview.totalSessions),
+      sortValue: (bot) => bot.overview.totalSessions,
+      align: 'right',
+    },
+    {
+      key: 'tokens',
+      header: 'Total Tokens',
+      render: (bot) => formatNumber(bot.overview.totalTokens),
+      sortValue: (bot) => bot.overview.totalTokens,
+      align: 'right',
+    },
+    {
+      key: 'chatCost',
+      header: 'Chat Cost',
+      render: (bot) => {
+        const { chatCost } = calculateBotCosts(bot);
+        return formatCost(chatCost);
+      },
+      sortValue: (bot) => calculateBotCosts(bot).chatCost,
+      align: 'right',
+    },
+    {
+      key: 'analysisCost',
+      header: 'Analysis Cost',
+      render: (bot) => {
+        const { analysisCost } = calculateBotCosts(bot);
+        return formatCost(analysisCost);
+      },
+      sortValue: (bot) => calculateBotCosts(bot).analysisCost,
+      align: 'right',
+    },
+    {
+      key: 'totalCost',
+      header: 'Total Cost',
+      render: (bot) => {
+        const { totalCost } = calculateBotCosts(bot);
+        return <span className="font-semibold">{formatCost(totalCost)}</span>;
+      },
+      sortValue: (bot) => calculateBotCosts(bot).totalCost,
+      align: 'right',
+    },
+    {
+      key: 'costPerSession',
+      header: 'Cost/Session',
+      render: (bot) => {
+        const { costPerSession } = calculateBotCosts(bot);
+        return formatCost(costPerSession);
+      },
+      sortValue: (bot) => calculateBotCosts(bot).costPerSession,
+      align: 'right',
+    },
+  ];
+
+  const customColumns: ColumnDefinition[] = [
+    {
+      key: 'custom1',
+      header: 'Custom Field 1',
+      render: () => '-',
+    },
+    {
+      key: 'custom2',
+      header: 'Custom Field 2',
+      render: () => '-',
+    },
+  ];
+
+  // Get columns for current tab
+  const getColumnsForTab = () => {
+    switch (activeTab) {
+      case 'overview': return overviewColumns;
+      case 'conversations': return conversationsColumns;
+      case 'questions': return questionsColumns;
+      case 'audience': return audienceColumns;
+      case 'animations': return animationsColumns;
+      case 'costs': return costsColumns;
+      case 'custom': return customColumns;
+      default: return overviewColumns;
+    }
+  };
+
+  // Get KPI cards for current tab
+  const renderKPICards = () => {
+    switch (activeTab) {
+      case 'overview':
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-info-100 dark:bg-info-700/30 rounded-lg">
+                  <MessageSquare size={24} className="text-info-600 dark:text-info-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatNumber(totals.totalSessions)}</h3>
+              <p className="text-foreground-secondary text-sm">Total Sessions</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-success-100 dark:bg-success-700/30 rounded-lg">
+                  <CheckCircle size={24} className="text-success-600 dark:text-success-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatPercent(totals.avgResolutionRate)}</h3>
+              <p className="text-foreground-secondary text-sm">Avg Resolution Rate</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-warning-100 dark:bg-warning-700/30 rounded-lg">
+                  <Clock size={24} className="text-warning-600 dark:text-warning-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatDuration(totals.avgSessionDurationSeconds)}</h3>
+              <p className="text-foreground-secondary text-sm">Avg Duration</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-plan-premium-bg rounded-lg">
+                  <Users size={24} className="text-plan-premium-text" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatNumber(totals.totalMessages)}</h3>
+              <p className="text-foreground-secondary text-sm">Total Messages</p>
+            </div>
+          </div>
+        );
+
+      case 'conversations':
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-success-100 dark:bg-success-700/30 rounded-lg">
+                  <CheckCircle size={24} className="text-success-600 dark:text-success-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatPercent(totals.avgResolutionRate)}</h3>
+              <p className="text-foreground-secondary text-sm">Resolution Rate</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-warning-100 dark:bg-warning-700/30 rounded-lg">
+                  <AlertTriangle size={24} className="text-warning-600 dark:text-warning-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatPercent(totals.avgEscalationRate)}</h3>
+              <p className="text-foreground-secondary text-sm">Escalation Rate</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-info-100 dark:bg-info-700/30 rounded-lg">
+                  <Star size={24} className="text-info-600 dark:text-info-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{totals.sentiment.positive}%</h3>
+              <p className="text-foreground-secondary text-sm">Positive Sentiment</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-error-100 dark:bg-error-700/30 rounded-lg">
+                  <TrendingUp size={24} className="text-error-600 dark:text-error-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{totals.sentiment.negative}%</h3>
+              <p className="text-foreground-secondary text-sm">Negative Sentiment</p>
+            </div>
+          </div>
+        );
+
+      case 'questions':
+        const totalQuestions = botMetrics.reduce((sum, b) => sum + b.questions.length, 0);
+        const totalUnanswered = botMetrics.reduce((sum, b) => sum + b.unanswered.length, 0);
+        const totalAnswered = totalQuestions - totalUnanswered;
+        const avgAnswerRate = totalQuestions > 0 ? (totalAnswered / totalQuestions) * 100 : 0;
+        const totalUrlHandoffs = botMetrics.reduce((sum, b) => sum + calculateHandoffs(b).urlHandoffs, 0);
+        const totalEmailHandoffs = botMetrics.reduce((sum, b) => sum + calculateHandoffs(b).emailHandoffs, 0);
+
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-info-100 dark:bg-info-700/30 rounded-lg">
+                  <HelpCircle size={24} className="text-info-600 dark:text-info-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatNumber(totalQuestions)}</h3>
+              <p className="text-foreground-secondary text-sm">Total Questions</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-success-100 dark:bg-success-700/30 rounded-lg">
+                  <CheckCircle size={24} className="text-success-600 dark:text-success-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatPercent(avgAnswerRate)}</h3>
+              <p className="text-foreground-secondary text-sm">Answer Rate</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-warning-100 dark:bg-warning-700/30 rounded-lg">
+                  <AlertTriangle size={24} className="text-warning-600 dark:text-warning-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatNumber(totalUnanswered)}</h3>
+              <p className="text-foreground-secondary text-sm">Knowledge Gaps</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-plan-premium-bg rounded-lg">
+                  <Globe size={24} className="text-plan-premium-text" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatNumber(totalUrlHandoffs + totalEmailHandoffs)}</h3>
+              <p className="text-foreground-secondary text-sm">Total Handoffs</p>
+            </div>
+          </div>
+        );
+
+      case 'audience':
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-info-100 dark:bg-info-700/30 rounded-lg">
+                  <Globe size={24} className="text-info-600 dark:text-info-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatNumber(totals.totalSessions)}</h3>
+              <p className="text-foreground-secondary text-sm">Total Visitors</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-success-100 dark:bg-success-700/30 rounded-lg">
+                  <Users size={24} className="text-success-600 dark:text-success-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">
+                {botMetrics.length > 0 ? new Set(botMetrics.flatMap(b => b.countries.map(c => c.country))).size : 0}
+              </h3>
+              <p className="text-foreground-secondary text-sm">Countries</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-warning-100 dark:bg-warning-700/30 rounded-lg">
+                  <MessageSquare size={24} className="text-warning-600 dark:text-warning-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">
+                {botMetrics.length > 0 ? new Set(botMetrics.flatMap(b => b.languages.map(l => l.language))).size : 0}
+              </h3>
+              <p className="text-foreground-secondary text-sm">Languages</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-plan-premium-bg rounded-lg">
+                  <BarChart3 size={24} className="text-plan-premium-text" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">
+                {botMetrics.length > 0 ? new Set(botMetrics.flatMap(b => b.devices.map(d => d.deviceType))).size : 0}
+              </h3>
+              <p className="text-foreground-secondary text-sm">Device Types</p>
+            </div>
+          </div>
+        );
+
+      case 'animations':
+        const totalEasterEggs = botMetrics.reduce((sum, b) => sum + b.animations.easterEggsTriggered, 0);
+        const totalSessionsWithEaster = botMetrics.reduce((sum, b) => sum + b.animations.sessionsWithEasterEggs, 0);
+        const totalAnimationSessions = botMetrics.reduce((sum, b) => sum + b.animations.totalSessions, 0);
+        const easterRate = totalAnimationSessions > 0 ? (totalSessionsWithEaster / totalAnimationSessions) * 100 : 0;
+        const totalNewUsers = botMetrics.reduce((sum, b) => sum + calculateReturnRate(b).newUsers, 0);
+        const totalReturning = botMetrics.reduce((sum, b) => sum + calculateReturnRate(b).returningUsers, 0);
+
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-info-100 dark:bg-info-700/30 rounded-lg">
+                  <Sparkles size={24} className="text-info-600 dark:text-info-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatNumber(totalEasterEggs)}</h3>
+              <p className="text-foreground-secondary text-sm">Easter Eggs Triggered</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-success-100 dark:bg-success-700/30 rounded-lg">
+                  <Star size={24} className="text-success-600 dark:text-success-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatPercent(easterRate)}</h3>
+              <p className="text-foreground-secondary text-sm">Easter Egg Rate</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-warning-100 dark:bg-warning-700/30 rounded-lg">
+                  <Users size={24} className="text-warning-600 dark:text-warning-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatNumber(totalNewUsers)}</h3>
+              <p className="text-foreground-secondary text-sm">New Users</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-plan-premium-bg rounded-lg">
+                  <TrendingUp size={24} className="text-plan-premium-text" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatNumber(totalReturning)}</h3>
+              <p className="text-foreground-secondary text-sm">Returning Users</p>
+            </div>
+          </div>
+        );
+
+      case 'costs':
+        const totalChatCost = botMetrics.reduce((sum, b) => sum + calculateBotCosts(b).chatCost, 0);
+        const totalAnalysisCost = botMetrics.reduce((sum, b) => sum + calculateBotCosts(b).analysisCost, 0);
+        const totalCost = totalChatCost + totalAnalysisCost;
+        const avgCostPerSession = totals.totalSessions > 0 ? totalCost / totals.totalSessions : 0;
+
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6">
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-info-100 dark:bg-info-700/30 rounded-lg">
+                  <DollarSign size={24} className="text-info-600 dark:text-info-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatCost(totalChatCost)}</h3>
+              <p className="text-foreground-secondary text-sm">Chat Cost</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-success-100 dark:bg-success-700/30 rounded-lg">
+                  <BarChart3 size={24} className="text-success-600 dark:text-success-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatCost(totalAnalysisCost)}</h3>
+              <p className="text-foreground-secondary text-sm">Analysis Cost</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-warning-100 dark:bg-warning-700/30 rounded-lg">
+                  <TrendingUp size={24} className="text-warning-600 dark:text-warning-500" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatCost(totalCost)}</h3>
+              <p className="text-foreground-secondary text-sm">Total Cost</p>
+            </div>
+
+            <div className="card p-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="p-3 bg-plan-premium-bg rounded-lg">
+                  <Clock size={24} className="text-plan-premium-text" />
+                </div>
+              </div>
+              <h3 className="text-2xl font-bold text-foreground">{formatCost(avgCostPerSession)}</h3>
+              <p className="text-foreground-secondary text-sm">Avg Cost/Session</p>
+            </div>
+          </div>
+        );
+
+      case 'custom':
+        return (
+          <div className="p-6 mb-6 bg-background-secondary rounded-lg border border-border">
+            <p className="text-foreground-secondary text-center">Custom metrics coming soon...</p>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
+
+  // Render charts for current tab
+  const renderCharts = () => {
+    if (botMetrics.length === 0) return null;
+
+    switch (activeTab) {
+      case 'overview':
+        const sessionsData = generateMultiBotTimeSeries(botMetrics, 'sessions');
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="card p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Sessions Over Time</h3>
+              <div className="h-80">
+                <MultiLineChart
+                  data={sessionsData}
+                  series={botMetrics.map(b => ({ name: b.botName, dataKey: b.botName }))}
+                  xAxisKey="date"
+                  yAxisLabel="Sessions"
+                  height={300}
+                />
+              </div>
+            </div>
+            <div className="card p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Messages Over Time</h3>
+              <div className="h-80">
+                <MultiLineChart
+                  data={generateMultiBotTimeSeries(botMetrics, 'messages')}
+                  series={botMetrics.map(b => ({ name: b.botName, dataKey: b.botName }))}
+                  xAxisKey="date"
+                  yAxisLabel="Messages"
+                  height={300}
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      case 'costs':
+        return (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+            <div className="card p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Cost Over Time</h3>
+              <div className="h-80">
+                <MultiLineChart
+                  data={generateMultiBotTimeSeries(botMetrics, 'cost')}
+                  series={botMetrics.map(b => ({ name: b.botName, dataKey: b.botName }))}
+                  xAxisKey="date"
+                  yAxisLabel="Cost (€)"
+                  height={300}
+                />
+              </div>
+            </div>
+            <div className="card p-6">
+              <h3 className="text-lg font-semibold text-foreground mb-4">Token Usage Over Time</h3>
+              <div className="h-80">
+                <MultiLineChart
+                  data={generateMultiBotTimeSeries(botMetrics, 'tokens')}
+                  series={botMetrics.map(b => ({ name: b.botName, dataKey: b.botName }))}
+                  xAxisKey="date"
+                  yAxisLabel="Tokens"
+                  height={300}
+                />
+              </div>
+            </div>
+          </div>
+        );
+
+      default:
+        return null;
+    }
+  };
 
   return (
     <Page>
       <PageContent>
-            <PageHeader
-              title="Analytics Dashboard"
-              description={selectedWorkspace === 'all'
-                ? `Comprehensive insights for ${client.name}`
-                : `${workspaces.find(w => w.id === selectedWorkspace)?.name || 'Workspace'} - ${client.name}`
-              }
+        <PageHeader
+          title="Analytics Dashboard"
+          description={
+            selectedWorkspace === 'all'
+              ? `Compare bot performance for ${client.name}`
+              : `${workspaces.find(w => w.id === selectedWorkspace)?.name || 'Workspace'} - ${client.name}`
+          }
+        />
+
+        {/* Filters */}
+        <div className="flex gap-3 flex-wrap items-end mb-6">
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm font-medium text-foreground-secondary">Workspace:</span>
+            </div>
+            <Select
+              fullWidth={false}
+              options={workspaceOptions}
+              value={selectedWorkspace}
+              onChange={(e) => setSelectedWorkspace(e.target.value)}
+              minWidth="180px"
             />
-
-            <div className="flex gap-3 flex-wrap items-end mb-6">
-              {/* Workspace Selector */}
-              <div>
-                <div className="flex items-center gap-2 mb-2">
-                  <span className="text-sm font-medium text-foreground-secondary">Workspace:</span>
-                </div>
-                <Select
-                  fullWidth={false}
-                  options={workspaceOptions}
-                  value={selectedWorkspace}
-                  onChange={(e) => setSelectedWorkspace(e.target.value)}
-                  minWidth="180px"
-                />
-              </div>
-
-                {/* Bot Selection Dropdown */}
-                <div className="relative" ref={dropdownRef}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <span className="text-sm font-medium text-foreground-secondary">Bot Selection:</span>
-                  </div>
-                  <button
-                    onClick={() => setDropdownOpen(!dropdownOpen)}
-                    className="flex items-center gap-2 h-11 px-4 bg-info-100 dark:bg-info-700/30 border-2 border-info-500/30 rounded-xl hover:bg-info-100/80 dark:hover:bg-info-700/40 focus:outline-none focus:ring-2 focus:ring-info-500 min-w-[200px] justify-between"
-                  >
-                    <span className="truncate font-medium text-info-700 dark:text-info-500">{getSelectionLabel()}</span>
-                    <ChevronDown size={16} className={`transition-transform text-info-600 dark:text-info-500 ${dropdownOpen ? 'rotate-180' : ''}`} />
-                  </button>
-
-                  {dropdownOpen && (
-                    <div className="absolute top-full left-0 mt-1 w-72 bg-surface-elevated border border-border rounded-lg shadow-lg z-50">
-                      <div className="p-3 border-b border-border">
-                        <h4 className="font-medium text-sm text-foreground-secondary">Select Bots to Compare</h4>
-                      </div>
-                      <div className="max-h-48 overflow-y-auto">
-                        <label className="flex items-center gap-3 p-3 hover:bg-background-hover cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={selectedBots.includes('all') || selectedBots.length === 0}
-                            onChange={() => handleBotToggle('all')}
-                            className="rounded border-border text-interactive focus:ring-interactive"
-                          />
-                          <span className="text-sm font-medium text-foreground">All Bots</span>
-                        </label>
-                        <hr className="mx-3 border-border" />
-                        {selectedWorkspace === 'all' ? (
-                          // Group by workspace when "All Workspaces" is selected
-                          workspaces.map(workspace => {
-                            const workspaceBots = bots.filter(bot => bot.workspaceId === workspace.id);
-                            if (workspaceBots.length === 0) return null;
-
-                            return (
-                              <div key={workspace.id}>
-                                <div className="px-3 py-2 text-xs font-medium text-foreground-tertiary bg-background-secondary border-t border-border">
-                                  {workspace.name}
-                                </div>
-                                {workspaceBots.map(bot => {
-                                  const botSessions = sessions.filter(s => s.bot_id === bot.id);
-                                  return (
-                                    <label key={bot.id} className="flex items-center gap-3 p-3 hover:bg-background-hover cursor-pointer">
-                                      <input
-                                        type="checkbox"
-                                        checked={selectedBots.includes(bot.id)}
-                                        onChange={() => handleBotToggle(bot.id)}
-                                        className="rounded border-border text-interactive focus:ring-interactive"
-                                      />
-                                      <img
-                                        src={bot.image}
-                                        alt={bot.name}
-                                        className="w-6 h-6 rounded-full"
-                                        style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                                      />
-                                      <div className="flex-1">
-                                        <span className="text-sm font-medium text-foreground">{bot.name}</span>
-                                        <div className="text-xs text-foreground-tertiary">{botSessions.length} sessions</div>
-                                      </div>
-                                      <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                        bot.status === 'Live' ? 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500' :
-                                        bot.status === 'Paused' ? 'bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500' :
-                                        'bg-error-100 dark:bg-error-700/30 text-error-700 dark:text-error-500'
-                                      }`}>
-                                        {bot.status}
-                                      </span>
-                                    </label>
-                                  );
-                                })}
-                              </div>
-                            );
-                          })
-                        ) : (
-                          // Show bots from selected workspace only
-                          bots.filter(bot => bot.workspaceId === selectedWorkspace).map(bot => {
-                            const botSessions = sessions.filter(s => s.bot_id === bot.id);
-                            return (
-                              <label key={bot.id} className="flex items-center gap-3 p-3 hover:bg-background-hover cursor-pointer">
-                                <input
-                                  type="checkbox"
-                                  checked={selectedBots.includes(bot.id)}
-                                  onChange={() => handleBotToggle(bot.id)}
-                                  className="rounded border-border text-interactive focus:ring-interactive"
-                                />
-                                <img
-                                  src={bot.image}
-                                  alt={bot.name}
-                                  className="w-6 h-6 rounded-full"
-                                  style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                                />
-                                <div className="flex-1">
-                                  <span className="text-sm font-medium text-foreground">{bot.name}</span>
-                                  <div className="text-xs text-foreground-tertiary">{botSessions.length} sessions</div>
-                                </div>
-                                <span className={`text-xs px-2 py-0.5 rounded-full ${
-                                  bot.status === 'Live' ? 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500' :
-                                  bot.status === 'Paused' ? 'bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500' :
-                                  'bg-error-100 dark:bg-error-700/30 text-error-700 dark:text-error-500'
-                                }`}>
-                                  {bot.status}
-                                </span>
-                              </label>
-                            );
-                          })
-                        )}
-                      </div>
-                    </div>
-                  )}
-                </div>
-
-              <Select
-                fullWidth={false}
-                options={dateRangeOptions}
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-                minWidth="140px"
-              />
-              <Button variant="secondary" icon={<Filter size={18} />}>
-                Filters
-              </Button>
-              <Button icon={<Download size={18} />}>
-                Export Report
-              </Button>
-            </div>
-
-          {/* Tab Navigation */}
-          <div className="mb-6">
-            <div className="border-b border-border">
-              <nav className="-mb-px flex space-x-8">
-                {tabs.map((tab) => {
-                  const Icon = tab.icon;
-                  return (
-                    <button
-                      key={tab.id}
-                      onClick={() => setActiveTab(tab.id)}
-                      className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm ${
-                        activeTab === tab.id
-                          ? 'border-foreground text-foreground'
-                          : 'border-transparent text-foreground-tertiary hover:text-foreground-secondary hover:border-border-secondary'
-                      }`}
-                    >
-                      <Icon
-                        size={20}
-                        className={`mr-2 ${
-                          activeTab === tab.id ? 'text-foreground' : 'text-foreground-tertiary group-hover:text-foreground-secondary'
-                        }`}
-                      />
-                      {tab.label}
-                    </button>
-                  );
-                })}
-              </nav>
-            </div>
           </div>
 
-          {/* Tab Content */}
-          {activeTab === 'overview' && renderOverviewTab()}
-          {activeTab === 'performance' && renderPerformanceTab()}
-          {activeTab === 'user-journey' && renderUserJourneyTab()}
-          {activeTab === 'business-impact' && renderBusinessImpactTab()}
-          {activeTab === 'operations' && renderOperationsTab()}
-          {activeTab === 'reports' && renderReportsTab()}
-
-          {/* Always Visible: Selected Bots Comparison Table */}
-          <div className="card overflow-hidden mt-6 mb-8">
-            <div className="p-6 border-b border-border">
-              <h2 className="text-xl font-semibold text-foreground">Selected Bots Comparison</h2>
-              <p className="text-sm text-foreground-secondary mt-1">
-                {filteredBots.length === 0 ? 'No bots selected' :
-                 selectedBots.includes('all') || selectedBots.length === 0 ? `All ${filteredBots.length} bots` :
-                 `Comparing ${filteredBots.length} selected bots`}
-              </p>
+          {/* Bot Selection Dropdown */}
+          <div className="relative" ref={dropdownRef}>
+            <div className="flex items-center gap-2 mb-2">
+              <span className="text-sm font-medium text-foreground-secondary">Bot Selection:</span>
             </div>
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Bot</th>
-                  <th>Status</th>
-                  <th>Sessions</th>
-                  <th>Response Time</th>
-                  <th>Resolution Rate</th>
-                  <th>CSAT</th>
-                  <th>Trend</th>
-                </tr>
-              </thead>
-              <tbody>
-                {filteredBots.map(bot => {
-                  const botSessions = sessions.filter(s => s.bot_id === bot.id);
-                  const botMetrics = {
-                    conversations: botSessions.length,
-                    avgResponseTime: botSessions.length > 0 ? (botSessions.reduce((sum, s) => sum + s.avg_response_time, 0) / botSessions.length / 1000) : 0,
-                    resolutionRate: botSessions.length > 0 ? ((botSessions.filter(s => s.resolution_type === 'self_service' || s.completion_status === 'completed').length / botSessions.length) * 100) : 0,
-                    csat: botSessions.length > 0 ? (botSessions.reduce((sum, s) => sum + s.user_rating, 0) / botSessions.length) : 0
-                  };
+            <button
+              onClick={() => setDropdownOpen(!dropdownOpen)}
+              className="flex items-center gap-2 h-11 px-4 bg-info-100 dark:bg-info-700/30 border-2 border-info-500/30 rounded-xl hover:bg-info-100/80 dark:hover:bg-info-700/40 focus:outline-none focus:ring-2 focus:ring-info-500 min-w-[200px] justify-between"
+            >
+              <span className="truncate font-medium text-info-700 dark:text-info-500">{getSelectionLabel()}</span>
+              <ChevronDown size={16} className={`transition-transform text-info-600 dark:text-info-500 ${dropdownOpen ? 'rotate-180' : ''}`} />
+            </button>
 
-                  return (
-                    <tr key={bot.id}>
-                      <td>
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={bot.image}
-                            alt={bot.name}
-                            className="w-8 h-8 rounded-full"
-                            style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                          />
-                          <span className="font-medium text-foreground">{bot.name}</span>
+            {dropdownOpen && (
+              <div className="absolute top-full left-0 mt-1 w-72 bg-surface-elevated border border-border rounded-lg shadow-lg z-50">
+                <div className="p-3 border-b border-border">
+                  <h4 className="font-medium text-sm text-foreground-secondary">Select Bots to Compare</h4>
+                </div>
+                <div className="max-h-48 overflow-y-auto">
+                  <label className="flex items-center gap-3 p-3 hover:bg-background-hover cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={selectedBots.includes('all') || selectedBots.length === 0}
+                      onChange={() => handleBotToggle('all')}
+                      className="rounded border-border text-interactive focus:ring-interactive"
+                    />
+                    <span className="text-sm font-medium text-foreground">All Bots</span>
+                  </label>
+                  <hr className="mx-3 border-border" />
+                  {selectedWorkspace === 'all' ? (
+                    workspaces.map(workspace => {
+                      const workspaceBots = bots.filter(bot => bot.workspaceId === workspace.id);
+                      if (workspaceBots.length === 0) return null;
+
+                      return (
+                        <div key={workspace.id}>
+                          <div className="px-3 py-2 text-xs font-medium text-foreground-tertiary bg-background-secondary border-t border-border">
+                            {workspace.name}
+                          </div>
+                          {workspaceBots.map(bot => (
+                            <label key={bot.id} className="flex items-center gap-3 p-3 hover:bg-background-hover cursor-pointer">
+                              <input
+                                type="checkbox"
+                                checked={selectedBots.includes(bot.id)}
+                                onChange={() => handleBotToggle(bot.id)}
+                                className="rounded border-border text-interactive focus:ring-interactive"
+                              />
+                              <img
+                                src={bot.image}
+                                alt={bot.name}
+                                className="w-6 h-6 rounded-full"
+                                style={{ backgroundColor: brandColor }}
+                              />
+                              <div className="flex-1">
+                                <span className="text-sm font-medium text-foreground">{bot.name}</span>
+                              </div>
+                              <span className={`text-xs px-2 py-0.5 rounded-full ${
+                                bot.status === 'Live' ? 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500' :
+                                bot.status === 'Paused' ? 'bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500' :
+                                'bg-error-100 dark:bg-error-700/30 text-error-700 dark:text-error-500'
+                              }`}>
+                                {bot.status}
+                              </span>
+                            </label>
+                          ))}
                         </div>
-                      </td>
-                      <td>
-                        <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                      );
+                    })
+                  ) : (
+                    bots.filter(bot => bot.workspaceId === selectedWorkspace).map(bot => (
+                      <label key={bot.id} className="flex items-center gap-3 p-3 hover:bg-background-hover cursor-pointer">
+                        <input
+                          type="checkbox"
+                          checked={selectedBots.includes(bot.id)}
+                          onChange={() => handleBotToggle(bot.id)}
+                          className="rounded border-border text-interactive focus:ring-interactive"
+                        />
+                        <img
+                          src={bot.image}
+                          alt={bot.name}
+                          className="w-6 h-6 rounded-full"
+                          style={{ backgroundColor: brandColor }}
+                        />
+                        <div className="flex-1">
+                          <span className="text-sm font-medium text-foreground">{bot.name}</span>
+                        </div>
+                        <span className={`text-xs px-2 py-0.5 rounded-full ${
                           bot.status === 'Live' ? 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500' :
                           bot.status === 'Paused' ? 'bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500' :
                           'bg-error-100 dark:bg-error-700/30 text-error-700 dark:text-error-500'
                         }`}>
                           {bot.status}
                         </span>
-                      </td>
-                      <td className="font-medium text-foreground">{botMetrics.conversations}</td>
-                      <td className="text-foreground-secondary">{botMetrics.avgResponseTime.toFixed(1)}s</td>
-                      <td className="text-foreground-secondary">{botMetrics.resolutionRate.toFixed(0)}%</td>
-                      <td className="flex items-center gap-1">
-                        <span className="text-foreground">{botMetrics.csat.toFixed(1)}</span>
-                        <Star size={14} className="text-warning-500" />
-                      </td>
-                      <td>
-                        <div className="flex items-center gap-1 text-success-600 dark:text-success-500">
-                          <TrendingUp size={14} />
-                          <span className="text-sm">+8%</span>
-                        </div>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
+                      </label>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
           </div>
+
+          <Select
+            fullWidth={false}
+            options={dateRangeOptions}
+            value={dateRange}
+            onChange={(e) => setDateRange(e.target.value)}
+            minWidth="140px"
+          />
+          <Button variant="secondary" icon={<Filter size={18} />}>
+            Filters
+          </Button>
+          <Button icon={<Download size={18} />}>
+            Export Report
+          </Button>
+        </div>
+
+        {/* Tab Navigation */}
+        <div className="mb-6">
+          <div className="border-b border-border">
+            <nav className="-mb-px flex space-x-8 overflow-x-auto">
+              {tabs.map((tab) => {
+                const Icon = tab.icon;
+                return (
+                  <button
+                    key={tab.id}
+                    onClick={() => setActiveTab(tab.id)}
+                    className={`group inline-flex items-center py-4 px-1 border-b-2 font-medium text-sm whitespace-nowrap ${
+                      activeTab === tab.id
+                        ? 'border-foreground text-foreground'
+                        : 'border-transparent text-foreground-tertiary hover:text-foreground-secondary hover:border-border-secondary'
+                    }`}
+                    style={activeTab === tab.id ? { borderBottomColor: brandColor } : {}}
+                  >
+                    <Icon
+                      size={20}
+                      className={`mr-2 ${
+                        activeTab === tab.id ? 'text-foreground' : 'text-foreground-tertiary group-hover:text-foreground-secondary'
+                      }`}
+                    />
+                    {tab.label}
+                  </button>
+                );
+              })}
+            </nav>
+          </div>
+        </div>
+
+        {/* Loading State */}
+        {metricsLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <Spinner size="lg" />
+          </div>
+        ) : (
+          <>
+            {/* KPI Cards */}
+            {renderKPICards()}
+
+            {/* Charts */}
+            {renderCharts()}
+
+            {/* Bot Comparison Table */}
+            <BotComparisonTable
+              bots={botMetrics}
+              columns={getColumnsForTab()}
+              brandColor={brandColor}
+              title={`Bot Comparison - ${tabs.find(t => t.id === activeTab)?.label || 'Overview'}`}
+              description={
+                botMetrics.length === 0
+                  ? 'No bots selected'
+                  : `Comparing ${botMetrics.length} bot${botMetrics.length !== 1 ? 's' : ''}`
+              }
+              emptyMessage="Select bots to compare their metrics"
+              expandableContent={
+                activeTab === 'questions'
+                  ? (bot) => (
+                      <div className="space-y-3">
+                        <h4 className="font-medium text-foreground">Top Unanswered Questions</h4>
+                        {bot.unanswered.length > 0 ? (
+                          <ul className="space-y-2">
+                            {bot.unanswered.slice(0, 5).map((q, i) => (
+                              <li key={i} className="flex items-start gap-2 text-sm">
+                                <span className="text-warning-600 dark:text-warning-500 font-medium">•</span>
+                                <span className="text-foreground">{q.question}</span>
+                                <span className="text-foreground-tertiary">({q.frequency}x)</span>
+                              </li>
+                            ))}
+                          </ul>
+                        ) : (
+                          <p className="text-foreground-tertiary text-sm">No unanswered questions</p>
+                        )}
+                      </div>
+                    )
+                  : undefined
+              }
+            />
+          </>
+        )}
+
+        {/* Questions Modal */}
+        <Modal
+          isOpen={questionsModal.open}
+          onClose={() => setQuestionsModal({ open: false, questions: [], title: '' })}
+          title={questionsModal.title}
+          size="lg"
+        >
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {questionsModal.questions.length > 0 ? (
+              questionsModal.questions.map((q, i) => (
+                <div key={i} className="p-3 bg-background-secondary rounded-lg">
+                  <p className="text-sm text-foreground">{q}</p>
+                </div>
+              ))
+            ) : (
+              <p className="text-foreground-tertiary text-center py-4">No questions available</p>
+            )}
+          </div>
+        </Modal>
       </PageContent>
     </Page>
   );
-
-  // Tab render functions
-  function renderOverviewTab() {
-    return (
-      <div className="space-y-6">
-        {/* Key Metrics Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-info-100 dark:bg-info-700/30 rounded-lg">
-                <MessageSquare size={24} className="text-info-600 dark:text-info-500" />
-              </div>
-              <span className="text-sm text-success-600 dark:text-success-500 font-medium">+12%</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">{metrics.totalConversations.toLocaleString()}</h3>
-            <p className="text-foreground-secondary text-sm">Total Sessions</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-success-100 dark:bg-success-700/30 rounded-lg">
-                <CheckCircle size={24} className="text-success-600 dark:text-success-500" />
-              </div>
-              <span className="text-sm text-success-600 dark:text-success-500 font-medium">+5%</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">{metrics.avgResolutionRate.toFixed(0)}%</h3>
-            <p className="text-foreground-secondary text-sm">Resolution Rate</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-warning-100 dark:bg-warning-700/30 rounded-lg">
-                <Clock size={24} className="text-warning-600 dark:text-warning-500" />
-              </div>
-              <span className="text-sm text-error-600 dark:text-error-500 font-medium">-0.2s</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">{metrics.avgResponseTime.toFixed(1)}s</h3>
-            <p className="text-foreground-secondary text-sm">Avg Response Time</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-plan-premium-bg rounded-lg">
-                <Star size={24} className="text-plan-premium-text" />
-              </div>
-              <span className="text-sm text-success-600 dark:text-success-500 font-medium">+0.3</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">{metrics.avgCsat.toFixed(1)}</h3>
-            <p className="text-foreground-secondary text-sm">Customer Satisfaction</p>
-          </div>
-        </div>
-
-        {/* Overview Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">Bot Performance Ranking</h2>
-            <div className="space-y-4">
-              {filteredBots.map((bot, index) => {
-                const botSessions = sessions.filter(s => s.bot_id === bot.id);
-                const resolutionRate = botSessions.length > 0
-                  ? ((botSessions.filter(s => s.resolution_type === 'self_service' || s.completion_status === 'completed').length / botSessions.length) * 100)
-                  : 0;
-
-                return (
-                  <div key={bot.id} className="flex items-center gap-4 p-4 bg-background-secondary rounded-lg">
-                    <div className="text-2xl font-bold text-foreground-tertiary">#{index + 1}</div>
-                    <img
-                      src={bot.image}
-                      alt={bot.name}
-                      className="w-10 h-10 rounded-full"
-                      style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                    />
-                    <div className="flex-1">
-                      <div className="font-semibold text-foreground">{bot.name}</div>
-                      <div className="text-sm text-foreground-secondary">{botSessions.length} sessions</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="font-semibold text-success-600 dark:text-success-500">{resolutionRate.toFixed(0)}%</div>
-                      <div className="text-sm text-foreground-secondary">Resolution</div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">Sessions by Bot</h2>
-            <div className="space-y-3">
-              {filteredBots.map(bot => {
-                const botSessions = sessions.filter(s => s.bot_id === bot.id);
-                const percentage = sessions.length > 0 ? (botSessions.length / filteredSessions.length) * 100 : 0;
-
-                return (
-                  <div key={bot.id} className="flex items-center gap-3">
-                    <img
-                      src={bot.image}
-                      alt={bot.name}
-                      className="w-6 h-6 rounded-full"
-                      style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                    />
-                    <div className="flex-1">
-                      <div className="flex justify-between mb-1">
-                        <span className="text-sm font-medium text-foreground">{bot.name}</span>
-                        <span className="text-sm text-foreground-secondary">{botSessions.length} ({percentage.toFixed(0)}%)</span>
-                      </div>
-                      <div className="w-full bg-background-tertiary rounded-full h-2">
-                        <div
-                          className="bg-info-500 h-2 rounded-full"
-                          style={{ width: `${percentage}%` }}
-                        ></div>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function renderPerformanceTab() {
-    // Calculate performance metrics for each bot
-    const botPerformanceData = filteredBots.map(bot => {
-      const botSessions = sessions.filter(s => s.bot_id === bot.id);
-      if (botSessions.length === 0) return null;
-      
-      const avgResponseTime = botSessions.reduce((sum, s) => sum + s.avg_response_time, 0) / botSessions.length / 1000;
-      const resolutionRate = (botSessions.filter(s => s.resolution_type === 'self_service' || s.completion_status === 'completed').length / botSessions.length) * 100;
-      const csat = botSessions.reduce((sum, s) => sum + s.user_rating, 0) / botSessions.length;
-      const handoffRate = (botSessions.filter(s => s.bot_handoff === true).length / botSessions.length) * 100;
-      
-      return {
-        botName: bot.name,
-        botImage: bot.image,
-        botId: bot.id,
-        avgResponseTime,
-        resolutionRate,
-        csat,
-        handoffRate,
-        totalSessions: botSessions.length
-      };
-    }).filter((item): item is NonNullable<typeof item> => item !== null);
-
-    // Generate time-series data for trends (last 30 days)
-    const generateTrendData = () => {
-      const days = [];
-      const now = new Date();
-      
-      // Generate last 30 days
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(now.getDate() - i);
-        days.push({
-          date: date.toISOString().split('T')[0],
-          displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-        });
-      }
-
-      // Build data structure for charts - each day has all bot metrics
-      const chartData = days.map(day => {
-        const dayData: any = { date: day.displayDate };
-        
-        filteredBots.forEach(bot => {
-          const botSessions = sessions.filter(s => {
-            const sessionDate = new Date(s.start_time).toISOString().split('T')[0];
-            return s.bot_id === bot.id && sessionDate === day.date;
-          });
-
-          if (botSessions.length === 0) {
-            dayData[`${bot.name}_resolutionRate`] = null;
-            dayData[`${bot.name}_responseTime`] = null;
-            dayData[`${bot.name}_csat`] = null;
-            dayData[`${bot.name}_handoffRate`] = null;
-          } else {
-            // Resolution Rate
-            const resolved = botSessions.filter(s => 
-              s.resolution_type === 'self_service' || s.completion_status === 'completed'
-            ).length;
-            dayData[`${bot.name}_resolutionRate`] = Math.round((resolved / botSessions.length) * 100);
-
-            // Response Time
-            const avgTime = botSessions.reduce((sum, s) => sum + s.avg_response_time, 0) / botSessions.length / 1000;
-            dayData[`${bot.name}_responseTime`] = parseFloat(avgTime.toFixed(1));
-
-            // CSAT
-            const avgCsat = botSessions.reduce((sum, s) => sum + s.user_rating, 0) / botSessions.length;
-            dayData[`${bot.name}_csat`] = parseFloat(avgCsat.toFixed(1));
-
-            // Handoff Rate
-            const handoffs = botSessions.filter(s => s.bot_handoff === true).length;
-            dayData[`${bot.name}_handoffRate`] = Math.round((handoffs / botSessions.length) * 100);
-          }
-        });
-
-        return dayData;
-      });
-
-      // Create series configurations for each metric
-      const seriesConfig = {
-        resolutionRate: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_resolutionRate` })),
-        responseTime: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_responseTime` })),
-        csat: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_csat` })),
-        handoffRate: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_handoffRate` }))
-      };
-
-      return { chartData, seriesConfig };
-    };
-
-    const { chartData, seriesConfig } = generateTrendData();
-
-    return (
-      <div className="space-y-6">
-        {/* Performance Metrics Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-info-100 dark:bg-info-700/30 rounded-lg">
-                <Clock size={24} className="text-info-600 dark:text-info-500" />
-              </div>
-              <span className="text-sm text-success-600 dark:text-success-500 font-medium">-0.2s</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">{metrics.avgResponseTime.toFixed(1)}s</h3>
-            <p className="text-foreground-secondary text-sm">Avg Response Time</p>
-            <p className="text-xs text-foreground-tertiary mt-1">Across all selected bots</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-success-100 dark:bg-success-700/30 rounded-lg">
-                <CheckCircle size={24} className="text-success-600 dark:text-success-500" />
-              </div>
-              <span className="text-sm text-success-600 dark:text-success-500 font-medium">+3%</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">{metrics.avgResolutionRate.toFixed(0)}%</h3>
-            <p className="text-foreground-secondary text-sm">Resolution Rate</p>
-            <p className="text-xs text-foreground-tertiary mt-1">Average across bots</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-plan-premium-bg rounded-lg">
-                <Star size={24} className="text-plan-premium-text" />
-              </div>
-              <span className="text-sm text-success-600 dark:text-success-500 font-medium">+0.2</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">{metrics.avgCsat.toFixed(1)}</h3>
-            <p className="text-foreground-secondary text-sm">Customer Satisfaction</p>
-            <p className="text-xs text-foreground-tertiary mt-1">Average CSAT score</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-warning-100 dark:bg-warning-700/30 rounded-lg">
-                <AlertTriangle size={24} className="text-warning-600 dark:text-warning-500" />
-              </div>
-              <span className="text-sm text-error-600 dark:text-error-500 font-medium">+1.2%</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">{advancedMetrics.handoffRate}%</h3>
-            <p className="text-foreground-secondary text-sm">Handoff Rate</p>
-            <p className="text-xs text-foreground-tertiary mt-1">Escalated to humans</p>
-          </div>
-        </div>
-
-        {/* Performance Trend Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">Resolution Rate Trends (30 Days)</h2>
-            <div className="h-80">
-              <MultiLineChart
-                data={chartData}
-                series={seriesConfig.resolutionRate}
-                xAxisKey="date"
-                yAxisLabel="Resolution Rate (%)"
-                height={300}
-              />
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">Response Time Trends (30 Days)</h2>
-            <div className="h-80">
-              <MultiLineChart
-                data={chartData}
-                series={seriesConfig.responseTime}
-                xAxisKey="date"
-                yAxisLabel="Response Time (s)"
-                height={300}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* CSAT and Handoff Rate Trend Charts */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">CSAT Score Trends (30 Days)</h2>
-            <div className="h-80">
-              <MultiLineChart
-                data={chartData}
-                series={seriesConfig.csat}
-                xAxisKey="date"
-                yAxisLabel="CSAT Score"
-                height={300}
-              />
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">Handoff Rate Trends (30 Days)</h2>
-            <div className="h-80">
-              <MultiLineChart
-                data={chartData}
-                series={seriesConfig.handoffRate}
-                xAxisKey="date"
-                yAxisLabel="Handoff Rate (%)"
-                height={300}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Performance Trends */}
-        <div className="card p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-6">Performance Leaderboard</h2>
-          <div className="overflow-x-auto">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Rank</th>
-                  <th>Bot</th>
-                  <th>Overall Score</th>
-                  <th>Response Time</th>
-                  <th>Resolution</th>
-                  <th>CSAT</th>
-                  <th>Sessions</th>
-                </tr>
-              </thead>
-              <tbody>
-                {botPerformanceData
-                  .sort((a, b) => {
-                    // Calculate overall score based on multiple factors
-                    const scoreA = (a.resolutionRate * 0.4) + (a.csat * 20 * 0.3) + ((5 - Math.min(a.avgResponseTime, 5)) * 20 * 0.2) + ((100 - a.handoffRate) * 0.1);
-                    const scoreB = (b.resolutionRate * 0.4) + (b.csat * 20 * 0.3) + ((5 - Math.min(b.avgResponseTime, 5)) * 20 * 0.2) + ((100 - b.handoffRate) * 0.1);
-                    return scoreB - scoreA;
-                  })
-                  .map((bot, index) => {
-                    const overallScore = (bot.resolutionRate * 0.4) + (bot.csat * 20 * 0.3) + ((5 - Math.min(bot.avgResponseTime, 5)) * 20 * 0.2) + ((100 - bot.handoffRate) * 0.1);
-
-                    return (
-                      <tr key={bot.botId}>
-                        <td>
-                          <div className="flex items-center gap-2">
-                            <div className={`w-6 h-6 rounded-full flex items-center justify-center text-white text-sm font-bold ${
-                              index === 0 ? 'bg-warning-500' :
-                              index === 1 ? 'bg-foreground-tertiary' :
-                              index === 2 ? 'bg-warning-600' : 'bg-foreground-disabled'
-                            }`}>
-                              {index + 1}
-                            </div>
-                            {index === 0 && <span className="text-xs text-warning-600 dark:text-warning-500 font-medium">Best</span>}
-                          </div>
-                        </td>
-                        <td>
-                          <div className="flex items-center gap-3">
-                            <img
-                              src={bot.botImage}
-                              alt={bot.botName}
-                              className="w-8 h-8 rounded-full"
-                              style={{ backgroundColor: getClientBrandColor(client?.id ?? '') }}
-                            />
-                            <span className="font-medium text-foreground">{bot.botName}</span>
-                          </div>
-                        </td>
-                        <td>
-                          <span className="font-semibold text-foreground">{overallScore.toFixed(0)}/100</span>
-                        </td>
-                        <td>
-                          <span className={`${bot.avgResponseTime <= 1 ? 'text-success-600 dark:text-success-500' : bot.avgResponseTime <= 2 ? 'text-warning-600 dark:text-warning-500' : 'text-error-600 dark:text-error-500'}`}>
-                            {bot.avgResponseTime.toFixed(1)}s
-                          </span>
-                        </td>
-                        <td>
-                          <span className="text-success-600 dark:text-success-500">{bot.resolutionRate.toFixed(0)}%</span>
-                        </td>
-                        <td className="flex items-center gap-1">
-                          <span className="text-foreground">{bot.csat.toFixed(1)}</span>
-                          <Star size={14} className="text-warning-500" />
-                        </td>
-                        <td className="text-foreground-secondary">{bot.totalSessions}</td>
-                      </tr>
-                    );
-                  })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function renderUserJourneyTab() {
-    // Calculate user journey metrics for each bot
-    const botJourneyData = filteredBots.map(bot => {
-      const botSessions = sessions.filter(s => s.bot_id === bot.id);
-      if (botSessions.length === 0) return null;
-
-      // Journey completion analysis
-      const completedJourneys = botSessions.filter(s => s.completion_status === 'completed').length;
-      const partialJourneys = botSessions.filter(s => s.completion_status === 'partial').length;
-      const escalatedJourneys = botSessions.filter(s => s.completion_status === 'escalated').length;
-      const incompleteJourneys = botSessions.filter(s => s.completion_status === 'incomplete').length;
-
-      // Journey step analysis
-      const avgSteps = botSessions.reduce((sum, s) => sum + s.session_steps, 0) / botSessions.length;
-      const avgMessages = botSessions.reduce((sum, s) => sum + s.messages_sent, 0) / botSessions.length;
-
-      // User type analysis
-      const newUsers = botSessions.filter(s => s.user_type === 'new').length;
-      const returningUsers = botSessions.filter(s => s.user_type === 'returning').length;
-      const existingUsers = botSessions.filter(s => s.user_type === 'existing').length;
-
-      // Goal achievement
-      const goalsAchieved = botSessions.filter(s => s.goal_achieved === true).length;
-      const goalAchievementRate = (goalsAchieved / botSessions.length) * 100;
-
-      return {
-        botName: bot.name,
-        botImage: bot.image,
-        botId: bot.id,
-        totalSessions: botSessions.length,
-        completionRates: {
-          completed: Math.round((completedJourneys / botSessions.length) * 100),
-          partial: Math.round((partialJourneys / botSessions.length) * 100),
-          escalated: Math.round((escalatedJourneys / botSessions.length) * 100),
-          incomplete: Math.round((incompleteJourneys / botSessions.length) * 100)
-        },
-        avgSteps: parseFloat(avgSteps.toFixed(1)),
-        avgMessages: parseFloat(avgMessages.toFixed(1)),
-        userTypes: {
-          new: Math.round((newUsers / botSessions.length) * 100),
-          returning: Math.round((returningUsers / botSessions.length) * 100),
-          existing: Math.round((existingUsers / botSessions.length) * 100)
-        },
-        goalAchievementRate: Math.round(goalAchievementRate)
-      };
-    }).filter((item): item is NonNullable<typeof item> => item !== null);
-
-    // Generate journey flow data (completion funnel)
-    const generateJourneyFlowData = () => {
-      const flowData = filteredBots.map(bot => {
-        const botSessions = sessions.filter(s => s.bot_id === bot.id);
-        if (botSessions.length === 0) return null;
-
-        return {
-          botName: bot.name,
-          started: botSessions.length,
-          engaged: botSessions.filter(s => s.messages_sent >= 3).length,
-          progressed: botSessions.filter(s => s.session_steps >= 5).length,
-          completed: botSessions.filter(s => s.completion_status === 'completed').length,
-          goalAchieved: botSessions.filter(s => s.goal_achieved === true).length
-        };
-      }).filter((item): item is NonNullable<typeof item> => item !== null);
-
-      return flowData;
-    };
-
-    // Generate user journey time-series data
-    const generateJourneyTrends = () => {
-      const days = [];
-      const now = new Date();
-      
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(now.getDate() - i);
-        days.push({
-          date: date.toISOString().split('T')[0],
-          displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-        });
-      }
-
-      const chartData = days.map(day => {
-        const dayData: any = { date: day.displayDate };
-        
-        filteredBots.forEach(bot => {
-          const botSessions = sessions.filter(s => {
-            const sessionDate = new Date(s.start_time).toISOString().split('T')[0];
-            return s.bot_id === bot.id && sessionDate === day.date;
-          });
-
-          if (botSessions.length === 0) {
-            dayData[`${bot.name}_completion`] = null;
-            dayData[`${bot.name}_avgSteps`] = null;
-            dayData[`${bot.name}_goalAchievement`] = null;
-          } else {
-            const completed = botSessions.filter(s => s.completion_status === 'completed').length;
-            dayData[`${bot.name}_completion`] = Math.round((completed / botSessions.length) * 100);
-
-            const avgSteps = botSessions.reduce((sum, s) => sum + s.session_steps, 0) / botSessions.length;
-            dayData[`${bot.name}_avgSteps`] = parseFloat(avgSteps.toFixed(1));
-
-            const goalAchieved = botSessions.filter(s => s.goal_achieved === true).length;
-            dayData[`${bot.name}_goalAchievement`] = Math.round((goalAchieved / botSessions.length) * 100);
-          }
-        });
-
-        return dayData;
-      });
-
-      const seriesConfig = {
-        completion: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_completion` })),
-        avgSteps: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_avgSteps` })),
-        goalAchievement: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_goalAchievement` }))
-      };
-
-      return { chartData, seriesConfig };
-    };
-
-    const journeyFlowData = generateJourneyFlowData();
-    const { chartData: journeyChartData, seriesConfig: journeySeriesConfig } = generateJourneyTrends();
-
-    return (
-      <div className="space-y-6">
-        {/* Journey Metrics Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-info-100 dark:bg-info-700/30 rounded-lg">
-                <Users size={24} className="text-info-600 dark:text-info-500" />
-              </div>
-              <span className="text-sm text-success-600 dark:text-success-500 font-medium">+5%</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">
-              {Math.round(botJourneyData.reduce((sum, bot) => sum + bot.completionRates.completed, 0) / botJourneyData.length)}%
-            </h3>
-            <p className="text-foreground-secondary text-sm">Avg Completion Rate</p>
-            <p className="text-xs text-foreground-tertiary mt-1">Across selected bots</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-success-100 dark:bg-success-700/30 rounded-lg">
-                <Target size={24} className="text-success-600 dark:text-success-500" />
-              </div>
-              <span className="text-sm text-success-600 dark:text-success-500 font-medium">+8%</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">
-              {Math.round(botJourneyData.reduce((sum, bot) => sum + bot.goalAchievementRate, 0) / botJourneyData.length)}%
-            </h3>
-            <p className="text-foreground-secondary text-sm">Goal Achievement</p>
-            <p className="text-xs text-foreground-tertiary mt-1">Users reaching their goal</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-plan-premium-bg rounded-lg">
-                <MessageSquare size={24} className="text-plan-premium-text" />
-              </div>
-              <span className="text-sm text-error-600 dark:text-error-500 font-medium">+0.3</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">
-              {(botJourneyData.reduce((sum, bot) => sum + bot.avgSteps, 0) / botJourneyData.length).toFixed(1)}
-            </h3>
-            <p className="text-foreground-secondary text-sm">Avg Journey Steps</p>
-            <p className="text-xs text-foreground-tertiary mt-1">Steps per session</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-warning-100 dark:bg-warning-700/30 rounded-lg">
-                <TrendingUp size={24} className="text-warning-600 dark:text-warning-500" />
-              </div>
-              <span className="text-sm text-error-600 dark:text-error-500 font-medium">+2%</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">
-              {Math.round(botJourneyData.reduce((sum, bot) => sum + bot.completionRates.escalated, 0) / botJourneyData.length)}%
-            </h3>
-            <p className="text-foreground-secondary text-sm">Escalation Rate</p>
-            <p className="text-xs text-foreground-tertiary mt-1">Journeys escalated</p>
-          </div>
-        </div>
-
-        {/* Journey Completion Trends */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">Journey Completion Trends (30 Days)</h2>
-            <div className="h-80">
-              <MultiLineChart
-                data={journeyChartData}
-                series={journeySeriesConfig.completion}
-                xAxisKey="date"
-                yAxisLabel="Completion Rate (%)"
-                height={300}
-              />
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">Goal Achievement Trends (30 Days)</h2>
-            <div className="h-80">
-              <MultiLineChart
-                data={journeyChartData}
-                series={journeySeriesConfig.goalAchievement}
-                xAxisKey="date"
-                yAxisLabel="Goal Achievement (%)"
-                height={300}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Journey Flow Analysis */}
-        <div className="card p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-6">User Journey Funnel Comparison</h2>
-          <div className="overflow-x-auto">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Bot</th>
-                  <th>Started</th>
-                  <th>Engaged (3+ msgs)</th>
-                  <th>Progressed (5+ steps)</th>
-                  <th>Completed</th>
-                  <th>Goal Achieved</th>
-                  <th>Conversion Rate</th>
-                </tr>
-              </thead>
-              <tbody>
-                {journeyFlowData.map(flow => {
-                  const conversionRate = Math.round((flow.goalAchieved / flow.started) * 100);
-                  return (
-                    <tr key={flow.botName}>
-                      <td className="font-medium text-foreground">{flow.botName}</td>
-                      <td className="text-foreground-secondary">{flow.started.toLocaleString()}</td>
-                      <td>
-                        <span className="text-info-600 dark:text-info-500">{flow.engaged.toLocaleString()}</span>
-                        <span className="text-xs text-foreground-tertiary ml-1">
-                          ({Math.round((flow.engaged / flow.started) * 100)}%)
-                        </span>
-                      </td>
-                      <td>
-                        <span className="text-plan-premium-text">{flow.progressed.toLocaleString()}</span>
-                        <span className="text-xs text-foreground-tertiary ml-1">
-                          ({Math.round((flow.progressed / flow.started) * 100)}%)
-                        </span>
-                      </td>
-                      <td>
-                        <span className="text-success-600 dark:text-success-500">{flow.completed.toLocaleString()}</span>
-                        <span className="text-xs text-foreground-tertiary ml-1">
-                          ({Math.round((flow.completed / flow.started) * 100)}%)
-                        </span>
-                      </td>
-                      <td>
-                        <span className="text-warning-600 dark:text-warning-500 font-semibold">{flow.goalAchieved.toLocaleString()}</span>
-                        <span className="text-xs text-foreground-tertiary ml-1">
-                          ({Math.round((flow.goalAchieved / flow.started) * 100)}%)
-                        </span>
-                      </td>
-                      <td>
-                        <span className={`font-semibold ${
-                          conversionRate >= 80 ? 'text-success-600 dark:text-success-500' :
-                          conversionRate >= 60 ? 'text-warning-600 dark:text-warning-500' : 'text-error-600 dark:text-error-500'
-                        }`}>
-                          {conversionRate}%
-                        </span>
-                      </td>
-                    </tr>
-                  );
-                })}
-              </tbody>
-            </table>
-          </div>
-        </div>
-
-        {/* User Type Distribution */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">User Type Distribution</h2>
-            <div className="space-y-4">
-              {botJourneyData.map(bot => (
-                <div key={bot.botId} className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <img
-                      src={bot.botImage}
-                      alt={bot.botName}
-                      className="w-6 h-6 rounded-full"
-                      style={{ backgroundColor: getClientBrandColor(client?.id ?? '') }}
-                    />
-                    <span className="font-medium text-foreground">{bot.botName}</span>
-                  </div>
-                  <div className="flex gap-2">
-                    <div className="flex-1 bg-background-tertiary rounded-full h-3 overflow-hidden">
-                      <div className="flex h-full">
-                        <div
-                          className="bg-success-500"
-                          style={{ width: `${bot.userTypes.new}%` }}
-                          title={`New Users: ${bot.userTypes.new}%`}
-                        />
-                        <div
-                          className="bg-info-500"
-                          style={{ width: `${bot.userTypes.returning}%` }}
-                          title={`Returning Users: ${bot.userTypes.returning}%`}
-                        />
-                        <div
-                          className="bg-plan-premium-text"
-                          style={{ width: `${bot.userTypes.existing}%` }}
-                          title={`Existing Users: ${bot.userTypes.existing}%`}
-                        />
-                      </div>
-                    </div>
-                  </div>
-                  <div className="flex justify-between text-xs text-foreground-secondary">
-                    <span>New: {bot.userTypes.new}%</span>
-                    <span>Returning: {bot.userTypes.returning}%</span>
-                    <span>Existing: {bot.userTypes.existing}%</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">Journey Complexity</h2>
-            <div className="h-80">
-              <MultiLineChart
-                data={journeyChartData}
-                series={journeySeriesConfig.avgSteps}
-                xAxisKey="date"
-                yAxisLabel="Average Steps"
-                height={300}
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function renderBusinessImpactTab() {
-    // Calculate business impact metrics for each bot
-    const botBusinessData = filteredBots.map(bot => {
-      const botSessions = sessions.filter(s => s.bot_id === bot.id);
-      if (botSessions.length === 0) return null;
-
-      // Cost savings calculation
-      const totalSessions = botSessions.length;
-      const automationSavings = botSessions.reduce((sum, s) => sum + s.automation_saving, 0);
-      const humanCostEquivalent = botSessions.reduce((sum, s) => sum + s.human_cost_equivalent, 0);
-      const tokensCost = botSessions.reduce((sum, s) => sum + s.tokens_eur, 0);
-
-      // ROI calculation
-      const operationalCost = tokensCost + (totalSessions * 0.05); // Estimate operational costs
-      const roi = ((automationSavings - operationalCost) / operationalCost) * 100;
-
-      // Efficiency metrics
-      const avgAutomationSaving = automationSavings / totalSessions;
-      const costPerSession = operationalCost / totalSessions;
-      const savingsPerSession = automationSavings / totalSessions;
-
-      // Volume metrics
-      const completedSessions = botSessions.filter(s => s.completion_status === 'completed').length;
-      const escalatedSessions = botSessions.filter(s => s.completion_status === 'escalated').length;
-      const containmentRate = ((totalSessions - escalatedSessions) / totalSessions) * 100;
-
-      return {
-        botName: bot.name,
-        botImage: bot.image,
-        botId: bot.id,
-        totalSessions,
-        automationSavings: Math.round(automationSavings),
-        humanCostEquivalent: Math.round(humanCostEquivalent),
-        operationalCost: Math.round(operationalCost),
-        netSavings: Math.round(automationSavings - operationalCost),
-        roi: Math.round(roi),
-        avgAutomationSaving: parseFloat(avgAutomationSaving.toFixed(2)),
-        costPerSession: parseFloat(costPerSession.toFixed(2)),
-        savingsPerSession: parseFloat(savingsPerSession.toFixed(2)),
-        containmentRate: Math.round(containmentRate),
-        completedSessions,
-        escalatedSessions
-      };
-    }).filter((item): item is NonNullable<typeof item> => item !== null);
-
-    // Generate business impact time-series data
-    const generateBusinessTrends = () => {
-      const days = [];
-      const now = new Date();
-      
-      for (let i = 29; i >= 0; i--) {
-        const date = new Date(now);
-        date.setDate(now.getDate() - i);
-        days.push({
-          date: date.toISOString().split('T')[0],
-          displayDate: date.toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
-        });
-      }
-
-      const chartData = days.map(day => {
-        const dayData: any = { date: day.displayDate };
-        
-        filteredBots.forEach(bot => {
-          const botSessions = sessions.filter(s => {
-            const sessionDate = new Date(s.start_time).toISOString().split('T')[0];
-            return s.bot_id === bot.id && sessionDate === day.date;
-          });
-
-          if (botSessions.length === 0) {
-            dayData[`${bot.name}_savings`] = null;
-            dayData[`${bot.name}_cost`] = null;
-            dayData[`${bot.name}_roi`] = null;
-            dayData[`${bot.name}_volume`] = null;
-          } else {
-            const dailySavings = botSessions.reduce((sum, s) => sum + s.automation_saving, 0);
-            const dailyCost = botSessions.reduce((sum, s) => sum + s.tokens_eur, 0) + (botSessions.length * 0.05);
-            const dailyROI = dailyCost > 0 ? ((dailySavings - dailyCost) / dailyCost) * 100 : 0;
-
-            dayData[`${bot.name}_savings`] = Math.round(dailySavings);
-            dayData[`${bot.name}_cost`] = Math.round(dailyCost);
-            dayData[`${bot.name}_roi`] = Math.round(dailyROI);
-            dayData[`${bot.name}_volume`] = botSessions.length;
-          }
-        });
-
-        return dayData;
-      });
-
-      const seriesConfig = {
-        savings: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_savings` })),
-        cost: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_cost` })),
-        roi: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_roi` })),
-        volume: filteredBots.map(bot => ({ name: bot.name, dataKey: `${bot.name}_volume` }))
-      };
-
-      return { chartData, seriesConfig };
-    };
-
-    const { chartData: businessChartData, seriesConfig: businessSeriesConfig } = generateBusinessTrends();
-
-    // Calculate totals across all bots
-    const totalMetrics = {
-      totalSavings: botBusinessData.reduce((sum, bot) => sum + bot.automationSavings, 0),
-      totalCost: botBusinessData.reduce((sum, bot) => sum + bot.operationalCost, 0),
-      totalSessions: botBusinessData.reduce((sum, bot) => sum + bot.totalSessions, 0),
-      avgROI: botBusinessData.reduce((sum, bot) => sum + bot.roi, 0) / botBusinessData.length
-    };
-
-    return (
-      <div className="space-y-6">
-        {/* Business Impact Metrics Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-6">
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-success-100 dark:bg-success-700/30 rounded-lg">
-                <TrendingUp size={24} className="text-success-600 dark:text-success-500" />
-              </div>
-              <span className="text-sm text-success-600 dark:text-success-500 font-medium">+15%</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">€{totalMetrics.totalSavings.toLocaleString()}</h3>
-            <p className="text-foreground-secondary text-sm">Total Cost Savings</p>
-            <p className="text-xs text-foreground-tertiary mt-1">Automation benefits</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-info-100 dark:bg-info-700/30 rounded-lg">
-                <Target size={24} className="text-info-600 dark:text-info-500" />
-              </div>
-              <span className="text-sm text-success-600 dark:text-success-500 font-medium">+{Math.round(totalMetrics.avgROI)}%</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">{Math.round(totalMetrics.avgROI)}%</h3>
-            <p className="text-foreground-secondary text-sm">Average ROI</p>
-            <p className="text-xs text-foreground-tertiary mt-1">Return on investment</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-plan-premium-bg rounded-lg">
-                <MessageSquare size={24} className="text-plan-premium-text" />
-              </div>
-              <span className="text-sm text-error-600 dark:text-error-500 font-medium">€{totalMetrics.totalCost.toLocaleString()}</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">€{(totalMetrics.totalSavings - totalMetrics.totalCost).toLocaleString()}</h3>
-            <p className="text-foreground-secondary text-sm">Net Profit</p>
-            <p className="text-xs text-foreground-tertiary mt-1">Savings minus costs</p>
-          </div>
-
-          <div className="card p-6">
-            <div className="flex items-center justify-between mb-4">
-              <div className="p-3 bg-warning-100 dark:bg-warning-700/30 rounded-lg">
-                <Users size={24} className="text-warning-600 dark:text-warning-500" />
-              </div>
-              <span className="text-sm text-success-600 dark:text-success-500 font-medium">+12%</span>
-            </div>
-            <h3 className="text-2xl font-bold text-foreground">{totalMetrics.totalSessions.toLocaleString()}</h3>
-            <p className="text-foreground-secondary text-sm">Total Sessions</p>
-            <p className="text-xs text-foreground-tertiary mt-1">Automated interactions</p>
-          </div>
-        </div>
-
-        {/* Business Impact Trends */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">Daily Cost Savings (30 Days)</h2>
-            <div className="h-80">
-              <MultiLineChart
-                data={businessChartData}
-                series={businessSeriesConfig.savings}
-                xAxisKey="date"
-                yAxisLabel="Savings (€)"
-                height={300}
-              />
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">ROI Trends (30 Days)</h2>
-            <div className="h-80">
-              <MultiLineChart
-                data={businessChartData}
-                series={businessSeriesConfig.roi}
-                xAxisKey="date"
-                yAxisLabel="ROI (%)"
-                height={300}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Cost vs Savings Analysis */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">Operational Cost Trends (30 Days)</h2>
-            <div className="h-80">
-              <MultiLineChart
-                data={businessChartData}
-                series={businessSeriesConfig.cost}
-                xAxisKey="date"
-                yAxisLabel="Cost (€)"
-                height={300}
-              />
-            </div>
-          </div>
-
-          <div className="card p-6">
-            <h2 className="text-xl font-semibold text-foreground mb-6">Session Volume Trends (30 Days)</h2>
-            <div className="h-80">
-              <MultiLineChart
-                data={businessChartData}
-                series={businessSeriesConfig.volume}
-                xAxisKey="date"
-                yAxisLabel="Daily Sessions"
-                height={300}
-              />
-            </div>
-          </div>
-        </div>
-
-        {/* Business Impact Comparison Table */}
-        <div className="card overflow-hidden">
-          <div className="p-6 border-b border-border">
-            <h2 className="text-xl font-semibold text-foreground">Business Impact Comparison</h2>
-            <p className="text-sm text-foreground-secondary mt-1">Financial performance across selected bots</p>
-          </div>
-          <div className="overflow-x-auto">
-            <table className="data-table">
-              <thead>
-                <tr>
-                  <th>Bot</th>
-                  <th>Sessions</th>
-                  <th>Cost Savings</th>
-                  <th>Operational Cost</th>
-                  <th>Net Profit</th>
-                  <th>ROI</th>
-                  <th>Cost/Session</th>
-                  <th>Containment</th>
-                </tr>
-              </thead>
-              <tbody>
-                {botBusinessData
-                  .sort((a, b) => b.netSavings - a.netSavings)
-                  .map(bot => (
-                    <tr key={bot.botId}>
-                      <td>
-                        <div className="flex items-center gap-3">
-                          <img
-                            src={bot.botImage}
-                            alt={bot.botName}
-                            className="w-8 h-8 rounded-full"
-                            style={{ backgroundColor: getClientBrandColor(client?.id ?? '') }}
-                          />
-                          <span className="font-medium text-foreground">{bot.botName}</span>
-                        </div>
-                      </td>
-                      <td className="text-foreground-secondary">{bot.totalSessions.toLocaleString()}</td>
-                      <td className="text-success-600 dark:text-success-500 font-semibold">€{bot.automationSavings.toLocaleString()}</td>
-                      <td className="text-error-600 dark:text-error-500">€{bot.operationalCost.toLocaleString()}</td>
-                      <td>
-                        <span className={`font-semibold ${bot.netSavings > 0 ? 'text-success-600 dark:text-success-500' : 'text-error-600 dark:text-error-500'}`}>
-                          €{bot.netSavings.toLocaleString()}
-                        </span>
-                      </td>
-                      <td>
-                        <span className={`font-semibold ${bot.roi > 0 ? 'text-success-600 dark:text-success-500' : 'text-error-600 dark:text-error-500'}`}>
-                          {bot.roi}%
-                        </span>
-                      </td>
-                      <td className="text-foreground-secondary">€{bot.costPerSession}</td>
-                      <td>
-                        <span className={`${bot.containmentRate >= 80 ? 'text-success-600 dark:text-success-500' : bot.containmentRate >= 60 ? 'text-warning-600 dark:text-warning-500' : 'text-error-600 dark:text-error-500'}`}>
-                          {bot.containmentRate}%
-                        </span>
-                      </td>
-                    </tr>
-                  ))}
-              </tbody>
-              <tfoot className="bg-background-secondary font-semibold">
-                <tr>
-                  <td className="text-foreground">Total</td>
-                  <td className="text-foreground">{totalMetrics.totalSessions.toLocaleString()}</td>
-                  <td className="text-success-600 dark:text-success-500">€{totalMetrics.totalSavings.toLocaleString()}</td>
-                  <td className="text-error-600 dark:text-error-500">€{totalMetrics.totalCost.toLocaleString()}</td>
-                  <td className="text-success-600 dark:text-success-500">€{(totalMetrics.totalSavings - totalMetrics.totalCost).toLocaleString()}</td>
-                  <td className="text-success-600 dark:text-success-500">{Math.round(totalMetrics.avgROI)}%</td>
-                  <td className="text-foreground-secondary">€{(totalMetrics.totalCost / totalMetrics.totalSessions).toFixed(2)}</td>
-                  <td className="text-foreground-secondary">-</td>
-                </tr>
-              </tfoot>
-            </table>
-          </div>
-        </div>
-
-        {/* Value Proposition Summary */}
-        <div className="card p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-6">Business Value Summary</h2>
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            <div className="text-center p-4 bg-success-100 dark:bg-success-700/30 rounded-lg">
-              <div className="text-3xl font-bold text-success-600 dark:text-success-500 mb-2">
-                €{Math.round((totalMetrics.totalSavings - totalMetrics.totalCost) / totalMetrics.totalSessions * 365).toLocaleString()}
-              </div>
-              <div className="text-sm font-medium text-success-700 dark:text-success-500">Annual Projected Savings</div>
-              <div className="text-xs text-foreground-secondary mt-1">Based on current performance</div>
-            </div>
-
-            <div className="text-center p-4 bg-info-100 dark:bg-info-700/30 rounded-lg">
-              <div className="text-3xl font-bold text-info-600 dark:text-info-500 mb-2">
-                {Math.round(totalMetrics.totalSessions * 365 / 30).toLocaleString()}
-              </div>
-              <div className="text-sm font-medium text-info-700 dark:text-info-500">Annual Sessions Projected</div>
-              <div className="text-xs text-foreground-secondary mt-1">Estimated yearly volume</div>
-            </div>
-
-            <div className="text-center p-4 bg-plan-premium-bg rounded-lg">
-              <div className="text-3xl font-bold text-plan-premium-text mb-2">
-                {Math.round(totalMetrics.totalSavings / totalMetrics.totalCost * 100) / 100}x
-              </div>
-              <div className="text-sm font-medium text-plan-premium-text">Cost Efficiency Ratio</div>
-              <div className="text-xs text-foreground-secondary mt-1">Savings vs operational cost</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  function renderOperationsTab() {
-    return (
-      <div className="space-y-6">
-        <div className="card p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-6">Operations Analytics Coming Soon</h2>
-          <p className="text-foreground-secondary">Operational efficiency comparison will be implemented here.</p>
-        </div>
-      </div>
-    );
-  }
-
-  function renderReportsTab() {
-    return (
-      <div className="space-y-6">
-        <div className="card p-6">
-          <h2 className="text-xl font-semibold text-foreground mb-6">Reports & Export Coming Soon</h2>
-          <p className="text-foreground-secondary">Advanced reporting and export features will be implemented here.</p>
-        </div>
-      </div>
-    );
-  }
 }

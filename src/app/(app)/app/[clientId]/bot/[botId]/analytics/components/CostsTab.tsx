@@ -135,12 +135,12 @@ export function CostsTab({
       </KpiGrid>
 
       {/* Cost Breakdown per Session */}
-      <Card>
+      <Card className="overflow-visible">
         <h3 className="font-semibold text-foreground mb-4">Cost Breakdown per Session</h3>
         <p className="text-sm text-foreground-secondary mb-4">
           Conversation costs vs. analysis costs per session (stacked)
         </p>
-        <div className="h-[220px] sm:h-[280px] lg:h-[320px]">
+        <div className="h-[240px] sm:h-[300px] lg:h-[340px] overflow-visible">
           <StackedBarChart
             data={sessions.map((s, i) => ({
               session: `#${i + 1}`,
@@ -155,7 +155,6 @@ export function CostsTab({
             ]}
             xAxisKey="session"
             yAxisFormatter={(v) => formatAxisCurrency(v as number, 3)}
-            height={320}
             brandColor={brandColor}
             customTooltip={({ active, payload, label }) => {
               if (!active || !payload || !payload.length) return null;
@@ -186,26 +185,23 @@ export function CostsTab({
 
       {/* Input vs Output Tokens & LLM Model Usage */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <Card>
+        <Card className="overflow-visible">
           <h3 className="font-semibold text-foreground mb-4">Input vs Output Tokens</h3>
           <p className="text-sm text-foreground-secondary mb-4">Output tokens typically cost 3-4x more than input</p>
-          <div className="h-[180px] sm:h-[220px] lg:h-[250px]">
+          <div className="h-[200px] sm:h-[240px] lg:h-[280px] overflow-visible">
             <DonutChart
               data={tokenData}
-              height={250}
               brandColor={brandColor}
-              innerRadius={50}
-              outerRadius={80}
               showLabels={true}
             />
           </div>
         </Card>
 
-        <Card>
+        <Card className="overflow-visible">
           <h3 className="font-semibold text-foreground mb-4">LLM Model Usage</h3>
           <p className="text-sm text-foreground-secondary mb-4">Models used for session analysis</p>
-          <div className="h-[180px] sm:h-[220px] lg:h-[250px]">
-            <DonutChart data={modelData} height={250} brandColor={brandColor} innerRadius={50} outerRadius={80} showLabels={true} />
+          <div className="h-[200px] sm:h-[240px] lg:h-[280px] overflow-visible">
+            <DonutChart data={modelData} brandColor={brandColor} showLabels={true} />
           </div>
         </Card>
       </div>

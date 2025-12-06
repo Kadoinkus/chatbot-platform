@@ -224,14 +224,14 @@ export function ConversationsTab({
         <Card>
           <h3 className="font-semibold text-foreground mb-4">Sentiment Over Time</h3>
           <div className="h-[220px] sm:h-[260px] lg:h-[300px] overflow-visible">
-            <SentimentAreaChart data={sentimentTimeSeries} height={300} brandColor={brandColor} />
+            <SentimentAreaChart data={sentimentTimeSeries} brandColor={brandColor} />
           </div>
         </Card>
 
         <Card className="overflow-visible">
           <h3 className="font-semibold text-foreground mb-4">Resolution Status</h3>
           <div className="h-[220px] sm:h-[260px] lg:h-[300px] overflow-visible">
-            <DonutChart data={resolutionData} height={300} brandColor={brandColor} />
+            <DonutChart data={resolutionData} brandColor={brandColor} />
           </div>
         </Card>
       </div>
@@ -241,7 +241,7 @@ export function ConversationsTab({
         <Card>
           <h3 className="font-semibold text-foreground mb-4">Peak Hours</h3>
           <div className="h-[180px] sm:h-[200px] lg:h-[220px] overflow-visible">
-            <HourlyBarChart data={hourlyBreakdown} height={220} brandColor={brandColor} />
+            <HourlyBarChart data={hourlyBreakdown} brandColor={brandColor} />
           </div>
         </Card>
 
@@ -252,7 +252,6 @@ export function ConversationsTab({
               data={durationData}
               dataKey="value"
               xAxisKey="name"
-              height={220}
               brandColor={brandColor}
             />
           </div>

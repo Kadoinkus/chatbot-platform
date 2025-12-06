@@ -62,43 +62,41 @@ export function AnimationsTab({
 
       {/* Top Animations Charts */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <Card>
+        <Card className="overflow-visible">
           <h3 className="font-semibold text-foreground mb-4">Top Response Animations</h3>
           {animationStats?.topAnimations && animationStats.topAnimations.length > 0 ? (
-            <div className="h-[200px] sm:h-[240px] lg:h-[280px]">
+            <div className="h-[220px] sm:h-[260px] lg:h-[300px] overflow-visible">
               <HorizontalBarChart
                 data={animationStats.topAnimations.map((a) => ({ name: a.animation, value: a.count }))}
                 dataKey="value"
                 nameKey="name"
                 nameFormatter={(v) => safeString(v).replace(/_/g, ' ').replace('2type T', '')}
-                height={280}
                 brandColor={brandColor}
                 yAxisWidth={140}
               />
             </div>
           ) : (
-            <div className="h-[200px] sm:h-[240px] lg:h-[280px] flex items-center justify-center">
+            <div className="h-[220px] sm:h-[260px] lg:h-[300px] flex items-center justify-center">
               <p className="text-foreground-secondary">No animation data available</p>
             </div>
           )}
         </Card>
 
-        <Card>
+        <Card className="overflow-visible">
           <h3 className="font-semibold text-foreground mb-4">Easter Egg Triggers</h3>
           {animationStats?.topEasterEggs && animationStats.topEasterEggs.length > 0 ? (
-            <div className="h-[200px] sm:h-[240px] lg:h-[280px]">
+            <div className="h-[220px] sm:h-[260px] lg:h-[300px] overflow-visible">
               <HorizontalBarChart
                 data={animationStats.topEasterEggs.map((e) => ({ name: e.animation, value: e.count }))}
                 dataKey="value"
                 nameKey="name"
                 nameFormatter={(v) => safeString(v).replace('easter_', '').replace(/_/g, ' ')}
-                height={280}
                 brandColor={brandColor}
                 yAxisWidth={140}
               />
             </div>
           ) : (
-            <div className="h-[200px] sm:h-[240px] lg:h-[280px] flex items-center justify-center">
+            <div className="h-[220px] sm:h-[260px] lg:h-[300px] flex items-center justify-center">
               <p className="text-foreground-secondary">No easter eggs triggered yet</p>
             </div>
           )}
@@ -107,40 +105,36 @@ export function AnimationsTab({
 
       {/* Wait Sequence & Easter Eggs */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <Card>
+        <Card className="overflow-visible">
           <h3 className="font-semibold text-foreground mb-2">Wait Sequence Distribution</h3>
           <p className="text-sm text-foreground-secondary mb-4">Idle animation playlists triggered</p>
           {animationStats?.waitSequences && animationStats.waitSequences.length > 0 ? (
-            <div className="h-[160px] sm:h-[200px] lg:h-[220px]">
+            <div className="h-[180px] sm:h-[220px] lg:h-[260px] overflow-visible">
               <VerticalBarChart
                 data={animationStats.waitSequences.map((w) => ({ name: w.sequence, value: w.count }))}
                 dataKey="value"
                 xAxisKey="name"
                 xAxisFormatter={(v) => `Playlist ${safeString(v).toUpperCase()}`}
-                height={220}
                 brandColor={brandColor}
               />
             </div>
           ) : (
-            <div className="h-[160px] sm:h-[200px] lg:h-[220px] flex items-center justify-center">
+            <div className="h-[180px] sm:h-[220px] lg:h-[260px] flex items-center justify-center">
               <p className="text-foreground-secondary">No wait sequence data available</p>
             </div>
           )}
         </Card>
 
-        <Card>
+        <Card className="overflow-visible">
           <h3 className="font-semibold text-foreground mb-2">Easter Eggs in Conversations</h3>
           <p className="text-sm text-foreground-secondary mb-4">
             {animationStats?.sessionsWithEasterEggs || 0} of {animationStats?.totalSessions || 0} sessions (
             {easterEggPercent.toFixed(1)}%)
           </p>
-          <div className="h-[160px] sm:h-[200px] lg:h-[220px]">
+          <div className="h-[180px] sm:h-[220px] lg:h-[260px] overflow-visible">
             <DonutChart
               data={easterEggData}
-              height={220}
               brandColor={brandColor}
-              innerRadius={50}
-              outerRadius={80}
               showLabels={true}
             />
           </div>

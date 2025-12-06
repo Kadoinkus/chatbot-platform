@@ -63,28 +63,26 @@ export function AudienceTab({
 
       {/* Geographic */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6">
-        <Card>
+        <Card className="overflow-visible">
           <h3 className="font-semibold text-foreground mb-4">Countries</h3>
-          <div className="h-[180px] sm:h-[200px] lg:h-[240px]">
+          <div className="h-[200px] sm:h-[220px] lg:h-[260px] overflow-visible">
             <HorizontalBarChart
               data={countries.slice(0, 6).map((c) => ({ name: c.country, value: c.count }))}
               dataKey="value"
               nameKey="name"
-              height={240}
               brandColor={brandColor}
               yAxisWidth={70}
             />
           </div>
         </Card>
 
-        <Card>
+        <Card className="overflow-visible">
           <h3 className="font-semibold text-foreground mb-4">Languages</h3>
-          <div className="h-[180px] sm:h-[200px] lg:h-[240px]">
+          <div className="h-[200px] sm:h-[220px] lg:h-[260px] overflow-visible">
             <HorizontalBarChart
               data={languages.slice(0, 6).map((l) => ({ name: l.language, value: l.percentage }))}
               dataKey="value"
               nameKey="name"
-              height={240}
               brandColor={brandColor}
               yAxisWidth={70}
             />

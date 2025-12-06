@@ -79,7 +79,7 @@ export const formatAxisHour = (value: unknown): string => {
 // ============================================
 
 export interface BaseChartProps {
-  height?: number;
+  height?: number | string;
   brandColor?: string;
   showGrid?: boolean;
   showLegend?: boolean;
@@ -124,7 +124,7 @@ export interface TimeSeriesAreaChartProps extends BaseChartProps {
 export function TimeSeriesAreaChart({
   data,
   series,
-  height = 280,
+  height = '100%',
   brandColor = '#6B7280',
   showGrid = true,
   showLegend = true,
@@ -132,7 +132,7 @@ export function TimeSeriesAreaChart({
 }: TimeSeriesAreaChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center text-foreground-secondary" style={{ height }}>
+      <div className="flex items-center justify-center text-foreground-secondary h-full">
         No data available
       </div>
     );
@@ -192,13 +192,13 @@ export function SimpleAreaChart({
   dataKey = 'value',
   xAxisKey = 'date',
   xAxisFormatter = formatAxisDate,
-  height = 280,
+  height = '100%',
   brandColor = '#6B7280',
   showGrid = true,
 }: SimpleAreaChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center text-foreground-secondary" style={{ height }}>
+      <div className="flex items-center justify-center text-foreground-secondary h-full">
         No data available
       </div>
     );
@@ -251,14 +251,14 @@ export function StackedAreaChart({
   data,
   series,
   xAxisFormatter = formatAxisDate,
-  height = 280,
+  height = '100%',
   brandColor = '#6B7280',
   showGrid = true,
   showLegend = true,
 }: StackedAreaChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center text-foreground-secondary" style={{ height }}>
+      <div className="flex items-center justify-center text-foreground-secondary h-full">
         No data available
       </div>
     );
@@ -318,14 +318,14 @@ export function VerticalBarChart({
   xAxisKey = 'name',
   xAxisFormatter = safeString,
   yAxisFormatter,
-  height = 280,
+  height = '100%',
   brandColor = '#6B7280',
   showGrid = true,
   barRadius = [4, 4, 0, 0],
 }: VerticalBarChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center text-foreground-secondary" style={{ height }}>
+      <div className="flex items-center justify-center text-foreground-secondary h-full">
         No data available
       </div>
     );
@@ -378,14 +378,14 @@ export function StackedBarChart({
   xAxisFormatter = safeString,
   yAxisFormatter,
   customTooltip,
-  height = 280,
+  height = '100%',
   brandColor = '#6B7280',
   showGrid = true,
   showLegend = true,
 }: StackedBarChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center text-foreground-secondary" style={{ height }}>
+      <div className="flex items-center justify-center text-foreground-secondary h-full">
         No data available
       </div>
     );
@@ -449,13 +449,13 @@ export function HorizontalBarChart({
   nameKey = 'name',
   nameFormatter = safeString,
   yAxisWidth = 120,
-  height = 280,
+  height = '100%',
   brandColor = '#6B7280',
   showGrid = true,
 }: HorizontalBarChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center text-foreground-secondary" style={{ height }}>
+      <div className="flex items-center justify-center text-foreground-secondary h-full">
         No data available
       </div>
     );
@@ -486,8 +486,8 @@ export function HorizontalBarChart({
 
 export interface DonutChartProps extends BaseChartProps {
   data: CategoryDataPoint[];
-  innerRadius?: number;
-  outerRadius?: number;
+  innerRadius?: number | string;
+  outerRadius?: number | string;
   showLabels?: boolean;
   centerLabel?: string;
   centerValue?: string | number;
@@ -495,16 +495,16 @@ export interface DonutChartProps extends BaseChartProps {
 
 export function DonutChart({
   data,
-  height = 280,
+  height = '100%',
   brandColor = '#6B7280',
   showLegend = true,
-  innerRadius = 60,
-  outerRadius = 100,
+  innerRadius = '40%',
+  outerRadius = '65%',
   showLabels = false,
 }: DonutChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center text-foreground-secondary" style={{ height }}>
+      <div className="flex items-center justify-center text-foreground-secondary h-full">
         No data available
       </div>
     );
@@ -523,7 +523,7 @@ export function DonutChart({
         <Pie
           data={data}
           cx="50%"
-          cy="50%"
+          cy="45%"
           innerRadius={innerRadius}
           outerRadius={outerRadius}
           paddingAngle={2}
@@ -587,7 +587,7 @@ export interface SentimentAreaChartProps extends BaseChartProps {
 
 export function SentimentAreaChart({
   data,
-  height = 280,
+  height = '100%',
   brandColor = '#6B7280',
   showGrid = true,
   showLegend = true,
@@ -631,13 +631,13 @@ export interface HourlyBarChartProps extends BaseChartProps {
 export function HourlyBarChart({
   data,
   dataKey = 'count',
-  height = 200,
+  height = '100%',
   brandColor = '#6B7280',
   showGrid = true,
 }: HourlyBarChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center text-foreground-secondary" style={{ height }}>
+      <div className="flex items-center justify-center text-foreground-secondary h-full">
         No data available
       </div>
     );
@@ -680,13 +680,13 @@ export interface CostBarChartProps extends BaseChartProps {
 export function CostBarChart({
   data,
   dataKey = 'cost',
-  height = 280,
+  height = '100%',
   brandColor = '#6B7280',
   showGrid = true,
 }: CostBarChartProps) {
   if (!data || data.length === 0) {
     return (
-      <div className="flex items-center justify-center text-foreground-secondary" style={{ height }}>
+      <div className="flex items-center justify-center text-foreground-secondary h-full">
         No data available
       </div>
     );

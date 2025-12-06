@@ -118,7 +118,6 @@ export function OverviewTab({
                 { key: 'returning', name: 'Returning', color: GREY[500] },
                 { key: 'new', name: 'New', color: brandColor },
               ]}
-              height={300}
               brandColor={brandColor}
             />
           </div>
@@ -130,10 +129,7 @@ export function OverviewTab({
           <div className="h-[220px] sm:h-[260px] lg:h-[300px] overflow-visible">
             <DonutChart
               data={userData}
-              height={300}
               brandColor={brandColor}
-              innerRadius={55}
-              outerRadius={85}
               showLabels={true}
             />
           </div>
@@ -150,7 +146,6 @@ export function OverviewTab({
               data={categories.slice(0, 6).map((c) => ({ name: c.category, value: c.count }))}
               dataKey="value"
               nameKey="name"
-              height={260}
               brandColor={brandColor}
               yAxisWidth={120}
             />

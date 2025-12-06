@@ -51,13 +51,12 @@ interface KpiGridProps {
 
 /**
  * Responsive KPI Grid container
- * - Mobile (< 640px): 1 column
- * - Tablet (640px+): 2 columns
+ * - Mobile: 2 columns
  * - Desktop (1024px+): 4 columns
  */
 export function KpiGrid({ children, className = '' }: KpiGridProps) {
   return (
-    <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 ${className}`}>
+    <div className={`grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 ${className}`}>
       {children}
     </div>
   );

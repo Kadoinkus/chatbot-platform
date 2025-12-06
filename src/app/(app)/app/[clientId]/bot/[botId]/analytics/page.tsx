@@ -1348,46 +1348,114 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </Card>
             </div>
 
-            {/* Charts Row */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Question Frequency Chart */}
-              <Card>
-                <h3 className="font-semibold text-foreground mb-4">Question Frequency</h3>
-                <HorizontalBarChart
-                  data={questions.slice(0, 8).map(q => ({
-                    name: q.question.length > 40 ? q.question.substring(0, 40) + '...' : q.question,
-                    value: q.frequency
-                  }))}
-                  dataKey="value"
-                  nameKey="name"
-                  height={280}
-                  brandColor={brandColor}
-                  yAxisWidth={180}
-                />
-              </Card>
+            {/* Handoff Analytics - Single Clean Card */}
+            <Card>
+              <h3 className="font-semibold text-foreground mb-6">Handoff Analytics</h3>
+              {(() => {
+                const sessionsWithHandoffs = sessions.filter(s =>
+                  (s.analysis?.url_links && s.analysis.url_links.length > 0) ||
+                  (s.analysis?.email_links && s.analysis.email_links.length > 0)
+                ).length;
+                const urlOnly = sessions.filter(s =>
+                  (s.analysis?.url_links && s.analysis.url_links.length > 0) &&
+                  (!s.analysis?.email_links || s.analysis.email_links.length === 0)
+                ).length;
+                const emailOnly = sessions.filter(s =>
+                  (!s.analysis?.url_links || s.analysis.url_links.length === 0) &&
+                  (s.analysis?.email_links && s.analysis.email_links.length > 0)
+                ).length;
+                const both = sessions.filter(s =>
+                  (s.analysis?.url_links && s.analysis.url_links.length > 0) &&
+                  (s.analysis?.email_links && s.analysis.email_links.length > 0)
+                ).length;
+                const handoffRate = sessions.length > 0 ? (sessionsWithHandoffs / sessions.length) * 100 : 0;
 
-              {/* Answered vs Unanswered Donut */}
-              <Card>
-                <h3 className="font-semibold text-foreground mb-4">Answer Rate</h3>
-                <DonutChart
-                  data={[
-                    {
-                      name: 'Answered',
-                      value: questions.length - unansweredQuestions.length,
-                      color: brandColor
-                    },
-                    {
-                      name: 'Unanswered',
-                      value: unansweredQuestions.length,
-                      color: GREY[500]
-                    }
-                  ]}
-                  height={280}
-                  brandColor={brandColor}
-                  showLabels={true}
-                />
-              </Card>
-            </div>
+                return (
+                  <div className="flex flex-col md:flex-row gap-6 md:gap-8">
+                    {/* Left: Handoff Rate */}
+                    <div className="flex-1">
+                      <p className="text-sm text-foreground-secondary mb-3">Handoff Rate</p>
+                      <div className="flex items-end gap-3 mb-4">
+                        <span className="text-5xl font-bold" style={{ color: brandColor }}>
+                          {handoffRate.toFixed(1)}%
+                        </span>
+                        <span className="text-foreground-secondary pb-2">
+                          of sessions
+                        </span>
+                      </div>
+                      <div className="h-2 bg-background-tertiary rounded-full overflow-hidden">
+                        <div
+                          className="h-full rounded-full transition-all"
+                          style={{ width: `${handoffRate}%`, backgroundColor: brandColor }}
+                        />
+                      </div>
+                      <p className="text-sm text-foreground-tertiary mt-2">
+                        {sessionsWithHandoffs} of {sessions.length} sessions included a URL or email handoff
+                      </p>
+                    </div>
+
+                    {/* Divider */}
+                    <div className="border-t md:border-t-0 md:border-l border-border" />
+
+                    {/* Right: Breakdown */}
+                    <div className="flex-1">
+                      <p className="text-sm text-foreground-secondary mb-3">Handoff Breakdown</p>
+                      {sessionsWithHandoffs === 0 ? (
+                        <p className="text-foreground-tertiary">No handoffs yet</p>
+                      ) : (
+                        <div className="space-y-4">
+                          <div>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="text-foreground">URL Only</span>
+                              <span className="text-foreground-secondary">{urlOnly} ({sessionsWithHandoffs > 0 ? ((urlOnly / sessionsWithHandoffs) * 100).toFixed(0) : 0}%)</span>
+                            </div>
+                            <div className="h-2 bg-background-tertiary rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full"
+                                style={{
+                                  width: `${sessionsWithHandoffs > 0 ? (urlOnly / sessionsWithHandoffs) * 100 : 0}%`,
+                                  backgroundColor: brandColor
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="text-foreground">Email Only</span>
+                              <span className="text-foreground-secondary">{emailOnly} ({sessionsWithHandoffs > 0 ? ((emailOnly / sessionsWithHandoffs) * 100).toFixed(0) : 0}%)</span>
+                            </div>
+                            <div className="h-2 bg-background-tertiary rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full"
+                                style={{
+                                  width: `${sessionsWithHandoffs > 0 ? (emailOnly / sessionsWithHandoffs) * 100 : 0}%`,
+                                  backgroundColor: GREY[400]
+                                }}
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <div className="flex justify-between text-sm mb-1">
+                              <span className="text-foreground">Both URL & Email</span>
+                              <span className="text-foreground-secondary">{both} ({sessionsWithHandoffs > 0 ? ((both / sessionsWithHandoffs) * 100).toFixed(0) : 0}%)</span>
+                            </div>
+                            <div className="h-2 bg-background-tertiary rounded-full overflow-hidden">
+                              <div
+                                className="h-full rounded-full"
+                                style={{
+                                  width: `${sessionsWithHandoffs > 0 ? (both / sessionsWithHandoffs) * 100 : 0}%`,
+                                  backgroundColor: GREY[600]
+                                }}
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </Card>
 
             {/* Questions Lists - Clean Simple Design with Scroll */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">

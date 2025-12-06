@@ -17,11 +17,6 @@ import {
   ThumbsDown,
   Minus,
   BarChart3,
-  HelpCircle,
-  Globe,
-  Sparkles,
-  Receipt,
-  Filter,
   Smartphone,
   Monitor,
   Tablet,
@@ -38,7 +33,8 @@ import {
   Spinner,
   Modal,
 } from '@/components/ui';
-import { KpiCard, KpiGrid, TabNavigation } from '@/components/analytics';
+import { KpiCard, KpiGrid, TabNavigation, ANALYTICS_TABS } from '@/components/analytics';
+import { useWorkspaceFilter } from '@/lib/hooks';
 
 // Tab Components
 import {
@@ -51,16 +47,6 @@ import {
   CustomTab,
 } from './components';
 
-// Tab configuration
-const TABS = [
-  { id: 'overview', label: 'Overview', icon: BarChart3 },
-  { id: 'conversations', label: 'Conversations', icon: MessageSquare },
-  { id: 'questions', label: 'Questions & Gaps', icon: HelpCircle },
-  { id: 'audience', label: 'Audience', icon: Globe },
-  { id: 'animations', label: 'Animations', icon: Sparkles },
-  { id: 'costs', label: 'True Costs', icon: Receipt },
-  { id: 'custom', label: 'Custom Metrics', icon: Filter },
-];
 
 export default function ConversationHistoryPage({ params }: { params: { clientId: string } }) {
   const client = clients.find((c) => c.id === params.clientId);
@@ -269,6 +255,15 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     return client ? getClientBrandColor(client.id) : '#6B7280';
   }, [client]);
 
+  // Use workspace filter hook for bot filtering
+  const { botOptions, workspaceOptions } = useWorkspaceFilter({
+    bots: client?.bots || [],
+    workspaces,
+    selectedWorkspace,
+    selectedBot,
+    onBotChange: setSelectedBot,
+  });
+
   // Helper functions
   const formatTimestamp = (dateStr: string) => {
     const date = new Date(dateStr);
@@ -339,23 +334,13 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     }
   };
 
-  // Filter options
-  const botOptions = [
-    { value: 'all', label: 'All Bots' },
-    ...(client?.bots.map((bot) => ({ value: bot.id, label: bot.name })) || []),
-  ];
-
+  // Filter options (botOptions and workspaceOptions come from useWorkspaceFilter hook)
   const statusOptions = [
     { value: 'all', label: 'All Status' },
     { value: 'resolved', label: 'Resolved' },
     { value: 'partial', label: 'Partial' },
     { value: 'unresolved', label: 'Unresolved' },
     { value: 'escalated', label: 'Escalated' },
-  ];
-
-  const workspaceOptions = [
-    { value: 'all', label: 'All Workspaces' },
-    ...workspaces.map((w) => ({ value: w.id, label: w.name })),
   ];
 
   const dateRangeOptions = [
@@ -561,7 +546,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
             label="Avg Duration"
             value={`${stats.avgDuration.toFixed(1)} min`}
           />
-          <KpiCard label="Sentiment">
+          <KpiCard icon={BarChart3} label="Sentiment">
             <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
               <span className="flex items-center gap-1 text-xs sm:text-sm">
                 <ThumbsUp size={14} className="text-success-600 dark:text-success-500" />
@@ -581,7 +566,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
         {/* Tab Navigation - Using shared component */}
         <TabNavigation
-          tabs={TABS}
+          tabs={ANALYTICS_TABS}
           activeTab={activeTab}
           onTabChange={setActiveTab}
           brandColor={brandColor}

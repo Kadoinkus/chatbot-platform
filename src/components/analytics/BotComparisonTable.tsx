@@ -27,6 +27,7 @@ interface BotComparisonTableProps {
   expandableContent?: (bot: BotWithMetrics) => ReactNode;
   title?: string;
   description?: string;
+  mobileCard?: (bot: BotWithMetrics, columns: ColumnDefinition[]) => ReactNode;
 }
 
 /**
@@ -37,6 +38,7 @@ interface BotComparisonTableProps {
  * - Pagination (default 10 per page)
  * - Brand color for highlights
  * - Optional expandable rows
+ * - Mobile card view support
  */
 export function BotComparisonTable({
   bots,
@@ -49,6 +51,7 @@ export function BotComparisonTable({
   expandableContent,
   title,
   description,
+  mobileCard,
 }: BotComparisonTableProps) {
   const [page, setPage] = useState(0);
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -132,16 +135,79 @@ export function BotComparisonTable({
     );
   }
 
+  // Default mobile card renderer
+  const defaultMobileCard = (bot: BotWithMetrics) => (
+    <div
+      className="p-4 bg-surface border border-border rounded-lg"
+      onClick={() => onBotClick?.(bot.botId)}
+    >
+      <div className="flex items-center gap-3 mb-3">
+        <div
+          className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
+          style={{ backgroundColor: brandColor || getClientBrandColor(bot.clientId) }}
+        >
+          <img src={bot.botImage} alt={bot.botName} className="w-full h-full object-cover" />
+        </div>
+        <div className="flex-1">
+          <span className="font-medium text-foreground">{bot.botName}</span>
+          <div className="text-xs mt-0.5">
+            <span className={`px-1.5 py-0.5 rounded-full ${
+              bot.status === 'Live' ? 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500' :
+              bot.status === 'Paused' ? 'bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500' :
+              'bg-error-100 dark:bg-error-700/30 text-error-700 dark:text-error-500'
+            }`}>
+              {bot.status}
+            </span>
+          </div>
+        </div>
+        {expandableContent && (
+          <button
+            onClick={(e) => {
+              e.stopPropagation();
+              toggleExpand(bot.botId);
+            }}
+            className="p-2 hover:bg-background-hover rounded-lg"
+          >
+            {expandedBots.has(bot.botId) ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+          </button>
+        )}
+      </div>
+      <div className="grid grid-cols-2 gap-2 text-sm">
+        {columns.slice(0, 4).map((col) => (
+          <div key={col.key} className="flex justify-between items-center py-1">
+            <span className="text-foreground-tertiary text-xs">{col.header}</span>
+            <span className="text-foreground font-medium">{col.render(bot)}</span>
+          </div>
+        ))}
+      </div>
+      {expandableContent && expandedBots.has(bot.botId) && (
+        <div className="mt-3 pt-3 border-t border-border">
+          {expandableContent(bot)}
+        </div>
+      )}
+    </div>
+  );
+
   return (
     <div className="card overflow-hidden">
       {(title || description) && (
-        <div className="p-6 border-b border-border">
-          {title && <h2 className="text-xl font-semibold text-foreground">{title}</h2>}
+        <div className="p-4 sm:p-6 border-b border-border">
+          {title && <h2 className="text-lg sm:text-xl font-semibold text-foreground">{title}</h2>}
           {description && <p className="text-sm text-foreground-secondary mt-1">{description}</p>}
         </div>
       )}
 
-      <div className="overflow-x-auto">
+      {/* Mobile: Card view */}
+      <div className="lg:hidden p-4 space-y-3">
+        {displayBots.map((bot) => (
+          <div key={bot.botId}>
+            {mobileCard ? mobileCard(bot, columns) : defaultMobileCard(bot)}
+          </div>
+        ))}
+      </div>
+
+      {/* Desktop: Table view */}
+      <div className="hidden lg:block overflow-x-auto">
         <table className="data-table">
           <thead>
             <tr>

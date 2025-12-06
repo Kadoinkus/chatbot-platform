@@ -10,15 +10,9 @@ import {
   TrendingUp,
   DollarSign,
   Calendar,
-  Filter,
   Download,
   ChevronDown,
   BarChart3,
-  MessageSquare,
-  HelpCircle,
-  Globe,
-  Sparkles,
-  Receipt,
   Bot as BotIcon,
   ThumbsUp,
   ThumbsDown,
@@ -61,7 +55,7 @@ import {
   formatAxisCurrency,
   type CustomTooltipContent,
 } from '@/components/analytics/charts';
-import { TabNavigation } from '@/components/analytics';
+import { TabNavigation, ANALYTICS_TABS } from '@/components/analytics';
 
 // Tab components
 import {
@@ -88,16 +82,6 @@ const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.Cartesian
 const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
 const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
 
-// Tab configuration matching the analytics spec
-const TABS = [
-  { id: 'overview', label: 'Overview', icon: BarChart3 },
-  { id: 'conversations', label: 'Conversations', icon: MessageSquare },
-  { id: 'questions', label: 'Questions & Gaps', icon: HelpCircle },
-  { id: 'audience', label: 'Audience', icon: Globe },
-  { id: 'animations', label: 'Animations', icon: Sparkles },
-  { id: 'costs', label: 'True Costs', icon: Receipt },
-  { id: 'custom', label: 'Custom Metrics', icon: Filter }
-];
 
 export default function BotAnalyticsPage({ params }: { params: { clientId: string; botId: string } }) {
   // State
@@ -796,7 +780,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
         {/* Tab Navigation - Using shared component */}
         <TabNavigation
-          tabs={TABS}
+          tabs={ANALYTICS_TABS}
           activeTab={activeTab}
           onTabChange={setActiveTab}
           brandColor={brandColor}

@@ -32,19 +32,19 @@ export function IntentBars({ data }:{ data: Array<{ intent: string; count: numbe
   );
 }
 
-export function MultiLineChart({ 
-  data, 
-  series, 
-  xAxisKey = 'date', 
+export function MultiLineChart({
+  data,
+  series,
+  xAxisKey = 'date',
   yAxisLabel,
-  height = 300,
+  height = '100%',
   colors = ['#10B981', '#3B82F6', '#8B5CF6', '#F59E0B', '#EF4444', '#06B6D4', '#84CC16', '#F97316']
-}: { 
+}: {
   data: Array<any>;
   series: Array<{ name: string; dataKey: string }>;
   xAxisKey?: string;
   yAxisLabel?: string;
-  height?: number;
+  height?: number | string;
   colors?: string[];
 }) {
   return (

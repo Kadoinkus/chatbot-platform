@@ -131,7 +131,7 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
       <div className="p-6 pb-4 flex-1">
         <div className="flex items-start justify-between mb-4">
           <div className="flex items-center gap-4">
-            <div className="relative">
+            <div className="relative flex-shrink-0">
               <img
                 src={bot.image}
                 alt={bot.name}
@@ -288,8 +288,8 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
           href={`/app/${clientId}/bot/${bot.id}/analytics`}
           className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-background-hover transition-all duration-150 group/link"
         >
-          <BarChart3 size={16} className="text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150" />
-          <span className="text-sm font-medium text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150">Analytics</span>
+          <BarChart3 size={16} className="text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150" aria-hidden="true" />
+          <span className="sr-only sm:not-sr-only text-sm font-medium text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150">Analytics</span>
         </Link>
 
         <div className="w-px h-8 bg-border" />
@@ -298,8 +298,8 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
           href={`/app/${clientId}/bot/${bot.id}/mascot`}
           className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-background-hover transition-all duration-150 group/link"
         >
-          <Palette size={16} className="text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150" />
-          <span className="text-sm font-medium text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150">Customize</span>
+          <Palette size={16} className="text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150" aria-hidden="true" />
+          <span className="sr-only sm:not-sr-only text-sm font-medium text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150">Customize</span>
         </Link>
 
         <div className="w-px h-8 bg-border" />
@@ -308,8 +308,8 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
           href={`/app/${clientId}/bot/${bot.id}/brain`}
           className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-background-hover transition-all duration-150 group/link"
         >
-          <Brain size={16} className="text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150" />
-          <span className="text-sm font-medium text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150">Persona</span>
+          <Brain size={16} className="text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150" aria-hidden="true" />
+          <span className="sr-only sm:not-sr-only text-sm font-medium text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150">Persona</span>
         </Link>
 
         <div className="w-px h-8 bg-border" />

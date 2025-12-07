@@ -39,7 +39,7 @@ import { tooltipStyle } from '@/lib/chartStyles';
 import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
 import type { Client, Bot, ChatSessionWithAnalysis } from '@/types';
 import type { OverviewMetrics, SentimentBreakdown, CategoryBreakdown, LanguageBreakdown, CountryBreakdown, TimeSeriesDataPoint, QuestionAnalytics, DeviceBreakdown, SentimentTimeSeriesDataPoint, HourlyBreakdown, AnimationStats } from '@/lib/db/analytics';
-import { Page, PageContent, PageHeader, Card, Button, Input, Spinner, EmptyState, Modal } from '@/components/ui';
+import { Page, PageContent, PageHeader, Card, Button, Input, Spinner, EmptyState, Modal, Select } from '@/components/ui';
 
 // Shared chart components
 import {
@@ -118,18 +118,20 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
   // Ref to preserve scroll position when opening modal
   const scrollPositionRef = useRef<number>(0);
-  const exportDropdownRef = useRef<HTMLDivElement>(null);
+  const desktopExportDropdownRef = useRef<HTMLDivElement>(null);
+  const mobileExportDropdownRef = useRef<HTMLDivElement>(null);
 
 
-  // Close export dropdown when clicking outside
+  // Close export dropdown when clicking/touching outside
   useEffect(() => {
-    function handleClickOutside(event: MouseEvent) {
-      if (exportDropdownRef.current && !exportDropdownRef.current.contains(event.target as Node)) {
-        setShowExportDropdown(false);
-      }
+    function handleClickOutside(event: PointerEvent) {
+      const target = event.target as Node;
+      const clickedInsideDesktop = desktopExportDropdownRef.current?.contains(target);
+      const clickedInsideMobile = mobileExportDropdownRef.current?.contains(target);
+      if (!clickedInsideDesktop && !clickedInsideMobile) setShowExportDropdown(false);
     }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
+    document.addEventListener('pointerdown', handleClickOutside);
+    return () => document.removeEventListener('pointerdown', handleClickOutside);
   }, []);
 
   // Handle opening transcript modal while preserving scroll position
@@ -638,7 +640,8 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
 
         {/* Header Card */}
         <Card className="mb-6 overflow-visible">
-          <div className="flex items-start justify-between mb-6">
+          {/* Desktop: Horizontal layout */}
+          <div className="hidden lg:flex items-start justify-between mb-6">
             <div className="flex items-center gap-4">
               <img
                 src={bot.image}
@@ -652,7 +655,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               </div>
             </div>
 
-            <div className="relative" ref={exportDropdownRef}>
+            <div className="relative" ref={desktopExportDropdownRef}>
               <Button
                 variant="secondary"
                 onClick={() => setShowExportDropdown(!showExportDropdown)}
@@ -688,8 +691,60 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
             </div>
           </div>
 
-          {/* Date Range Selector */}
-          <div className="flex items-center justify-between flex-wrap gap-4">
+          {/* Mobile: Stacked layout */}
+          <div className="lg:hidden space-y-4 mb-6">
+            <div className="flex items-center gap-3">
+              <img
+                src={bot.image}
+                alt={bot.name}
+                className="w-12 h-12 rounded-full"
+                style={{ backgroundColor: brandColor }}
+              />
+              <div className="min-w-0 flex-1">
+                <h1 className="text-lg font-bold text-foreground truncate">{bot.name} Analytics</h1>
+                <p className="text-sm text-foreground-secondary truncate">{bot.description}</p>
+              </div>
+            </div>
+
+            <div className="relative" ref={mobileExportDropdownRef}>
+              <Button
+                variant="secondary"
+                onClick={() => setShowExportDropdown(!showExportDropdown)}
+                className="w-full justify-center"
+              >
+                <Download size={16} />
+                Export
+                <ChevronDown size={14} className={`ml-1 transition-transform ${showExportDropdown ? 'rotate-180' : ''}`} />
+              </Button>
+
+              {/* Export Dropdown - Mobile */}
+              {showExportDropdown && (
+                <div className="absolute left-0 right-0 top-full mt-1 bg-surface-elevated rounded-lg shadow-lg border border-border py-1 z-[100]">
+                  <button
+                    onClick={() => handleExport('csv')}
+                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-background-hover transition-colors"
+                  >
+                    .csv
+                  </button>
+                  <button
+                    onClick={() => handleExport('xlsx')}
+                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-background-hover transition-colors"
+                  >
+                    .xlsx
+                  </button>
+                  <button
+                    onClick={() => handleExport('json')}
+                    className="w-full px-4 py-2 text-left text-sm text-foreground hover:bg-background-hover transition-colors"
+                  >
+                    .json
+                  </button>
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* Date Range Selector - Desktop */}
+          <div className="hidden lg:flex items-center justify-between flex-wrap gap-4">
             <div className="flex items-center gap-4">
               <Calendar size={16} className="text-foreground-tertiary" />
               <span className="text-sm font-medium text-foreground-secondary">Time Period:</span>
@@ -729,6 +784,44 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
               {useCustomRange && customDateRange.start && customDateRange.end
                 ? `${new Date(customDateRange.start).toLocaleDateString()} - ${new Date(customDateRange.end).toLocaleDateString()}`
                 : `Showing last ${dateRange} days`}
+            </div>
+          </div>
+
+          {/* Date Range Selector - Mobile */}
+          <div className="lg:hidden space-y-3">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <label className="text-xs font-medium text-foreground-secondary mb-1 block">Time Period</label>
+                <Select
+                  fullWidth
+                  value={useCustomRange ? 'custom' : String(dateRange)}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    if (val === 'custom') {
+                      setShowDatePicker(true);
+                    } else {
+                      setUseCustomRange(false);
+                      setDateRange(Number(val));
+                    }
+                  }}
+                  options={[
+                    { value: '7', label: 'Last 7 days' },
+                    { value: '30', label: 'Last 30 days' },
+                    { value: '90', label: 'Last 90 days' },
+                    { value: 'custom', label: 'Custom Range' },
+                  ]}
+                />
+              </div>
+              <div className="flex items-end">
+                <div className="flex items-center gap-2 text-xs text-foreground-tertiary bg-background-secondary px-3 py-2.5 rounded-lg w-full">
+                  <BarChart3 size={12} />
+                  <span className="truncate">
+                    {useCustomRange && customDateRange.start && customDateRange.end
+                      ? `${new Date(customDateRange.start).toLocaleDateString()} - ${new Date(customDateRange.end).toLocaleDateString()}`
+                      : `Last ${dateRange} days`}
+                  </span>
+                </div>
+              </div>
             </div>
           </div>
 

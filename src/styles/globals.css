@@ -287,6 +287,12 @@ body {
     border: 1px solid var(--plan-enterprise-border);
   }
 
+  .badge-plan-custom {
+    background-color: var(--plan-custom-bg, var(--plan-enterprise-bg));
+    color: var(--plan-custom-text, var(--plan-enterprise-text));
+    border: 1px solid var(--plan-custom-border, var(--plan-enterprise-border));
+  }
+
   /* Role badges */
   .badge-role-owner {
     background-color: var(--role-owner-bg);

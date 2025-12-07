@@ -2,9 +2,10 @@ import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import Progress from '@/components/ui/Progress';
-import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, MessageCircle, AlertTriangle, MoreVertical, Settings, Trash2, Copy, Box, Square } from 'lucide-react';
+import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, Users, Calendar, MoreVertical, Settings, Trash2, Copy } from 'lucide-react';
 import type { Bot, Workspace, PlanType } from '@/types';
 import { getClientBrandColor } from '@/lib/brandColors';
+import { getNextUsageReset } from '@/lib/billingService';
 
 interface BotCardProps {
   bot: Bot;
@@ -17,42 +18,12 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
   const brandColor = getClientBrandColor(bot.clientId);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
-  const [showModeWarning, setShowModeWarning] = useState(false);
-  const [manualMode, setManualMode] = useState<'3d' | '2d' | null>(null);
 
   const handleToggleStatus = (e: React.MouseEvent) => {
     e.preventDefault();
     e.stopPropagation();
     // TODO: Implement actual status toggle API call
     console.log(`Toggling bot ${bot.id} from ${bot.status} to ${bot.status === 'Live' ? 'Paused' : 'Live'}`);
-  };
-
-  const handleModeToggle = (e: React.MouseEvent) => {
-    e.preventDefault();
-    e.stopPropagation();
-    
-    // If bundle limit exceeded, can only go to 2D
-    if (bundleLoads.percentage > 90) {
-      alert('Bundle limit exceeded. Bot is automatically in 2D mode until usage decreases.');
-      return;
-    }
-    
-    // If currently in 3D, show warning before switching to 2D
-    if (is3DMode) {
-      setShowModeWarning(true);
-    } else {
-      // If in 2D, switch back to 3D immediately
-      setManualMode('3d');
-    }
-  };
-
-  const confirmModeSwitch = () => {
-    setManualMode('2d');
-    setShowModeWarning(false);
-  };
-
-  const cancelModeSwitch = () => {
-    setShowModeWarning(false);
   };
 
   // Close dropdown when clicking outside
@@ -77,26 +48,33 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
     percentage: 0
   };
 
-  const chatUsage = workspace ? {
-    current: workspace.messages.used,
-    limit: workspace.messages.limit,
-    percentage: Math.round((workspace.messages.used / workspace.messages.limit) * 100)
+  // Sessions - client-facing metric (separate from messages)
+  const sessionUsage = workspace?.sessions ? {
+    current: workspace.sessions.used,
+    limit: workspace.sessions.limit,
+    percentage: Math.round((workspace.sessions.used / workspace.sessions.limit) * 100)
   } : {
     current: 0,
-    limit: 50000,
+    limit: 5000,
     percentage: 0
   };
 
   // Get billing plan from workspace
   const workspacePlan = workspace?.plan || 'starter';
   const hasWalletCredits = workspace && workspace.walletCredits > 0;
-  
-  // Determine 2D/3D mode - in production this would come from props or API
-  const autoFallback = bundleLoads.percentage > 90; // Auto switch to 2D if bundle limit exceeded
-  const is3DMode = !autoFallback && manualMode !== '2d';
+
+  // Calculate days until usage reset (separate from invoice date)
+  const usageReset = workspace ? getNextUsageReset(workspace) : null;
+  const daysUntilReset = usageReset?.daysUntilReset ?? 0;
+
+  // Check if widget can operate (within limits OR has credits)
+  const isOverLimit = bundleLoads.percentage >= 100 || sessionUsage.percentage >= 100;
+  const canOperate = !isOverLimit || hasWalletCredits;
   
   const getPlanBadgeStyle = (plan: PlanType) => {
     switch (plan) {
+      case 'custom':
+        return 'badge-plan-custom';
       case 'enterprise':
         return 'badge-plan-enterprise';
       case 'premium':
@@ -111,6 +89,8 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
 
   const getPlanDisplayName = (plan: PlanType) => {
     switch (plan) {
+      case 'custom':
+        return 'Custom';
       case 'enterprise':
         return 'Enterprise';
       case 'premium':
@@ -138,20 +118,15 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
                 className="w-24 h-24 rounded-full group-hover:scale-105 transition-transform duration-300"
                 style={{ backgroundColor: brandColor }}
               />
-              {/* 2D/3D Mode Indicator */}
-              <button
-                onClick={handleModeToggle}
-                className={`absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-surface-elevated flex items-center justify-center text-white text-xs font-bold shadow-sm transition-all duration-200 hover:scale-110 ${
-                  is3DMode ? 'bg-success-600 hover:bg-success-700' : 'bg-warning-600 hover:bg-warning-700'
-                }`}
-                title={`${is3DMode ? '3D Mode Active' : '2D Mode Active'} - Click to ${is3DMode ? 'switch to 2D' : 'switch to 3D'}`}
-              >
-                {is3DMode ? (
-                  <Box size={12} />
-                ) : (
-                  <Square size={12} />
-                )}
-              </button>
+              {/* Status indicator - warning if cannot operate */}
+              {!canOperate && (
+                <div
+                  className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-surface-elevated flex items-center justify-center bg-error-600 text-white text-xs font-bold shadow-sm"
+                  title="Widget stopped - add credits to continue"
+                >
+                  !
+                </div>
+              )}
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
@@ -165,15 +140,16 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
                   WebkitBoxOrient: 'vertical'
                 }}>{bot.description}</p>
               </div>
-              <div className="mt-2 flex items-center gap-2">
+              <div className="mt-2 flex items-center gap-2 flex-wrap">
+                {workspaceName && (
+                  <span className="text-xs text-foreground-tertiary">
+                    {workspaceName}
+                  </span>
+                )}
+                {workspaceName && <span className="text-foreground-tertiary">•</span>}
                 <span className={`badge ${getPlanBadgeStyle(workspacePlan)}`}>
                   {getPlanDisplayName(workspacePlan)}
                 </span>
-                {hasWalletCredits && (
-                  <span className="badge badge-plan-enterprise text-xs">
-                    +€{workspace!.walletCredits.toFixed(0)} credits
-                  </span>
-                )}
               </div>
             </div>
           </div>
@@ -220,7 +196,7 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
           </div>
         </div>
         
-        {/* Usage Indicators */}
+        {/* Usage Indicators - Client-facing: Bundle Loads + Sessions */}
         <div className="space-y-3">
           {/* Bundle Loads */}
           <div>
@@ -238,48 +214,51 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
               <span className="text-xs text-foreground-tertiary">
                 {bundleLoads.current.toLocaleString()} / {bundleLoads.limit.toLocaleString()}
               </span>
-              {!is3DMode && (
-                <span className="text-xs text-warning-600 dark:text-warning-500 font-medium flex items-center gap-1">
-                  <Square size={10} />
-                  2D mode active
+              {bundleLoads.percentage >= 100 && hasWalletCredits && (
+                <span className="text-xs text-warning-600 dark:text-warning-500 font-medium">
+                  Using credits
                 </span>
               )}
             </div>
           </div>
 
-          {/* Chat Messages */}
+          {/* Sessions (Conversations) */}
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-xs font-medium text-foreground-secondary flex items-center gap-1.5">
-                <MessageCircle size={14} className="text-foreground-tertiary" />
-                Chat Messages
+                <Users size={14} className="text-foreground-tertiary" />
+                Sessions
               </span>
               <span className="text-xs text-foreground-secondary">
-                {chatUsage.percentage}%
+                {sessionUsage.percentage}%
               </span>
             </div>
-            <Progress percentage={chatUsage.percentage} />
+            <Progress percentage={sessionUsage.percentage} />
             <div className="flex justify-between items-center mt-1">
               <span className="text-xs text-foreground-tertiary">
-                {(chatUsage.current / 1000).toFixed(1)}k / {(chatUsage.limit / 1000).toFixed(0)}k
+                {(sessionUsage.current / 1000).toFixed(1)}k / {(sessionUsage.limit / 1000).toFixed(0)}k
               </span>
+              {sessionUsage.percentage >= 100 && hasWalletCredits && (
+                <span className="text-xs text-warning-600 dark:text-warning-500 font-medium">
+                  Using credits
+                </span>
+              )}
             </div>
           </div>
         </div>
 
         {/* Additional Info */}
-        {bot.status === 'Live' && (
-          <div className="mt-4 flex justify-between items-center">
-            <span className="text-xs text-foreground-tertiary">
-              {bot.conversations} conversations today
+        <div className="mt-4 pt-3 border-t border-border flex justify-between items-center">
+          <span className="text-xs text-foreground-tertiary">
+            {bot.conversations} conversations today
+          </span>
+          {workspace && daysUntilReset > 0 && (
+            <span className="text-xs text-foreground-tertiary flex items-center gap-1">
+              <Calendar size={12} />
+              Resets in {daysUntilReset} days
             </span>
-            {workspaceName && (
-              <span className="text-xs text-foreground-disabled">
-                {workspaceName}
-              </span>
-            )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
 
       {/* Action Bar */}
@@ -329,50 +308,6 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
           )}
         </button>
       </div>
-      
-      {/* Mode Switch Warning Modal */}
-      {showModeWarning && (
-        <div className="fixed inset-0 bg-surface-overlay flex items-center justify-center z-50">
-          <div className="bg-surface-elevated rounded-xl p-6 max-w-md mx-4 border border-border">
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 bg-warning-100 dark:bg-warning-700/30 rounded-full flex items-center justify-center">
-                <Square size={20} className="text-warning-600 dark:text-warning-500" />
-              </div>
-              <div>
-                <h3 className="font-semibold text-lg text-foreground">Switch to 2D Mode?</h3>
-                <p className="text-sm text-foreground-secondary">This will reduce visual quality</p>
-              </div>
-            </div>
-
-            <div className="mb-6">
-              <p className="text-sm text-foreground-secondary mb-3">
-                Switching to 2D mode will:
-              </p>
-              <ul className="text-sm text-foreground-tertiary space-y-1 ml-4">
-                <li>Reduce bandwidth usage by ~85%</li>
-                <li>Use simpler chat interface</li>
-                <li>Maintain full functionality</li>
-                <li>You can switch back anytime</li>
-              </ul>
-            </div>
-
-            <div className="flex gap-3">
-              <button
-                onClick={cancelModeSwitch}
-                className="btn-secondary flex-1 px-4 py-2"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={confirmModeSwitch}
-                className="flex-1 px-4 py-2 bg-warning-600 text-white rounded-lg hover:bg-warning-700 transition-colors"
-              >
-                Switch to 2D
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }

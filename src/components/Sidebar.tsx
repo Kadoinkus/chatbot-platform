@@ -61,7 +61,10 @@ export default function Sidebar({ clientId }: SidebarProps) {
       <nav className="flex-1 flex flex-col gap-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+          // Special handling for Bots: only active on exact match or /bot/ subpages
+          const isActive = item.label === 'Bots'
+            ? pathname === item.href || pathname.includes('/bot/')
+            : pathname === item.href || pathname.startsWith(item.href + '/');
           return (
             <Link
               key={item.label}
@@ -146,7 +149,10 @@ export default function Sidebar({ clientId }: SidebarProps) {
             <nav className="flex-1 space-y-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                const isActive = pathname === item.href || pathname.startsWith(item.href + '/');
+                // Special handling for Bots: only active on exact match or /bot/ subpages
+                const isActive = item.label === 'Bots'
+                  ? pathname === item.href || pathname.includes('/bot/')
+                  : pathname === item.href || pathname.startsWith(item.href + '/');
                 return (
                   <Link
                     key={item.label}

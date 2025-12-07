@@ -20,16 +20,30 @@
       "used": 445000,
       "remaining": 555000
     },
+    "sessions": {
+      "limit": 125000,
+      "used": 89500,
+      "remaining": 35500
+    },
     "walletCredits": 50.00,
     "overageRates": {
       "bundleLoads": 0.25,
       "messages": 0.0015,
-      "apiCalls": 0.0001
+      "apiCalls": 0.0001,
+      "sessions": 0.01
+    },
+    "subscriptionStartDate": "2024-01-01",
+    "billingResetDay": 1,
+    "usageResetInterval": "monthly",
+    "overageTracking": {
+      "bundleOverageUsed": 0,
+      "sessionOverageUsed": 0,
+      "creditsSpentOnOverage": 0
     },
     "status": "active",
     "createdAt": "2024-01-01",
-    "billingCycle": "monthly",
-    "nextBillingDate": "2024-02-01",
+    "billingCycle": "annual",
+    "nextBillingDate": "2026-01-01",
     "monthlyFee": 2499.00
   },
   {
@@ -53,16 +67,30 @@
       "used": 65000,
       "remaining": 185000
     },
+    "sessions": {
+      "limit": 25000,
+      "used": 6200,
+      "remaining": 18800
+    },
     "walletCredits": 25.00,
     "overageRates": {
       "bundleLoads": 0.30,
       "messages": 0.002,
-      "apiCalls": 0.00015
+      "apiCalls": 0.00015,
+      "sessions": 0.015
+    },
+    "subscriptionStartDate": "2024-01-15",
+    "billingResetDay": 15,
+    "usageResetInterval": "monthly",
+    "overageTracking": {
+      "bundleOverageUsed": 0,
+      "sessionOverageUsed": 0,
+      "creditsSpentOnOverage": 0
     },
     "status": "active",
     "createdAt": "2024-01-15",
-    "billingCycle": "monthly",
-    "nextBillingDate": "2024-02-15",
+    "billingCycle": "annual",
+    "nextBillingDate": "2026-01-15",
     "monthlyFee": 299.00
   },
   {
@@ -86,16 +114,30 @@
       "used": 18000,
       "remaining": 32000
     },
+    "sessions": {
+      "limit": 5000,
+      "used": 4200,
+      "remaining": 800
+    },
     "walletCredits": 0,
     "overageRates": {
       "bundleLoads": 0.35,
       "messages": 0.0025,
-      "apiCalls": 0.0002
+      "apiCalls": 0.0002,
+      "sessions": 0.02
+    },
+    "subscriptionStartDate": "2024-01-20",
+    "billingResetDay": 20,
+    "usageResetInterval": "monthly",
+    "overageTracking": {
+      "bundleOverageUsed": 0,
+      "sessionOverageUsed": 0,
+      "creditsSpentOnOverage": 0
     },
     "status": "active",
     "createdAt": "2024-01-20",
-    "billingCycle": "monthly",
-    "nextBillingDate": "2024-02-20",
+    "billingCycle": "annual",
+    "nextBillingDate": "2026-01-20",
     "monthlyFee": 99.00
   },
   {
@@ -106,8 +148,8 @@
     "plan": "basic",
     "bundleLoads": {
       "limit": 5000,
-      "used": 3200,
-      "remaining": 1800
+      "used": 5150,
+      "remaining": 0
     },
     "messages": {
       "limit": 100000,
@@ -119,16 +161,30 @@
       "used": 123000,
       "remaining": 127000
     },
-    "walletCredits": 100.00,
+    "sessions": {
+      "limit": 25000,
+      "used": 15800,
+      "remaining": 9200
+    },
+    "walletCredits": 43.00,
     "overageRates": {
       "bundleLoads": 0.30,
       "messages": 0.002,
-      "apiCalls": 0.00015
+      "apiCalls": 0.00015,
+      "sessions": 0.015
+    },
+    "subscriptionStartDate": "2024-01-01",
+    "billingResetDay": 1,
+    "usageResetInterval": "monthly",
+    "overageTracking": {
+      "bundleOverageUsed": 150,
+      "sessionOverageUsed": 0,
+      "creditsSpentOnOverage": 57.00
     },
     "status": "active",
     "createdAt": "2024-01-01",
-    "billingCycle": "quarterly",
-    "nextBillingDate": "2024-04-01",
+    "billingCycle": "annual",
+    "nextBillingDate": "2026-01-01",
     "monthlyFee": 299.00
   }
 ]

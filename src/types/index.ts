@@ -53,9 +53,10 @@ export type Client = {
 // Workspace (Resource Pool)
 // =============================================================================
 
-export type PlanType = 'starter' | 'basic' | 'premium' | 'enterprise';
+export type PlanType = 'starter' | 'basic' | 'premium' | 'enterprise' | 'custom';
 export type WorkspaceStatus = 'active' | 'suspended' | 'trial';
-export type BillingCycle = 'monthly' | 'quarterly' | 'annual';
+export type BillingCycle = 'monthly' | 'quarterly' | 'annual';  // Invoice frequency
+export type UsageResetInterval = 'monthly' | 'quarterly' | 'annual';  // When usage counters reset
 
 export type UsageCounter = {
   limit: number;
@@ -67,6 +68,14 @@ export type OverageRates = {
   bundleLoads: number;
   messages: number;
   apiCalls: number;
+  sessions?: number;  // EUR per session overage (client-facing) - optional for backward compat
+};
+
+// Overage tracking for current billing period
+export type OverageTracking = {
+  bundleOverageUsed: number;      // Extra bundles used beyond limit
+  sessionOverageUsed: number;     // Extra sessions used beyond limit
+  creditsSpentOnOverage: number;  // EUR deducted from wallet this period
 };
 
 export type Workspace = {
@@ -79,11 +88,18 @@ export type Workspace = {
   bundleLoads: UsageCounter;
   messages: UsageCounter;
   apiCalls: UsageCounter;
+  sessions?: UsageCounter;              // Session tracking (client-facing)
   walletCredits: number;
   overageRates: OverageRates;
-  billingCycle: BillingCycle;
-  monthlyFee: number;
-  nextBillingDate: string;
+  // Billing (invoice frequency - when customer is charged)
+  billingCycle: BillingCycle;           // 'annual' = prepaid yearly invoice
+  monthlyFee: number;                   // Base fee per period
+  nextBillingDate: string;              // Next invoice date
+  // Usage reset (separate from billing - when counters reset)
+  usageResetInterval?: UsageResetInterval;  // Defaults to 'monthly' - most plans reset monthly
+  subscriptionStartDate?: string;       // ISO date when subscription started
+  billingResetDay?: number;             // Day of month usage resets (1-28)
+  overageTracking?: OverageTracking;    // Track overage this usage period
   createdAt: string;
 };
 

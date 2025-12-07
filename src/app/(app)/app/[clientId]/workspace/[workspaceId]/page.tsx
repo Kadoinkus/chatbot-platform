@@ -101,7 +101,9 @@ export default function WorkspaceDetailPage({
     return planMap[plan] || 'starter';
   };
 
-  const usagePercentage = workspace.messages ? (workspace.messages.used / workspace.messages.limit) * 100 : 0;
+  // Sessions is the client-facing usage metric (messages is admin-only)
+  const sessions = workspace.sessions || { used: 0, limit: 5000, remaining: 5000 };
+  const usagePercentage = (sessions.used / sessions.limit) * 100;
 
   const tabs = [
     { id: 'bots', label: `Bots (${bots.length})` },
@@ -145,17 +147,17 @@ export default function WorkspaceDetailPage({
             />
 
             {/* Stats Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
               <Card padding="sm">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-foreground-secondary">Usage This Month</span>
+                  <span className="text-sm text-foreground-secondary">Sessions This Month</span>
                   <Activity size={18} className="text-foreground-tertiary" />
                 </div>
-                <p className="text-2xl font-bold text-foreground">{workspace.messages?.used?.toLocaleString() || '0'}</p>
+                <p className="text-2xl font-bold text-foreground">{sessions.used.toLocaleString()}</p>
                 <div className="mt-2">
                   <div className="flex justify-between text-xs text-foreground-tertiary mb-1">
                     <span>{Math.round(usagePercentage)}% used</span>
-                    <span>{workspace.messages?.remaining?.toLocaleString() || '0'} left</span>
+                    <span>{sessions.remaining.toLocaleString()} left</span>
                   </div>
                   <div className="w-full bg-background-tertiary rounded-full h-2">
                     <div
@@ -207,8 +209,8 @@ export default function WorkspaceDetailPage({
             {/* Warning if approaching limit */}
             {usagePercentage > 80 && usagePercentage < 100 && (
               <div className="mb-6">
-                <Alert variant="warning" title="Approaching usage limit">
-                  You've used {Math.round(usagePercentage)}% of your monthly limit.
+                <Alert variant="warning" title="Approaching session limit">
+                  You've used {Math.round(usagePercentage)}% of your monthly sessions.
                   Consider upgrading your plan or adding wallet credits for overages.
                 </Alert>
               </div>
@@ -229,7 +231,7 @@ export default function WorkspaceDetailPage({
                     {bots.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         {bots.map((bot) => (
-                          <BotCard key={bot.id} bot={bot} clientId={client.id} workspace={workspace} />
+                          <BotCard key={bot.id} bot={bot} clientId={client.id} workspace={workspace} workspaceName={workspace.name} />
                         ))}
                       </div>
                     ) : (

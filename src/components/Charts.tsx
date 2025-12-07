@@ -44,7 +44,7 @@ export function MultiLineChart({
   series: Array<{ name: string; dataKey: string }>;
   xAxisKey?: string;
   yAxisLabel?: string;
-  height?: number | string;
+  height?: number | `${number}%`;
   colors?: string[];
 }) {
   return (

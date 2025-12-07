@@ -19,6 +19,9 @@ import type { ContentType, TooltipProps } from 'recharts/types/component/Tooltip
 import { tooltipStyle } from '@/lib/chartStyles';
 import { getChartColors, GREY } from '@/lib/chartColors';
 
+// Shared type for dimensions passed to ResponsiveContainer (numbers or percentage strings)
+type ResponsiveSize = number | `${number}%`;
+
 // ============================================
 // Safe Formatters (prevent runtime errors)
 // ============================================
@@ -79,7 +82,7 @@ export const formatAxisHour = (value: unknown): string => {
 // ============================================
 
 export interface BaseChartProps {
-  height?: number | `${number}%`;
+  height?: ResponsiveSize;
   brandColor?: string;
   showGrid?: boolean;
   showLegend?: boolean;
@@ -722,8 +725,8 @@ export function CostBarChart({
 
 export interface SparklineProps {
   data: Array<{ value: number }>;
-  width?: number;
-  height?: number;
+  width?: ResponsiveSize;
+  height?: ResponsiveSize;
   color?: string;
 }
 

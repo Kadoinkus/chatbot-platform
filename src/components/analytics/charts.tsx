@@ -79,7 +79,7 @@ export const formatAxisHour = (value: unknown): string => {
 // ============================================
 
 export interface BaseChartProps {
-  height?: number | string;
+  height?: number | `${number}%`;
   brandColor?: string;
   showGrid?: boolean;
   showLegend?: boolean;

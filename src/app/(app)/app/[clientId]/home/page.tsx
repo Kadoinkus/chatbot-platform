@@ -96,7 +96,7 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
     <Page>
       <PageContent>
             <PageHeader
-              title="Dashboard"
+              title="Workspaces"
               description={`Manage your workspaces and AI assistants for ${client.name}`}
             />
 

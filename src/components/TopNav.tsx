@@ -10,7 +10,7 @@ export default function TopNav({ clientId }: { clientId?: string }) {
   const { signOut } = useAuth();
 
   const tabs = [
-    { href: `/app/${clientId}`, label: 'Dashboard' },
+    { href: `/app/${clientId}`, label: 'Workspaces' },
     { href: `/app/${clientId}?tab=analytics`, label: 'Analytics' },
     { href: `/app/${clientId}?tab=status`, label: 'Status' }
   ];

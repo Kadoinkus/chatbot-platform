@@ -115,19 +115,9 @@ export default function WorkspaceDetailPage({
     <Page>
       <PageContent>
             <PageHeader
-              title={workspace.name}
-              description={workspace.description}
-              backLink={
-                <Link
-                  href={`/app/${client.id}/home`}
-                  className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
-                >
-                  <ArrowLeft size={16} />
-                  Back to dashboard
-                </Link>
-              }
-              actions={
-                <div className="flex items-center gap-3">
+              title={
+                <span className="flex items-center gap-3">
+                  {workspace.name}
                   <Badge plan={getPlanType(workspace.plan)}>
                     {workspace.plan.toUpperCase()}
                   </Badge>
@@ -136,6 +126,20 @@ export default function WorkspaceDetailPage({
                       {workspace.status.toUpperCase()}
                     </Badge>
                   )}
+                </span>
+              }
+              description={workspace.description}
+              backLink={
+                <Link
+                  href={`/app/${client.id}/home`}
+                  className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
+                >
+                  <ArrowLeft size={16} />
+                  Back to Workspaces
+                </Link>
+              }
+              actions={
+                <div className="flex items-center gap-3">
                   <Button variant="secondary" icon={<Settings size={16} />}>
                     Settings
                   </Button>
@@ -222,7 +226,12 @@ export default function WorkspaceDetailPage({
                 <TabPanel tabId="bots">
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-6">
-                      <h3 className="text-lg font-semibold text-foreground">Workspace Bots</h3>
+                      <div>
+                        <span className="text-xs font-medium text-foreground-tertiary uppercase tracking-wider">
+                          Workspace
+                        </span>
+                        <h3 className="text-lg font-semibold text-foreground">{workspace.name} Bots</h3>
+                      </div>
                       <Button icon={<Plus size={16} />}>
                         Add Bot
                       </Button>

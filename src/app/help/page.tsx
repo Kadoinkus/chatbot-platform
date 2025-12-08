@@ -134,7 +134,7 @@ export default function HelpPage() {
             className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground mb-4 transition-colors"
           >
             <ArrowLeft size={16} />
-            Back to Dashboard
+            Back to Workspaces
           </Link>
 
           <div className="text-center">
@@ -325,7 +325,7 @@ export default function HelpPage() {
                   </div>
                 </div>
                 <div className="flex items-center justify-between py-2">
-                  <span className="text-foreground-secondary">Dashboard</span>
+                  <span className="text-foreground-secondary">Workspaces</span>
                   <div className="flex items-center gap-2">
                     <CheckCircle size={16} className="text-success-500" />
                     <span className="text-success-600 dark:text-success-500 font-medium">Operational</span>

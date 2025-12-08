@@ -9,8 +9,8 @@ export interface PageProps {
 }
 
 export interface PageHeaderProps {
-  /** Page title */
-  title: string;
+  /** Page title - can be string or ReactNode for badges/icons */
+  title: ReactNode;
   /** Page description */
   description?: string;
   /** Actions to display (buttons, etc.) */

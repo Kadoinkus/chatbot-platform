@@ -17,6 +17,8 @@ import type {
   Session,
   AssistantSession,
   MetricsData,
+  ChatSession,
+  ChatMessage,
 } from '@/types';
 import type {
   ClientOperations,
@@ -43,12 +45,89 @@ const cache: {
   sessions?: Session[];
   assistantSessions?: AssistantSession[];
   metrics?: MetricsData;
+  chatSessions?: ChatSession[];
+  chatMessages?: ChatMessage[];
 } = {};
 
 function loadJsonFile<T>(filename: string): T {
   const filePath = path.join(process.cwd(), 'public', 'data', filename);
   const data = fs.readFileSync(filePath, 'utf-8');
   return JSON.parse(data) as T;
+}
+
+function normalizeChatSession(raw: any): ChatSession {
+  const sessionStartedAt = raw.session_started_at || raw.session_start || raw.created_at;
+  const sessionEndedAt = raw.session_ended_at ?? raw.session_end ?? null;
+  const sessionStartDate = sessionStartedAt ? new Date(sessionStartedAt) : null;
+  const sessionEndDate = sessionEndedAt ? new Date(sessionEndedAt) : null;
+  const sessionDurationSeconds =
+    sessionStartDate && sessionEndDate
+      ? Math.round((sessionEndDate.getTime() - sessionStartDate.getTime()) / 1000)
+      : null;
+
+  const totalUserMessages = raw.total_user_messages ?? raw.user_messages ?? 0;
+  const totalAssistantMessages = raw.total_bot_messages ?? raw.assistant_messages ?? 0;
+  const totalMessages = raw.total_messages ?? totalUserMessages + totalAssistantMessages;
+
+  const browserParts = (raw.browser || '').split(' ');
+  const osParts = (raw.os || '').split(' ');
+
+  return {
+    id: raw.id,
+    mascot_id: raw.mascot_id,
+    client_id: raw.client_id,
+    domain: raw.domain || null,
+    user_id: raw.user_id || null,
+    session_started_at: sessionStartedAt,
+    session_ended_at: sessionEndedAt,
+    first_message_at: raw.first_message_at || null,
+    last_message_at: raw.last_message_at || null,
+    ip_address: raw.ip_address || null,
+    user_agent: raw.user_agent || null,
+    visitor_ip_hash: raw.ip_address ? raw.ip_address.replace(/\.\d+$/, '.xxx') : null,
+    visitor_country: raw.country || null,
+    visitor_city: raw.city || null,
+    visitor_region: null,
+    visitor_timezone: null,
+    visitor_language: null,
+    device_type: raw.device_type || null,
+    browser_name: browserParts[0] || null,
+    browser_version: browserParts.slice(1).join(' ') || null,
+    os_name: osParts[0] || null,
+    os_version: osParts.slice(1).join(' ') || null,
+    is_mobile: raw.device_type === 'mobile',
+    screen_width: null,
+    screen_height: null,
+    widget_version: raw.widget_version || null,
+    referrer_url: raw.referrer_url || null,
+    referrer_domain: raw.referrer_url ? new URL(raw.referrer_url).hostname : null,
+    landing_page_url: raw.page_url || null,
+    utm_source: null,
+    utm_medium: null,
+    utm_campaign: null,
+    utm_content: null,
+    utm_term: null,
+    total_messages: totalMessages,
+    user_messages: totalUserMessages,
+    assistant_messages: totalAssistantMessages,
+    total_tokens: raw.total_tokens ?? 0,
+    input_tokens: raw.total_prompt_tokens ?? 0,
+    output_tokens: raw.total_completion_tokens ?? 0,
+    total_cost_usd: raw.total_cost_usd ?? null,
+    total_cost_eur: raw.total_cost_eur ?? 0,
+    average_response_time_ms: raw.average_response_time_ms ?? null,
+    session_duration_seconds: sessionDurationSeconds,
+    status: raw.is_active ? 'active' : 'ended',
+    easter_eggs_triggered: raw.easter_eggs_triggered ?? 0,
+    created_at: raw.created_at || sessionStartedAt,
+    updated_at: raw.updated_at || raw.created_at || sessionStartedAt,
+    glb_source: raw.glb_source || null,
+    glb_transfer_size: raw.glb_transfer_size ?? null,
+    glb_encoded_body_size: raw.glb_encoded_body_size ?? null,
+    glb_response_end: raw.glb_response_end ?? null,
+    glb_url: raw.glb_url ?? null,
+    full_transcript: raw.full_transcript || null,
+  };
 }
 
 function getClients(): Client[] {
@@ -79,17 +158,70 @@ function getUsers(): User[] {
   return cache.users;
 }
 
-function getConversations(): Conversation[] {
-  if (!cache.conversations) {
-    cache.conversations = loadJsonFile<Conversation[]>('conversations.json');
+function getChatSessions(): ChatSession[] {
+  if (!cache.chatSessions) {
+    const raw = loadJsonFile<any[]>('chat_sessions.json');
+    cache.chatSessions = raw.map(normalizeChatSession);
   }
+  return cache.chatSessions;
+}
+
+function getChatMessages(): ChatMessage[] {
+  if (!cache.chatMessages) {
+    cache.chatMessages = loadJsonFile<ChatMessage[]>('chat_messages.json');
+  }
+  return cache.chatMessages;
+}
+
+function getConversations(): Conversation[] {
+  if (cache.conversations) return cache.conversations;
+
+  const sessions = getChatSessions();
+  const chatMessages = getChatMessages();
+
+  const latestMessageBySession = chatMessages.reduce<Record<string, ChatMessage>>((acc, msg) => {
+    const current = acc[msg.session_id];
+    if (!current || new Date(msg.timestamp) > new Date(current.timestamp)) {
+      acc[msg.session_id] = msg;
+    }
+    return acc;
+  }, {});
+
+  cache.conversations = sessions.map(session => {
+    const latest = latestMessageBySession[session.id];
+    const totalMessages = session.total_messages ?? (session.assistant_messages + session.user_messages);
+
+    return {
+      id: session.id,
+      assistantId: session.mascot_id,
+      clientId: session.client_id,
+      userId: session.user_id ?? 'visitor',
+      userName: session.user_id ?? 'Visitor',
+      status: session.session_ended_at ? 'resolved' : 'active',
+      startedAt: session.session_started_at,
+      endedAt: session.session_ended_at ?? undefined,
+      messages: totalMessages || 0,
+      satisfaction: undefined,
+      intent: session.referrer_domain || 'unknown',
+      channel: 'webchat',
+      preview: latest?.message || (session.full_transcript?.slice(-1)[0]?.message ?? ''),
+    };
+  });
+
   return cache.conversations;
 }
 
 function getMessages(): Message[] {
-  if (!cache.messages) {
-    cache.messages = loadJsonFile<Message[]>('messages.json');
-  }
+  if (cache.messages) return cache.messages;
+  const chatMessages = getChatMessages();
+  cache.messages = chatMessages.map(msg => ({
+    id: msg.id,
+    conversationId: msg.session_id,
+    sender: msg.author === 'bot' ? 'assistant' : 'user',
+    senderName: msg.author === 'bot' ? 'Assistant' : 'User',
+    content: msg.message,
+    timestamp: msg.timestamp,
+  }));
   return cache.messages;
 }
 

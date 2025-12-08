@@ -362,10 +362,14 @@ export type ChatSession = {
   id: string;
   mascot_id: string; // Maps to assistant_id in platform
   client_id: string;
+  domain?: string | null;
+  user_id?: string | null;
   session_started_at: string;
   session_ended_at: string | null;
   first_message_at: string | null;
   last_message_at: string | null;
+  ip_address?: string | null;
+  user_agent?: string | null;
   visitor_ip_hash: string | null;
   visitor_country: string | null;
   visitor_city: string | null;
@@ -380,6 +384,7 @@ export type ChatSession = {
   is_mobile: boolean;
   screen_width: number | null;
   screen_height: number | null;
+  widget_version?: string | null;
   referrer_url: string | null;
   referrer_domain: string | null;
   landing_page_url: string | null;
@@ -394,6 +399,7 @@ export type ChatSession = {
   total_tokens: number;
   input_tokens: number;
   output_tokens: number;
+  total_cost_usd?: number;
   total_cost_eur: number;
   average_response_time_ms: number | null;
   session_duration_seconds: number | null;
@@ -404,6 +410,9 @@ export type ChatSession = {
   // GLB bundle tracking for new vs returning users
   glb_source: 'cdn_fetch' | 'memory_cache' | string | null;
   glb_transfer_size: number | null;
+  glb_encoded_body_size?: number | null;
+  glb_response_end?: number | null;
+  glb_url?: string | null;
   // Full conversation transcript as JSON array
   full_transcript: TranscriptMessage[] | null;
 };
@@ -469,6 +478,10 @@ export type ChatSessionAnalysis = {
   analytics_total_cost_eur: number | null;
   analytics_model_used: string | null;
   created_at: string;
+  updated_at?: string;
+  custom_object1?: Record<string, unknown> | null;
+  custom_object2?: Record<string, unknown> | null;
+  raw_response?: unknown;
 };
 
 /**
@@ -476,4 +489,29 @@ export type ChatSessionAnalysis = {
  */
 export type ChatSessionWithAnalysis = ChatSession & {
   analysis: ChatSessionAnalysis | null;
+};
+
+/**
+ * Chat message from Supabase chat_messages table
+ */
+export type ChatMessage = {
+  id: string;
+  session_id: string;
+  mascot_id: string;
+  message: string;
+  author: 'user' | 'bot';
+  timestamp: string;
+  response_time_ms: number | null;
+  response_animation: string | Record<string, unknown> | null;
+  easter_egg_animation: string | null;
+  wait_sequence: string | null;
+  has_easter_egg: boolean;
+  prompt_tokens?: number | null;
+  completion_tokens?: number | null;
+  total_tokens?: number | null;
+  model_used?: string | null;
+  cost_usd?: number | null;
+  cost_eur?: number | null;
+  finish_reason?: string | null;
+  raw_response?: string | null;
 };

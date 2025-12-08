@@ -167,15 +167,15 @@ supabase.from('bots').select('*').eq('id', botId).single()
 
 ### GET /api/analytics/sessions
 
-**Current (Mock):** Reads from `public/data/bot_sessions.json`, filters by clientId and date range.
+**Current (Mock):** Reads from `public/data/chat_sessions.json`, filters by client_id and date range.
 
 **Supabase Migration:**
 ```typescript
-supabase.from('bot_sessions')
+supabase.from('chat_sessions')
   .select('*')
   .eq('client_id', clientId)
-  .gte('started_at', from)
-  .lte('started_at', to)
+  .gte('session_started_at', from)
+  .lte('session_started_at', to)
 ```
 - RLS Policy: Users can read sessions belonging to their client
 - Consider using materialized views for aggregates
@@ -203,7 +203,7 @@ supabase.rpc('get_daily_metrics', { p_client_id: clientId, p_from: from, p_to: t
 
 ### GET /api/analytics/intents
 
-**Current (Mock):** Aggregates intent data from bot_sessions.json.
+**Current (Mock):** Aggregates intent data from chat_session_analyses.json.
 
 **Supabase Migration:**
 ```typescript

@@ -45,8 +45,10 @@ interface RawChatSession {
   client_id: string;
   domain?: string | null;
   widget_version?: string | null;
-  session_start: string;
-  session_end: string;
+  session_start?: string;
+  session_end?: string;
+  session_started_at?: string;
+  session_ended_at?: string | null;
   last_activity?: string | null;
   first_message_at?: string | null;
   last_message_at?: string | null;
@@ -74,26 +76,36 @@ interface RawChatSession {
   is_dev?: boolean;
   glb_source?: string | null;
   glb_transfer_size?: number;
+  glb_encoded_body_size?: number;
+  glb_response_end?: number;
+  glb_url?: string | null;
   analysis_processed?: boolean;
   analysis_status?: string | null;
   created_at: string;
+  updated_at?: string;
   full_transcript?: TranscriptMessage[] | null;
 }
 
 // Map raw JSON to Supabase-aligned type
 function mapToChatSession(raw: RawChatSession): ChatSession {
-  const sessionStart = new Date(raw.session_start);
-  const sessionEnd = new Date(raw.session_end);
-  const durationSeconds = Math.round((sessionEnd.getTime() - sessionStart.getTime()) / 1000);
+  const sessionStartedAt = raw.session_started_at || raw.session_start || raw.created_at;
+  const sessionEndedAt = raw.session_ended_at ?? raw.session_end ?? null;
+  const sessionStart = sessionStartedAt ? new Date(sessionStartedAt) : null;
+  const sessionEnd = sessionEndedAt ? new Date(sessionEndedAt) : null;
+  const durationSeconds =
+    sessionStart && sessionEnd ? Math.round((sessionEnd.getTime() - sessionStart.getTime()) / 1000) : null;
 
   return {
     id: raw.id,
     mascot_id: raw.mascot_id,
     client_id: raw.client_id,
-    session_started_at: raw.session_start,
-    session_ended_at: raw.session_end,
+    domain: raw.domain || null,
+    session_started_at: sessionStartedAt,
+    session_ended_at: sessionEndedAt,
     first_message_at: raw.first_message_at || null,
     last_message_at: raw.last_message_at || null,
+    ip_address: raw.ip_address || null,
+    user_agent: raw.user_agent || null,
     visitor_ip_hash: raw.ip_address ? raw.ip_address.replace(/\.\d+$/, '.xxx') : null,
     visitor_country: raw.country || null,
     visitor_city: raw.city || null,
@@ -108,6 +120,7 @@ function mapToChatSession(raw: RawChatSession): ChatSession {
     is_mobile: raw.device_type === 'mobile',
     screen_width: null,
     screen_height: null,
+    widget_version: raw.widget_version || null,
     referrer_url: raw.referrer_url || null,
     referrer_domain: raw.referrer_url ? new URL(raw.referrer_url).hostname : null,
     landing_page_url: raw.page_url || null,
@@ -128,10 +141,13 @@ function mapToChatSession(raw: RawChatSession): ChatSession {
     status: raw.is_active ? 'active' : 'ended',
     easter_eggs_triggered: raw.easter_eggs_triggered || 0,
     created_at: raw.created_at,
-    updated_at: raw.created_at,
+    updated_at: raw.updated_at || raw.created_at,
     // GLB bundle tracking for new vs returning users
     glb_source: raw.glb_source || null,
     glb_transfer_size: raw.glb_transfer_size || null,
+    glb_encoded_body_size: raw.glb_encoded_body_size ?? null,
+    glb_response_end: raw.glb_response_end ?? null,
+    glb_url: raw.glb_url ?? null,
     // Full conversation transcript
     full_transcript: raw.full_transcript || null,
   };

@@ -1,7 +1,7 @@
 {
   "version": "1.0",
   "description": "Analytics Dashboard Specification - Based on Supabase Schema",
-  "last_updated": "2025-12-05",
+  "last_updated": "2025-12-08",
 
   "global_config": {
     "default_date_range": "last_30_days",
@@ -24,14 +24,19 @@
         },
         "key_columns": [
           "id", "mascot_id", "client_id", "domain",
-          "session_start", "session_end", "first_message_at", "last_message_at",
+          "session_started_at", "session_ended_at", "first_message_at", "last_message_at",
           "is_active", "end_reason", "is_dev",
+          "ip_address", "user_agent",
           "country", "city", "device_type", "browser", "os",
           "referrer_url", "page_url", "user_id",
+          "widget_version",
           "total_bot_messages", "total_user_messages",
-          "total_tokens", "total_cost_eur", "average_response_time_ms",
-          "easter_eggs_triggered", "glb_source",
-          "created_at"
+          "total_tokens", "total_prompt_tokens", "total_completion_tokens",
+          "total_cost_usd", "total_cost_eur", "average_response_time_ms",
+          "easter_eggs_triggered",
+          "glb_source", "glb_transfer_size", "glb_encoded_body_size", "glb_response_end", "glb_url",
+          "full_transcript",
+          "created_at", "updated_at"
         ]
       },
       "chat_session_analyses": {
@@ -44,7 +49,8 @@
           "summary", "session_outcome", "resolution_status",
           "engagement_level", "conversation_type",
           "analytics_total_tokens", "analytics_total_cost_eur", "analytics_model_used",
-          "created_at"
+          "custom_object1", "custom_object2", "raw_response",
+          "created_at", "updated_at"
         ]
       },
       "chat_messages": {
@@ -52,9 +58,12 @@
         "key_columns": [
           "id", "session_id", "mascot_id",
           "message", "author", "timestamp",
-          "response_time_ms", "total_tokens", "cost_eur", "model_used",
+          "response_time_ms",
+          "prompt_tokens", "completion_tokens", "total_tokens",
+          "model_used", "cost_usd", "cost_eur", "finish_reason",
           "response_animation", "easter_egg_animation", "wait_sequence", "has_easter_egg",
-          "error_message", "created_at"
+          "raw_response",
+          "created_at"
         ]
       }
     }

@@ -7,10 +7,15 @@
     "escalated": false,
     "forwarded_email": false,
     "forwarded_url": true,
-    "url_links": ["https://jumbo.com/stores/hours"],
+    "url_links": [
+      "https://jumbo.com/stores/hours"
+    ],
     "email_links": [],
     "category": "Store Information",
-    "questions": ["What are your opening hours?", "Are you open on Sunday?"],
+    "questions": [
+      "What are your opening hours?",
+      "Are you open on Sunday?"
+    ],
     "unanswered_questions": [],
     "summary": "Customer inquired about store opening hours. All questions answered successfully.",
     "session_outcome": "completed",
@@ -20,7 +25,14 @@
     "analytics_total_tokens": 120,
     "analytics_total_cost_eur": 0.0012,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-15T09:22:30+00:00"
+    "created_at": "2025-11-15T09:22:30+00:00",
+    "updated_at": "2025-11-15T09:22:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer inquired about store opening hours. All questions answered successfully."
+    }
   },
   {
     "session_id": "sess-002",
@@ -30,11 +42,19 @@
     "escalated": false,
     "forwarded_email": false,
     "forwarded_url": true,
-    "url_links": ["https://jumbo.com/products/organic"],
+    "url_links": [
+      "https://jumbo.com/products/organic"
+    ],
     "email_links": [],
     "category": "Product Inquiry",
-    "questions": ["Do you have organic bananas?", "When will they be restocked?", "What other organic fruits do you have?"],
-    "unanswered_questions": ["When will they be restocked?"],
+    "questions": [
+      "Do you have organic bananas?",
+      "When will they be restocked?",
+      "What other organic fruits do you have?"
+    ],
+    "unanswered_questions": [
+      "When will they be restocked?"
+    ],
     "summary": "Customer asked about organic product availability. Partial information provided.",
     "session_outcome": "completed",
     "resolution_status": "partial",
@@ -43,7 +63,14 @@
     "analytics_total_tokens": 145,
     "analytics_total_cost_eur": 0.0015,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-15T10:45:30+00:00"
+    "created_at": "2025-11-15T10:45:30+00:00",
+    "updated_at": "2025-11-15T10:45:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer asked about organic product availability. Partial information provided."
+    }
   },
   {
     "session_id": "sess-003",
@@ -54,10 +81,18 @@
     "forwarded_email": true,
     "forwarded_url": false,
     "url_links": [],
-    "email_links": ["support@jumbo.com"],
+    "email_links": [
+      "support@jumbo.com"
+    ],
     "category": "Complaint",
-    "questions": ["I received a damaged product", "I want a refund", "How do I return this?"],
-    "unanswered_questions": ["How do I return this?"],
+    "questions": [
+      "I received a damaged product",
+      "I want a refund",
+      "How do I return this?"
+    ],
+    "unanswered_questions": [
+      "How do I return this?"
+    ],
     "summary": "Customer complaint about damaged product. Escalated to human support for refund processing.",
     "session_outcome": "completed",
     "resolution_status": "unresolved",
@@ -66,7 +101,14 @@
     "analytics_total_tokens": 180,
     "analytics_total_cost_eur": 0.0018,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-15T14:18:30+00:00"
+    "created_at": "2025-11-15T14:18:30+00:00",
+    "updated_at": "2025-11-15T14:18:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer complaint about damaged product. Escalated to human support for refund processing."
+    }
   },
   {
     "session_id": "sess-004",
@@ -76,10 +118,14 @@
     "escalated": false,
     "forwarded_email": false,
     "forwarded_url": true,
-    "url_links": ["https://jumbo.com/recipes/pasta"],
+    "url_links": [
+      "https://jumbo.com/recipes/pasta"
+    ],
     "email_links": [],
     "category": "Recipe Help",
-    "questions": ["What recipes do you have for pasta?"],
+    "questions": [
+      "What recipes do you have for pasta?"
+    ],
     "unanswered_questions": [],
     "summary": "Customer looking for pasta recipes. Directed to recipe section.",
     "session_outcome": "completed",
@@ -87,9 +133,16 @@
     "engagement_level": "low",
     "conversation_type": "goal_driven",
     "analytics_total_tokens": 95,
-    "analytics_total_cost_eur": 0.0010,
+    "analytics_total_cost_eur": 0.001,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-16T08:52:30+00:00"
+    "created_at": "2025-11-16T08:52:30+00:00",
+    "updated_at": "2025-11-16T08:52:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer looking for pasta recipes. Directed to recipe section."
+    }
   },
   {
     "session_id": "sess-005",
@@ -99,10 +152,16 @@
     "escalated": false,
     "forwarded_email": false,
     "forwarded_url": true,
-    "url_links": ["https://jumbo.com/stores/amsterdam"],
+    "url_links": [
+      "https://jumbo.com/stores/amsterdam"
+    ],
     "email_links": [],
     "category": "Store Information",
-    "questions": ["Where is the nearest store?", "Do you have parking?", "Is there a bakery section?"],
+    "questions": [
+      "Where is the nearest store?",
+      "Do you have parking?",
+      "Is there a bakery section?"
+    ],
     "unanswered_questions": [],
     "summary": "Customer asked about store locations and facilities. All questions answered.",
     "session_outcome": "completed",
@@ -112,7 +171,14 @@
     "analytics_total_tokens": 165,
     "analytics_total_cost_eur": 0.0017,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-16T12:28:30+00:00"
+    "created_at": "2025-11-16T12:28:30+00:00",
+    "updated_at": "2025-11-16T12:28:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer asked about store locations and facilities. All questions answered."
+    }
   },
   {
     "session_id": "sess-006",
@@ -135,7 +201,14 @@
     "analytics_total_tokens": 75,
     "analytics_total_cost_eur": 0.0008,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-16T16:35:30+00:00"
+    "created_at": "2025-11-16T16:35:30+00:00",
+    "updated_at": "2025-11-16T16:35:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "User greeted the assistant but did not ask specific questions."
+    }
   },
   {
     "session_id": "sess-007",
@@ -145,10 +218,17 @@
     "escalated": false,
     "forwarded_email": false,
     "forwarded_url": true,
-    "url_links": ["https://jumbo.com/delivery"],
+    "url_links": [
+      "https://jumbo.com/delivery"
+    ],
     "email_links": [],
     "category": "Delivery",
-    "questions": ["Do you deliver to my area?", "What are delivery costs?", "How long does delivery take?", "Can I track my order?"],
+    "questions": [
+      "Do you deliver to my area?",
+      "What are delivery costs?",
+      "How long does delivery take?",
+      "Can I track my order?"
+    ],
     "unanswered_questions": [],
     "summary": "Customer had questions about home delivery service. All information provided.",
     "session_outcome": "completed",
@@ -158,7 +238,14 @@
     "analytics_total_tokens": 190,
     "analytics_total_cost_eur": 0.0019,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-17T09:15:30+00:00"
+    "created_at": "2025-11-17T09:15:30+00:00",
+    "updated_at": "2025-11-17T09:15:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer had questions about home delivery service. All information provided."
+    }
   },
   {
     "session_id": "sess-008",
@@ -169,10 +256,18 @@
     "forwarded_email": true,
     "forwarded_url": false,
     "url_links": [],
-    "email_links": ["klantenservice@jumbo.com"],
+    "email_links": [
+      "klantenservice@jumbo.com"
+    ],
     "category": "Complaint",
-    "questions": ["My order was wrong", "Where is my refund?", "I want to speak to a manager"],
-    "unanswered_questions": ["Where is my refund?"],
+    "questions": [
+      "My order was wrong",
+      "Where is my refund?",
+      "I want to speak to a manager"
+    ],
+    "unanswered_questions": [
+      "Where is my refund?"
+    ],
     "summary": "Customer frustrated about incorrect order. Escalated to customer service.",
     "session_outcome": "completed",
     "resolution_status": "unresolved",
@@ -181,7 +276,14 @@
     "analytics_total_tokens": 210,
     "analytics_total_cost_eur": 0.0021,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-17T11:42:30+00:00"
+    "created_at": "2025-11-17T11:42:30+00:00",
+    "updated_at": "2025-11-17T11:42:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer frustrated about incorrect order. Escalated to customer service."
+    }
   },
   {
     "session_id": "sess-009",
@@ -194,7 +296,9 @@
     "url_links": [],
     "email_links": [],
     "category": "Social questions",
-    "questions": ["Do you speak German?"],
+    "questions": [
+      "Do you speak German?"
+    ],
     "unanswered_questions": [],
     "summary": "German-speaking customer greeted the assistant. Brief casual interaction.",
     "session_outcome": "completed",
@@ -204,7 +308,14 @@
     "analytics_total_tokens": 85,
     "analytics_total_cost_eur": 0.0009,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-17T15:08:30+00:00"
+    "created_at": "2025-11-17T15:08:30+00:00",
+    "updated_at": "2025-11-17T15:08:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "German-speaking customer greeted the assistant. Brief casual interaction."
+    }
   },
   {
     "session_id": "sess-010",
@@ -214,10 +325,16 @@
     "escalated": false,
     "forwarded_email": false,
     "forwarded_url": true,
-    "url_links": ["https://jumbo.com/products/cheese"],
+    "url_links": [
+      "https://jumbo.com/products/cheese"
+    ],
     "email_links": [],
     "category": "Product Inquiry",
-    "questions": ["What cheese do you have?", "Is there lactose-free cheese?", "What's the price?"],
+    "questions": [
+      "What cheese do you have?",
+      "Is there lactose-free cheese?",
+      "What's the price?"
+    ],
     "unanswered_questions": [],
     "summary": "Customer asked about cheese products. All information provided.",
     "session_outcome": "completed",
@@ -227,7 +344,14 @@
     "analytics_total_tokens": 155,
     "analytics_total_cost_eur": 0.0016,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-18T10:12:30+00:00"
+    "created_at": "2025-11-18T10:12:30+00:00",
+    "updated_at": "2025-11-18T10:12:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer asked about cheese products. All information provided."
+    }
   },
   {
     "session_id": "sess-011",
@@ -250,7 +374,14 @@
     "analytics_total_tokens": 90,
     "analytics_total_cost_eur": 0.0009,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-18T13:38:30+00:00"
+    "created_at": "2025-11-18T13:38:30+00:00",
+    "updated_at": "2025-11-18T13:38:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "User browsed but didn't engage much with the assistant."
+    }
   },
   {
     "session_id": "sess-012",
@@ -261,10 +392,19 @@
     "forwarded_email": true,
     "forwarded_url": false,
     "url_links": [],
-    "email_links": ["klachten@jumbo.com"],
+    "email_links": [
+      "klachten@jumbo.com"
+    ],
     "category": "Complaint",
-    "questions": ["The quality was terrible", "I want compensation", "How do I file a complaint?", "When will I hear back?"],
-    "unanswered_questions": ["When will I hear back?"],
+    "questions": [
+      "The quality was terrible",
+      "I want compensation",
+      "How do I file a complaint?",
+      "When will I hear back?"
+    ],
+    "unanswered_questions": [
+      "When will I hear back?"
+    ],
     "summary": "Customer filed quality complaint. Escalated to complaints department.",
     "session_outcome": "completed",
     "resolution_status": "unresolved",
@@ -273,7 +413,14 @@
     "analytics_total_tokens": 225,
     "analytics_total_cost_eur": 0.0023,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-18T17:20:30+00:00"
+    "created_at": "2025-11-18T17:20:30+00:00",
+    "updated_at": "2025-11-18T17:20:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer filed quality complaint. Escalated to complaints department."
+    }
   },
   {
     "session_id": "sess-013",
@@ -296,7 +443,14 @@
     "analytics_total_tokens": 70,
     "analytics_total_cost_eur": 0.0007,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-19T09:36:30+00:00"
+    "created_at": "2025-11-19T09:36:30+00:00",
+    "updated_at": "2025-11-19T09:36:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "User said hi but left shortly after."
+    }
   },
   {
     "session_id": "sess-014",
@@ -306,10 +460,17 @@
     "escalated": false,
     "forwarded_email": false,
     "forwarded_url": true,
-    "url_links": ["https://jumbo.com/recipes/dinner", "https://jumbo.com/recipes/quick"],
+    "url_links": [
+      "https://jumbo.com/recipes/dinner",
+      "https://jumbo.com/recipes/quick"
+    ],
     "email_links": [],
     "category": "Recipe Help",
-    "questions": ["What can I make for dinner?", "Something quick and easy?", "Do you have vegetarian options?"],
+    "questions": [
+      "What can I make for dinner?",
+      "Something quick and easy?",
+      "Do you have vegetarian options?"
+    ],
     "unanswered_questions": [],
     "summary": "Customer looking for dinner recipe ideas. Several suggestions provided.",
     "session_outcome": "completed",
@@ -319,7 +480,14 @@
     "analytics_total_tokens": 175,
     "analytics_total_cost_eur": 0.0018,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-19T12:15:30+00:00"
+    "created_at": "2025-11-19T12:15:30+00:00",
+    "updated_at": "2025-11-19T12:15:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer looking for dinner recipe ideas. Several suggestions provided."
+    }
   },
   {
     "session_id": "sess-015",
@@ -329,10 +497,15 @@
     "escalated": false,
     "forwarded_email": false,
     "forwarded_url": true,
-    "url_links": ["https://jumbo.com/stores/antwerp"],
+    "url_links": [
+      "https://jumbo.com/stores/antwerp"
+    ],
     "email_links": [],
     "category": "Store Information",
-    "questions": ["Is there a Jumbo in Antwerp?", "What are the opening hours?"],
+    "questions": [
+      "Is there a Jumbo in Antwerp?",
+      "What are the opening hours?"
+    ],
     "unanswered_questions": [],
     "summary": "Belgian customer asked about store in Antwerp. Information provided.",
     "session_outcome": "completed",
@@ -342,7 +515,14 @@
     "analytics_total_tokens": 130,
     "analytics_total_cost_eur": 0.0013,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-19T15:45:30+00:00"
+    "created_at": "2025-11-19T15:45:30+00:00",
+    "updated_at": "2025-11-19T15:45:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Belgian customer asked about store in Antwerp. Information provided."
+    }
   },
   {
     "session_id": "sess-016",
@@ -352,10 +532,15 @@
     "escalated": false,
     "forwarded_email": false,
     "forwarded_url": true,
-    "url_links": ["https://jumbo.com/app"],
+    "url_links": [
+      "https://jumbo.com/app"
+    ],
     "email_links": [],
     "category": "Technical Support",
-    "questions": ["How do I download the app?", "Is it free?"],
+    "questions": [
+      "How do I download the app?",
+      "Is it free?"
+    ],
     "unanswered_questions": [],
     "summary": "Customer asked about the Jumbo app. Download link provided.",
     "session_outcome": "completed",
@@ -365,7 +550,14 @@
     "analytics_total_tokens": 115,
     "analytics_total_cost_eur": 0.0012,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-20T08:10:30+00:00"
+    "created_at": "2025-11-20T08:10:30+00:00",
+    "updated_at": "2025-11-20T08:10:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer asked about the Jumbo app. Download link provided."
+    }
   },
   {
     "session_id": "sess-017",
@@ -378,7 +570,9 @@
     "url_links": [],
     "email_links": [],
     "category": "Social questions",
-    "questions": ["What's your name?"],
+    "questions": [
+      "What's your name?"
+    ],
     "unanswered_questions": [],
     "summary": "User had a casual conversation with the mascot.",
     "session_outcome": "completed",
@@ -388,7 +582,14 @@
     "analytics_total_tokens": 80,
     "analytics_total_cost_eur": 0.0008,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-20T11:08:30+00:00"
+    "created_at": "2025-11-20T11:08:30+00:00",
+    "updated_at": "2025-11-20T11:08:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "User had a casual conversation with the mascot."
+    }
   },
   {
     "session_id": "sess-018",
@@ -399,10 +600,19 @@
     "forwarded_email": true,
     "forwarded_url": false,
     "url_links": [],
-    "email_links": ["retour@jumbo.com"],
+    "email_links": [
+      "retour@jumbo.com"
+    ],
     "category": "Returns",
-    "questions": ["How do I return something?", "Do I need a receipt?", "When will I get my money back?", "Can I return online purchases in store?"],
-    "unanswered_questions": ["When will I get my money back?"],
+    "questions": [
+      "How do I return something?",
+      "Do I need a receipt?",
+      "When will I get my money back?",
+      "Can I return online purchases in store?"
+    ],
+    "unanswered_questions": [
+      "When will I get my money back?"
+    ],
     "summary": "Customer had questions about return policy. Some questions required human support.",
     "session_outcome": "completed",
     "resolution_status": "partial",
@@ -411,7 +621,14 @@
     "analytics_total_tokens": 240,
     "analytics_total_cost_eur": 0.0024,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-20T14:50:30+00:00"
+    "created_at": "2025-11-20T14:50:30+00:00",
+    "updated_at": "2025-11-20T14:50:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer had questions about return policy. Some questions required human support."
+    }
   },
   {
     "session_id": "sess-019",
@@ -421,10 +638,16 @@
     "escalated": false,
     "forwarded_email": false,
     "forwarded_url": true,
-    "url_links": ["https://jumbo.com/extra/points"],
+    "url_links": [
+      "https://jumbo.com/extra/points"
+    ],
     "email_links": [],
     "category": "Loyalty Program",
-    "questions": ["How do Extra points work?", "How can I redeem them?", "Do points expire?"],
+    "questions": [
+      "How do Extra points work?",
+      "How can I redeem them?",
+      "Do points expire?"
+    ],
     "unanswered_questions": [],
     "summary": "Customer asked about Jumbo Extra loyalty program. All info provided.",
     "session_outcome": "completed",
@@ -434,7 +657,14 @@
     "analytics_total_tokens": 160,
     "analytics_total_cost_eur": 0.0016,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-20T18:12:30+00:00"
+    "created_at": "2025-11-20T18:12:30+00:00",
+    "updated_at": "2025-11-20T18:12:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer asked about Jumbo Extra loyalty program. All info provided."
+    }
   },
   {
     "session_id": "sess-020",
@@ -444,10 +674,15 @@
     "escalated": false,
     "forwarded_email": false,
     "forwarded_url": true,
-    "url_links": ["https://jumbo.com/aanbiedingen"],
+    "url_links": [
+      "https://jumbo.com/aanbiedingen"
+    ],
     "email_links": [],
     "category": "Promotions",
-    "questions": ["What promotions do you have?", "When do new offers start?"],
+    "questions": [
+      "What promotions do you have?",
+      "When do new offers start?"
+    ],
     "unanswered_questions": [],
     "summary": "Customer asked about current promotions. Directed to offers page.",
     "session_outcome": "completed",
@@ -457,6 +692,13 @@
     "analytics_total_tokens": 125,
     "analytics_total_cost_eur": 0.0013,
     "analytics_model_used": "gpt-4.1-mini",
-    "created_at": "2025-11-21T10:40:30+00:00"
+    "created_at": "2025-11-21T10:40:30+00:00",
+    "updated_at": "2025-11-21T10:40:30+00:00",
+    "custom_object1": {},
+    "custom_object2": {},
+    "raw_response": {
+      "payload": {},
+      "raw_text": "Customer asked about current promotions. Directed to offers page."
+    }
   }
 ]

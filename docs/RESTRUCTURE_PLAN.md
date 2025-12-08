@@ -213,8 +213,10 @@ public/data/
 ├── conversations.json
 ├── messages.json
 ├── sessions.json     → User sessions
-├── bot_sessions.json → Bot analytics sessions
-├── metrics.json      → Daily/aggregate metrics
+├── chat_sessions.json         → Session-level aggregates (Supabase-aligned)
+├── chat_messages.json         → Per-message logs with tokens/costs/animations
+├── chat_session_analyses.json → Post-session analyses (sentiment/category/questions)
+├── metrics.json               → Daily/aggregate metrics (derived from chat_sessions)
 └── billing.json
 ```
 
@@ -223,11 +225,11 @@ public/data/
 - Update any imports that referenced `src/data/*`
 
 ### 5.3 Ensure Schema Consistency
-All JSON files must use canonical keys:
-- `clientId` (not `client_id`)
-- `workspaceId` (not `workspace_id`)
-- `botId` (not `bot_id` or `mascot_id`)
-- `userId` (not `user_id`)
+All JSON files must use Supabase-aligned snake_case keys:
+- `client_id`
+- `workspace_id`
+- `mascot_id` (assistant/bot id)
+- `user_id`
 
 ---
 

@@ -128,10 +128,18 @@ export interface ChatMessage {
   author: 'user' | 'bot';
   timestamp: string;
   response_time_ms: number | null;
-  response_animation: string | null;
+  response_animation: string | Record<string, unknown> | null;
   easter_egg_animation: string | null;
   wait_sequence: string | null;
   has_easter_egg: boolean;
+  prompt_tokens?: number | null;
+  completion_tokens?: number | null;
+  total_tokens?: number | null;
+  model_used?: string | null;
+  cost_usd?: number | null;
+  cost_eur?: number | null;
+  finish_reason?: string | null;
+  raw_response?: string | null;
 }
 
 // Chat session operations

@@ -10,7 +10,7 @@
 import { supabaseAdmin } from './client';
 import type {
   ClientOperations,
-  BotOperations,
+  AssistantOperations,
   WorkspaceOperations,
   UserOperations,
   ConversationOperations,
@@ -19,7 +19,7 @@ import type {
   MetricsOperations,
   DateRange,
   ClientMetrics,
-  BotMetricsResult,
+  AssistantMetricsResult,
 } from '../types';
 
 // Helper to check if Supabase is configured
@@ -82,8 +82,8 @@ export const clients: ClientOperations = {
   },
 };
 
-// Bot operations
-export const bots: BotOperations = {
+// Assistant operations (Supabase table still uses 'bots' for backward compatibility)
+export const assistants: AssistantOperations = {
   async getAll() {
     const supabase = requireSupabase();
     const { data, error } = await supabase
@@ -253,12 +253,12 @@ export const conversations: ConversationOperations = {
     return data || [];
   },
 
-  async getByBotId(botId: string) {
+  async getByAssistantId(assistantId: string) {
     const supabase = requireSupabase();
     const { data, error } = await supabase
       .from('conversations')
       .select('*')
-      .eq('bot_id', botId)
+      .eq('bot_id', assistantId)
       .order('started_at', { ascending: false });
 
     if (error) throw error;
@@ -312,12 +312,12 @@ export const sessions: SessionOperations = {
     return data || [];
   },
 
-  async getBotSessions(botId: string, dateRange?: DateRange) {
+  async getAssistantSessions(assistantId: string, dateRange?: DateRange) {
     const supabase = requireSupabase();
     let query = supabase
       .from('bot_sessions')
       .select('*')
-      .eq('bot_id', botId);
+      .eq('bot_id', assistantId);
 
     if (dateRange) {
       query = query
@@ -331,7 +331,7 @@ export const sessions: SessionOperations = {
     return data || [];
   },
 
-  async getBotSessionsByClientId(clientId: string, dateRange?: DateRange) {
+  async getAssistantSessionsByClientId(clientId: string, dateRange?: DateRange) {
     const supabase = requireSupabase();
     const resolvedId = await clients.resolveId(clientId) || clientId;
 
@@ -371,9 +371,9 @@ export const metrics: MetricsOperations = {
     };
   },
 
-  async getBotMetrics(botId: string): Promise<BotMetricsResult> {
+  async getAssistantMetrics(assistantId: string): Promise<AssistantMetricsResult> {
     // TODO: Implement actual metrics queries
-    console.warn('[Supabase] getBotMetrics not fully implemented');
+    console.warn('[Supabase] getAssistantMetrics not fully implemented');
 
     return {
       usageByDay: [],

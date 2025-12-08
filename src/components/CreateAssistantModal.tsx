@@ -3,13 +3,13 @@ import { useState } from 'react';
 import { Upload, Bot, Zap, MessageSquare } from 'lucide-react';
 import Modal from './Modal';
 
-interface CreateBotModalProps {
+interface CreateAssistantModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onCreate: (botData: any) => void;
+  onCreate: (assistantData: any) => void;
 }
 
-export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotModalProps) {
+export default function CreateAssistantModal({ isOpen, onClose, onCreate }: CreateAssistantModalProps) {
   const [currentStep, setCurrentStep] = useState(1);
   const [formData, setFormData] = useState({
     name: '',
@@ -39,8 +39,8 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
   const handleSubmit = () => {
     onCreate({
       ...formData,
-      id: `bot_${Date.now()}`,
-      status: 'Needs finalization',
+      id: `assistant_${Date.now()}`,
+      status: 'Draft',
       conversations: 0,
       image: formData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name}`
     });
@@ -59,10 +59,10 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
   };
 
   return (
-    <Modal 
-      isOpen={isOpen} 
-      onClose={onClose} 
-      title={`Create New Bot - Step ${currentStep} of 3`} 
+    <Modal
+      isOpen={isOpen}
+      onClose={onClose}
+      title={`Create AI Assistant - Step ${currentStep} of 3`}
       size="lg"
     >
       <div className="space-y-6">
@@ -86,12 +86,12 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
         {currentStep === 1 && (
           <div className="space-y-6">
             <div>
-              <label className="block text-sm font-medium text-foreground-secondary mb-2">Bot Name *</label>
+              <label className="block text-sm font-medium text-foreground-secondary mb-2">Assistant Name *</label>
               <input
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({...formData, name: e.target.value})}
-                placeholder="e.g., Customer Support Bot"
+                placeholder="e.g., Customer Support Assistant"
                 className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-border-focus bg-background text-foreground"
               />
             </div>
@@ -101,7 +101,7 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({...formData, description: e.target.value})}
-                placeholder="Describe what this bot does..."
+                placeholder="Describe what this assistant does..."
                 rows={3}
                 className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-border-focus bg-background text-foreground resize-none"
               />
@@ -137,7 +137,7 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
                 {formData.avatar && (
                   <img
                     src={formData.avatar}
-                    alt="Bot avatar"
+                    alt="Assistant avatar"
                     className="w-16 h-16 rounded-full"
                   />
                 )}
@@ -179,7 +179,7 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
               <textarea
                 value={formData.welcomeMessage}
                 onChange={(e) => setFormData({...formData, welcomeMessage: e.target.value})}
-                placeholder={`Hi! I&apos;m ${formData.name || 'your bot'}. How can I help you today?`}
+                placeholder={`Hi! I&apos;m ${formData.name || 'your assistant'}. How can I help you today?`}
                 rows={3}
                 className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-border-focus bg-background text-foreground resize-none"
               />
@@ -193,7 +193,7 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
                 rows={3}
                 className="w-full px-4 py-2 border border-border rounded-lg focus:outline-none focus:ring-2 focus:ring-border-focus bg-background text-foreground resize-none"
               />
-              <p className="text-sm text-foreground-tertiary mt-1">Message shown when the bot doesn't understand</p>
+              <p className="text-sm text-foreground-tertiary mt-1">Message shown when the assistant doesn't understand</p>
             </div>
 
             <div>
@@ -217,12 +217,12 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
         {currentStep === 3 && (
           <div className="space-y-6">
             <div className="bg-background-tertiary rounded-lg p-6">
-              <h3 className="font-semibold mb-4 text-foreground">Review Your Bot</h3>
+              <h3 className="font-semibold mb-4 text-foreground">Review Your AI Assistant</h3>
               <div className="space-y-3">
                 <div className="flex items-center gap-4">
                   <img
                     src={formData.avatar || `https://api.dicebear.com/7.x/avataaars/svg?seed=${formData.name}`}
-                    alt="Bot avatar"
+                    alt="Assistant avatar"
                     className="w-12 h-12 rounded-full"
                   />
                   <div>
@@ -251,9 +251,9 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
             <div className="p-4 bg-info-50 dark:bg-info-900/30 rounded-lg">
               <h4 className="font-medium text-info-900 dark:text-info-300 mb-2">What happens next?</h4>
               <ul className="text-sm text-info-700 dark:text-info-400 space-y-1">
-                <li>• Your bot will be created with "Needs finalization" status</li>
+                <li>• Your AI assistant will be created with "Draft" status</li>
                 <li>• You can add knowledge base content and train responses</li>
-                <li>• Test conversations before going live</li>
+                <li>• Test conversations before activating the agent</li>
                 <li>• Configure integrations and channels</li>
               </ul>
             </div>
@@ -280,7 +280,7 @@ export default function CreateBotModal({ isOpen, onClose, onCreate }: CreateBotM
             disabled={currentStep === 1 && !formData.name}
             className="px-6 py-2 bg-interactive-primary text-background dark:text-background rounded-lg hover:bg-interactive-primary-hover disabled:opacity-50 disabled:cursor-not-allowed"
           >
-            {currentStep === 3 ? 'Create Bot' : 'Next'}
+            {currentStep === 3 ? 'Create AI Assistant' : 'Next'}
           </button>
         </div>
       </div>

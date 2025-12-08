@@ -3,13 +3,13 @@
 import { TableHead, TableRow, TableCell } from '@/components/ui';
 import { MobileCard, MobileBadge } from '@/components/analytics/MobileTable';
 import { TableWrapper, MobileListWrapper } from './TableWrapper';
-import { SessionCell, BotCell, ActionsCell, MobileCardHeader } from './SharedCells';
+import { SessionCell, AssistantCell, ActionsCell, MobileCardHeader } from './SharedCells';
 import type { ConversationsTabProps } from './types';
 
 export function ConversationsTab({
   paginatedSessions,
   brandColor,
-  getBotInfo,
+  getAssistantInfo,
   onOpenTranscript,
   currentPage,
   totalPages,
@@ -42,11 +42,11 @@ export function ConversationsTab({
         onPageChange={onPageChange}
       >
         {paginatedSessions.map((session) => {
-          const bot = getBotInfo(session.mascot_id);
+          const assistant = getAssistantInfo(session.mascot_id);
           return (
             <TableRow key={session.id}>
               <SessionCell session={session} />
-              <BotCell bot={bot} brandColor={brandColor} />
+              <AssistantCell assistant={assistant} brandColor={brandColor} />
               <TableCell>
                 <p className="text-sm text-foreground">{session.analysis?.category || '-'}</p>
               </TableCell>
@@ -75,12 +75,12 @@ export function ConversationsTab({
         onPageChange={onPageChange}
       >
         {paginatedSessions.map((session) => {
-          const bot = getBotInfo(session.mascot_id);
+          const assistant = getAssistantInfo(session.mascot_id);
           return (
             <MobileCard key={session.id}>
               <MobileCardHeader
                 session={session}
-                bot={bot}
+                assistant={assistant}
                 brandColor={brandColor}
                 onView={() => onOpenTranscript(session)}
               />

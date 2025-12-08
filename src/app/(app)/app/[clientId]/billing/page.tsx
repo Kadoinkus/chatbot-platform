@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { getClientById, getWorkspacesByClientId, getBotsByWorkspaceId } from '@/lib/dataService';
-import type { Client, Workspace, Bot } from '@/lib/dataService';
+import { getClientById, getWorkspacesByClientId, getAssistantsByWorkspaceId } from '@/lib/dataService';
+import type { Client, Workspace, Assistant } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import {
   CreditCard, ChevronDown, ChevronUp,
@@ -26,7 +26,7 @@ import {
 export default function WorkspaceBillingPage({ params }: { params: { clientId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [workspaceBots, setWorkspaceBots] = useState<Record<string, Bot[]>>({});
+  const [workspaceAssistants, setWorkspaceAssistants] = useState<Record<string, Assistant[]>>({});
   const [loading, setLoading] = useState(true);
   const [showInvoices, setShowInvoices] = useState(false);
   const [expandedWorkspaces, setExpandedWorkspaces] = useState<Set<string>>(new Set());
@@ -42,13 +42,13 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
         setClient(clientData);
         setWorkspaces(workspacesData || []);
 
-        // Load bots for each workspace
-        const botsData: Record<string, Bot[]> = {};
+        // Load assistants for each workspace
+        const assistantsData: Record<string, Assistant[]> = {};
         for (const workspace of workspacesData || []) {
-          const bots = await getBotsByWorkspaceId(workspace.id);
-          botsData[workspace.id] = bots || [];
+          const assistants = await getAssistantsByWorkspaceId(workspace.id);
+          assistantsData[workspace.id] = assistants || [];
         }
-        setWorkspaceBots(botsData);
+        setWorkspaceAssistants(assistantsData);
 
       } catch (error) {
         console.error('Error loading data:', error);
@@ -107,8 +107,8 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
     return workspaces.reduce((total, ws) => total + ws.walletCredits, 0);
   };
 
-  const getTotalBots = () => {
-    return Object.values(workspaceBots).reduce((total, bots) => total + bots.length, 0);
+  const getTotalAssistants = () => {
+    return Object.values(workspaceAssistants).reduce((total, assistants) => total + assistants.length, 0);
   };
 
   const getUsageWarnings = () => {
@@ -166,8 +166,8 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
   };
 
   const getWorkspaceMascotTotal = (workspaceId: string, plan: string) => {
-    const bots = workspaceBots[workspaceId] || [];
-    return bots.reduce((total, bot) => total + getMascotCost(bot.id, plan), 0);
+    const assistants = workspaceAssistants[workspaceId] || [];
+    return assistants.reduce((total, assistant) => total + getMascotCost(assistant.id, plan), 0);
   };
 
   return (
@@ -175,7 +175,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
       <PageContent>
             <PageHeader
               title="Billing & Workspaces"
-              description={`${workspaces.length} workspace${workspaces.length !== 1 ? 's' : ''} with ${getTotalBots()} bot${getTotalBots() !== 1 ? 's' : ''}`}
+              description={`${workspaces.length} workspace${workspaces.length !== 1 ? 's' : ''} with ${getTotalAssistants()} bot${getTotalAssistants() !== 1 ? 's' : ''}`}
               backLink={
                 <Link
                   href={`/app/${params.clientId}/settings`}
@@ -284,7 +284,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
             <div className="space-y-4 mb-6">
               {workspaces.map(workspace => {
                 const isExpanded = expandedWorkspaces.has(workspace.id);
-                const bots = workspaceBots[workspace.id] || [];
+                const assistants = workspaceAssistants[workspace.id] || [];
                 const bundleUsagePercent = (workspace.bundleLoads.used / workspace.bundleLoads.limit) * 100;
                 const messageUsagePercent = (workspace.messages.used / workspace.messages.limit) * 100;
                 const apiUsagePercent = (workspace.apiCalls.used / workspace.apiCalls.limit) * 100;
@@ -313,7 +313,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                               )}
                             </div>
                             <p className="text-sm text-foreground-secondary">
-                              {bots.length} bot{bots.length !== 1 ? 's' : ''} • {workspace.billingCycle} billing • {workspace.description}
+                              {assistants.length} AI assistant{assistants.length !== 1 ? 's' : ''} • {workspace.billingCycle} billing • {workspace.description}
                             </p>
                           </div>
                         </div>
@@ -343,35 +343,35 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                         </div>
                       </div>
 
-                      {/* Bot Summary */}
-                      {bots.length > 0 ? (
+                      {/* AI Assistant Summary */}
+                      {assistants.length > 0 ? (
                         <div>
                           <div className="flex items-center justify-between mb-3">
                             <p className="text-sm font-medium text-foreground-secondary flex items-center gap-2">
                               <BotIcon size={14} />
-                              {bots.filter(b => b.status === 'Live').length} active of {bots.length} bots
+                              {assistants.filter(a => a.status === 'Active').length} active of {assistants.length} AI assistants
                             </p>
                             <span className="text-xs text-foreground-tertiary">Click to expand</span>
                           </div>
                           <div className="flex items-center gap-2 overflow-hidden">
-                            {bots.slice(0, 4).map(bot => (
-                              <div key={bot.id} className="relative flex-shrink-0">
+                            {assistants.slice(0, 4).map(assistant => (
+                              <div key={assistant.id} className="relative flex-shrink-0">
                                 <img
-                                  src={bot.image}
-                                  alt={bot.name}
+                                  src={assistant.image}
+                                  alt={assistant.name}
                                   className="w-8 h-8 rounded-full border-2 border-surface-elevated shadow-sm"
-                                  style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
-                                  title={`${bot.name} - ${bot.status}`}
+                                  style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
+                                  title={`${assistant.name} - ${assistant.status}`}
                                 />
                                 <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface-elevated ${
-                                  bot.status === 'Live' ? 'bg-success-500' :
-                                  bot.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
+                                  assistant.status === 'Active' ? 'bg-success-500' :
+                                  assistant.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
                                 }`} />
                               </div>
                             ))}
-                            {bots.length > 4 && (
+                            {assistants.length > 4 && (
                               <div className="w-8 h-8 bg-background-tertiary rounded-full flex items-center justify-center text-xs text-foreground-secondary font-medium">
-                                +{bots.length - 4}
+                                +{assistants.length - 4}
                               </div>
                             )}
                           </div>
@@ -379,8 +379,8 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                       ) : (
                         <div className="text-center py-3">
                           <BotIcon size={16} className="text-foreground-tertiary mx-auto mb-1" />
-                          <p className="text-sm text-foreground-tertiary">No bots in this workspace</p>
-                          <button className="text-xs text-info-600 dark:text-info-500 hover:text-info-700 dark:hover:text-info-400 mt-1">+ Add first bot</button>
+                          <p className="text-sm text-foreground-tertiary">No AI assistants in this workspace</p>
+                          <button className="text-xs text-info-600 dark:text-info-500 hover:text-info-700 dark:hover:text-info-400 mt-1">+ Add first AI Assistant</button>
                         </div>
                       )}
                     </div>
@@ -470,36 +470,36 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                             </div>
                           </div>
 
-                          {/* Workspace Bots & Actions */}
+                          {/* Workspace AI Assistants & Actions */}
                           <div>
                             <h4 className="text-sm font-semibold text-foreground-secondary mb-4 flex items-center gap-2">
                               <BotIcon size={16} />
-                              Workspace Bots ({bots.length})
+                              Workspace AI Assistants ({assistants.length})
                             </h4>
-                            {bots.length > 0 ? (
+                            {assistants.length > 0 ? (
                               <div className="space-y-2 mb-6">
-                                {bots.map(bot => {
-                                  const mascotInfo = getMascotPricing(bot.id);
-                                  const mascotCost = getMascotCost(bot.id, workspace.plan);
+                                {assistants.map(assistant => {
+                                  const mascotInfo = getMascotPricing(assistant.id);
+                                  const mascotCost = getMascotCost(assistant.id, workspace.plan);
                                   const isIncluded = mascotInfo.type === 'notso-pro' && workspace.plan !== 'starter';
 
                                   return (
-                                    <div key={bot.id} className="flex items-center gap-3 p-3 bg-surface-elevated rounded-lg border border-border">
+                                    <div key={assistant.id} className="flex items-center gap-3 p-3 bg-surface-elevated rounded-lg border border-border">
                                       <img
-                                        src={bot.image}
-                                        alt={bot.name}
+                                        src={assistant.image}
+                                        alt={assistant.name}
                                         className="w-10 h-10 rounded-full"
-                                        style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                                        style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
                                       />
                                       <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
-                                          <p className="text-sm font-medium text-foreground">{bot.name}</p>
+                                          <p className="text-sm font-medium text-foreground">{assistant.name}</p>
                                           <span className={`w-2 h-2 rounded-full ${
-                                            bot.status === 'Live' ? 'bg-success-500' :
-                                            bot.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
+                                            assistant.status === 'Active' ? 'bg-success-500' :
+                                            assistant.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
                                           }`} />
                                         </div>
-                                        <p className="text-xs text-foreground-tertiary mb-1">{bot.description}</p>
+                                        <p className="text-xs text-foreground-tertiary mb-1">{assistant.description}</p>
                                         <div className="flex items-center gap-2">
                                           <span className="text-xs text-foreground-secondary">{mascotInfo.studioName}</span>
                                           {mascotInfo.type === 'notso-pro' && (
@@ -526,12 +526,12 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                             ) : (
                               <div className="bg-surface-elevated rounded-lg border border-border p-6 text-center mb-6">
                                 <BotIcon size={32} className="text-foreground-tertiary mx-auto mb-2" />
-                                <p className="text-sm text-foreground-tertiary">No bots in this workspace</p>
+                                <p className="text-sm text-foreground-tertiary">No AI assistants in this workspace</p>
                               </div>
                             )}
 
                             {/* Mascot Cost Summary */}
-                            {bots.length > 0 && (
+                            {assistants.length > 0 && (
                               <div className="bg-background-tertiary rounded-lg p-4 mb-6">
                                 <div className="flex justify-between items-center mb-2">
                                   <span className="text-sm font-medium text-foreground-secondary">Mascot Costs</span>
@@ -540,11 +540,11 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                                   </span>
                                 </div>
                                 <div className="text-xs text-foreground-secondary space-y-1">
-                                  {bots.filter(bot => getMascotCost(bot.id, workspace.plan) > 0).length > 0 ? (
-                                    bots.filter(bot => getMascotCost(bot.id, workspace.plan) > 0).map(bot => (
-                                      <div key={bot.id} className="flex justify-between">
-                                        <span>{bot.name} ({getMascotPricing(bot.id).studioName})</span>
-                                        <span>€{getMascotCost(bot.id, workspace.plan)}</span>
+                                  {assistants.filter(assistant => getMascotCost(assistant.id, workspace.plan) > 0).length > 0 ? (
+                                    assistants.filter(assistant => getMascotCost(assistant.id, workspace.plan) > 0).map(assistant => (
+                                      <div key={assistant.id} className="flex justify-between">
+                                        <span>{assistant.name} ({getMascotPricing(assistant.id).studioName})</span>
+                                        <span>€{getMascotCost(assistant.id, workspace.plan)}</span>
                                       </div>
                                     ))
                                   ) : (

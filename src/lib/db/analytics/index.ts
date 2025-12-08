@@ -56,20 +56,20 @@ export function getAnalyticsForClient(clientId: string): AnalyticsOperations {
 }
 
 /**
- * Get the appropriate analytics implementation for a bot
+ * Get the appropriate analytics implementation for an assistant
  * Requires looking up the client ID first, or you can pass it directly
  */
-export async function getAnalyticsForBot(
-  botId: string,
+export async function getAnalyticsForAssistant(
+  assistantId: string,
   clientId?: string
 ): Promise<AnalyticsOperations> {
   if (clientId) {
     return getAnalyticsForClient(clientId);
   }
 
-  // If no clientId provided, check mock data to determine if it's a demo bot
+  // If no clientId provided, check mock data to determine if it's a demo assistant
   // This is a fallback - ideally clientId should always be provided
-  const sessions = await mockAnalytics.chatSessions.getByBotId(botId);
+  const sessions = await mockAnalytics.chatSessions.getByBotId(assistantId);
   if (sessions.length > 0) {
     const firstClientId = sessions[0].client_id;
     if (isDemoClient(firstClientId)) {

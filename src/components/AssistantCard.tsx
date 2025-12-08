@@ -3,19 +3,19 @@ import { useState, useRef, useEffect } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import Progress from '@/components/ui/Progress';
 import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, Users, Calendar, MoreVertical, Settings, Trash2, Copy } from 'lucide-react';
-import type { Bot, Workspace, PlanType } from '@/types';
+import type { Assistant, Workspace, PlanType } from '@/types';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { getNextUsageReset } from '@/lib/billingService';
 
-interface BotCardProps {
-  bot: Bot;
+interface AssistantCardProps {
+  assistant: Assistant;
   clientId: string;
   workspaceName?: string;
   workspace?: Workspace;
 }
 
-export default function BotCard({ bot, clientId, workspaceName, workspace }: BotCardProps) {
-  const brandColor = getClientBrandColor(bot.clientId);
+export default function AssistantCard({ assistant, clientId, workspaceName, workspace }: AssistantCardProps) {
+  const brandColor = getClientBrandColor(assistant.clientId);
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -23,7 +23,7 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
     e.preventDefault();
     e.stopPropagation();
     // TODO: Implement actual status toggle API call
-    console.log(`Toggling bot ${bot.id} from ${bot.status} to ${bot.status === 'Live' ? 'Paused' : 'Live'}`);
+    console.log(`Toggling assistant ${assistant.id} from ${assistant.status} to ${assistant.status === 'Active' ? 'Paused' : 'Active'}`);
   };
 
   // Close dropdown when clicking outside
@@ -70,7 +70,7 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
   // Check if widget can operate (within limits OR has credits)
   const isOverLimit = bundleLoads.percentage >= 100 || sessionUsage.percentage >= 100;
   const canOperate = !isOverLimit || hasWalletCredits;
-  
+
   const getPlanBadgeStyle = (plan: PlanType) => {
     switch (plan) {
       case 'custom':
@@ -113,8 +113,8 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
           <div className="flex items-center gap-4">
             <div className="relative flex-shrink-0">
               <img
-                src={bot.image}
-                alt={bot.name}
+                src={assistant.image}
+                alt={assistant.name}
                 className="w-24 h-24 rounded-full group-hover:scale-105 transition-transform duration-300"
                 style={{ backgroundColor: brandColor }}
               />
@@ -130,15 +130,15 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
             </div>
             <div className="flex-1">
               <div className="flex items-center gap-2">
-                <h3 className="font-semibold text-2xl text-foreground">{bot.name}</h3>
-                <StatusBadge status={bot.status} />
+                <h3 className="font-semibold text-2xl text-foreground">{assistant.name}</h3>
+                <StatusBadge status={assistant.status} />
               </div>
               <div className="h-10 flex items-start mt-1">
                 <p className="text-sm text-foreground-secondary leading-5 overflow-hidden" style={{
                   display: '-webkit-box',
                   WebkitLineClamp: 2,
                   WebkitBoxOrient: 'vertical'
-                }}>{bot.description}</p>
+                }}>{assistant.description}</p>
               </div>
               <div className="mt-2 flex items-center gap-2 flex-wrap">
                 {workspaceName && (
@@ -169,14 +169,14 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
             {showDropdown && (
               <div className="absolute right-0 top-8 w-48 bg-surface-elevated border border-border rounded-lg shadow-lg z-10">
                 <Link
-                  href={`/app/${clientId}/bot/${bot.id}/support`}
+                  href={`/app/${clientId}/assistant/${assistant.id}/support`}
                   className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-secondary hover:bg-background-hover"
                 >
                   <Headphones size={14} />
                   Support & Tickets
                 </Link>
                 <Link
-                  href={`/app/${clientId}/bot/${bot.id}/settings`}
+                  href={`/app/${clientId}/assistant/${assistant.id}/settings`}
                   className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-secondary hover:bg-background-hover"
                 >
                   <Settings size={14} />
@@ -185,17 +185,17 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
                 <div className="border-t border-border my-1" />
                 <button className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-secondary hover:bg-background-hover w-full text-left">
                   <Copy size={14} />
-                  Duplicate Bot
+                  Duplicate
                 </button>
                 <button className="flex items-center gap-2 px-4 py-2 text-sm text-error-600 hover:bg-error-50 dark:hover:bg-error-700/20 w-full text-left">
                   <Trash2 size={14} />
-                  Delete Bot
+                  Delete
                 </button>
               </div>
             )}
           </div>
         </div>
-        
+
         {/* Usage Indicators - Client-facing: Bundle Loads + Sessions */}
         <div className="space-y-3">
           {/* Bundle Loads */}
@@ -250,7 +250,7 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
         {/* Additional Info */}
         <div className="mt-4 pt-3 border-t border-border flex justify-between items-center">
           <span className="text-xs text-foreground-tertiary">
-            {bot.conversations} conversations today
+            {assistant.conversations} conversations today
           </span>
           {workspace && daysUntilReset > 0 && (
             <span className="text-xs text-foreground-tertiary flex items-center gap-1">
@@ -264,7 +264,7 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
       {/* Action Bar */}
       <div className="border-t border-border flex items-center">
         <Link
-          href={`/app/${clientId}/bot/${bot.id}/analytics`}
+          href={`/app/${clientId}/assistant/${assistant.id}/analytics`}
           className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-background-hover transition-all duration-150 group/link"
         >
           <BarChart3 size={16} className="text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150" aria-hidden="true" />
@@ -274,7 +274,7 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
         <div className="w-px h-8 bg-border" />
 
         <Link
-          href={`/app/${clientId}/bot/${bot.id}/mascot`}
+          href={`/app/${clientId}/assistant/${assistant.id}/mascot`}
           className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-background-hover transition-all duration-150 group/link"
         >
           <Palette size={16} className="text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150" aria-hidden="true" />
@@ -284,7 +284,7 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
         <div className="w-px h-8 bg-border" />
 
         <Link
-          href={`/app/${clientId}/bot/${bot.id}/brain`}
+          href={`/app/${clientId}/assistant/${assistant.id}/brain`}
           className="flex-1 flex items-center justify-center gap-2 py-3 hover:bg-background-hover transition-all duration-150 group/link"
         >
           <Brain size={16} className="text-foreground-secondary group-hover/link:text-foreground transition-colors duration-150" aria-hidden="true" />
@@ -296,12 +296,12 @@ export default function BotCard({ bot, clientId, workspaceName, workspace }: Bot
         <button
           onClick={handleToggleStatus}
           className={`px-4 py-3 hover:bg-background-hover transition-all duration-150 flex items-center justify-center group/pause ${
-            bot.status === 'Needs finalization' ? 'opacity-50 cursor-not-allowed' : ''
+            assistant.status === 'Draft' ? 'opacity-50 cursor-not-allowed' : ''
           }`}
-          disabled={bot.status === 'Needs finalization'}
-          title={bot.status === 'Needs finalization' ? 'Complete setup to enable controls' : bot.status === 'Live' ? 'Pause bot' : 'Resume bot'}
+          disabled={assistant.status === 'Draft'}
+          title={assistant.status === 'Draft' ? 'Complete setup to enable controls' : assistant.status === 'Active' ? 'Pause Agent' : 'Activate Agent'}
         >
-          {bot.status === 'Live' ? (
+          {assistant.status === 'Active' ? (
             <Pause size={16} className="text-error-600 group-hover/pause:scale-110 transition-transform duration-150" />
           ) : (
             <Play size={16} className="text-success-600 group-hover/pause:scale-110 transition-transform duration-150" />

@@ -1,10 +1,10 @@
-import type { Bot, Workspace } from '@/types';
-import type { BotWithMetrics, AggregatedMetrics } from '@/lib/analytics/botComparison';
-import type { ColumnDefinition } from '@/components/analytics/BotComparisonTable';
+import type { Assistant, Workspace } from '@/types';
+import type { AssistantWithMetrics, AggregatedMetrics } from '@/lib/analytics/assistantComparison';
+import type { ColumnDefinition } from '@/components/analytics/AssistantComparisonTable';
 
 // Shared props for all analytics tab components
 export interface BaseTabProps {
-  botMetrics: BotWithMetrics[];
+  assistantMetrics: AssistantWithMetrics[];
   totals: AggregatedMetrics;
   brandColor: string;
   columns: ColumnDefinition[];
@@ -36,13 +36,13 @@ export interface CostsTabProps extends BaseTabProps {}
 // Custom tab props
 export interface CustomTabProps extends BaseTabProps {}
 
-// Bot selector props
-export interface BotSelectorProps {
-  bots: Bot[];
+// Assistant selector props
+export interface AssistantSelectorProps {
+  assistants: Assistant[];
   workspaces: Workspace[];
   selectedWorkspace: string;
-  selectedBots: string[];
-  onBotToggle: (botId: string) => void;
+  selectedAssistants: string[];
+  onAssistantToggle: (assistantId: string) => void;
   brandColor: string;
   fullWidth?: boolean;
 }
@@ -52,9 +52,9 @@ export interface FilterBarProps {
   workspaces: Workspace[];
   selectedWorkspace: string;
   onWorkspaceChange: (value: string) => void;
-  bots: Bot[];
-  selectedBots: string[];
-  onBotToggle: (botId: string) => void;
+  assistants: Assistant[];
+  selectedAssistants: string[];
+  onAssistantToggle: (assistantId: string) => void;
   dateRange: string;
   onDateRangeChange: (value: string) => void;
   brandColor: string;

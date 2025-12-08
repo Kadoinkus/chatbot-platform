@@ -17,9 +17,9 @@ import {
   EmptyState,
 } from '@/components/ui';
 
-export default function BotSettingsPage({ params }: { params: { clientId: string; botId: string } }) {
+export default function AssistantSettingsPage({ params }: { params: { clientId: string; assistantId: string } }) {
   const client = clients.find(c => c.id === params.clientId);
-  const bot = client?.bots.find(m => m.id === params.botId);
+  const assistant = client?.assistants.find(m => m.id === params.assistantId);
   const [activeTab, setActiveTab] = useState('api');
   const [hasChanges, setHasChanges] = useState(false);
 
@@ -29,7 +29,7 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
     webhookUrl: '',
     rateLimit: 1000,
   });
-  
+
   const [businessHours, setBusinessHours] = useState({
     enabled: true,
     timezone: 'America/New_York',
@@ -43,7 +43,7 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
       sunday: { enabled: false, start: '09:00', end: '17:00' },
     }
   });
-  
+
   const [securitySettings, setSecuritySettings] = useState({
     allowedDomains: '',
     ipWhitelist: '',
@@ -51,14 +51,14 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
     dataRetention: 30
   });
 
-  if (!client || !bot) {
+  if (!client || !assistant) {
     return (
       <Page>
         <PageContent>
           <EmptyState
             icon={<SettingsIcon size={48} />}
-            title="Bot not found"
-            message="The requested bot could not be found."
+            title="AI Assistant not found"
+            message="The requested AI Assistant could not be found."
           />
         </PageContent>
       </Page>
@@ -85,7 +85,7 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
     <Page>
       <PageContent>
             <PageHeader
-              title={`${bot.name} Settings`}
+              title={`${assistant.name} Settings`}
               description="Technical configuration and administration"
               backLink={
                 <Link
@@ -93,7 +93,7 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                   className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
                 >
                   <ArrowLeft size={16} />
-                  Back to bots
+                  Back to AI Assistants
                 </Link>
               }
               actions={hasChanges && (
@@ -103,19 +103,19 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
               )}
             />
 
-            {/* Bot Header */}
+            {/* AI Assistant Header */}
             <Card className="mb-6">
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
                   <img
-                    src={bot.image}
-                    alt={bot.name}
+                    src={assistant.image}
+                    alt={assistant.name}
                     className="w-16 h-16 rounded-full bg-background-tertiary"
                   />
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <h1 className="text-2xl font-bold text-foreground">{bot.name}</h1>
-                      <StatusBadge status={bot.status} />
+                      <h1 className="text-2xl font-bold text-foreground">{assistant.name}</h1>
+                      <StatusBadge status={assistant.status} />
                     </div>
                     <p className="text-foreground-secondary mb-1">Technical configuration and administration</p>
                     <p className="text-sm text-foreground-tertiary">Client: {client.name}</p>
@@ -172,7 +172,7 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
 
                     <Input
                       label="Widget ID"
-                      value={`widget-${bot.id}`}
+                      value={`widget-${assistant.id}`}
                       readOnly
                       className="font-mono text-sm"
                       helperText="Unique identifier for embedding the chat widget"
@@ -198,7 +198,7 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
                       label="Embed Code"
                       readOnly
                       rows={4}
-                      value={`<script src="https://api.chatbot.com/widget.js"\n  data-bot-id="${bot.id}"\n  data-client-id="${client.id}">\n</script>`}
+                      value={`<script src="https://api.chatbot.com/widget.js"\n  data-bot-id="${assistant.id}"\n  data-client-id="${client.id}">\n</script>`}
                       className="font-mono text-sm"
                     />
                     <Button variant="secondary">Copy Code</Button>
@@ -239,7 +239,7 @@ export default function BotSettingsPage({ params }: { params: { clientId: string
 
                     <Toggle
                       label="End-to-end encryption"
-                      description="Encrypt all messages between users and the bot"
+                      description="Encrypt all messages between users and the AI Assistant"
                       checked={securitySettings.encryption}
                       onChange={(e) => {
                         setSecuritySettings({...securitySettings, encryption: e.target.checked});

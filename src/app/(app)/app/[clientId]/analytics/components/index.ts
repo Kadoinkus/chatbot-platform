@@ -9,7 +9,7 @@ export { CustomTab } from './CustomTab';
 
 // Shared Components
 export { FilterBar } from './FilterBar';
-export { BotSelector } from './BotSelector';
+export { AssistantSelector } from './AssistantSelector';
 
 // Types
 export type * from './types';

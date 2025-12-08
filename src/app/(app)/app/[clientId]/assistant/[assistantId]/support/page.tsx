@@ -1,10 +1,10 @@
 'use client';
-import { getClientById, getBotById } from '@/lib/dataService';
+import { getClientById, getAssistantById } from '@/lib/dataService';
 import { useState, useEffect } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Headphones, Plus, Search, Filter, AlertCircle, CheckCircle, Clock, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
-import type { Client, Bot } from '@/lib/dataService';
+import type { Client, Assistant } from '@/lib/dataService';
 import {
   Page,
   PageContent,
@@ -20,9 +20,9 @@ import {
   Badge,
 } from '@/components/ui';
 
-export default function SupportPage({ params }: { params: { clientId: string; botId: string } }) {
+export default function SupportPage({ params }: { params: { clientId: string; assistantId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
-  const [bot, setBot] = useState<Bot | undefined>();
+  const [assistant, setAssistant] = useState<Assistant | undefined>();
   const [loading, setLoading] = useState(true);
   const [showNewTicket, setShowNewTicket] = useState(false);
   const [ticketForm, setTicketForm] = useState({
@@ -33,9 +33,9 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
   });
 
   const [tickets] = useState([
-    { 
-      id: 'TKT-001', 
-      subject: 'Bot not responding to greeting messages', 
+    {
+      id: 'TKT-001',
+      subject: 'Bot not responding to greeting messages',
       category: 'Bug',
       priority: 'high',
       status: 'in_progress',
@@ -43,9 +43,9 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
       lastUpdate: '30 min ago',
       assignee: 'Dev Team'
     },
-    { 
-      id: 'TKT-002', 
-      subject: 'Request: Add multilingual support', 
+    {
+      id: 'TKT-002',
+      subject: 'Request: Add multilingual support',
       category: 'Feature',
       priority: 'medium',
       status: 'open',
@@ -53,9 +53,9 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
       lastUpdate: '1 day ago',
       assignee: 'Unassigned'
     },
-    { 
-      id: 'TKT-003', 
-      subject: 'Slow response time during peak hours', 
+    {
+      id: 'TKT-003',
+      subject: 'Slow response time during peak hours',
       category: 'Performance',
       priority: 'high',
       status: 'resolved',
@@ -63,9 +63,9 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
       lastUpdate: '2 days ago',
       assignee: 'Backend Team'
     },
-    { 
-      id: 'TKT-004', 
-      subject: 'Integration with CRM system', 
+    {
+      id: 'TKT-004',
+      subject: 'Integration with CRM system',
       category: 'Integration',
       priority: 'low',
       status: 'open',
@@ -78,12 +78,12 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
   useEffect(() => {
     async function loadData() {
       try {
-        const [clientData, botData] = await Promise.all([
+        const [clientData, assistantData] = await Promise.all([
           getClientById(params.clientId),
-          getBotById(params.botId)
+          getAssistantById(params.assistantId)
         ]);
         setClient(clientData);
-        setBot(botData);
+        setAssistant(assistantData);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -91,7 +91,7 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
       }
     }
     loadData();
-  }, [params.clientId, params.botId]);
+  }, [params.clientId, params.assistantId]);
 
   if (loading) {
     return (
@@ -101,14 +101,14 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
     );
   }
 
-  if (!client || !bot) {
+  if (!client || !assistant) {
     return (
       <Page>
         <PageContent>
           <EmptyState
             icon={<Headphones size={48} />}
-            title="Bot not found"
-            message="The requested bot could not be found."
+            title="AI Assistant not found"
+            message="The requested AI assistant could not be found."
           />
         </PageContent>
       </Page>
@@ -150,7 +150,7 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
     <Page>
       <PageContent>
             <PageHeader
-              title={`${bot.name} Support`}
+              title={`${assistant.name} Support`}
               description="Manage support requests and tickets"
               backLink={
                 <Link
@@ -158,7 +158,7 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
                   className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
                 >
                   <ArrowLeft size={16} />
-                  Back to bots
+                  Back to AI Assistants
                 </Link>
               }
               actions={
@@ -173,14 +173,14 @@ export default function SupportPage({ params }: { params: { clientId: string; bo
               <div className="flex items-start justify-between">
                 <div className="flex items-center gap-4">
                   <img
-                    src={bot.image}
-                    alt={bot.name}
+                    src={assistant.image}
+                    alt={assistant.name}
                     className="w-16 h-16 rounded-full bg-background-tertiary"
                   />
                   <div>
                     <div className="flex items-center gap-3 mb-1">
-                      <h1 className="text-2xl font-bold text-foreground">{bot.name}</h1>
-                      <StatusBadge status={bot.status} />
+                      <h1 className="text-2xl font-bold text-foreground">{assistant.name}</h1>
+                      <StatusBadge status={assistant.status} />
                     </div>
                     <p className="text-foreground-secondary mb-1">Manage support requests and tickets</p>
                     <p className="text-sm text-foreground-tertiary">Client: {client.name}</p>

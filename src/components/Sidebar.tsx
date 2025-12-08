@@ -25,7 +25,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
   
   const navItems = [
     { icon: Layers, label: 'Workspaces', href: clientId ? `/app/${clientId}/home` : '/app' },
-    { icon: Bot, label: 'Bots', href: clientId ? `/app/${clientId}` : '/app' },
+    { icon: Bot, label: 'AI Assistants', href: clientId ? `/app/${clientId}` : '/app' },
     { icon: Store, label: 'Marketplace', href: clientId ? `/app/${clientId}/marketplace` : '/app' },
     { icon: MessageSquare, label: 'Conversations', href: clientId ? `/app/${clientId}/conversations` : '/app' },
     { icon: Users, label: 'Users', href: clientId ? `/app/${clientId}/users` : '/app' },
@@ -61,9 +61,9 @@ export default function Sidebar({ clientId }: SidebarProps) {
       <nav className="flex-1 flex flex-col gap-2">
         {navItems.map((item) => {
           const Icon = item.icon;
-          // Special handling for Bots: only active on exact match or /bot/ subpages
-          const isActive = item.label === 'Bots'
-            ? pathname === item.href || pathname.includes('/bot/')
+          // Special handling for AI Assistants: only active on exact match or /assistant/ subpages
+          const isActive = item.label === 'AI Assistants'
+            ? pathname === item.href || pathname.includes('/assistant/')
             : pathname === item.href || pathname.startsWith(item.href + '/');
           return (
             <Link
@@ -149,9 +149,9 @@ export default function Sidebar({ clientId }: SidebarProps) {
             <nav className="flex-1 space-y-2">
               {navItems.map((item) => {
                 const Icon = item.icon;
-                // Special handling for Bots: only active on exact match or /bot/ subpages
-                const isActive = item.label === 'Bots'
-                  ? pathname === item.href || pathname.includes('/bot/')
+                // Special handling for AI Assistants: only active on exact match or /assistant/ subpages
+                const isActive = item.label === 'AI Assistants'
+                  ? pathname === item.href || pathname.includes('/assistant/')
                   : pathname === item.href || pathname.startsWith(item.href + '/');
                 return (
                   <Link

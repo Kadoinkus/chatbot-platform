@@ -2,103 +2,103 @@
 
 import { HelpCircle, CheckCircle, AlertTriangle, Globe } from 'lucide-react';
 import { KpiCard, KpiGrid } from '@/components/analytics';
-import { BotComparisonTable, ProgressBar, type ColumnDefinition } from '@/components/analytics/BotComparisonTable';
+import { AssistantComparisonTable, ProgressBar, type ColumnDefinition } from '@/components/analytics/AssistantComparisonTable';
 import {
   formatNumber,
   formatPercent,
   calculateHandoffs,
-  type BotWithMetrics,
-} from '@/lib/analytics/botComparison';
+  type AssistantWithMetrics,
+} from '@/lib/analytics/assistantComparison';
 
 interface QuestionsTabProps {
-  botMetrics: BotWithMetrics[];
+  assistantMetrics: AssistantWithMetrics[];
   brandColor: string;
   onOpenQuestionsModal: (questions: string[], title: string) => void;
 }
 
-export function QuestionsTab({ botMetrics, brandColor, onOpenQuestionsModal }: QuestionsTabProps) {
+export function QuestionsTab({ assistantMetrics, brandColor, onOpenQuestionsModal }: QuestionsTabProps) {
   // Calculate totals
-  const totalQuestions = botMetrics.reduce((sum, b) => sum + b.questions.length, 0);
-  const totalUnanswered = botMetrics.reduce((sum, b) => sum + b.unanswered.length, 0);
+  const totalQuestions = assistantMetrics.reduce((sum, a) => sum + a.questions.length, 0);
+  const totalUnanswered = assistantMetrics.reduce((sum, a) => sum + a.unanswered.length, 0);
   const totalAnswered = totalQuestions - totalUnanswered;
   const avgAnswerRate = totalQuestions > 0 ? (totalAnswered / totalQuestions) * 100 : 0;
-  const totalUrlHandoffs = botMetrics.reduce((sum, b) => sum + calculateHandoffs(b).urlHandoffs, 0);
-  const totalEmailHandoffs = botMetrics.reduce((sum, b) => sum + calculateHandoffs(b).emailHandoffs, 0);
+  const totalUrlHandoffs = assistantMetrics.reduce((sum, a) => sum + calculateHandoffs(a).urlHandoffs, 0);
+  const totalEmailHandoffs = assistantMetrics.reduce((sum, a) => sum + calculateHandoffs(a).emailHandoffs, 0);
 
   // Column definitions
   const columns: ColumnDefinition[] = [
     {
       key: 'questions',
       header: 'Questions',
-      render: (bot) => (
+      render: (assistant) => (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onOpenQuestionsModal(bot.questions.map((q) => q.question), `Questions - ${bot.botName}`);
+            onOpenQuestionsModal(assistant.questions.map((q) => q.question), `Questions - ${assistant.assistantName}`);
           }}
           className="text-info-600 dark:text-info-500 hover:underline"
         >
-          {bot.questions.length}
+          {assistant.questions.length}
         </button>
       ),
-      sortValue: (bot) => bot.questions.length,
+      sortValue: (assistant) => assistant.questions.length,
       align: 'right',
     },
     {
       key: 'answered',
       header: 'Answered',
-      render: (bot) => {
-        const answered = bot.questions.length - bot.unanswered.length;
+      render: (assistant) => {
+        const answered = assistant.questions.length - assistant.unanswered.length;
         return <span className="text-success-600 dark:text-success-500">{answered}</span>;
       },
-      sortValue: (bot) => bot.questions.length - bot.unanswered.length,
+      sortValue: (assistant) => assistant.questions.length - assistant.unanswered.length,
       align: 'right',
     },
     {
       key: 'unanswered',
       header: 'Unanswered',
-      render: (bot) => (
+      render: (assistant) => (
         <button
           onClick={(e) => {
             e.stopPropagation();
-            onOpenQuestionsModal(bot.unanswered.map((q) => q.question), `Unanswered - ${bot.botName}`);
+            onOpenQuestionsModal(assistant.unanswered.map((q) => q.question), `Unanswered - ${assistant.assistantName}`);
           }}
           className="text-error-600 dark:text-error-500 hover:underline"
         >
-          {bot.unanswered.length}
+          {assistant.unanswered.length}
         </button>
       ),
-      sortValue: (bot) => bot.unanswered.length,
+      sortValue: (assistant) => assistant.unanswered.length,
       align: 'right',
     },
     {
       key: 'answerRate',
       header: 'Answer Rate',
-      render: (bot) => {
+      render: (assistant) => {
         const rate =
-          bot.questions.length > 0
-            ? ((bot.questions.length - bot.unanswered.length) / bot.questions.length) * 100
+          assistant.questions.length > 0
+            ? ((assistant.questions.length - assistant.unanswered.length) / assistant.questions.length) * 100
             : 0;
         return <ProgressBar value={rate} color={rate >= 80 ? 'success' : rate >= 60 ? 'warning' : 'error'} />;
       },
-      sortValue: (bot) =>
-        bot.questions.length > 0
-          ? ((bot.questions.length - bot.unanswered.length) / bot.questions.length) * 100
+      sortValue: (assistant) =>
+        assistant.questions.length > 0
+          ? ((assistant.questions.length - assistant.unanswered.length) / assistant.questions.length) * 100
           : 0,
       width: '150px',
     },
     {
       key: 'urlHandoffs',
       header: 'URL Handoffs',
-      render: (bot) => calculateHandoffs(bot).urlHandoffs,
-      sortValue: (bot) => calculateHandoffs(bot).urlHandoffs,
+      render: (assistant) => calculateHandoffs(assistant).urlHandoffs,
+      sortValue: (assistant) => calculateHandoffs(assistant).urlHandoffs,
       align: 'right',
     },
     {
       key: 'emailHandoffs',
       header: 'Email Handoffs',
-      render: (bot) => calculateHandoffs(bot).emailHandoffs,
-      sortValue: (bot) => calculateHandoffs(bot).emailHandoffs,
+      render: (assistant) => calculateHandoffs(assistant).emailHandoffs,
+      sortValue: (assistant) => calculateHandoffs(assistant).emailHandoffs,
       align: 'right',
     },
   ];
@@ -129,24 +129,24 @@ export function QuestionsTab({ botMetrics, brandColor, onOpenQuestionsModal }: Q
         />
       </KpiGrid>
 
-      {/* Bot Comparison Table */}
-      <BotComparisonTable
-        bots={botMetrics}
+      {/* AI Assistant Comparison Table */}
+      <AssistantComparisonTable
+        assistants={assistantMetrics}
         columns={columns}
         brandColor={brandColor}
-        title="Bot Comparison - Questions & Gaps"
+        title="AI Assistant Comparison - Questions & Gaps"
         description={
-          botMetrics.length === 0
-            ? 'No bots selected'
-            : `Comparing ${botMetrics.length} bot${botMetrics.length !== 1 ? 's' : ''}`
+          assistantMetrics.length === 0
+            ? 'No AI assistants selected'
+            : `Comparing ${assistantMetrics.length} AI assistant${assistantMetrics.length !== 1 ? 's' : ''}`
         }
-        emptyMessage="Select bots to compare their metrics"
-        expandableContent={(bot) => (
+        emptyMessage="Select AI assistants to compare their metrics"
+        expandableContent={(assistant) => (
           <div className="space-y-3">
             <h4 className="font-medium text-foreground">Top Unanswered Questions</h4>
-            {bot.unanswered.length > 0 ? (
+            {assistant.unanswered.length > 0 ? (
               <ul className="space-y-2">
-                {bot.unanswered.slice(0, 5).map((q, i) => (
+                {assistant.unanswered.slice(0, 5).map((q, i) => (
                   <li key={i} className="flex items-start gap-2 text-sm">
                     <span className="text-warning-600 dark:text-warning-500 font-medium">•</span>
                     <span className="text-foreground">{q.question}</span>

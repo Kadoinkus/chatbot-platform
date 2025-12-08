@@ -7,13 +7,13 @@
 
 import type {
   Client,
-  Bot,
+  Assistant,
   Workspace,
   User,
   Conversation,
   Message,
   Session,
-  BotSession,
+  AssistantSession,
   UsageData,
   IntentData,
 } from '@/types';
@@ -31,7 +31,7 @@ export interface ClientMetrics {
   csat: number;
 }
 
-export interface BotMetricsResult {
+export interface AssistantMetricsResult {
   usageByDay: UsageData[];
   topIntents: IntentData[];
 }
@@ -45,12 +45,12 @@ export interface ClientOperations {
   resolveId(idOrSlug: string): Promise<string | null>;
 }
 
-// Bot operations
-export interface BotOperations {
-  getAll(): Promise<Bot[]>;
-  getById(id: string): Promise<Bot | null>;
-  getByClientId(clientId: string): Promise<Bot[]>;
-  getByWorkspaceId(workspaceId: string): Promise<Bot[]>;
+// Assistant operations
+export interface AssistantOperations {
+  getAll(): Promise<Assistant[]>;
+  getById(id: string): Promise<Assistant | null>;
+  getByClientId(clientId: string): Promise<Assistant[]>;
+  getByWorkspaceId(workspaceId: string): Promise<Assistant[]>;
 }
 
 // Workspace operations
@@ -72,7 +72,7 @@ export interface ConversationOperations {
   getAll(): Promise<Conversation[]>;
   getById(id: string): Promise<Conversation | null>;
   getByClientId(clientId: string): Promise<Conversation[]>;
-  getByBotId(botId: string): Promise<Conversation[]>;
+  getByAssistantId(assistantId: string): Promise<Conversation[]>;
 }
 
 // Message operations
@@ -84,20 +84,20 @@ export interface MessageOperations {
 export interface SessionOperations {
   getByClientId(clientId: string): Promise<Session[]>;
   getActiveByClientId(clientId: string): Promise<Session[]>;
-  getBotSessions(botId: string, dateRange?: DateRange): Promise<BotSession[]>;
-  getBotSessionsByClientId(clientId: string, dateRange?: DateRange): Promise<BotSession[]>;
+  getAssistantSessions(assistantId: string, dateRange?: DateRange): Promise<AssistantSession[]>;
+  getAssistantSessionsByClientId(clientId: string, dateRange?: DateRange): Promise<AssistantSession[]>;
 }
 
 // Metrics operations
 export interface MetricsOperations {
   getClientMetrics(clientId: string): Promise<ClientMetrics>;
-  getBotMetrics(botId: string): Promise<BotMetricsResult>;
+  getAssistantMetrics(assistantId: string): Promise<AssistantMetricsResult>;
 }
 
 // Complete database client interface
 export interface DbClient {
   clients: ClientOperations;
-  bots: BotOperations;
+  assistants: AssistantOperations;
   workspaces: WorkspaceOperations;
   users: UserOperations;
   conversations: ConversationOperations;
@@ -109,7 +109,7 @@ export interface DbClient {
 // Type for the full database operations export
 export interface DbOperations {
   clients: ClientOperations;
-  bots: BotOperations;
+  assistants: AssistantOperations;
   workspaces: WorkspaceOperations;
   users: UserOperations;
   conversations: ConversationOperations;

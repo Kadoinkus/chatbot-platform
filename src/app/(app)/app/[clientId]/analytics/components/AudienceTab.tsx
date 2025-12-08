@@ -2,31 +2,31 @@
 
 import { Globe, Users, MessageSquare, BarChart3 } from 'lucide-react';
 import { KpiCard, KpiGrid } from '@/components/analytics';
-import { BotComparisonTable, type ColumnDefinition } from '@/components/analytics/BotComparisonTable';
+import { AssistantComparisonTable, type ColumnDefinition } from '@/components/analytics/AssistantComparisonTable';
 import {
   formatNumber,
   formatPercent,
   getTopBrowser,
-  type BotWithMetrics,
+  type AssistantWithMetrics,
   type AggregatedMetrics,
-} from '@/lib/analytics/botComparison';
+} from '@/lib/analytics/assistantComparison';
 
 interface AudienceTabProps {
-  botMetrics: BotWithMetrics[];
+  assistantMetrics: AssistantWithMetrics[];
   totals: AggregatedMetrics;
   brandColor: string;
 }
 
-export function AudienceTab({ botMetrics, totals, brandColor }: AudienceTabProps) {
+export function AudienceTab({ assistantMetrics, totals, brandColor }: AudienceTabProps) {
   // Calculate unique counts
-  const uniqueCountries = botMetrics.length > 0
-    ? new Set(botMetrics.flatMap((b) => b.countries.map((c) => c.country))).size
+  const uniqueCountries = assistantMetrics.length > 0
+    ? new Set(assistantMetrics.flatMap((a) => a.countries.map((c) => c.country))).size
     : 0;
-  const uniqueLanguages = botMetrics.length > 0
-    ? new Set(botMetrics.flatMap((b) => b.languages.map((l) => l.language))).size
+  const uniqueLanguages = assistantMetrics.length > 0
+    ? new Set(assistantMetrics.flatMap((a) => a.languages.map((l) => l.language))).size
     : 0;
-  const uniqueDevices = botMetrics.length > 0
-    ? new Set(botMetrics.flatMap((b) => b.devices.map((d) => d.deviceType))).size
+  const uniqueDevices = assistantMetrics.length > 0
+    ? new Set(assistantMetrics.flatMap((a) => a.devices.map((d) => d.deviceType))).size
     : 0;
 
   // Column definitions
@@ -34,37 +34,37 @@ export function AudienceTab({ botMetrics, totals, brandColor }: AudienceTabProps
     {
       key: 'topCountry',
       header: 'Top Country',
-      render: (bot) => bot.countries[0]?.country || '-',
+      render: (assistant) => assistant.countries[0]?.country || '-',
     },
     {
       key: 'topLanguage',
       header: 'Top Language',
-      render: (bot) => bot.languages[0]?.language || '-',
+      render: (assistant) => assistant.languages[0]?.language || '-',
     },
     {
       key: 'mobile',
       header: 'Mobile %',
-      render: (bot) => {
-        const mobile = bot.devices.find((d) => d.deviceType === 'mobile');
+      render: (assistant) => {
+        const mobile = assistant.devices.find((d) => d.deviceType === 'mobile');
         return formatPercent(mobile?.percentage || 0);
       },
-      sortValue: (bot) => bot.devices.find((d) => d.deviceType === 'mobile')?.percentage || 0,
+      sortValue: (assistant) => assistant.devices.find((d) => d.deviceType === 'mobile')?.percentage || 0,
       align: 'right',
     },
     {
       key: 'desktop',
       header: 'Desktop %',
-      render: (bot) => {
-        const desktop = bot.devices.find((d) => d.deviceType === 'desktop');
+      render: (assistant) => {
+        const desktop = assistant.devices.find((d) => d.deviceType === 'desktop');
         return formatPercent(desktop?.percentage || 0);
       },
-      sortValue: (bot) => bot.devices.find((d) => d.deviceType === 'desktop')?.percentage || 0,
+      sortValue: (assistant) => assistant.devices.find((d) => d.deviceType === 'desktop')?.percentage || 0,
       align: 'right',
     },
     {
       key: 'topBrowser',
       header: 'Top Browser',
-      render: (bot) => getTopBrowser(bot),
+      render: (assistant) => getTopBrowser(assistant),
     },
   ];
 
@@ -94,18 +94,18 @@ export function AudienceTab({ botMetrics, totals, brandColor }: AudienceTabProps
         />
       </KpiGrid>
 
-      {/* Bot Comparison Table */}
-      <BotComparisonTable
-        bots={botMetrics}
+      {/* AI Assistant Comparison Table */}
+      <AssistantComparisonTable
+        assistants={assistantMetrics}
         columns={columns}
         brandColor={brandColor}
-        title="Bot Comparison - Audience"
+        title="AI Assistant Comparison - Audience"
         description={
-          botMetrics.length === 0
-            ? 'No bots selected'
-            : `Comparing ${botMetrics.length} bot${botMetrics.length !== 1 ? 's' : ''}`
+          assistantMetrics.length === 0
+            ? 'No AI assistants selected'
+            : `Comparing ${assistantMetrics.length} AI assistant${assistantMetrics.length !== 1 ? 's' : ''}`
         }
-        emptyMessage="Select bots to compare their metrics"
+        emptyMessage="Select AI assistants to compare their metrics"
       />
     </>
   );

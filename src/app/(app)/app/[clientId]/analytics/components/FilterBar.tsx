@@ -2,16 +2,16 @@
 
 import { Filter, Download } from 'lucide-react';
 import { Select, Button } from '@/components/ui';
-import { BotSelector } from './BotSelector';
-import type { Bot, Workspace } from '@/types';
+import { AssistantSelector } from './AssistantSelector';
+import type { Assistant, Workspace } from '@/types';
 
 interface FilterBarProps {
   workspaces: Workspace[];
   selectedWorkspace: string;
   onWorkspaceChange: (value: string) => void;
-  bots: Bot[];
-  selectedBots: string[];
-  onBotToggle: (botId: string) => void;
+  assistants: Assistant[];
+  selectedAssistants: string[];
+  onAssistantToggle: (assistantId: string) => void;
   dateRange: string;
   onDateRangeChange: (value: string) => void;
   brandColor: string;
@@ -28,9 +28,9 @@ export function FilterBar({
   workspaces,
   selectedWorkspace,
   onWorkspaceChange,
-  bots,
-  selectedBots,
-  onBotToggle,
+  assistants,
+  selectedAssistants,
+  onAssistantToggle,
   dateRange,
   onDateRangeChange,
   brandColor,
@@ -59,14 +59,14 @@ export function FilterBar({
 
         <div>
           <div className="flex items-center gap-2 mb-2">
-            <span className="text-sm font-medium text-foreground-secondary">Bot Selection:</span>
+            <span className="text-sm font-medium text-foreground-secondary">AI Assistant Selection:</span>
           </div>
-          <BotSelector
-            bots={bots}
+          <AssistantSelector
+            assistants={assistants}
             workspaces={workspaces}
             selectedWorkspace={selectedWorkspace}
-            selectedBots={selectedBots}
-            onBotToggle={onBotToggle}
+            selectedAssistants={selectedAssistants}
+            onAssistantToggle={onAssistantToggle}
             brandColor={brandColor}
           />
         </div>
@@ -110,13 +110,13 @@ export function FilterBar({
         </div>
 
         <div>
-          <label className="text-xs font-medium text-foreground-secondary mb-1 block">Bots</label>
-          <BotSelector
-            bots={bots}
+          <label className="text-xs font-medium text-foreground-secondary mb-1 block">AI Assistants</label>
+          <AssistantSelector
+            assistants={assistants}
             workspaces={workspaces}
             selectedWorkspace={selectedWorkspace}
-            selectedBots={selectedBots}
-            onBotToggle={onBotToggle}
+            selectedAssistants={selectedAssistants}
+            onAssistantToggle={onAssistantToggle}
             brandColor={brandColor}
             fullWidth
           />

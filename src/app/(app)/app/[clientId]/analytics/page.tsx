@@ -1,13 +1,13 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
-import { getClientById, getBotsByClientId, getWorkspacesByClientId } from '@/lib/dataService';
+import { getClientById, getAssistantsByClientId, getWorkspacesByClientId } from '@/lib/dataService';
 import {
-  fetchBotComparisonData,
+  fetchAssistantComparisonData,
   calculateTotals,
-  type BotWithMetrics,
-} from '@/lib/analytics/botComparison';
-import type { Client, Bot, Workspace } from '@/lib/dataService';
+  type AssistantWithMetrics,
+} from '@/lib/analytics/assistantComparison';
+import type { Client, Assistant, Workspace } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { BarChart3 } from 'lucide-react';
 import {
@@ -36,15 +36,15 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
   // Data state
   const [client, setClient] = useState<Client | null>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [bots, setBots] = useState<Bot[]>([]);
-  const [botMetrics, setBotMetrics] = useState<BotWithMetrics[]>([]);
+  const [assistants, setAssistants] = useState<Assistant[]>([]);
+  const [assistantMetrics, setAssistantMetrics] = useState<AssistantWithMetrics[]>([]);
   const [loading, setLoading] = useState(true);
   const [metricsLoading, setMetricsLoading] = useState(false);
 
   // Filter state
   const [dateRange, setDateRange] = useState('30days');
   const [selectedWorkspace, setSelectedWorkspace] = useState<string>('all');
-  const [selectedBots, setSelectedBots] = useState<string[]>(['all']);
+  const [selectedAssistants, setSelectedAssistants] = useState<string[]>(['all']);
 
   // Tab state
   const [activeTab, setActiveTab] = useState('overview');
@@ -66,15 +66,15 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
   useEffect(() => {
     async function loadData() {
       try {
-        const [clientData, workspacesData, botsData] = await Promise.all([
+        const [clientData, workspacesData, assistantsData] = await Promise.all([
           getClientById(params.clientId),
           getWorkspacesByClientId(params.clientId),
-          getBotsByClientId(params.clientId),
+          getAssistantsByClientId(params.clientId),
         ]);
 
         setClient(clientData || null);
         setWorkspaces(workspacesData);
-        setBots(botsData);
+        setAssistants(assistantsData);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -84,20 +84,20 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
     loadData();
   }, [params.clientId]);
 
-  // Load bot metrics when selection changes
+  // Load assistant metrics when selection changes
   useEffect(() => {
     async function loadMetrics() {
-      if (!client || bots.length === 0) return;
+      if (!client || assistants.length === 0) return;
 
       setMetricsLoading(true);
       try {
-        // Filter bots based on selection
-        let filteredBotList = bots;
+        // Filter assistants based on selection
+        let filteredAssistantList = assistants;
         if (selectedWorkspace !== 'all') {
-          filteredBotList = filteredBotList.filter((b) => b.workspaceId === selectedWorkspace);
+          filteredAssistantList = filteredAssistantList.filter((a) => a.workspaceId === selectedWorkspace);
         }
-        if (!selectedBots.includes('all') && selectedBots.length > 0) {
-          filteredBotList = filteredBotList.filter((b) => selectedBots.includes(b.id));
+        if (!selectedAssistants.includes('all') && selectedAssistants.length > 0) {
+          filteredAssistantList = filteredAssistantList.filter((a) => selectedAssistants.includes(a.id));
         }
 
         // Convert date range to DateRange object
@@ -113,8 +113,8 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
         start.setDate(now.getDate() - days);
         const dateRangeParam = { start, end: now };
 
-        const metrics = await fetchBotComparisonData(params.clientId, filteredBotList, dateRangeParam);
-        setBotMetrics(metrics);
+        const metrics = await fetchAssistantComparisonData(params.clientId, filteredAssistantList, dateRangeParam);
+        setAssistantMetrics(metrics);
       } catch (error) {
         console.error('Error loading metrics:', error);
       } finally {
@@ -122,31 +122,31 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
       }
     }
     loadMetrics();
-  }, [client, bots, selectedWorkspace, selectedBots, dateRange, params.clientId]);
+  }, [client, assistants, selectedWorkspace, selectedAssistants, dateRange, params.clientId]);
 
-  // Reset bot selection when workspace changes
+  // Reset assistant selection when workspace changes
   useEffect(() => {
-    setSelectedBots(['all']);
+    setSelectedAssistants(['all']);
   }, [selectedWorkspace]);
 
   // Calculate aggregated totals
-  const totals = useMemo(() => calculateTotals(botMetrics), [botMetrics]);
+  const totals = useMemo(() => calculateTotals(assistantMetrics), [assistantMetrics]);
 
-  // Bot selection handler
-  const handleBotToggle = (botId: string) => {
-    if (botId === 'all') {
-      if (selectedBots.includes('all') || selectedBots.length === 0) {
-        setSelectedBots([]);
+  // Assistant selection handler
+  const handleAssistantToggle = (assistantId: string) => {
+    if (assistantId === 'all') {
+      if (selectedAssistants.includes('all') || selectedAssistants.length === 0) {
+        setSelectedAssistants([]);
       } else {
-        setSelectedBots(['all']);
+        setSelectedAssistants(['all']);
       }
     } else {
-      setSelectedBots((prev) => {
+      setSelectedAssistants((prev) => {
         const withoutAll = prev.filter((id) => id !== 'all');
-        if (prev.includes(botId)) {
-          return withoutAll.filter((id) => id !== botId);
+        if (prev.includes(assistantId)) {
+          return withoutAll.filter((id) => id !== assistantId);
         } else {
-          return [...withoutAll, botId];
+          return [...withoutAll, assistantId];
         }
       });
     }
@@ -193,23 +193,23 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
 
     switch (activeTab) {
       case 'overview':
-        return <OverviewTab botMetrics={botMetrics} totals={totals} brandColor={brandColor} />;
+        return <OverviewTab assistantMetrics={assistantMetrics} totals={totals} brandColor={brandColor} />;
       case 'conversations':
-        return <ConversationsTab botMetrics={botMetrics} totals={totals} brandColor={brandColor} />;
+        return <ConversationsTab assistantMetrics={assistantMetrics} totals={totals} brandColor={brandColor} />;
       case 'questions':
         return (
           <QuestionsTab
-            botMetrics={botMetrics}
+            assistantMetrics={assistantMetrics}
             brandColor={brandColor}
             onOpenQuestionsModal={handleOpenQuestionsModal}
           />
         );
       case 'audience':
-        return <AudienceTab botMetrics={botMetrics} totals={totals} brandColor={brandColor} />;
+        return <AudienceTab assistantMetrics={assistantMetrics} totals={totals} brandColor={brandColor} />;
       case 'animations':
-        return <AnimationsTab botMetrics={botMetrics} brandColor={brandColor} />;
+        return <AnimationsTab assistantMetrics={assistantMetrics} brandColor={brandColor} />;
       case 'costs':
-        return <CostsTab botMetrics={botMetrics} totals={totals} brandColor={brandColor} />;
+        return <CostsTab assistantMetrics={assistantMetrics} totals={totals} brandColor={brandColor} />;
       case 'custom':
         return <CustomTab />;
       default:
@@ -224,7 +224,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
           title="Analytics Dashboard"
           description={
             selectedWorkspace === 'all'
-              ? `Compare bot performance for ${client.name}`
+              ? `Compare AI assistant performance for ${client.name}`
               : `${workspaces.find((w) => w.id === selectedWorkspace)?.name || 'Workspace'} - ${client.name}`
           }
         />
@@ -234,9 +234,9 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
           workspaces={workspaces}
           selectedWorkspace={selectedWorkspace}
           onWorkspaceChange={setSelectedWorkspace}
-          bots={bots}
-          selectedBots={selectedBots}
-          onBotToggle={handleBotToggle}
+          assistants={assistants}
+          selectedAssistants={selectedAssistants}
+          onAssistantToggle={handleAssistantToggle}
           dateRange={dateRange}
           onDateRangeChange={setDateRange}
           brandColor={brandColor}

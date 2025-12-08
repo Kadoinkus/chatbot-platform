@@ -2,81 +2,81 @@
 
 import { CheckCircle, AlertTriangle, Star, TrendingUp } from 'lucide-react';
 import { KpiCard, KpiGrid } from '@/components/analytics';
-import { BotComparisonTable, type ColumnDefinition } from '@/components/analytics/BotComparisonTable';
+import { AssistantComparisonTable, type ColumnDefinition } from '@/components/analytics/AssistantComparisonTable';
 import {
   formatNumber,
   formatPercent,
   calculateResolutionBreakdown,
-  type BotWithMetrics,
+  type AssistantWithMetrics,
   type AggregatedMetrics,
-} from '@/lib/analytics/botComparison';
+} from '@/lib/analytics/assistantComparison';
 
 interface ConversationsTabProps {
-  botMetrics: BotWithMetrics[];
+  assistantMetrics: AssistantWithMetrics[];
   totals: AggregatedMetrics;
   brandColor: string;
 }
 
-export function ConversationsTab({ botMetrics, totals, brandColor }: ConversationsTabProps) {
+export function ConversationsTab({ assistantMetrics, totals, brandColor }: ConversationsTabProps) {
   // Column definitions for conversations
   const columns: ColumnDefinition[] = [
     {
       key: 'sessions',
       header: 'Sessions',
-      render: (bot) => formatNumber(bot.overview.totalSessions),
-      sortValue: (bot) => bot.overview.totalSessions,
+      render: (assistant) => formatNumber(assistant.overview.totalSessions),
+      sortValue: (assistant) => assistant.overview.totalSessions,
       align: 'right',
     },
     {
       key: 'resolved',
       header: 'Resolved',
-      render: (bot) => {
-        const { resolved } = calculateResolutionBreakdown(bot);
+      render: (assistant) => {
+        const { resolved } = calculateResolutionBreakdown(assistant);
         return <span className="text-success-600 dark:text-success-500">{resolved}</span>;
       },
-      sortValue: (bot) => calculateResolutionBreakdown(bot).resolved,
+      sortValue: (assistant) => calculateResolutionBreakdown(assistant).resolved,
       align: 'right',
     },
     {
       key: 'partial',
       header: 'Partial',
-      render: (bot) => {
-        const { partial } = calculateResolutionBreakdown(bot);
+      render: (assistant) => {
+        const { partial } = calculateResolutionBreakdown(assistant);
         return <span className="text-warning-600 dark:text-warning-500">{partial}</span>;
       },
-      sortValue: (bot) => calculateResolutionBreakdown(bot).partial,
+      sortValue: (assistant) => calculateResolutionBreakdown(assistant).partial,
       align: 'right',
     },
     {
       key: 'unresolved',
       header: 'Unresolved',
-      render: (bot) => {
-        const { unresolved } = calculateResolutionBreakdown(bot);
+      render: (assistant) => {
+        const { unresolved } = calculateResolutionBreakdown(assistant);
         return <span className="text-error-600 dark:text-error-500">{unresolved}</span>;
       },
-      sortValue: (bot) => calculateResolutionBreakdown(bot).unresolved,
+      sortValue: (assistant) => calculateResolutionBreakdown(assistant).unresolved,
       align: 'right',
     },
     {
       key: 'escalated',
       header: 'Escalated',
-      render: (bot) => {
-        const { escalated } = calculateResolutionBreakdown(bot);
+      render: (assistant) => {
+        const { escalated } = calculateResolutionBreakdown(assistant);
         return escalated;
       },
-      sortValue: (bot) => calculateResolutionBreakdown(bot).escalated,
+      sortValue: (assistant) => calculateResolutionBreakdown(assistant).escalated,
       align: 'right',
     },
     {
       key: 'sentiment',
       header: 'Sentiment',
-      render: (bot) => (
+      render: (assistant) => (
         <div className="flex gap-1 text-xs">
-          <span className="text-success-600 dark:text-success-500">{bot.sentiment.positive}%</span>
+          <span className="text-success-600 dark:text-success-500">{assistant.sentiment.positive}%</span>
           <span className="text-foreground-tertiary">/</span>
-          <span className="text-foreground-secondary">{bot.sentiment.neutral}%</span>
+          <span className="text-foreground-secondary">{assistant.sentiment.neutral}%</span>
           <span className="text-foreground-tertiary">/</span>
-          <span className="text-error-600 dark:text-error-500">{bot.sentiment.negative}%</span>
+          <span className="text-error-600 dark:text-error-500">{assistant.sentiment.negative}%</span>
         </div>
       ),
     },
@@ -108,18 +108,18 @@ export function ConversationsTab({ botMetrics, totals, brandColor }: Conversatio
         />
       </KpiGrid>
 
-      {/* Bot Comparison Table */}
-      <BotComparisonTable
-        bots={botMetrics}
+      {/* AI Assistant Comparison Table */}
+      <AssistantComparisonTable
+        assistants={assistantMetrics}
         columns={columns}
         brandColor={brandColor}
-        title="Bot Comparison - Conversations"
+        title="AI Assistant Comparison - Conversations"
         description={
-          botMetrics.length === 0
-            ? 'No bots selected'
-            : `Comparing ${botMetrics.length} bot${botMetrics.length !== 1 ? 's' : ''}`
+          assistantMetrics.length === 0
+            ? 'No AI assistants selected'
+            : `Comparing ${assistantMetrics.length} AI assistant${assistantMetrics.length !== 1 ? 's' : ''}`
         }
-        emptyMessage="Select bots to compare their metrics"
+        emptyMessage="Select AI assistants to compare their metrics"
       />
     </>
   );

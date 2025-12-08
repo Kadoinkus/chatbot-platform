@@ -10,7 +10,7 @@ export * from './KpiCard';
 export * from './MobileTable';
 export * from './ChartContainer';
 export * from './TabNavigation';
-export * from './BotSelector';
+export * from './AssistantSelector';
 
 // Shared configuration
 export * from './tabsConfig';

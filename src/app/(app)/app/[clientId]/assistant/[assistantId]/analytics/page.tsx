@@ -31,13 +31,13 @@ import {
   X
 } from 'lucide-react';
 
-import { getClientById, getBotById } from '@/lib/dataService';
+import { getClientById, getAssistantById } from '@/lib/dataService';
 import { getAnalyticsForClient } from '@/lib/db/analytics';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { getChartColors, GREY, GREYS, getContrastTextColor, ensureReadableColor } from '@/lib/chartColors';
 import { tooltipStyle } from '@/lib/chartStyles';
 import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
-import type { Client, Bot, ChatSessionWithAnalysis } from '@/types';
+import type { Client, Assistant, ChatSessionWithAnalysis } from '@/types';
 import type { OverviewMetrics, SentimentBreakdown, CategoryBreakdown, LanguageBreakdown, CountryBreakdown, TimeSeriesDataPoint, QuestionAnalytics, DeviceBreakdown, SentimentTimeSeriesDataPoint, HourlyBreakdown, AnimationStats } from '@/lib/db/analytics';
 import { Page, PageContent, PageHeader, Card, Button, Input, Spinner, EmptyState, Modal, Select } from '@/components/ui';
 
@@ -83,10 +83,10 @@ const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr
 const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
 
 
-export default function BotAnalyticsPage({ params }: { params: { clientId: string; botId: string } }) {
+export default function AssistantAnalyticsPage({ params }: { params: { clientId: string; assistantId: string } }) {
   // State
   const [client, setClient] = useState<Client | undefined>();
-  const [bot, setBot] = useState<Bot | undefined>();
+  const [assistant, setAssistant] = useState<Assistant | undefined>();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('overview');
   const [dateRange, setDateRange] = useState(30);
@@ -209,7 +209,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   // Handle export for current tab
   const handleExport = useCallback((format: ExportFormat) => {
     const { startDate, endDate } = getExportDateRange();
-    const mascotId = params.botId;
+    const mascotId = params.assistantId;
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
 
@@ -243,7 +243,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           duration_seconds: s.session_duration_seconds || 0,
           total_messages: s.total_messages,
           user_messages: s.user_messages,
-          bot_messages: s.bot_messages,
+          assistant_messages: s.assistant_messages,
           sentiment: s.analysis?.sentiment || '',
           category: s.analysis?.category || '',
           resolution_status: s.analysis?.resolution_status || '',
@@ -436,7 +436,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     }
 
     setShowExportDropdown(false);
-  }, [activeTab, sessions, timeSeries, questions, unansweredQuestions, countries, languages, devices, animationStats, params.botId, getExportDateRange]);
+  }, [activeTab, sessions, timeSeries, questions, unansweredQuestions, countries, languages, devices, animationStats, params.assistantId, getExportDateRange]);
 
   const brandColor = useMemo(() => {
     return client ? getClientBrandColor(client.id) : '#6B7280';
@@ -471,13 +471,13 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
         const dateRangeFilter = { start: startDate, end: endDate };
 
         // Load basic data
-        const [clientData, botData] = await Promise.all([
+        const [clientData, assistantData] = await Promise.all([
           getClientById(params.clientId),
-          getBotById(params.botId)
+          getAssistantById(params.assistantId)
         ]);
 
         setClient(clientData);
-        setBot(botData);
+        setAssistant(assistantData);
 
         if (!clientData) {
           setLoading(false);
@@ -503,19 +503,19 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           hourlyBreakdownData,
           animationStatsData
         ] = await Promise.all([
-          analytics.aggregations.getOverviewByBotId(params.botId, dateRangeFilter),
-          analytics.aggregations.getSentimentByBotId(params.botId, dateRangeFilter),
-          analytics.aggregations.getCategoriesByBotId(params.botId, dateRangeFilter),
-          analytics.aggregations.getLanguagesByBotId(params.botId, dateRangeFilter),
-          analytics.aggregations.getCountriesByBotId(params.botId, dateRangeFilter),
-          analytics.aggregations.getDevicesByBotId(params.botId, dateRangeFilter),
-          analytics.aggregations.getTimeSeriesByBotId(params.botId, dateRangeFilter),
-          analytics.aggregations.getQuestionsByBotId(params.botId, dateRangeFilter),
-          analytics.aggregations.getUnansweredQuestionsByBotId(params.botId, dateRangeFilter),
-          analytics.chatSessions.getWithAnalysisByBotId(params.botId, { dateRange: dateRangeFilter }),
-          analytics.aggregations.getSentimentTimeSeriesByBotId(params.botId, dateRangeFilter),
-          analytics.aggregations.getHourlyBreakdownByBotId(params.botId, dateRangeFilter),
-          analytics.aggregations.getAnimationStatsByBotId(params.botId, dateRangeFilter)
+          analytics.aggregations.getOverviewByBotId(params.assistantId, dateRangeFilter),
+          analytics.aggregations.getSentimentByBotId(params.assistantId, dateRangeFilter),
+          analytics.aggregations.getCategoriesByBotId(params.assistantId, dateRangeFilter),
+          analytics.aggregations.getLanguagesByBotId(params.assistantId, dateRangeFilter),
+          analytics.aggregations.getCountriesByBotId(params.assistantId, dateRangeFilter),
+          analytics.aggregations.getDevicesByBotId(params.assistantId, dateRangeFilter),
+          analytics.aggregations.getTimeSeriesByBotId(params.assistantId, dateRangeFilter),
+          analytics.aggregations.getQuestionsByBotId(params.assistantId, dateRangeFilter),
+          analytics.aggregations.getUnansweredQuestionsByBotId(params.assistantId, dateRangeFilter),
+          analytics.chatSessions.getWithAnalysisByBotId(params.assistantId, { dateRange: dateRangeFilter }),
+          analytics.aggregations.getSentimentTimeSeriesByBotId(params.assistantId, dateRangeFilter),
+          analytics.aggregations.getHourlyBreakdownByBotId(params.assistantId, dateRangeFilter),
+          analytics.aggregations.getAnimationStatsByBotId(params.assistantId, dateRangeFilter)
         ]);
 
         setOverview(overviewData);
@@ -540,7 +540,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     }
 
     loadData();
-  }, [params.clientId, params.botId, dateRange, useCustomRange, customDateRange]);
+  }, [params.clientId, params.assistantId, dateRange, useCustomRange, customDateRange]);
 
   // Format helpers
   const formatDuration = (seconds: number) => {
@@ -591,14 +591,14 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
   }
 
   // Not found state
-  if (!client || !bot) {
+  if (!client || !assistant) {
     return (
       <Page>
         <PageContent>
           <EmptyState
             icon={<BotIcon size={48} />}
-            title="Bot not found"
-            message="The requested bot could not be found."
+            title="AI Assistant not found"
+            message="The requested AI Assistant could not be found."
           />
         </PageContent>
       </Page>
@@ -625,15 +625,15 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     <Page>
       <PageContent>
         <PageHeader
-          title={`${bot.name} Analytics`}
-          description={bot.description}
+          title={`${assistant.name} Analytics`}
+          description={assistant.description}
           backLink={
             <Link
               href={`/app/${client.id}`}
               className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
             >
               <ArrowLeft size={16} />
-              Back to bots
+              Back to AI Assistants
             </Link>
           }
         />
@@ -644,14 +644,14 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           <div className="hidden lg:flex items-start justify-between mb-6">
             <div className="flex items-center gap-4">
               <img
-                src={bot.image}
-                alt={bot.name}
+                src={assistant.image}
+                alt={assistant.name}
                 className="w-16 h-16 rounded-full"
                 style={{ backgroundColor: brandColor }}
               />
               <div>
-                <h1 className="text-2xl font-bold text-foreground">{bot.name} Analytics</h1>
-                <p className="text-foreground-secondary">{bot.description}</p>
+                <h1 className="text-2xl font-bold text-foreground">{assistant.name} Analytics</h1>
+                <p className="text-foreground-secondary">{assistant.description}</p>
               </div>
             </div>
 
@@ -695,14 +695,14 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
           <div className="lg:hidden space-y-4 mb-6">
             <div className="flex items-center gap-3">
               <img
-                src={bot.image}
-                alt={bot.name}
+                src={assistant.image}
+                alt={assistant.name}
                 className="w-12 h-12 rounded-full"
                 style={{ backgroundColor: brandColor }}
               />
               <div className="min-w-0 flex-1">
-                <h1 className="text-lg font-bold text-foreground truncate">{bot.name} Analytics</h1>
-                <p className="text-sm text-foreground-secondary truncate">{bot.description}</p>
+                <h1 className="text-lg font-bold text-foreground truncate">{assistant.name} Analytics</h1>
+                <p className="text-sm text-foreground-secondary truncate">{assistant.description}</p>
               </div>
             </div>
 
@@ -1001,7 +1001,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     >
                       <p className="text-sm whitespace-pre-wrap">{msg.message}</p>
                       <p
-                        className={`text-xs mt-1 ${msg.author === 'bot' ? 'text-gray-500 dark:text-gray-400' : ''}`}
+                        className={`text-xs mt-1 ${msg.author === 'assistant' ? 'text-gray-500 dark:text-gray-400' : ''}`}
                         style={msg.author === 'user' ? { color: userTimestampColor } : undefined}
                       >
                         {new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}

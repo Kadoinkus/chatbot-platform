@@ -9,9 +9,9 @@ export type {
   UsageCounter,
   OverageRates,
   Workspace,
-  BotStatus,
-  BotMetrics,
-  Bot,
+  AgentStatus,
+  AssistantMetrics,
+  Assistant,
   TeamRole,
   UserStatus,
   User,
@@ -29,7 +29,7 @@ export type {
   CompletionStatus,
   UserType,
   DeviceType,
-  BotSession,
+  AssistantSession,
   UsageData,
   IntentData,
   MetricsData,
@@ -37,17 +37,22 @@ export type {
   ApiError,
   ApiResponse,
   CounterSummary,
+  // Legacy aliases
+  BotStatus,
+  BotMetrics,
+  Bot,
+  BotSession,
 } from '@/types';
 
 import type {
   Client,
-  Bot,
+  Assistant,
   Workspace,
   User,
   MetricsData,
   Conversation,
   Session,
-  BotSession,
+  AssistantSession,
   Message,
   UsageData,
   IntentData,
@@ -55,13 +60,13 @@ import type {
 
 // Data loading functions (client-side fetch)
 let clientsData: Client[] | null = null;
-let botsData: Bot[] | null = null;
+let assistantsData: Assistant[] | null = null;
 let workspacesData: Workspace[] | null = null;
 let usersData: User[] | null = null;
 let metricsData: MetricsData | null = null;
 let conversationsData: Conversation[] | null = null;
 let sessionsData: Session[] | null = null;
-let botSessionsData: BotSession[] | null = null;
+let assistantSessionsData: AssistantSession[] | null = null;
 let messagesData: Message[] | null = null;
 
 export async function loadClients(): Promise<Client[]> {
@@ -71,12 +76,15 @@ export async function loadClients(): Promise<Client[]> {
   return clientsData!;
 }
 
-export async function loadBots(): Promise<Bot[]> {
-  if (botsData) return botsData;
-  const response = await fetch('/data/bots.json');
-  botsData = await response.json();
-  return botsData!;
+export async function loadAssistants(): Promise<Assistant[]> {
+  if (assistantsData) return assistantsData;
+  const response = await fetch('/data/assistants.json');
+  assistantsData = await response.json();
+  return assistantsData!;
 }
+
+/** @deprecated Use loadAssistants() instead */
+export const loadBots = loadAssistants;
 
 export async function loadWorkspaces(): Promise<Workspace[]> {
   if (workspacesData) return workspacesData;
@@ -113,12 +121,15 @@ export async function loadSessions(): Promise<Session[]> {
   return sessionsData!;
 }
 
-export async function loadBotSessions(): Promise<BotSession[]> {
-  if (botSessionsData) return botSessionsData;
-  const response = await fetch('/data/bot_sessions.json');
-  botSessionsData = await response.json();
-  return botSessionsData!;
+export async function loadAssistantSessions(): Promise<AssistantSession[]> {
+  if (assistantSessionsData) return assistantSessionsData;
+  const response = await fetch('/data/assistant_sessions.json');
+  assistantSessionsData = await response.json();
+  return assistantSessionsData!;
 }
+
+/** @deprecated Use loadAssistantSessions() instead */
+export const loadBotSessions = loadAssistantSessions;
 
 export async function loadMessages(): Promise<Message[]> {
   if (messagesData) return messagesData;
@@ -147,17 +158,23 @@ export async function resolveClientId(idOrSlug: string): Promise<string | undefi
   return client?.id;
 }
 
-export async function getBotsByClientId(clientIdOrSlug: string): Promise<Bot[]> {
+export async function getAssistantsByClientId(clientIdOrSlug: string): Promise<Assistant[]> {
   // Resolve slug to actual ID if needed
   const clientId = await resolveClientId(clientIdOrSlug) || clientIdOrSlug;
-  const bots = await loadBots();
-  return bots.filter(b => b.clientId === clientId);
+  const assistants = await loadAssistants();
+  return assistants.filter(a => a.clientId === clientId);
 }
 
-export async function getBotsByWorkspaceId(workspaceId: string): Promise<Bot[]> {
-  const bots = await loadBots();
-  return bots.filter(b => b.workspaceId === workspaceId);
+/** @deprecated Use getAssistantsByClientId() instead */
+export const getBotsByClientId = getAssistantsByClientId;
+
+export async function getAssistantsByWorkspaceId(workspaceId: string): Promise<Assistant[]> {
+  const assistants = await loadAssistants();
+  return assistants.filter(a => a.workspaceId === workspaceId);
 }
+
+/** @deprecated Use getAssistantsByWorkspaceId() instead */
+export const getBotsByWorkspaceId = getAssistantsByWorkspaceId;
 
 export async function getWorkspacesByClientId(clientIdOrSlug: string): Promise<Workspace[]> {
   // Resolve slug to actual ID if needed
@@ -171,10 +188,13 @@ export async function getWorkspaceById(id: string): Promise<Workspace | undefine
   return workspaces.find(w => w.id === id);
 }
 
-export async function getBotById(id: string): Promise<Bot | undefined> {
-  const bots = await loadBots();
-  return bots.find(b => b.id === id);
+export async function getAssistantById(id: string): Promise<Assistant | undefined> {
+  const assistants = await loadAssistants();
+  return assistants.find(a => a.id === id);
 }
+
+/** @deprecated Use getAssistantById() instead */
+export const getBotById = getAssistantById;
 
 export async function getUsersByClientId(clientIdOrSlug: string): Promise<User[]> {
   const clientId = await resolveClientId(clientIdOrSlug) || clientIdOrSlug;
@@ -196,16 +216,19 @@ export async function getClientMetrics(clientIdOrSlug: string): Promise<{
   };
 }
 
-export async function getBotMetrics(botId: string): Promise<{
+export async function getAssistantMetrics(assistantId: string): Promise<{
   usageByDay: UsageData[];
   topIntents: IntentData[];
 }> {
   const metrics = await loadMetrics();
   return {
-    usageByDay: metrics.botUsageByDay[botId] || [],
-    topIntents: metrics.botIntents[botId] || []
+    usageByDay: metrics.assistantUsageByDay[assistantId] || [],
+    topIntents: metrics.assistantIntents[assistantId] || []
   };
 }
+
+/** @deprecated Use getAssistantMetrics() instead */
+export const getBotMetrics = getAssistantMetrics;
 
 export async function getConversationsByClientId(clientIdOrSlug: string): Promise<Conversation[]> {
   const clientId = await resolveClientId(clientIdOrSlug) || clientIdOrSlug;
@@ -213,10 +236,13 @@ export async function getConversationsByClientId(clientIdOrSlug: string): Promis
   return conversations.filter(c => c.clientId === clientId);
 }
 
-export async function getConversationsByBotId(botId: string): Promise<Conversation[]> {
+export async function getConversationsByAssistantId(assistantId: string): Promise<Conversation[]> {
   const conversations = await loadConversations();
-  return conversations.filter(c => c.botId === botId);
+  return conversations.filter(c => c.assistantId === assistantId);
 }
+
+/** @deprecated Use getConversationsByAssistantId() instead */
+export const getConversationsByBotId = getConversationsByAssistantId;
 
 export async function getMessagesByConversationId(conversationId: string): Promise<Message[]> {
   const messages = await loadMessages();
@@ -235,50 +261,56 @@ export async function getActiveSessionsByClientId(clientIdOrSlug: string): Promi
   return sessions.filter(s => s.clientId === clientId && s.status === 'active');
 }
 
-export async function getBotSessionsByBotId(botId: string, dateRange?: { start: Date; end: Date }): Promise<BotSession[]> {
-  const sessions = await loadBotSessions();
-  let filtered = sessions.filter(s => s.bot_id === botId);
-  
+export async function getAssistantSessionsByAssistantId(assistantId: string, dateRange?: { start: Date; end: Date }): Promise<AssistantSession[]> {
+  const sessions = await loadAssistantSessions();
+  let filtered = sessions.filter(s => s.assistant_id === assistantId);
+
   if (dateRange) {
     filtered = filtered.filter(s => {
       const sessionDate = new Date(s.start_time);
       return sessionDate >= dateRange.start && sessionDate <= dateRange.end;
     });
   }
-  
+
   return filtered;
 }
 
-export async function getBotSessionsByClientId(clientId: string, dateRange?: { start: Date; end: Date }): Promise<BotSession[]> {
-  const sessions = await loadBotSessions();
+/** @deprecated Use getAssistantSessionsByAssistantId() instead */
+export const getBotSessionsByBotId = getAssistantSessionsByAssistantId;
+
+export async function getAssistantSessionsByClientId(clientId: string, dateRange?: { start: Date; end: Date }): Promise<AssistantSession[]> {
+  const sessions = await loadAssistantSessions();
   let filtered = sessions.filter(s => s.client_id === clientId);
-  
+
   if (dateRange) {
     filtered = filtered.filter(s => {
       const sessionDate = new Date(s.start_time);
       return sessionDate >= dateRange.start && sessionDate <= dateRange.end;
     });
   }
-  
+
   return filtered;
 }
 
-// Legacy compatibility - reconstructed client objects with nested bots and metrics
-export async function getClientsWithBots(): Promise<any[]> {
+/** @deprecated Use getAssistantSessionsByClientId() instead */
+export const getBotSessionsByClientId = getAssistantSessionsByClientId;
+
+// Legacy compatibility - reconstructed client objects with nested assistants and metrics
+export async function getClientsWithAssistants(): Promise<any[]> {
   const clients = await loadClients();
-  const bots = await loadBots();
+  const assistants = await loadAssistants();
   const metrics = await loadMetrics();
 
   return clients.map(client => ({
     ...client,
-    bots: bots
-      .filter(bot => bot.clientId === client.id)
-      .map(bot => ({
-        ...bot,
+    assistants: assistants
+      .filter(assistant => assistant.clientId === client.id)
+      .map(assistant => ({
+        ...assistant,
         metrics: {
-          ...bot.metrics,
-          usageByDay: metrics.botUsageByDay[bot.id] || [],
-          topIntents: metrics.botIntents[bot.id] || []
+          ...assistant.metrics,
+          usageByDay: metrics.assistantUsageByDay[assistant.id] || [],
+          topIntents: metrics.assistantIntents[assistant.id] || []
         }
       })),
     metrics: {
@@ -288,3 +320,6 @@ export async function getClientsWithBots(): Promise<any[]> {
     }
   }));
 }
+
+/** @deprecated Use getClientsWithAssistants() instead */
+export const getClientsWithBots = getClientsWithAssistants;

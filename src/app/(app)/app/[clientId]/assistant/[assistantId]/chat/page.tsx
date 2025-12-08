@@ -20,19 +20,19 @@ interface Message {
   attachments?: { name: string; size: string; type: string }[];
 }
 
-export default function ChatInterfacePage({ params }: { params: { clientId: string; botId: string } }) {
+export default function AssistantChatPage({ params }: { params: { clientId: string; assistantId: string } }) {
   const client = clients.find(c => c.id === params.clientId);
-  const bot = client?.bots.find(m => m.id === params.botId);
+  const assistant = client?.assistants.find(m => m.id === params.assistantId);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',
       sender: 'bot',
-      content: `Hi! I'm ${bot?.name}. How can I help you today?`,
+      content: `Hi! I'm ${assistant?.name}. How can I help you today?`,
       timestamp: new Date(Date.now() - 3600000),
       status: 'read'
     },
     {
-      id: '2', 
+      id: '2',
       sender: 'user',
       content: 'I need help with my recent order',
       timestamp: new Date(Date.now() - 3000000),
@@ -83,7 +83,7 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
       };
       setMessages([...messages, newMessage]);
       setInputMessage('');
-      
+
       // Simulate bot response
       setIsTyping(true);
       setTimeout(() => {
@@ -100,14 +100,14 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
     }
   };
 
-  if (!client || !bot) {
+  if (!client || !assistant) {
     return (
       <Page>
         <PageContent>
           <EmptyState
             icon={<MessageSquare size={48} />}
-            title="Bot not found"
-            message="The requested bot could not be found."
+            title="AI Assistant not found"
+            message="The requested AI assistant could not be found."
           />
         </PageContent>
       </Page>
@@ -125,19 +125,19 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Link
-                  href={`/app/${client.id}/bot/${bot.id}`}
+                  href={`/app/${client.id}/assistant/${assistant.id}`}
                   className="text-foreground-secondary hover:text-foreground"
                 >
                   <ArrowLeft size={20} />
                 </Link>
                 <img
-                  src={bot.image}
-                  alt={bot.name}
+                  src={assistant.image}
+                  alt={assistant.name}
                   className="w-10 h-10 rounded-full"
-                  style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                  style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
                 />
                 <div>
-                  <h1 className="font-semibold text-foreground">{bot.name}</h1>
+                  <h1 className="font-semibold text-foreground">{assistant.name}</h1>
                   <p className="text-xs text-success-600 dark:text-success-500">Active now</p>
                 </div>
               </div>
@@ -168,11 +168,11 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
               >
                 <div className={`flex gap-3 max-w-lg ${message.sender === 'user' ? 'flex-row-reverse' : ''}`}>
                   {message.sender === 'bot' && (
-                    <img 
-                      src={bot.image} 
-                      alt={bot.name} 
-                      className="w-8 h-8 rounded-full flex-shrink-0" 
-                      style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                    <img
+                      src={assistant.image}
+                      alt={assistant.name}
+                      className="w-8 h-8 rounded-full flex-shrink-0"
+                      style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
                     />
                   )}
                   {message.sender === 'agent' && (
@@ -222,9 +222,9 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
                 <div className="flex gap-3 max-w-lg">
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center p-0.5"
-                    style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                    style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
                   >
-                    <img src={bot.image} alt={bot.name} className="w-7 h-7 object-contain" />
+                    <img src={assistant.image} alt={assistant.name} className="w-7 h-7 object-contain" />
                   </div>
                   <div className="bg-background-secondary rounded-lg px-4 py-2">
                     <div className="flex gap-1">
@@ -291,7 +291,7 @@ export default function ChatInterfacePage({ params }: { params: { clientId: stri
                 </Button>
               </div>
               <p className="text-xs text-foreground-tertiary mt-2">
-                {bot.name} typically replies instantly • Powered by AI
+                {assistant.name} typically replies instantly • Powered by AI
               </p>
             </div>
           </div>

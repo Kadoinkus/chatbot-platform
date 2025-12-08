@@ -65,7 +65,7 @@
       { "date": "2025-11-27", "conversations": 100, "resolved": 84 }
     ]
   },
-  "botUsageByDay": {
+  "assistantUsageByDay": {
     "m1": [
       { "date": "2025-10-29", "conversations": 62, "resolved": 50 },
       { "date": "2025-10-30", "conversations": 68, "resolved": 55 },
@@ -185,7 +185,7 @@
       { "intent": "Account setup", "count": 48 }
     ]
   },
-  "botIntents": {
+  "assistantIntents": {
     "m1": [
       { "intent": "Opening hours", "count": 380 },
       { "intent": "Product availability", "count": 345 },
@@ -217,7 +217,7 @@
     "demo-jumbo": 4.6,
     "demo-hitapes": 4.8
   },
-  "botCsat": {
+  "assistantCsat": {
     "m1": 4.5,
     "m2": 4.7,
     "m5": 4.8
@@ -226,7 +226,7 @@
     "demo-jumbo": 1.8,
     "demo-hitapes": 2.1
   },
-  "botResponseTimeAvg": {
+  "assistantResponseTimeAvg": {
     "m1": 1.6,
     "m2": 2.0,
     "m5": 1.1
@@ -235,7 +235,7 @@
     "demo-jumbo": 84.2,
     "demo-hitapes": 82.5
   },
-  "botResolutionRate": {
+  "assistantResolutionRate": {
     "m1": 85.0,
     "m2": 83.5,
     "m5": 82.5

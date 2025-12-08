@@ -1,16 +1,16 @@
 'use client';
-import { getClientById, getBotById } from '@/lib/dataService';
+import { getClientById, getAssistantById } from '@/lib/dataService';
 import { useState, useEffect, useMemo } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Brain, Sliders, BookOpen, MessageSquare, Zap, Shield, Sparkles, GitBranch, Plus, Play, Users, ShoppingCart, GraduationCap, Briefcase, User, ChevronRight, Settings, Copy, Trash2, Edit2, Link2, ExternalLink, CheckCircle, AlertCircle, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import { getClientBrandColor } from '@/lib/brandColors';
-import type { Client, Bot } from '@/lib/dataService';
+import type { Client, Assistant } from '@/lib/dataService';
 import { Page, PageContent, PageHeader, Card, Button, Input, Select, Textarea, Modal, Spinner, EmptyState } from '@/components/ui';
 
-export default function BrainStudioPage({ params }: { params: { clientId: string; botId: string } }) {
+export default function BrainStudioPage({ params }: { params: { clientId: string; assistantId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
-  const [bot, setBot] = useState<Bot | undefined>();
+  const [assistant, setAssistant] = useState<Assistant | undefined>();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('personality');
   const [selectedTemplate, setSelectedTemplate] = useState<string | null>(null);
@@ -29,7 +29,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
   const [savePresetName, setSavePresetName] = useState('');
   const [savePresetDescription, setSavePresetDescription] = useState('');
   const [hasCustomChanges, setHasCustomChanges] = useState(false);
-  
+
   const ageGroups = {
     young: { label: 'Young Adult (18-25)', description: 'Energetic, uses modern language, familiar with latest trends' },
     professional: { label: 'Professional (26-40)', description: 'Mature, business-focused, balanced approach' },
@@ -100,7 +100,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
       right: { label: 'Empathetic', description: 'Understanding, supportive' }
     }
   };
-  
+
 
   const [knowledge, setKnowledge] = useState([
     { id: 1, title: 'Product Documentation', items: 245, status: 'active', lastUpdated: '2 hours ago' },
@@ -110,19 +110,19 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
   ]);
 
   const brandColor = useMemo(() => {
-    return bot ? getClientBrandColor(bot.clientId) : '#6B7280';
-  }, [bot]);
+    return assistant ? getClientBrandColor(assistant.clientId) : '#6B7280';
+  }, [assistant]);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [clientData, botData] = await Promise.all([
+        const [clientData, assistantData] = await Promise.all([
           getClientById(params.clientId),
-          getBotById(params.botId)
+          getAssistantById(params.assistantId)
         ]);
         setClient(clientData);
-        setBot(botData);
-        setBotName(botData?.name || 'Assistant'); // Initialize with actual bot name or fallback
+        setAssistant(assistantData);
+        setBotName(assistantData?.name || 'Assistant'); // Initialize with actual bot name or fallback
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -130,7 +130,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
       }
     }
     loadData();
-  }, [params.clientId, params.botId]);
+  }, [params.clientId, params.assistantId]);
 
   if (loading) {
     return (
@@ -140,14 +140,14 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
     );
   }
 
-  if (!client || !bot) {
+  if (!client || !assistant) {
     return (
       <Page>
         <PageContent>
           <EmptyState
             icon={<BotIcon size={48} />}
-            title="Bot not found"
-            message="The requested bot could not be found."
+            title="AI Assistant not found"
+            message="The requested AI assistant could not be found."
           />
         </PageContent>
       </Page>
@@ -156,7 +156,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
 
   const handleSliderChange = (trait: string, value: number) => {
     setPersonality(prev => ({ ...prev, [trait]: value }));
-    
+
     // Check if current values differ from the selected personality type
     const currentType = personalityTypes[selectedPersonality as keyof typeof personalityTypes] || customPersonalityTypes[selectedPersonality];
     if (currentType) {
@@ -169,7 +169,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
 
   const handleResponseFreedomChange = (value: number) => {
     setResponseFreedom(value);
-    
+
     // Check if response freedom differs from the selected personality type
     const currentType = personalityTypes[selectedPersonality as keyof typeof personalityTypes] || customPersonalityTypes[selectedPersonality];
     if (currentType) {
@@ -194,7 +194,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
 
   const handleSaveCustomPersonality = () => {
     if (!savePresetName.trim()) return;
-    
+
     const presetKey = `custom_${savePresetName.toLowerCase().replace(/[^a-z0-9]/g, '_')}`;
     const newCustomType = {
       name: savePresetName,
@@ -202,7 +202,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
       values: { ...personality },
       responseFreedom: responseFreedom
     };
-    
+
     setCustomPersonalityTypes(prev => ({ ...prev, [presetKey]: newCustomType }));
     setSelectedPersonality(presetKey);
     setHasCustomChanges(false);
@@ -227,15 +227,15 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
   const handleBotNameChange = (newName: string) => {
     setBotName(newName);
     // Also update the bot object in state so the header shows the new name immediately
-    if (bot) {
-      setBot({ ...bot, name: newName });
+    if (assistant) {
+      setAssistant({ ...assistant, name: newName });
     }
   };
 
 
   const handleTemplateSelect = (templateType: string) => {
     setSelectedTemplate(templateType);
-    
+
     switch (templateType) {
       case 'university':
         setFlowNodes([
@@ -351,7 +351,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                 className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
               >
                 <ArrowLeft size={16} />
-                Back to bots
+                Back to AI Assistants
               </Link>
             }
           />
@@ -361,15 +361,15 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <img
-                  src={bot.image}
-                  alt={bot.name}
+                  src={assistant.image}
+                  alt={assistant.name}
                   className="w-16 h-16 rounded-full"
                   style={{ backgroundColor: brandColor }}
                 />
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <h1 className="text-2xl font-bold text-foreground">{bot.name}</h1>
-                    <StatusBadge status={bot.status} />
+                    <h1 className="text-2xl font-bold text-foreground">{assistant.name}</h1>
+                    <StatusBadge status={assistant.status} />
                   </div>
                   <p className="text-foreground-secondary mb-1">
                     {integrationMode === 'builtin'
@@ -527,7 +527,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="p-6">
                   {activeTab === 'personality' && integrationMode === 'external' && (
                     <div className="text-center py-12">
@@ -776,7 +776,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                     </div>
                   </Modal>
 
-                  
+
                   {activeTab === 'knowledge' && integrationMode === 'external' && (
                     <div className="text-center py-12">
                       <Shield size={48} className="mx-auto text-foreground-disabled mb-4" />
@@ -835,7 +835,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                       </div>
                     </div>
                   )}
-                  
+
                   {activeTab === 'chatflows' && integrationMode === 'external' && (
                     <div className="text-center py-12">
                       <Shield size={48} className="mx-auto text-foreground-disabled mb-4" />
@@ -1060,7 +1060,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                       )}
                     </div>
                   )}
-                  
+
                   {activeTab === 'responses' && integrationMode === 'external' && (
                     <div className="text-center py-12">
                       <Shield size={48} className="mx-auto text-foreground-disabled mb-4" />
@@ -1082,7 +1082,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                               <p className="font-medium text-foreground">Greeting</p>
                               <button className="text-sm text-foreground-secondary hover:text-foreground">Edit</button>
                             </div>
-                            <p className="text-sm text-foreground-secondary">Hello! I'm {bot.name}, your virtual assistant. How can I help you today?</p>
+                            <p className="text-sm text-foreground-secondary">Hello! I'm {assistant.name}, your virtual assistant. How can I help you today?</p>
                           </div>
 
                           <div className="p-4 border border-border rounded-lg">
@@ -1129,7 +1129,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
                       </div>
                     </div>
                   )}
-                  
+
                   {activeTab === 'connect-api' && integrationMode === 'builtin' && (
                     <div className="text-center py-12">
                       <Shield size={48} className="mx-auto text-foreground-disabled mb-4" />

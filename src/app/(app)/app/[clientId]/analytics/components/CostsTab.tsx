@@ -2,27 +2,27 @@
 
 import { DollarSign, BarChart3, TrendingUp, Clock } from 'lucide-react';
 import { KpiCard, KpiGrid } from '@/components/analytics';
-import { BotComparisonTable, type ColumnDefinition } from '@/components/analytics/BotComparisonTable';
+import { AssistantComparisonTable, type ColumnDefinition } from '@/components/analytics/AssistantComparisonTable';
 import { MultiLineChart } from '@/components/Charts';
 import {
   formatNumber,
   formatCost,
-  calculateBotCosts,
-  generateMultiBotTimeSeries,
-  type BotWithMetrics,
+  calculateAssistantCosts,
+  generateMultiAssistantTimeSeries,
+  type AssistantWithMetrics,
   type AggregatedMetrics,
-} from '@/lib/analytics/botComparison';
+} from '@/lib/analytics/assistantComparison';
 
 interface CostsTabProps {
-  botMetrics: BotWithMetrics[];
+  assistantMetrics: AssistantWithMetrics[];
   totals: AggregatedMetrics;
   brandColor: string;
 }
 
-export function CostsTab({ botMetrics, totals, brandColor }: CostsTabProps) {
+export function CostsTab({ assistantMetrics, totals, brandColor }: CostsTabProps) {
   // Calculate totals
-  const totalChatCost = botMetrics.reduce((sum, b) => sum + calculateBotCosts(b).chatCost, 0);
-  const totalAnalysisCost = botMetrics.reduce((sum, b) => sum + calculateBotCosts(b).analysisCost, 0);
+  const totalChatCost = assistantMetrics.reduce((sum, a) => sum + calculateAssistantCosts(a).chatCost, 0);
+  const totalAnalysisCost = assistantMetrics.reduce((sum, a) => sum + calculateAssistantCosts(a).analysisCost, 0);
   const totalCost = totalChatCost + totalAnalysisCost;
   const avgCostPerSession = totals.totalSessions > 0 ? totalCost / totals.totalSessions : 0;
 
@@ -31,55 +31,55 @@ export function CostsTab({ botMetrics, totals, brandColor }: CostsTabProps) {
     {
       key: 'sessions',
       header: 'Sessions',
-      render: (bot) => formatNumber(bot.overview.totalSessions),
-      sortValue: (bot) => bot.overview.totalSessions,
+      render: (assistant) => formatNumber(assistant.overview.totalSessions),
+      sortValue: (assistant) => assistant.overview.totalSessions,
       align: 'right',
     },
     {
       key: 'tokens',
       header: 'Total Tokens',
-      render: (bot) => formatNumber(bot.overview.totalTokens),
-      sortValue: (bot) => bot.overview.totalTokens,
+      render: (assistant) => formatNumber(assistant.overview.totalTokens),
+      sortValue: (assistant) => assistant.overview.totalTokens,
       align: 'right',
     },
     {
       key: 'chatCost',
       header: 'Chat Cost',
-      render: (bot) => {
-        const { chatCost } = calculateBotCosts(bot);
+      render: (assistant) => {
+        const { chatCost } = calculateAssistantCosts(assistant);
         return formatCost(chatCost);
       },
-      sortValue: (bot) => calculateBotCosts(bot).chatCost,
+      sortValue: (assistant) => calculateAssistantCosts(assistant).chatCost,
       align: 'right',
     },
     {
       key: 'analysisCost',
       header: 'Analysis Cost',
-      render: (bot) => {
-        const { analysisCost } = calculateBotCosts(bot);
+      render: (assistant) => {
+        const { analysisCost } = calculateAssistantCosts(assistant);
         return formatCost(analysisCost);
       },
-      sortValue: (bot) => calculateBotCosts(bot).analysisCost,
+      sortValue: (assistant) => calculateAssistantCosts(assistant).analysisCost,
       align: 'right',
     },
     {
       key: 'totalCost',
       header: 'Total Cost',
-      render: (bot) => {
-        const { totalCost } = calculateBotCosts(bot);
+      render: (assistant) => {
+        const { totalCost } = calculateAssistantCosts(assistant);
         return <span className="font-semibold">{formatCost(totalCost)}</span>;
       },
-      sortValue: (bot) => calculateBotCosts(bot).totalCost,
+      sortValue: (assistant) => calculateAssistantCosts(assistant).totalCost,
       align: 'right',
     },
     {
       key: 'costPerSession',
       header: 'Cost/Session',
-      render: (bot) => {
-        const { costPerSession } = calculateBotCosts(bot);
+      render: (assistant) => {
+        const { costPerSession } = calculateAssistantCosts(assistant);
         return formatCost(costPerSession);
       },
-      sortValue: (bot) => calculateBotCosts(bot).costPerSession,
+      sortValue: (assistant) => calculateAssistantCosts(assistant).costPerSession,
       align: 'right',
     },
   ];
@@ -111,14 +111,14 @@ export function CostsTab({ botMetrics, totals, brandColor }: CostsTabProps) {
       </KpiGrid>
 
       {/* Charts */}
-      {botMetrics.length > 0 && (
+      {assistantMetrics.length > 0 && (
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 mb-6">
           <div className="card p-4 sm:p-6 overflow-visible">
             <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Cost Over Time</h3>
             <div className="h-[220px] sm:h-[260px] lg:h-[300px] overflow-visible">
               <MultiLineChart
-                data={generateMultiBotTimeSeries(botMetrics, 'cost')}
-                series={botMetrics.map((b) => ({ name: b.botName, dataKey: b.botName }))}
+                data={generateMultiAssistantTimeSeries(assistantMetrics, 'cost')}
+                series={assistantMetrics.map((a) => ({ name: a.assistantName, dataKey: a.assistantName }))}
                 xAxisKey="date"
                 yAxisLabel="Cost (€)"
               />
@@ -128,8 +128,8 @@ export function CostsTab({ botMetrics, totals, brandColor }: CostsTabProps) {
             <h3 className="text-base sm:text-lg font-semibold text-foreground mb-4">Token Usage Over Time</h3>
             <div className="h-[220px] sm:h-[260px] lg:h-[300px] overflow-visible">
               <MultiLineChart
-                data={generateMultiBotTimeSeries(botMetrics, 'tokens')}
-                series={botMetrics.map((b) => ({ name: b.botName, dataKey: b.botName }))}
+                data={generateMultiAssistantTimeSeries(assistantMetrics, 'tokens')}
+                series={assistantMetrics.map((a) => ({ name: a.assistantName, dataKey: a.assistantName }))}
                 xAxisKey="date"
                 yAxisLabel="Tokens"
               />
@@ -138,18 +138,18 @@ export function CostsTab({ botMetrics, totals, brandColor }: CostsTabProps) {
         </div>
       )}
 
-      {/* Bot Comparison Table */}
-      <BotComparisonTable
-        bots={botMetrics}
+      {/* AI Assistant Comparison Table */}
+      <AssistantComparisonTable
+        assistants={assistantMetrics}
         columns={columns}
         brandColor={brandColor}
-        title="Bot Comparison - Costs"
+        title="AI Assistant Comparison - Costs"
         description={
-          botMetrics.length === 0
-            ? 'No bots selected'
-            : `Comparing ${botMetrics.length} bot${botMetrics.length !== 1 ? 's' : ''}`
+          assistantMetrics.length === 0
+            ? 'No AI assistants selected'
+            : `Comparing ${assistantMetrics.length} AI assistant${assistantMetrics.length !== 1 ? 's' : ''}`
         }
-        emptyMessage="Select bots to compare their metrics"
+        emptyMessage="Select AI assistants to compare their metrics"
       />
     </>
   );

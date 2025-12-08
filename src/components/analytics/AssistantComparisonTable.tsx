@@ -2,37 +2,37 @@
 
 import { useState, useMemo, type ReactNode } from 'react';
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
-import type { BotWithMetrics } from '@/lib/analytics/botComparison';
+import type { AssistantWithMetrics } from '@/lib/analytics/assistantComparison';
 import { getClientBrandColor } from '@/lib/brandColors';
 
 type SortDirection = 'asc' | 'desc' | null;
 
-export interface ColumnDefinition<T = BotWithMetrics> {
+export interface ColumnDefinition<T = AssistantWithMetrics> {
   key: string;
   header: string;
-  render: (bot: T) => ReactNode;
+  render: (assistant: T) => ReactNode;
   align?: 'left' | 'center' | 'right';
-  sortValue?: (bot: T) => number | string;
+  sortValue?: (assistant: T) => number | string;
   width?: string;
 }
 
-interface BotComparisonTableProps {
-  bots: BotWithMetrics[];
+interface AssistantComparisonTableProps {
+  assistants: AssistantWithMetrics[];
   columns: ColumnDefinition[];
   brandColor?: string;
   pageSize?: number;
   showPagination?: boolean;
-  onBotClick?: (botId: string) => void;
+  onAssistantClick?: (assistantId: string) => void;
   emptyMessage?: string;
-  expandableContent?: (bot: BotWithMetrics) => ReactNode;
+  expandableContent?: (assistant: AssistantWithMetrics) => ReactNode;
   title?: string;
   description?: string;
-  mobileCard?: (bot: BotWithMetrics, columns: ColumnDefinition[]) => ReactNode;
+  mobileCard?: (assistant: AssistantWithMetrics, columns: ColumnDefinition[]) => ReactNode;
 }
 
 /**
- * Reusable bot comparison table with:
- * - Bot image + name in first column
+ * Reusable AI assistant comparison table with:
+ * - Assistant image + name in first column
  * - Configurable columns per tab
  * - Sorting by any column
  * - Pagination (default 10 per page)
@@ -40,26 +40,26 @@ interface BotComparisonTableProps {
  * - Optional expandable rows
  * - Mobile card view support
  */
-export function BotComparisonTable({
-  bots,
+export function AssistantComparisonTable({
+  assistants,
   columns,
   brandColor,
   pageSize = 10,
   showPagination = true,
-  onBotClick,
-  emptyMessage = 'No bots selected',
+  onAssistantClick,
+  emptyMessage = 'No AI assistants selected',
   expandableContent,
   title,
   description,
   mobileCard,
-}: BotComparisonTableProps) {
+}: AssistantComparisonTableProps) {
   const [page, setPage] = useState(0);
   const [sortKey, setSortKey] = useState<string | null>(null);
   const [sortDirection, setSortDirection] = useState<SortDirection>(null);
-  const [expandedBots, setExpandedBots] = useState<Set<string>>(new Set());
+  const [expandedAssistants, setExpandedAssistants] = useState<Set<string>>(new Set());
 
   // Handle sorting
-  const handleSort = (key: string, sortValue?: (bot: BotWithMetrics) => number | string) => {
+  const handleSort = (key: string, sortValue?: (assistant: AssistantWithMetrics) => number | string) => {
     if (!sortValue) return;
 
     if (sortKey === key) {
@@ -78,9 +78,9 @@ export function BotComparisonTable({
     setPage(0);
   };
 
-  // Sort and paginate bots
-  const { sortedBots, displayBots, totalPages } = useMemo(() => {
-    let sorted = [...bots];
+  // Sort and paginate assistants
+  const { sortedAssistants, displayAssistants, totalPages } = useMemo(() => {
+    let sorted = [...assistants];
 
     if (sortKey && sortDirection) {
       const column = columns.find(c => c.key === sortKey);
@@ -104,22 +104,22 @@ export function BotComparisonTable({
       ? sorted.slice(page * pageSize, (page + 1) * pageSize)
       : sorted;
 
-    return { sortedBots: sorted, displayBots: display, totalPages: total };
-  }, [bots, sortKey, sortDirection, page, pageSize, columns, showPagination]);
+    return { sortedAssistants: sorted, displayAssistants: display, totalPages: total };
+  }, [assistants, sortKey, sortDirection, page, pageSize, columns, showPagination]);
 
-  const toggleExpand = (botId: string) => {
-    setExpandedBots(prev => {
+  const toggleExpand = (assistantId: string) => {
+    setExpandedAssistants(prev => {
       const next = new Set(prev);
-      if (next.has(botId)) {
-        next.delete(botId);
+      if (next.has(assistantId)) {
+        next.delete(assistantId);
       } else {
-        next.add(botId);
+        next.add(assistantId);
       }
       return next;
     });
   };
 
-  if (bots.length === 0) {
+  if (assistants.length === 0) {
     return (
       <div className="card overflow-hidden">
         {(title || description) && (
@@ -136,27 +136,27 @@ export function BotComparisonTable({
   }
 
   // Default mobile card renderer
-  const defaultMobileCard = (bot: BotWithMetrics) => (
+  const defaultMobileCard = (assistant: AssistantWithMetrics) => (
     <div
       className="p-4 bg-surface border border-border rounded-lg"
-      onClick={() => onBotClick?.(bot.botId)}
+      onClick={() => onAssistantClick?.(assistant.assistantId)}
     >
       <div className="flex items-center gap-3 mb-3">
         <div
           className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
-          style={{ backgroundColor: brandColor || getClientBrandColor(bot.clientId) }}
+          style={{ backgroundColor: brandColor || getClientBrandColor(assistant.clientId) }}
         >
-          <img src={bot.botImage} alt={bot.botName} className="w-full h-full object-cover" />
+          <img src={assistant.assistantImage} alt={assistant.assistantName} className="w-full h-full object-cover" />
         </div>
         <div className="flex-1">
-          <span className="font-medium text-foreground">{bot.botName}</span>
+          <span className="font-medium text-foreground">{assistant.assistantName}</span>
           <div className="text-xs mt-0.5">
             <span className={`px-1.5 py-0.5 rounded-full ${
-              bot.status === 'Live' ? 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500' :
-              bot.status === 'Paused' ? 'bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500' :
+              assistant.status === 'Active' ? 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500' :
+              assistant.status === 'Paused' ? 'bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500' :
               'bg-error-100 dark:bg-error-700/30 text-error-700 dark:text-error-500'
             }`}>
-              {bot.status}
+              {assistant.status}
             </span>
           </div>
         </div>
@@ -164,11 +164,11 @@ export function BotComparisonTable({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              toggleExpand(bot.botId);
+              toggleExpand(assistant.assistantId);
             }}
             className="p-2 hover:bg-background-hover rounded-lg"
           >
-            {expandedBots.has(bot.botId) ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            {expandedAssistants.has(assistant.assistantId) ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
           </button>
         )}
       </div>
@@ -176,13 +176,13 @@ export function BotComparisonTable({
         {columns.slice(0, 4).map((col) => (
           <div key={col.key} className="flex justify-between items-center py-1">
             <span className="text-foreground-tertiary text-xs">{col.header}</span>
-            <span className="text-foreground font-medium">{col.render(bot)}</span>
+            <span className="text-foreground font-medium">{col.render(assistant)}</span>
           </div>
         ))}
       </div>
-      {expandableContent && expandedBots.has(bot.botId) && (
+      {expandableContent && expandedAssistants.has(assistant.assistantId) && (
         <div className="mt-3 pt-3 border-t border-border">
-          {expandableContent(bot)}
+          {expandableContent(assistant)}
         </div>
       )}
     </div>
@@ -199,9 +199,9 @@ export function BotComparisonTable({
 
       {/* Mobile: Card view */}
       <div className="lg:hidden p-4 space-y-3">
-        {displayBots.map((bot) => (
-          <div key={bot.botId}>
-            {mobileCard ? mobileCard(bot, columns) : defaultMobileCard(bot)}
+        {displayAssistants.map((assistant) => (
+          <div key={assistant.assistantId}>
+            {mobileCard ? mobileCard(assistant, columns) : defaultMobileCard(assistant)}
           </div>
         ))}
       </div>
@@ -212,7 +212,7 @@ export function BotComparisonTable({
           <thead>
             <tr>
               {expandableContent && <th className="w-10"></th>}
-              <th>Bot</th>
+              <th>AI Assistant</th>
               {columns.map((col) => (
                 <th
                   key={col.key}
@@ -234,23 +234,23 @@ export function BotComparisonTable({
             </tr>
           </thead>
           <tbody>
-            {displayBots.map((bot) => (
+            {displayAssistants.map((assistant) => (
               <>
                 <tr
-                  key={bot.botId}
-                  onClick={() => onBotClick?.(bot.botId)}
-                  className={onBotClick ? 'cursor-pointer' : ''}
+                  key={assistant.assistantId}
+                  onClick={() => onAssistantClick?.(assistant.assistantId)}
+                  className={onAssistantClick ? 'cursor-pointer' : ''}
                 >
                   {expandableContent && (
                     <td className="w-10">
                       <button
                         onClick={(e) => {
                           e.stopPropagation();
-                          toggleExpand(bot.botId);
+                          toggleExpand(assistant.assistantId);
                         }}
                         className="p-1 hover:bg-background-hover rounded"
                       >
-                        {expandedBots.has(bot.botId) ? (
+                        {expandedAssistants.has(assistant.assistantId) ? (
                           <ChevronUp size={16} />
                         ) : (
                           <ChevronDown size={16} />
@@ -262,23 +262,23 @@ export function BotComparisonTable({
                     <div className="flex items-center gap-3">
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"
-                        style={{ backgroundColor: brandColor || getClientBrandColor(bot.clientId) }}
+                        style={{ backgroundColor: brandColor || getClientBrandColor(assistant.clientId) }}
                       >
                         <img
-                          src={bot.botImage}
-                          alt={bot.botName}
+                          src={assistant.assistantImage}
+                          alt={assistant.assistantName}
                           className="w-full h-full object-cover"
                         />
                       </div>
                       <div>
-                        <span className="font-medium text-foreground">{bot.botName}</span>
+                        <span className="font-medium text-foreground">{assistant.assistantName}</span>
                         <div className="text-xs text-foreground-tertiary">
                           <span className={`px-1.5 py-0.5 rounded-full ${
-                            bot.status === 'Live' ? 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500' :
-                            bot.status === 'Paused' ? 'bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500' :
+                            assistant.status === 'Active' ? 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500' :
+                            assistant.status === 'Paused' ? 'bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500' :
                             'bg-error-100 dark:bg-error-700/30 text-error-700 dark:text-error-500'
                           }`}>
-                            {bot.status}
+                            {assistant.status}
                           </span>
                         </div>
                       </div>
@@ -289,14 +289,14 @@ export function BotComparisonTable({
                       key={col.key}
                       className={col.align === 'right' ? 'text-right' : col.align === 'center' ? 'text-center' : ''}
                     >
-                      {col.render(bot)}
+                      {col.render(assistant)}
                     </td>
                   ))}
                 </tr>
-                {expandableContent && expandedBots.has(bot.botId) && (
-                  <tr key={`${bot.botId}-expanded`} className="bg-background-secondary">
+                {expandableContent && expandedAssistants.has(assistant.assistantId) && (
+                  <tr key={`${assistant.assistantId}-expanded`} className="bg-background-secondary">
                     <td colSpan={columns.length + 2} className="p-4">
-                      {expandableContent(bot)}
+                      {expandableContent(assistant)}
                     </td>
                   </tr>
                 )}
@@ -309,7 +309,7 @@ export function BotComparisonTable({
       {showPagination && totalPages > 1 && (
         <div className="flex items-center justify-between p-4 border-t border-border">
           <span className="text-sm text-foreground-secondary">
-            Showing {page * pageSize + 1} - {Math.min((page + 1) * pageSize, bots.length)} of {bots.length} bots
+            Showing {page * pageSize + 1} - {Math.min((page + 1) * pageSize, assistants.length)} of {assistants.length} AI assistants
           </span>
           <div className="flex items-center gap-2">
             <button
@@ -423,4 +423,4 @@ export function TrendIndicator({
   );
 }
 
-export default BotComparisonTable;
+export default AssistantComparisonTable;

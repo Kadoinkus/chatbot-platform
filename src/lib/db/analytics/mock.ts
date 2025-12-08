@@ -118,7 +118,7 @@ function mapToChatSession(raw: RawChatSession): ChatSession {
     utm_term: null,
     total_messages: (raw.total_bot_messages || 0) + (raw.total_user_messages || 0),
     user_messages: raw.total_user_messages || 0,
-    bot_messages: raw.total_bot_messages || 0,
+    assistant_messages: raw.total_bot_messages || 0,
     total_tokens: raw.total_tokens || 0,
     input_tokens: raw.total_prompt_tokens || 0,
     output_tokens: raw.total_completion_tokens || 0,

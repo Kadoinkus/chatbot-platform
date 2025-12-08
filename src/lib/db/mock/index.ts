@@ -9,18 +9,18 @@ import fs from 'fs';
 import path from 'path';
 import type {
   Client,
-  Bot,
+  Assistant,
   Workspace,
   User,
   Conversation,
   Message,
   Session,
-  BotSession,
+  AssistantSession,
   MetricsData,
 } from '@/types';
 import type {
   ClientOperations,
-  BotOperations,
+  AssistantOperations,
   WorkspaceOperations,
   UserOperations,
   ConversationOperations,
@@ -29,19 +29,19 @@ import type {
   MetricsOperations,
   DateRange,
   ClientMetrics,
-  BotMetricsResult,
+  AssistantMetricsResult,
 } from '../types';
 
 // Cache for loaded data
 const cache: {
   clients?: Client[];
-  bots?: Bot[];
+  assistants?: Assistant[];
   workspaces?: Workspace[];
   users?: User[];
   conversations?: Conversation[];
   messages?: Message[];
   sessions?: Session[];
-  botSessions?: BotSession[];
+  assistantSessions?: AssistantSession[];
   metrics?: MetricsData;
 } = {};
 
@@ -58,11 +58,11 @@ function getClients(): Client[] {
   return cache.clients;
 }
 
-function getBots(): Bot[] {
-  if (!cache.bots) {
-    cache.bots = loadJsonFile<Bot[]>('bots.json');
+function getAssistants(): Assistant[] {
+  if (!cache.assistants) {
+    cache.assistants = loadJsonFile<Assistant[]>('assistants.json');
   }
-  return cache.bots;
+  return cache.assistants;
 }
 
 function getWorkspaces(): Workspace[] {
@@ -100,11 +100,11 @@ function getSessions(): Session[] {
   return cache.sessions;
 }
 
-function getBotSessions(): BotSession[] {
-  if (!cache.botSessions) {
-    cache.botSessions = loadJsonFile<BotSession[]>('bot_sessions.json');
+function getAssistantSessions(): AssistantSession[] {
+  if (!cache.assistantSessions) {
+    cache.assistantSessions = loadJsonFile<AssistantSession[]>('assistant_sessions.json');
   }
-  return cache.botSessions;
+  return cache.assistantSessions;
 }
 
 function getMetrics(): MetricsData {
@@ -138,24 +138,24 @@ export const clients: ClientOperations = {
   },
 };
 
-// Bot operations
-export const bots: BotOperations = {
+// Assistant operations
+export const assistants: AssistantOperations = {
   async getAll() {
-    return getBots();
+    return getAssistants();
   },
 
   async getById(id: string) {
-    return getBots().find(b => b.id === id) || null;
+    return getAssistants().find(a => a.id === id) || null;
   },
 
   async getByClientId(clientId: string) {
     // Resolve slug to id if needed
     const resolvedId = await clients.resolveId(clientId) || clientId;
-    return getBots().filter(b => b.clientId === resolvedId);
+    return getAssistants().filter(a => a.clientId === resolvedId);
   },
 
   async getByWorkspaceId(workspaceId: string) {
-    return getBots().filter(b => b.workspaceId === workspaceId);
+    return getAssistants().filter(a => a.workspaceId === workspaceId);
   },
 };
 
@@ -206,8 +206,8 @@ export const conversations: ConversationOperations = {
     return getConversations().filter(c => c.clientId === resolvedId);
   },
 
-  async getByBotId(botId: string) {
-    return getConversations().filter(c => c.botId === botId);
+  async getByAssistantId(assistantId: string) {
+    return getConversations().filter(c => c.assistantId === assistantId);
   },
 };
 
@@ -230,8 +230,8 @@ export const sessions: SessionOperations = {
     return getSessions().filter(s => s.clientId === resolvedId && s.status === 'active');
   },
 
-  async getBotSessions(botId: string, dateRange?: DateRange) {
-    let result = getBotSessions().filter(s => s.bot_id === botId);
+  async getAssistantSessions(assistantId: string, dateRange?: DateRange) {
+    let result = getAssistantSessions().filter(s => s.assistant_id === assistantId);
 
     if (dateRange) {
       result = result.filter(s => {
@@ -243,9 +243,9 @@ export const sessions: SessionOperations = {
     return result;
   },
 
-  async getBotSessionsByClientId(clientId: string, dateRange?: DateRange) {
+  async getAssistantSessionsByClientId(clientId: string, dateRange?: DateRange) {
     const resolvedId = await clients.resolveId(clientId) || clientId;
-    let result = getBotSessions().filter(s => s.client_id === resolvedId);
+    let result = getAssistantSessions().filter(s => s.client_id === resolvedId);
 
     if (dateRange) {
       result = result.filter(s => {
@@ -270,11 +270,11 @@ export const metrics: MetricsOperations = {
     };
   },
 
-  async getBotMetrics(botId: string): Promise<BotMetricsResult> {
+  async getAssistantMetrics(assistantId: string): Promise<AssistantMetricsResult> {
     const metricsData = getMetrics();
     return {
-      usageByDay: metricsData.botUsageByDay[botId] || [],
-      topIntents: metricsData.botIntents[botId] || [],
+      usageByDay: metricsData.assistantUsageByDay?.[assistantId] || [],
+      topIntents: metricsData.assistantIntents?.[assistantId] || [],
     };
   },
 };

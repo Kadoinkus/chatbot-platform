@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { getClientById, getWorkspaceById, getBotsByWorkspaceId } from '@/lib/dataService';
-import type { Client, Workspace, Bot } from '@/lib/dataService';
-import BotCard from '@/components/BotCard';
+import { getClientById, getWorkspaceById, getAssistantsByWorkspaceId } from '@/lib/dataService';
+import type { Client, Workspace, Assistant } from '@/lib/dataService';
+import AssistantCard from '@/components/AssistantCard';
 import Link from 'next/link';
 import {
   ArrowLeft, Plus, Settings, CreditCard, Activity,
@@ -31,20 +31,20 @@ export default function WorkspaceDetailPage({
 }) {
   const [client, setClient] = useState<Client | undefined>();
   const [workspace, setWorkspace] = useState<Workspace | undefined>();
-  const [bots, setBots] = useState<Bot[]>([]);
+  const [assistants, setAssistants] = useState<Assistant[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [clientData, workspaceData, botsData] = await Promise.all([
+        const [clientData, workspaceData, assistantsData] = await Promise.all([
           getClientById(params.clientId),
           getWorkspaceById(params.workspaceId),
-          getBotsByWorkspaceId(params.workspaceId)
+          getAssistantsByWorkspaceId(params.workspaceId)
         ]);
         setClient(clientData);
         setWorkspace(workspaceData);
-        setBots(botsData || []);
+        setAssistants(assistantsData || []);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -106,7 +106,7 @@ export default function WorkspaceDetailPage({
   const usagePercentage = (sessions.used / sessions.limit) * 100;
 
   const tabs = [
-    { id: 'bots', label: `Bots (${bots.length})` },
+    { id: 'assistants', label: `AI Assistants (${assistants.length})` },
     { id: 'usage', label: 'Usage & Billing' },
     { id: 'settings', label: 'Settings' },
   ];
@@ -188,11 +188,11 @@ export default function WorkspaceDetailPage({
 
               <Card padding="sm">
                 <div className="flex items-center justify-between mb-2">
-                  <span className="text-sm text-foreground-secondary">Active Bots</span>
+                  <span className="text-sm text-foreground-secondary">Active AI Assistants</span>
                   <BotIcon size={18} className="text-foreground-tertiary" />
                 </div>
-                <p className="text-2xl font-bold text-foreground">{bots.filter(b => b.status === 'Live').length}</p>
-                <p className="text-xs text-foreground-tertiary mt-1">of {bots.length} total</p>
+                <p className="text-2xl font-bold text-foreground">{assistants.filter(a => a.status === 'Active').length}</p>
+                <p className="text-xs text-foreground-tertiary mt-1">of {assistants.length} total</p>
               </Card>
 
               <Card padding="sm">
@@ -222,35 +222,35 @@ export default function WorkspaceDetailPage({
 
             {/* Tabs */}
             <Card padding="none">
-              <Tabs tabs={tabs} defaultTab="bots">
-                <TabPanel tabId="bots">
+              <Tabs tabs={tabs} defaultTab="assistants">
+                <TabPanel tabId="assistants">
                   <div className="p-6">
                     <div className="flex items-center justify-between mb-6">
                       <div>
                         <span className="text-xs font-medium text-foreground-tertiary uppercase tracking-wider">
                           Workspace
                         </span>
-                        <h3 className="text-lg font-semibold text-foreground">{workspace.name} Bots</h3>
+                        <h3 className="text-lg font-semibold text-foreground">{workspace.name} AI Assistants</h3>
                       </div>
                       <Button icon={<Plus size={16} />}>
-                        Add Bot
+                        Add AI Assistant
                       </Button>
                     </div>
 
-                    {bots.length > 0 ? (
+                    {assistants.length > 0 ? (
                       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                        {bots.map((bot) => (
-                          <BotCard key={bot.id} bot={bot} clientId={client.id} workspace={workspace} workspaceName={workspace.name} />
+                        {assistants.map((assistant) => (
+                          <AssistantCard key={assistant.id} assistant={assistant} clientId={client.id} workspace={workspace} workspaceName={workspace.name} />
                         ))}
                       </div>
                     ) : (
                       <EmptyState
                         icon={<BotIcon size={48} />}
-                        title="No bots in this workspace"
-                        message="Add your first bot to start handling conversations."
+                        title="No AI assistants in this workspace"
+                        message="Add your first AI assistant to start handling conversations."
                         action={
                           <Button icon={<Plus size={16} />}>
-                            Create First Bot
+                            Create First AI Assistant
                           </Button>
                         }
                       />
@@ -346,7 +346,7 @@ export default function WorkspaceDetailPage({
                       <div className="border border-error-300 dark:border-error-700 rounded-lg p-4 bg-error-50 dark:bg-error-700/10">
                         <h4 className="font-medium text-error-900 dark:text-error-400 mb-2">Delete Workspace</h4>
                         <p className="text-sm text-foreground-secondary mb-4">
-                          Once you delete a workspace, there is no going back. All bots and data will be permanently removed.
+                          Once you delete a workspace, there is no going back. All AI assistants and data will be permanently removed.
                         </p>
                         <Button variant="danger">
                           Delete Workspace

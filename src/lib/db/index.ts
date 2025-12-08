@@ -33,7 +33,7 @@ export const db = useMockData ? mockDb : mockDb; // Replace second mockDb with s
 // Re-export for convenience
 export const {
   clients,
-  bots,
+  assistants,
   workspaces,
   users,
   conversations,
@@ -46,7 +46,7 @@ export const {
 export {
   analytics,
   getAnalyticsForClient,
-  getAnalyticsForBot,
+  getAnalyticsForAssistant,
   isDemoClient,
   mockAnalytics,
   supabaseAnalytics,

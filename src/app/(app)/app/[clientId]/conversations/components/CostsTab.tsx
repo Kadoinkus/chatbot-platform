@@ -3,13 +3,13 @@
 import { TableHead, TableRow, TableCell } from '@/components/ui';
 import { MobileCard } from '@/components/analytics/MobileTable';
 import { TableWrapper, MobileListWrapper } from './TableWrapper';
-import { SessionCell, BotCell, ActionsCell, MobileCardHeader } from './SharedCells';
+import { SessionCell, AssistantCell, ActionsCell, MobileCardHeader } from './SharedCells';
 import type { CostsTabProps } from './types';
 
 export function CostsTab({
   paginatedSessions,
   brandColor,
-  getBotInfo,
+  getAssistantInfo,
   onOpenTranscript,
   formatCost,
   currentPage,
@@ -43,7 +43,7 @@ export function CostsTab({
         onPageChange={onPageChange}
       >
         {paginatedSessions.map((session) => {
-          const bot = getBotInfo(session.mascot_id);
+          const assistant = getAssistantInfo(session.mascot_id);
           const analysisCost = session.analysis?.analytics_total_cost_eur || 0;
           const chatCost = session.total_cost_eur || 0;
           const totalCost = chatCost + analysisCost;
@@ -51,7 +51,7 @@ export function CostsTab({
           return (
             <TableRow key={session.id}>
               <SessionCell session={session} />
-              <BotCell bot={bot} brandColor={brandColor} />
+              <AssistantCell assistant={assistant} brandColor={brandColor} />
               <TableCell>
                 <p className="text-sm text-foreground">{session.total_tokens?.toLocaleString() || '-'}</p>
               </TableCell>
@@ -80,7 +80,7 @@ export function CostsTab({
         onPageChange={onPageChange}
       >
         {paginatedSessions.map((session) => {
-          const bot = getBotInfo(session.mascot_id);
+          const assistant = getAssistantInfo(session.mascot_id);
           const analysisCost = session.analysis?.analytics_total_cost_eur || 0;
           const chatCost = session.total_cost_eur || 0;
           const totalCost = chatCost + analysisCost;
@@ -89,7 +89,7 @@ export function CostsTab({
             <MobileCard key={session.id}>
               <MobileCardHeader
                 session={session}
-                bot={bot}
+                assistant={assistant}
                 brandColor={brandColor}
                 onView={() => onOpenTranscript(session)}
               />

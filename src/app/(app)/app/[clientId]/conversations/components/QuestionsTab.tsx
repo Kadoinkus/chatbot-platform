@@ -4,13 +4,13 @@ import { ExternalLink, Mail } from 'lucide-react';
 import { TableHead, TableRow, TableCell } from '@/components/ui';
 import { MobileCard } from '@/components/analytics/MobileTable';
 import { TableWrapper, MobileListWrapper } from './TableWrapper';
-import { SessionCell, BotCell, ActionsCell, MobileCardHeader } from './SharedCells';
+import { SessionCell, AssistantCell, ActionsCell, MobileCardHeader } from './SharedCells';
 import type { QuestionsTabProps } from './types';
 
 export function QuestionsTab({
   paginatedSessions,
   brandColor,
-  getBotInfo,
+  getAssistantInfo,
   onOpenTranscript,
   onOpenQuestions,
   currentPage,
@@ -44,11 +44,11 @@ export function QuestionsTab({
         onPageChange={onPageChange}
       >
         {paginatedSessions.map((session) => {
-          const bot = getBotInfo(session.mascot_id);
+          const assistant = getAssistantInfo(session.mascot_id);
           return (
             <TableRow key={session.id}>
               <SessionCell session={session} />
-              <BotCell bot={bot} brandColor={brandColor} />
+              <AssistantCell assistant={assistant} brandColor={brandColor} />
               <TableCell>
                 {session.analysis?.questions && session.analysis.questions.length > 0 ? (
                   <button
@@ -139,12 +139,12 @@ export function QuestionsTab({
         onPageChange={onPageChange}
       >
         {paginatedSessions.map((session) => {
-          const bot = getBotInfo(session.mascot_id);
+          const assistant = getAssistantInfo(session.mascot_id);
           return (
             <MobileCard key={session.id}>
               <MobileCardHeader
                 session={session}
-                bot={bot}
+                assistant={assistant}
                 brandColor={brandColor}
                 onView={() => onOpenTranscript(session)}
               />

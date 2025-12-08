@@ -2,83 +2,83 @@
 
 import { Sparkles, Star, Users, TrendingUp } from 'lucide-react';
 import { KpiCard, KpiGrid } from '@/components/analytics';
-import { BotComparisonTable, type ColumnDefinition } from '@/components/analytics/BotComparisonTable';
+import { AssistantComparisonTable, type ColumnDefinition } from '@/components/analytics/AssistantComparisonTable';
 import {
   formatNumber,
   formatPercent,
   calculateReturnRate,
-  type BotWithMetrics,
-} from '@/lib/analytics/botComparison';
+  type AssistantWithMetrics,
+} from '@/lib/analytics/assistantComparison';
 
 interface AnimationsTabProps {
-  botMetrics: BotWithMetrics[];
+  assistantMetrics: AssistantWithMetrics[];
   brandColor: string;
 }
 
-export function AnimationsTab({ botMetrics, brandColor }: AnimationsTabProps) {
+export function AnimationsTab({ assistantMetrics, brandColor }: AnimationsTabProps) {
   // Calculate totals
-  const totalEasterEggs = botMetrics.reduce((sum, b) => sum + b.animations.easterEggsTriggered, 0);
-  const totalSessionsWithEaster = botMetrics.reduce((sum, b) => sum + b.animations.sessionsWithEasterEggs, 0);
-  const totalAnimationSessions = botMetrics.reduce((sum, b) => sum + b.animations.totalSessions, 0);
+  const totalEasterEggs = assistantMetrics.reduce((sum, a) => sum + a.animations.easterEggsTriggered, 0);
+  const totalSessionsWithEaster = assistantMetrics.reduce((sum, a) => sum + a.animations.sessionsWithEasterEggs, 0);
+  const totalAnimationSessions = assistantMetrics.reduce((sum, a) => sum + a.animations.totalSessions, 0);
   const easterRate = totalAnimationSessions > 0 ? (totalSessionsWithEaster / totalAnimationSessions) * 100 : 0;
-  const totalNewUsers = botMetrics.reduce((sum, b) => sum + calculateReturnRate(b).newUsers, 0);
-  const totalReturning = botMetrics.reduce((sum, b) => sum + calculateReturnRate(b).returningUsers, 0);
+  const totalNewUsers = assistantMetrics.reduce((sum, a) => sum + calculateReturnRate(a).newUsers, 0);
+  const totalReturning = assistantMetrics.reduce((sum, a) => sum + calculateReturnRate(a).returningUsers, 0);
 
   // Column definitions
   const columns: ColumnDefinition[] = [
     {
       key: 'easterEggs',
       header: 'Easter Eggs',
-      render: (bot) => formatNumber(bot.animations.easterEggsTriggered),
-      sortValue: (bot) => bot.animations.easterEggsTriggered,
+      render: (assistant) => formatNumber(assistant.animations.easterEggsTriggered),
+      sortValue: (assistant) => assistant.animations.easterEggsTriggered,
       align: 'right',
     },
     {
       key: 'sessionsWithEaster',
       header: 'Sessions w/ Easter',
-      render: (bot) => formatNumber(bot.animations.sessionsWithEasterEggs),
-      sortValue: (bot) => bot.animations.sessionsWithEasterEggs,
+      render: (assistant) => formatNumber(assistant.animations.sessionsWithEasterEggs),
+      sortValue: (assistant) => assistant.animations.sessionsWithEasterEggs,
       align: 'right',
     },
     {
       key: 'easterRate',
       header: 'Easter Rate',
-      render: (bot) => {
+      render: (assistant) => {
         const rate =
-          bot.animations.totalSessions > 0
-            ? (bot.animations.sessionsWithEasterEggs / bot.animations.totalSessions) * 100
+          assistant.animations.totalSessions > 0
+            ? (assistant.animations.sessionsWithEasterEggs / assistant.animations.totalSessions) * 100
             : 0;
         return formatPercent(rate);
       },
-      sortValue: (bot) =>
-        bot.animations.totalSessions > 0
-          ? (bot.animations.sessionsWithEasterEggs / bot.animations.totalSessions) * 100
+      sortValue: (assistant) =>
+        assistant.animations.totalSessions > 0
+          ? (assistant.animations.sessionsWithEasterEggs / assistant.animations.totalSessions) * 100
           : 0,
       align: 'right',
     },
     {
       key: 'topEasterEgg',
       header: 'Top Easter Egg',
-      render: (bot) => bot.animations.topEasterEggs[0]?.animation || '-',
+      render: (assistant) => assistant.animations.topEasterEggs[0]?.animation || '-',
     },
     {
       key: 'newUsers',
       header: 'New Users',
-      render: (bot) => {
-        const { newUsers } = calculateReturnRate(bot);
+      render: (assistant) => {
+        const { newUsers } = calculateReturnRate(assistant);
         return formatNumber(newUsers);
       },
-      sortValue: (bot) => calculateReturnRate(bot).newUsers,
+      sortValue: (assistant) => calculateReturnRate(assistant).newUsers,
       align: 'right',
     },
     {
       key: 'returningUsers',
       header: 'Returning',
-      render: (bot) => {
-        const { returningUsers } = calculateReturnRate(bot);
+      render: (assistant) => {
+        const { returningUsers } = calculateReturnRate(assistant);
         return formatNumber(returningUsers);
       },
-      sortValue: (bot) => calculateReturnRate(bot).returningUsers,
+      sortValue: (assistant) => calculateReturnRate(assistant).returningUsers,
       align: 'right',
     },
   ];
@@ -109,18 +109,18 @@ export function AnimationsTab({ botMetrics, brandColor }: AnimationsTabProps) {
         />
       </KpiGrid>
 
-      {/* Bot Comparison Table */}
-      <BotComparisonTable
-        bots={botMetrics}
+      {/* AI Assistant Comparison Table */}
+      <AssistantComparisonTable
+        assistants={assistantMetrics}
         columns={columns}
         brandColor={brandColor}
-        title="Bot Comparison - Animations"
+        title="AI Assistant Comparison - Animations"
         description={
-          botMetrics.length === 0
-            ? 'No bots selected'
-            : `Comparing ${botMetrics.length} bot${botMetrics.length !== 1 ? 's' : ''}`
+          assistantMetrics.length === 0
+            ? 'No AI assistants selected'
+            : `Comparing ${assistantMetrics.length} AI assistant${assistantMetrics.length !== 1 ? 's' : ''}`
         }
-        emptyMessage="Select bots to compare their metrics"
+        emptyMessage="Select AI assistants to compare their metrics"
       />
     </>
   );

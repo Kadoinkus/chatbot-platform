@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { getClientById, getWorkspacesByClientId, getBotsByWorkspaceId } from '@/lib/dataService';
-import type { Client, Workspace, Bot } from '@/lib/dataService';
+import { getClientById, getWorkspacesByClientId, getAssistantsByWorkspaceId } from '@/lib/dataService';
+import type { Client, Workspace, Assistant } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { Plus, Search, Building2, ChevronRight } from 'lucide-react';
 import Link from 'next/link';
@@ -21,7 +21,7 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [client, setClient] = useState<Client | undefined>();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [workspaceBots, setWorkspaceBots] = useState<Record<string, Bot[]>>({});
+  const [workspaceAssistants, setWorkspaceAssistants] = useState<Record<string, Assistant[]>>({});
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -35,13 +35,13 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
         setClient(clientData);
         setWorkspaces(workspacesData || []);
 
-        // Load bots for each workspace
-        const botsData: Record<string, Bot[]> = {};
+        // Load assistants for each workspace
+        const assistantsData: Record<string, Assistant[]> = {};
         for (const workspace of workspacesData || []) {
-          const bots = await getBotsByWorkspaceId(workspace.id);
-          botsData[workspace.id] = bots || [];
+          const assistants = await getAssistantsByWorkspaceId(workspace.id);
+          assistantsData[workspace.id] = assistants || [];
         }
-        setWorkspaceBots(botsData);
+        setWorkspaceAssistants(assistantsData);
 
       } catch (error) {
         console.error('Error loading data:', error);
@@ -77,8 +77,8 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
   const filteredWorkspaces = workspaces.filter(workspace =>
     workspace.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
     workspace.description?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-    (workspaceBots[workspace.id] || []).some(bot =>
-      bot.name.toLowerCase().includes(searchTerm.toLowerCase())
+    (workspaceAssistants[workspace.id] || []).some(assistant =>
+      assistant.name.toLowerCase().includes(searchTerm.toLowerCase())
     )
   );
 
@@ -104,7 +104,7 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
               <div className="flex-1 max-w-md">
                 <Input
                   icon={<Search size={20} />}
-                  placeholder="Search workspaces and bots..."
+                  placeholder="Search workspaces and AI assistants..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -118,9 +118,9 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
             {/* Workspace Cards - 2 column grid */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
               {filteredWorkspaces.map(workspace => {
-                const bots = workspaceBots[workspace.id] || [];
-                const activeBots = bots.filter(b => b.status === 'Live').length;
-                const pausedBots = bots.filter(b => b.status === 'Paused').length;
+                const assistants = workspaceAssistants[workspace.id] || [];
+                const activeAssistants = assistants.filter(a => a.status === 'Active').length;
+                const pausedAssistants = assistants.filter(a => a.status === 'Paused').length;
 
                 return (
                   <Card key={workspace.id} hover padding="none">
@@ -144,44 +144,44 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
                       )}
                     </div>
 
-                    {/* Bots Section */}
+                    {/* AI Assistants Section */}
                     <div className="border-t border-border px-4 py-3">
-                      {bots.length > 0 ? (
+                      {assistants.length > 0 ? (
                         <>
                           <div className="flex items-center justify-between mb-2">
                             <div className="flex items-center gap-1">
-                              {bots.slice(0, 5).map(bot => (
+                              {assistants.slice(0, 5).map(assistant => (
                                 <img
-                                  key={bot.id}
-                                  src={bot.image}
-                                  alt={bot.name}
-                                  title={bot.name}
+                                  key={assistant.id}
+                                  src={assistant.image}
+                                  alt={assistant.name}
+                                  title={assistant.name}
                                   className="w-8 h-8 rounded-full border-2 border-background -ml-2 first:ml-0"
-                                  style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                                  style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
                                 />
                               ))}
-                              {bots.length > 5 && (
+                              {assistants.length > 5 && (
                                 <span className="w-8 h-8 rounded-full border-2 border-background -ml-2 bg-background-tertiary flex items-center justify-center text-xs font-medium text-foreground-secondary">
-                                  +{bots.length - 5}
+                                  +{assistants.length - 5}
                                 </span>
                               )}
                             </div>
                             <span className="text-xs text-foreground-tertiary">
-                              {activeBots > 0 && <span className="text-success-600 dark:text-success-500">{activeBots} active</span>}
-                              {activeBots > 0 && pausedBots > 0 && <span> · </span>}
-                              {pausedBots > 0 && <span className="text-warning-600 dark:text-warning-500">{pausedBots} paused</span>}
+                              {activeAssistants > 0 && <span className="text-success-600 dark:text-success-500">{activeAssistants} active</span>}
+                              {activeAssistants > 0 && pausedAssistants > 0 && <span> · </span>}
+                              {pausedAssistants > 0 && <span className="text-warning-600 dark:text-warning-500">{pausedAssistants} paused</span>}
                             </span>
                           </div>
                           <p className="text-xs text-foreground-tertiary">
-                            {bots.slice(0, 3).map(b => b.name).join(', ')}
-                            {bots.length > 3 && ` +${bots.length - 3} more`}
+                            {assistants.slice(0, 3).map(a => a.name).join(', ')}
+                            {assistants.length > 3 && ` +${assistants.length - 3} more`}
                           </p>
                         </>
                       ) : (
                         <div className="flex items-center justify-between">
-                          <span className="text-sm text-foreground-tertiary">No bots assigned</span>
+                          <span className="text-sm text-foreground-tertiary">No AI assistants assigned</span>
                           <Button size="sm" variant="ghost" icon={<Plus size={14} />}>
-                            Add bot
+                            Add AI Assistant
                           </Button>
                         </div>
                       )}
@@ -195,7 +195,7 @@ export default function HomePage({ params }: { params: { clientId: string } }) {
               <EmptyState
                 icon={<Building2 size={48} />}
                 title="No workspaces yet"
-                message="Create your first workspace to organize your bots and manage resources."
+                message="Create your first workspace to organize your AI assistants and manage resources."
                 action={
                   <Button icon={<Plus size={18} />}>
                     Create First Workspace

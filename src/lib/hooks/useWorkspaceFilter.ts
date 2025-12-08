@@ -1,8 +1,8 @@
 import { useMemo, useCallback, useEffect } from 'react';
-import type { Bot, Workspace } from '@/types';
+import type { Assistant, Workspace } from '@/types';
 
 interface UseWorkspaceFilterOptions {
-  bots: Bot[];
+  assistants: Assistant[];
   workspaces: Workspace[];
   selectedWorkspace: string;
   selectedBot: string;
@@ -10,26 +10,26 @@ interface UseWorkspaceFilterOptions {
 }
 
 interface UseWorkspaceFilterReturn {
-  /** Bots filtered by the selected workspace */
-  filteredBots: Bot[];
-  /** Options for bot select dropdown (includes 'All Bots' option) */
+  /** Assistants filtered by the selected workspace */
+  filteredAssistants: Assistant[];
+  /** Options for assistant select dropdown (includes 'Your AI Assistants' option) */
   botOptions: Array<{ value: string; label: string }>;
   /** Options for workspace select dropdown (includes 'All Workspaces' option) */
   workspaceOptions: Array<{ value: string; label: string }>;
 }
 
 /**
- * Hook for filtering bots based on selected workspace.
+ * Hook for filtering assistants based on selected workspace.
  *
  * Features:
- * - Filters bots list based on selected workspace
- * - Generates dropdown options for both bots and workspaces
- * - Automatically resets bot selection when workspace changes and selected bot is not in the new workspace
+ * - Filters assistants list based on selected workspace
+ * - Generates dropdown options for both assistants and workspaces
+ * - Automatically resets assistant selection when workspace changes and selected assistant is not in the new workspace
  *
  * Usage:
  * ```tsx
- * const { filteredBots, botOptions, workspaceOptions } = useWorkspaceFilter({
- *   bots,
+ * const { filteredAssistants, botOptions, workspaceOptions } = useWorkspaceFilter({
+ *   assistants,
  *   workspaces,
  *   selectedWorkspace,
  *   selectedBot,
@@ -38,27 +38,27 @@ interface UseWorkspaceFilterReturn {
  * ```
  */
 export function useWorkspaceFilter({
-  bots,
+  assistants,
   workspaces,
   selectedWorkspace,
   selectedBot,
   onBotChange,
 }: UseWorkspaceFilterOptions): UseWorkspaceFilterReturn {
-  // Filter bots based on selected workspace
-  const filteredBots = useMemo(() => {
+  // Filter assistants based on selected workspace
+  const filteredAssistants = useMemo(() => {
     if (selectedWorkspace === 'all') {
-      return bots;
+      return assistants;
     }
-    return bots.filter((bot) => bot.workspaceId === selectedWorkspace);
-  }, [bots, selectedWorkspace]);
+    return assistants.filter((assistant) => assistant.workspaceId === selectedWorkspace);
+  }, [assistants, selectedWorkspace]);
 
-  // Generate bot options for dropdown
+  // Generate assistant options for dropdown
   const botOptions = useMemo(() => {
     return [
-      { value: 'all', label: 'All Bots' },
-      ...filteredBots.map((bot) => ({ value: bot.id, label: bot.name })),
+      { value: 'all', label: 'Your AI Assistants' },
+      ...filteredAssistants.map((assistant) => ({ value: assistant.id, label: assistant.name })),
     ];
-  }, [filteredBots]);
+  }, [filteredAssistants]);
 
   // Generate workspace options for dropdown
   const workspaceOptions = useMemo(() => {
@@ -68,56 +68,56 @@ export function useWorkspaceFilter({
     ];
   }, [workspaces]);
 
-  // Reset bot selection when workspace changes and selected bot is not in the new workspace
+  // Reset assistant selection when workspace changes and selected assistant is not in the new workspace
   useEffect(() => {
     if (selectedBot !== 'all') {
-      const botExistsInWorkspace = filteredBots.some((bot) => bot.id === selectedBot);
-      if (!botExistsInWorkspace) {
+      const assistantExistsInWorkspace = filteredAssistants.some((assistant) => assistant.id === selectedBot);
+      if (!assistantExistsInWorkspace) {
         onBotChange('all');
       }
     }
-  }, [selectedWorkspace, filteredBots, selectedBot, onBotChange]);
+  }, [selectedWorkspace, filteredAssistants, selectedBot, onBotChange]);
 
   return {
-    filteredBots,
+    filteredAssistants,
     botOptions,
     workspaceOptions,
   };
 }
 
 /**
- * Hook for multi-select bot filtering with workspace support.
- * Used when multiple bots can be selected at once.
+ * Hook for multi-select assistant filtering with workspace support.
+ * Used when multiple assistants can be selected at once.
  */
-interface UseMultiBotWorkspaceFilterOptions {
-  bots: Bot[];
+interface UseMultiAssistantWorkspaceFilterOptions {
+  assistants: Assistant[];
   workspaces: Workspace[];
   selectedWorkspace: string;
-  selectedBots: string[];
-  onBotsChange: (botIds: string[]) => void;
+  selectedAssistants: string[];
+  onAssistantsChange: (assistantIds: string[]) => void;
 }
 
-interface UseMultiBotWorkspaceFilterReturn {
-  /** Bots filtered by the selected workspace */
-  filteredBots: Bot[];
+interface UseMultiAssistantWorkspaceFilterReturn {
+  /** Assistants filtered by the selected workspace */
+  filteredAssistants: Assistant[];
   /** Options for workspace select dropdown */
   workspaceOptions: Array<{ value: string; label: string }>;
 }
 
-export function useMultiBotWorkspaceFilter({
-  bots,
+export function useMultiAssistantWorkspaceFilter({
+  assistants,
   workspaces,
   selectedWorkspace,
-  selectedBots,
-  onBotsChange,
-}: UseMultiBotWorkspaceFilterOptions): UseMultiBotWorkspaceFilterReturn {
-  // Filter bots based on selected workspace
-  const filteredBots = useMemo(() => {
+  selectedAssistants,
+  onAssistantsChange,
+}: UseMultiAssistantWorkspaceFilterOptions): UseMultiAssistantWorkspaceFilterReturn {
+  // Filter assistants based on selected workspace
+  const filteredAssistants = useMemo(() => {
     if (selectedWorkspace === 'all') {
-      return bots;
+      return assistants;
     }
-    return bots.filter((bot) => bot.workspaceId === selectedWorkspace);
-  }, [bots, selectedWorkspace]);
+    return assistants.filter((assistant) => assistant.workspaceId === selectedWorkspace);
+  }, [assistants, selectedWorkspace]);
 
   // Generate workspace options for dropdown
   const workspaceOptions = useMemo(() => {
@@ -127,27 +127,31 @@ export function useMultiBotWorkspaceFilter({
     ];
   }, [workspaces]);
 
-  // Reset bot selection when workspace changes
+  // Reset assistant selection when workspace changes
   useEffect(() => {
-    if (!selectedBots.includes('all') && selectedBots.length > 0) {
-      // Filter out bots that are not in the new workspace
-      const validBots = selectedBots.filter((botId) =>
-        filteredBots.some((bot) => bot.id === botId)
+    if (!selectedAssistants.includes('all') && selectedAssistants.length > 0) {
+      // Filter out assistants that are not in the new workspace
+      const validAssistants = selectedAssistants.filter((assistantId) =>
+        filteredAssistants.some((assistant) => assistant.id === assistantId)
       );
 
-      // If no valid bots remain, reset to 'all'
-      if (validBots.length === 0) {
-        onBotsChange(['all']);
-      } else if (validBots.length !== selectedBots.length) {
-        onBotsChange(validBots);
+      // If no valid assistants remain, reset to 'all'
+      if (validAssistants.length === 0) {
+        onAssistantsChange(['all']);
+      } else if (validAssistants.length !== selectedAssistants.length) {
+        onAssistantsChange(validAssistants);
       }
     }
-  }, [selectedWorkspace, filteredBots, selectedBots, onBotsChange]);
+  }, [selectedWorkspace, filteredAssistants, selectedAssistants, onAssistantsChange]);
 
   return {
-    filteredBots,
+    filteredAssistants,
     workspaceOptions,
   };
 }
+
+// Legacy aliases for backward compatibility
+/** @deprecated Use useWorkspaceFilter instead */
+export const useMultiBotWorkspaceFilter = useMultiAssistantWorkspaceFilter;
 
 export default useWorkspaceFilter;

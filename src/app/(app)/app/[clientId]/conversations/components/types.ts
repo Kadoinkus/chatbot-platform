@@ -1,11 +1,11 @@
-import type { ChatSessionWithAnalysis, Bot } from '@/types';
+import type { ChatSessionWithAnalysis, Assistant } from '@/types';
 
 // Shared props for all conversation tab components
 export interface BaseTabProps {
   sessions: ChatSessionWithAnalysis[];
   paginatedSessions: ChatSessionWithAnalysis[];
   brandColor: string;
-  getBotInfo: (mascotId: string) => Bot | undefined;
+  getAssistantInfo: (mascotId: string) => Assistant | undefined;
   onOpenTranscript: (session: ChatSessionWithAnalysis) => void;
   formatTimestamp: (dateStr: string) => string;
   formatDuration: (seconds: number | null | undefined) => string;

@@ -76,12 +76,12 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  // Get bot info by mascot_id
-  const getBotInfo = useCallback(
+  // Get assistant info by mascot_id
+  const getAssistantInfo = useCallback(
     (mascotId: string) => {
-      return client?.bots.find((b) => b.id === mascotId);
+      return client?.assistants.find((a) => a.id === mascotId);
     },
-    [client?.bots]
+    [client?.assistants]
   );
 
   // Get date range filter
@@ -191,7 +191,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
       }
 
       if (selectedWorkspace !== 'all') {
-        const bot = getBotInfo(session.mascot_id);
+        const bot = getAssistantInfo(session.mascot_id);
         if (bot?.workspaceId !== selectedWorkspace) return false;
       }
 
@@ -212,7 +212,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
       return true;
     });
-  }, [sessions, selectedBot, selectedStatus, selectedWorkspace, searchTerm, client, getBotInfo]);
+  }, [sessions, selectedBot, selectedStatus, selectedWorkspace, searchTerm, client, getAssistantInfo]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -257,7 +257,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
   // Use workspace filter hook for bot filtering
   const { botOptions, workspaceOptions } = useWorkspaceFilter({
-    bots: client?.bots || [],
+    assistants: client?.assistants || [],
     workspaces,
     selectedWorkspace,
     selectedBot,
@@ -370,7 +370,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     sessions: filteredSessions,
     paginatedSessions,
     brandColor,
-    getBotInfo,
+    getAssistantInfo,
     onOpenTranscript: handleOpenTranscript,
     formatTimestamp,
     formatDuration,

@@ -1,8 +1,8 @@
 /**
- * Bot Comparison Utilities
+ * AI Assistant Comparison Utilities
  *
- * Provides functions for fetching and comparing analytics data across multiple bots.
- * Used by the main analytics dashboard for A/B testing and multi-bot comparison.
+ * Provides functions for fetching and comparing analytics data across multiple AI assistants.
+ * Used by the main analytics dashboard for A/B testing and multi-assistant comparison.
  */
 
 import { getAnalyticsForClient } from '@/lib/db/analytics';
@@ -18,15 +18,15 @@ import type {
   DateRange,
   TimeSeriesDataPoint,
 } from '@/lib/db/analytics/types';
-import type { ChatSessionWithAnalysis, Bot } from '@/types';
+import type { ChatSessionWithAnalysis, Assistant } from '@/types';
 
 /**
- * Bot with all aggregated metrics for comparison
+ * AI Assistant with all aggregated metrics for comparison
  */
-export interface BotWithMetrics {
-  botId: string;
-  botName: string;
-  botImage: string;
+export interface AssistantWithMetrics {
+  assistantId: string;
+  assistantName: string;
+  assistantImage: string;
   clientId: string;
   status: string;
   overview: OverviewMetrics;
@@ -58,17 +58,17 @@ export interface AggregatedMetrics {
 }
 
 /**
- * Fetch comprehensive comparison data for multiple bots
+ * Fetch comprehensive comparison data for multiple AI assistants
  */
-export async function fetchBotComparisonData(
+export async function fetchAssistantComparisonData(
   clientId: string,
-  bots: Bot[],
+  assistants: Assistant[],
   dateRange?: DateRange
-): Promise<BotWithMetrics[]> {
+): Promise<AssistantWithMetrics[]> {
   const analytics = getAnalyticsForClient(clientId);
 
-  const botMetrics = await Promise.all(
-    bots.map(async (bot) => {
+  const assistantMetrics = await Promise.all(
+    assistants.map(async (assistant) => {
       const [
         overview,
         sentiment,
@@ -82,25 +82,25 @@ export async function fetchBotComparisonData(
         sessions,
         timeSeries,
       ] = await Promise.all([
-        analytics.aggregations.getOverviewByBotId(bot.id, dateRange),
-        analytics.aggregations.getSentimentByBotId(bot.id, dateRange),
-        analytics.aggregations.getCategoriesByBotId(bot.id, dateRange),
-        analytics.aggregations.getQuestionsByBotId(bot.id, dateRange),
-        analytics.aggregations.getUnansweredQuestionsByBotId(bot.id, dateRange),
-        analytics.aggregations.getCountriesByBotId(bot.id, dateRange),
-        analytics.aggregations.getLanguagesByBotId(bot.id, dateRange),
-        analytics.aggregations.getDevicesByBotId(bot.id, dateRange),
-        analytics.aggregations.getAnimationStatsByBotId(bot.id, dateRange),
-        analytics.chatSessions.getWithAnalysisByBotId(bot.id, { dateRange }),
-        analytics.aggregations.getTimeSeriesByBotId(bot.id, dateRange),
+        analytics.aggregations.getOverviewByBotId(assistant.id, dateRange),
+        analytics.aggregations.getSentimentByBotId(assistant.id, dateRange),
+        analytics.aggregations.getCategoriesByBotId(assistant.id, dateRange),
+        analytics.aggregations.getQuestionsByBotId(assistant.id, dateRange),
+        analytics.aggregations.getUnansweredQuestionsByBotId(assistant.id, dateRange),
+        analytics.aggregations.getCountriesByBotId(assistant.id, dateRange),
+        analytics.aggregations.getLanguagesByBotId(assistant.id, dateRange),
+        analytics.aggregations.getDevicesByBotId(assistant.id, dateRange),
+        analytics.aggregations.getAnimationStatsByBotId(assistant.id, dateRange),
+        analytics.chatSessions.getWithAnalysisByBotId(assistant.id, { dateRange }),
+        analytics.aggregations.getTimeSeriesByBotId(assistant.id, dateRange),
       ]);
 
       return {
-        botId: bot.id,
-        botName: bot.name,
-        botImage: bot.image,
-        clientId: bot.clientId,
-        status: bot.status,
+        assistantId: assistant.id,
+        assistantName: assistant.name,
+        assistantImage: assistant.image,
+        clientId: assistant.clientId,
+        status: assistant.status,
         overview,
         sentiment,
         categories,
@@ -116,14 +116,14 @@ export async function fetchBotComparisonData(
     })
   );
 
-  return botMetrics;
+  return assistantMetrics;
 }
 
 /**
- * Calculate aggregated totals across all bots
+ * Calculate aggregated totals across all AI assistants
  */
-export function calculateTotals(bots: BotWithMetrics[]): AggregatedMetrics {
-  if (bots.length === 0) {
+export function calculateTotals(assistants: AssistantWithMetrics[]): AggregatedMetrics {
+  if (assistants.length === 0) {
     return {
       totalSessions: 0,
       totalMessages: 0,
@@ -137,33 +137,33 @@ export function calculateTotals(bots: BotWithMetrics[]): AggregatedMetrics {
     };
   }
 
-  const totalSessions = bots.reduce((sum, b) => sum + b.overview.totalSessions, 0);
-  const totalMessages = bots.reduce((sum, b) => sum + b.overview.totalMessages, 0);
-  const totalTokens = bots.reduce((sum, b) => sum + b.overview.totalTokens, 0);
-  const totalCostEur = bots.reduce((sum, b) => sum + b.overview.totalCostEur, 0);
+  const totalSessions = assistants.reduce((sum, a) => sum + a.overview.totalSessions, 0);
+  const totalMessages = assistants.reduce((sum, a) => sum + a.overview.totalMessages, 0);
+  const totalTokens = assistants.reduce((sum, a) => sum + a.overview.totalTokens, 0);
+  const totalCostEur = assistants.reduce((sum, a) => sum + a.overview.totalCostEur, 0);
 
   // Weighted averages based on session count
-  const weightedResponseTime = bots.reduce(
-    (sum, b) => sum + b.overview.averageResponseTimeMs * b.overview.totalSessions,
+  const weightedResponseTime = assistants.reduce(
+    (sum, a) => sum + a.overview.averageResponseTimeMs * a.overview.totalSessions,
     0
   );
-  const weightedDuration = bots.reduce(
-    (sum, b) => sum + b.overview.averageSessionDurationSeconds * b.overview.totalSessions,
+  const weightedDuration = assistants.reduce(
+    (sum, a) => sum + a.overview.averageSessionDurationSeconds * a.overview.totalSessions,
     0
   );
-  const weightedResolution = bots.reduce(
-    (sum, b) => sum + b.overview.resolutionRate * b.overview.totalSessions,
+  const weightedResolution = assistants.reduce(
+    (sum, a) => sum + a.overview.resolutionRate * a.overview.totalSessions,
     0
   );
-  const weightedEscalation = bots.reduce(
-    (sum, b) => sum + b.overview.escalationRate * b.overview.totalSessions,
+  const weightedEscalation = assistants.reduce(
+    (sum, a) => sum + a.overview.escalationRate * a.overview.totalSessions,
     0
   );
 
   // Aggregate sentiment
-  const totalPositive = bots.reduce((sum, b) => sum + b.sentiment.positive, 0);
-  const totalNeutral = bots.reduce((sum, b) => sum + b.sentiment.neutral, 0);
-  const totalNegative = bots.reduce((sum, b) => sum + b.sentiment.negative, 0);
+  const totalPositive = assistants.reduce((sum, a) => sum + a.sentiment.positive, 0);
+  const totalNeutral = assistants.reduce((sum, a) => sum + a.sentiment.neutral, 0);
+  const totalNegative = assistants.reduce((sum, a) => sum + a.sentiment.negative, 0);
   const totalSentiment = totalPositive + totalNeutral + totalNegative;
 
   return {
@@ -184,21 +184,21 @@ export function calculateTotals(bots: BotWithMetrics[]): AggregatedMetrics {
 }
 
 /**
- * Calculate cost metrics per bot
+ * Calculate cost metrics per AI assistant
  */
-export function calculateBotCosts(bot: BotWithMetrics): {
+export function calculateAssistantCosts(assistant: AssistantWithMetrics): {
   chatCost: number;
   analysisCost: number;
   totalCost: number;
   costPerSession: number;
 } {
-  const chatCost = bot.sessions.reduce((sum, s) => sum + (s.total_cost_eur || 0), 0);
-  const analysisCost = bot.sessions.reduce(
+  const chatCost = assistant.sessions.reduce((sum, s) => sum + (s.total_cost_eur || 0), 0);
+  const analysisCost = assistant.sessions.reduce(
     (sum, s) => sum + (s.analysis?.analytics_total_cost_eur || 0),
     0
   );
   const totalCost = chatCost + analysisCost;
-  const costPerSession = bot.overview.totalSessions > 0 ? totalCost / bot.overview.totalSessions : 0;
+  const costPerSession = assistant.overview.totalSessions > 0 ? totalCost / assistant.overview.totalSessions : 0;
 
   return { chatCost, analysisCost, totalCost, costPerSession };
 }
@@ -206,13 +206,13 @@ export function calculateBotCosts(bot: BotWithMetrics): {
 /**
  * Calculate return rate (new vs returning users) from sessions
  */
-export function calculateReturnRate(bot: BotWithMetrics): {
+export function calculateReturnRate(assistant: AssistantWithMetrics): {
   newUsers: number;
   returningUsers: number;
   returnRate: number;
 } {
-  const newUsers = bot.sessions.filter((s) => s.glb_source === 'cdn_fetch').length;
-  const returningUsers = bot.sessions.filter((s) => s.glb_source === 'memory_cache').length;
+  const newUsers = assistant.sessions.filter((s) => s.glb_source === 'cdn_fetch').length;
+  const returningUsers = assistant.sessions.filter((s) => s.glb_source === 'memory_cache').length;
   const total = newUsers + returningUsers;
   const returnRate = total > 0 ? (returningUsers / total) * 100 : 0;
 
@@ -222,16 +222,16 @@ export function calculateReturnRate(bot: BotWithMetrics): {
 /**
  * Calculate resolution breakdown from sessions
  */
-export function calculateResolutionBreakdown(bot: BotWithMetrics): {
+export function calculateResolutionBreakdown(assistant: AssistantWithMetrics): {
   resolved: number;
   partial: number;
   unresolved: number;
   escalated: number;
 } {
-  const resolved = bot.sessions.filter((s) => s.analysis?.resolution_status === 'resolved').length;
-  const partial = bot.sessions.filter((s) => s.analysis?.resolution_status === 'partial').length;
-  const unresolved = bot.sessions.filter((s) => s.analysis?.resolution_status === 'unresolved').length;
-  const escalated = bot.sessions.filter((s) => s.analysis?.escalated === true).length;
+  const resolved = assistant.sessions.filter((s) => s.analysis?.resolution_status === 'resolved').length;
+  const partial = assistant.sessions.filter((s) => s.analysis?.resolution_status === 'partial').length;
+  const unresolved = assistant.sessions.filter((s) => s.analysis?.resolution_status === 'unresolved').length;
+  const escalated = assistant.sessions.filter((s) => s.analysis?.escalated === true).length;
 
   return { resolved, partial, unresolved, escalated };
 }
@@ -239,12 +239,12 @@ export function calculateResolutionBreakdown(bot: BotWithMetrics): {
 /**
  * Calculate URL and email handoffs from sessions
  */
-export function calculateHandoffs(bot: BotWithMetrics): {
+export function calculateHandoffs(assistant: AssistantWithMetrics): {
   urlHandoffs: number;
   emailHandoffs: number;
 } {
-  const urlHandoffs = bot.sessions.filter((s) => s.analysis?.forwarded_url === true).length;
-  const emailHandoffs = bot.sessions.filter((s) => s.analysis?.forwarded_email === true).length;
+  const urlHandoffs = assistant.sessions.filter((s) => s.analysis?.forwarded_url === true).length;
+  const emailHandoffs = assistant.sessions.filter((s) => s.analysis?.forwarded_email === true).length;
 
   return { urlHandoffs, emailHandoffs };
 }
@@ -252,9 +252,9 @@ export function calculateHandoffs(bot: BotWithMetrics): {
 /**
  * Get top browser from sessions
  */
-export function getTopBrowser(bot: BotWithMetrics): string {
+export function getTopBrowser(assistant: AssistantWithMetrics): string {
   const browserCounts: Record<string, number> = {};
-  bot.sessions.forEach((s) => {
+  assistant.sessions.forEach((s) => {
     const browser = s.browser_name || 'Unknown';
     browserCounts[browser] = (browserCounts[browser] || 0) + 1;
   });
@@ -264,17 +264,17 @@ export function getTopBrowser(bot: BotWithMetrics): string {
 }
 
 /**
- * Generate time series chart data for multiple bots
- * Returns data formatted for MultiLineChart with one line per bot
+ * Generate time series chart data for multiple AI assistants
+ * Returns data formatted for MultiLineChart with one line per assistant
  */
-export function generateMultiBotTimeSeries(
-  bots: BotWithMetrics[],
+export function generateMultiAssistantTimeSeries(
+  assistants: AssistantWithMetrics[],
   metric: 'sessions' | 'cost' | 'tokens' | 'messages'
-): { date: string; [botName: string]: number | string }[] {
+): { date: string; [assistantName: string]: number | string }[] {
   // Collect all unique dates
   const allDates = new Set<string>();
-  bots.forEach((bot) => {
-    bot.timeSeries.forEach((point) => {
+  assistants.forEach((assistant) => {
+    assistant.timeSeries.forEach((point) => {
       allDates.add(point.date);
     });
   });
@@ -284,11 +284,11 @@ export function generateMultiBotTimeSeries(
 
   // Build chart data
   return sortedDates.map((date) => {
-    const dataPoint: { date: string; [botName: string]: number | string } = { date };
+    const dataPoint: { date: string; [assistantName: string]: number | string } = { date };
 
-    bots.forEach((bot) => {
-      const point = bot.timeSeries.find((p) => p.date === date);
-      dataPoint[bot.botName] = point ? point[metric] : 0;
+    assistants.forEach((assistant) => {
+      const point = assistant.timeSeries.find((p) => p.date === date);
+      dataPoint[assistant.assistantName] = point ? point[metric] : 0;
     });
 
     return dataPoint;

@@ -9,7 +9,7 @@ export { CustomTab } from './CustomTab';
 
 // Shared Components
 export { TableWrapper, MobileListWrapper } from './TableWrapper';
-export { SessionCell, BotCell, ActionsCell, MobileCardHeader } from './SharedCells';
+export { SessionCell, AssistantCell, ActionsCell, MobileCardHeader } from './SharedCells';
 
 // Types
 export type * from './types';

@@ -8,11 +8,11 @@
 import type {
   Client,
   Workspace,
-  Bot,
+  Assistant,
   User,
   Conversation,
   Message,
-  BotSession,
+  AssistantSession,
   UsageData,
   IntentData,
   AuthSession,
@@ -166,8 +166,8 @@ export const clients = {
 // Workspaces API
 // =============================================================================
 
-export type WorkspaceWithBots = Workspace & {
-  bots: Pick<Bot, 'id' | 'name' | 'status' | 'conversations'>[];
+export type WorkspaceWithAssistants = Workspace & {
+  assistants: Pick<Assistant, 'id' | 'name' | 'status' | 'conversations'>[];
 };
 
 export const workspaces = {
@@ -181,34 +181,34 @@ export const workspaces = {
    * Get single workspace by ID
    */
   get: (workspaceId: string) =>
-    client.get<WorkspaceWithBots>(`/workspaces/${workspaceId}`),
+    client.get<WorkspaceWithAssistants>(`/workspaces/${workspaceId}`),
 };
 
 // =============================================================================
-// Bots API
+// AI Assistants API
 // =============================================================================
 
-export type BotListParams = {
+export type AssistantListParams = {
   clientId?: string;
   workspaceId?: string;
 };
 
-export const bots = {
+export const assistants = {
   /**
-   * List bots with optional filters
+   * List AI assistants with optional filters
    */
-  list: (params: BotListParams = {}) => {
+  list: (params: AssistantListParams = {}) => {
     const searchParams = new URLSearchParams();
     if (params.clientId) searchParams.set('clientId', params.clientId);
     if (params.workspaceId) searchParams.set('workspaceId', params.workspaceId);
     const query = searchParams.toString();
-    return client.get<Bot[]>(`/bots${query ? `?${query}` : ''}`);
+    return client.get<Assistant[]>(`/assistants${query ? `?${query}` : ''}`);
   },
 
   /**
-   * Get single bot by ID
+   * Get single assistant by ID
    */
-  get: (botId: string) => client.get<Bot>(`/bots/${botId}`),
+  get: (assistantId: string) => client.get<Assistant>(`/assistants/${assistantId}`),
 };
 
 // =============================================================================
@@ -217,13 +217,13 @@ export const bots = {
 
 export type AnalyticsParams = {
   clientId: string;
-  botId?: string;
+  assistantId?: string;
   from?: string; // ISO date
   to?: string; // ISO date
 };
 
 export type SessionsAnalytics = {
-  sessions: BotSession[];
+  sessions: AssistantSession[];
   summary: {
     total: number;
     avgDuration: number;
@@ -249,12 +249,12 @@ export type IntentsAnalytics = {
 
 export const analytics = {
   /**
-   * Get bot sessions with analytics
+   * Get assistant sessions with analytics
    */
   sessions: (params: AnalyticsParams) => {
     const searchParams = new URLSearchParams();
     searchParams.set('clientId', params.clientId);
-    if (params.botId) searchParams.set('botId', params.botId);
+    if (params.assistantId) searchParams.set('assistantId', params.assistantId);
     if (params.from) searchParams.set('from', params.from);
     if (params.to) searchParams.set('to', params.to);
     return client.get<SessionsAnalytics>(`/analytics/sessions?${searchParams}`);
@@ -266,7 +266,7 @@ export const analytics = {
   daily: (params: AnalyticsParams) => {
     const searchParams = new URLSearchParams();
     searchParams.set('clientId', params.clientId);
-    if (params.botId) searchParams.set('botId', params.botId);
+    if (params.assistantId) searchParams.set('assistantId', params.assistantId);
     if (params.from) searchParams.set('from', params.from);
     if (params.to) searchParams.set('to', params.to);
     return client.get<DailyAnalytics>(`/analytics/daily?${searchParams}`);
@@ -278,7 +278,7 @@ export const analytics = {
   intents: (params: AnalyticsParams) => {
     const searchParams = new URLSearchParams();
     searchParams.set('clientId', params.clientId);
-    if (params.botId) searchParams.set('botId', params.botId);
+    if (params.assistantId) searchParams.set('assistantId', params.assistantId);
     return client.get<IntentsAnalytics>(`/analytics/intents?${searchParams}`);
   },
 };
@@ -289,7 +289,7 @@ export const analytics = {
 
 export type ConversationListParams = {
   clientId: string;
-  botId?: string;
+  assistantId?: string;
   status?: 'active' | 'resolved' | 'escalated';
   limit?: number;
   offset?: number;
@@ -306,7 +306,7 @@ export const conversations = {
   list: (params: ConversationListParams) => {
     const searchParams = new URLSearchParams();
     searchParams.set('clientId', params.clientId);
-    if (params.botId) searchParams.set('botId', params.botId);
+    if (params.assistantId) searchParams.set('assistantId', params.assistantId);
     if (params.status) searchParams.set('status', params.status);
     if (params.limit) searchParams.set('limit', params.limit.toString());
     if (params.offset) searchParams.set('offset', params.offset.toString());
@@ -357,7 +357,7 @@ export const api = {
   auth,
   clients,
   workspaces,
-  bots,
+  assistants,
   analytics,
   conversations,
   users,

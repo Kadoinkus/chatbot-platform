@@ -1,11 +1,11 @@
 'use client';
-import { getClientById, getBotById, getBotMetrics } from '@/lib/dataService';
+import { getClientById, getAssistantById, getAssistantMetrics } from '@/lib/dataService';
 import { useState, useEffect } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import { UsageLine, IntentBars } from '@/components/Charts';
 import { ArrowLeft, MessageSquare, Clock, TrendingUp, Star, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
-import type { Client, Bot } from '@/lib/dataService';
+import type { Client, Assistant } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import {
   Page,
@@ -17,22 +17,22 @@ import {
   EmptyState,
 } from '@/components/ui';
 
-export default function BotAnalyticsPage({ params }: { params: { clientId: string; botId: string } }) {
+export default function AssistantAnalyticsPage({ params }: { params: { clientId: string; assistantId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
-  const [bot, setBot] = useState<Bot | undefined>();
+  const [assistant, setAssistant] = useState<Assistant | undefined>();
   const [metrics, setMetrics] = useState<any>();
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     async function loadData() {
       try {
-        const [clientData, botData, metricsData] = await Promise.all([
+        const [clientData, assistantData, metricsData] = await Promise.all([
           getClientById(params.clientId),
-          getBotById(params.botId),
-          getBotMetrics(params.botId)
+          getAssistantById(params.assistantId),
+          getAssistantMetrics(params.assistantId)
         ]);
         setClient(clientData);
-        setBot(botData);
+        setAssistant(assistantData);
         setMetrics(metricsData);
       } catch (error) {
         console.error('Error loading data:', error);
@@ -41,7 +41,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
       }
     }
     loadData();
-  }, [params.clientId, params.botId]);
+  }, [params.clientId, params.assistantId]);
 
   if (loading) {
     return (
@@ -51,35 +51,35 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
     );
   }
 
-  if (!client || !bot) {
+  if (!client || !assistant) {
     return (
       <Page>
         <PageContent>
           <EmptyState
             icon={<BotIcon size={48} />}
-            title="Bot not found"
-            message="The requested bot could not be found."
+            title="AI Assistant not found"
+            message="The requested AI assistant could not be found."
           />
         </PageContent>
       </Page>
     );
   }
 
-  const brandColor = getClientBrandColor(bot.clientId);
+  const brandColor = getClientBrandColor(assistant.clientId);
 
   return (
     <Page>
       <PageContent>
             <PageHeader
-              title={bot.name}
-              description={bot.description}
+              title={assistant.name}
+              description={assistant.description}
               backLink={
                 <Link
                   href={`/app/${client.id}`}
                   className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
                 >
                   <ArrowLeft size={16} />
-                  Back to bots
+                  Back to AI Assistants
                 </Link>
               }
             />
@@ -92,17 +92,17 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                     style={{ backgroundColor: brandColor }}
                   >
                     <img
-                      src={bot.image}
-                      alt={bot.name}
+                      src={assistant.image}
+                      alt={assistant.name}
                       className="w-20 h-20 object-contain"
                     />
                   </div>
                   <div>
                     <div className="flex items-center gap-3 mb-2">
-                      <h1 className="text-3xl font-bold text-foreground">{bot.name}</h1>
-                      <StatusBadge status={bot.status} />
+                      <h1 className="text-3xl font-bold text-foreground">{assistant.name}</h1>
+                      <StatusBadge status={assistant.status} />
                     </div>
-                    <p className="text-foreground-secondary mb-4">{bot.description}</p>
+                    <p className="text-foreground-secondary mb-4">{assistant.description}</p>
                     <p className="text-sm text-foreground-tertiary">Client: {client.name}</p>
                   </div>
                 </div>
@@ -119,7 +119,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                   <MessageSquare size={16} />
                   <span className="text-sm">Total Conversations</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{bot.conversations}</p>
+                <p className="text-2xl font-bold text-foreground">{assistant.conversations}</p>
                 <p className="text-xs text-success-600 dark:text-success-500 mt-1">+12% from last week</p>
               </div>
 
@@ -128,7 +128,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                   <Clock size={16} />
                   <span className="text-sm">Avg Response Time</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{bot.metrics.responseTime}s</p>
+                <p className="text-2xl font-bold text-foreground">{assistant.metrics.responseTime}s</p>
                 <p className="text-xs text-foreground-tertiary mt-1">Industry avg: 2.5s</p>
               </div>
 
@@ -137,7 +137,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                   <TrendingUp size={16} />
                   <span className="text-sm">Resolution Rate</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{bot.metrics.resolutionRate}%</p>
+                <p className="text-2xl font-bold text-foreground">{assistant.metrics.resolutionRate}%</p>
                 <p className="text-xs text-success-600 dark:text-success-500 mt-1">Above average</p>
               </div>
 
@@ -146,7 +146,7 @@ export default function BotAnalyticsPage({ params }: { params: { clientId: strin
                   <Star size={16} />
                   <span className="text-sm">Satisfaction</span>
                 </div>
-                <p className="text-2xl font-bold text-foreground">{bot.metrics.csat}/5</p>
+                <p className="text-2xl font-bold text-foreground">{assistant.metrics.csat}/5</p>
                 <p className="text-xs text-foreground-tertiary mt-1">Last 7 days</p>
               </div>
             </div>

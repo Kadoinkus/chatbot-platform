@@ -1,23 +1,23 @@
 'use client';
-import { getClientById, getBotById } from '@/lib/dataService';
+import { getClientById, getAssistantById } from '@/lib/dataService';
 import { useState, useEffect } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Palette, Sparkles, Image, Type, Monitor, Smartphone, User, Eye, Smile, ShirtIcon as Shirt, HardHat, ShoppingCart, Lock, Crown, Zap, Package, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
-import type { Client, Bot } from '@/lib/dataService';
+import type { Client, Assistant } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { useCart } from '@/contexts/CartContext';
 import { Page, PageContent, PageHeader, Card, Button, Input, Select, Modal, Spinner, EmptyState } from '@/components/ui';
 
-export default function MascotStudioPage({ params }: { params: { clientId: string; botId: string } }) {
+export default function MascotStudioPage({ params }: { params: { clientId: string; assistantId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
-  const [bot, setBot] = useState<Bot | undefined>();
+  const [assistant, setAssistant] = useState<Assistant | undefined>();
   const [loading, setLoading] = useState(true);
   const [activeTab, setActiveTab] = useState('appearance');
   const [primaryColor, setPrimaryColor] = useState('#000000');
   const [accentColor, setAccentColor] = useState('#0066FF');
   const [chatTheme, setChatTheme] = useState('modern');
-  
+
   // 3D Mascot Customization State
   const [selectedTemplate, setSelectedTemplate] = useState('neo');
   const [selectedSubTemplate, setSelectedSubTemplate] = useState('basic');
@@ -45,12 +45,12 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
   useEffect(() => {
     async function loadData() {
       try {
-        const [clientData, botData] = await Promise.all([
+        const [clientData, assistantData] = await Promise.all([
           getClientById(params.clientId),
-          getBotById(params.botId)
+          getAssistantById(params.assistantId)
         ]);
         setClient(clientData);
-        setBot(botData);
+        setAssistant(assistantData);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -58,7 +58,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
       }
     }
     loadData();
-  }, [params.clientId, params.botId]);
+  }, [params.clientId, params.assistantId]);
 
   if (loading) {
     return (
@@ -68,14 +68,14 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
     );
   }
 
-  if (!client || !bot) {
+  if (!client || !assistant) {
     return (
       <Page>
         <PageContent>
           <EmptyState
             icon={<BotIcon size={48} />}
-            title="Bot not found"
-            message="The requested bot could not be found."
+            title="AI Assistant not found"
+            message="The requested AI assistant could not be found."
           />
         </PageContent>
       </Page>
@@ -237,7 +237,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
 
     // Mark as owned (simulate purchase)
     setOwnedStudioPacks(prev => [...prev, packKey]);
-    
+
     // Close any open modals/prompts
     setShowUpgradePrompt('');
     setShowPackSelector(false);
@@ -250,7 +250,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
     <Page>
       <PageContent>
           <PageHeader
-            title={bot.name}
+            title={assistant.name}
             description="Customize appearance and chat interface"
             backLink={
               <Link
@@ -258,25 +258,25 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                 className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
               >
                 <ArrowLeft size={16} />
-                Back to bots
+                Back to AI Assistants
               </Link>
             }
           />
 
-          {/* Bot Header */}
+          {/* AI Assistant Header */}
           <Card className="mb-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center gap-4">
                 <img
-                  src={bot.image}
-                  alt={bot.name}
+                  src={assistant.image}
+                  alt={assistant.name}
                   className="w-16 h-16 rounded-full"
-                  style={{ backgroundColor: getClientBrandColor(bot.clientId) }}
+                  style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
                 />
                 <div>
                   <div className="flex items-center gap-3 mb-1">
-                    <h1 className="text-2xl font-bold text-foreground">{bot.name}</h1>
-                    <StatusBadge status={bot.status} />
+                    <h1 className="text-2xl font-bold text-foreground">{assistant.name}</h1>
+                    <StatusBadge status={assistant.status} />
                   </div>
                   <p className="text-foreground-secondary mb-1">Customize appearance and chat interface</p>
                   <p className="text-sm text-foreground-tertiary">Client: {client.name}</p>
@@ -293,7 +293,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
               </div>
             </div>
           </Card>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
             <div className="lg:col-span-2">
               <Card className="p-0">
@@ -331,7 +331,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                     </button>
                   </div>
                 </div>
-                
+
                 <div className="p-6">
                   {activeTab === 'appearance' && (
                     <div className="space-y-6">
@@ -535,7 +535,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                             ));
                           })}
                         </div>
-                        
+
                         {/* Contextual upgrade prompt */}
                         {showUpgradePrompt && (
                           <div className="mt-4 p-4 bg-info-100 dark:bg-info-700/30 border border-info-300 dark:border-info-700 rounded-lg">
@@ -645,7 +645,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                           </div>
                         </div>
                       </div>
-                      
+
                       {/* Full Studio Pack Selector Modal */}
                       <Modal
                         isOpen={showPackSelector}
@@ -724,7 +724,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                       </Modal>
                     </div>
                   )}
-                  
+
                   {activeTab === 'colors' && (
                     <div className="space-y-6">
                       <div>
@@ -785,7 +785,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                       </div>
                     </div>
                   )}
-                  
+
                   {activeTab === 'chat' && (
                     <div className="space-y-6">
                       <div>
@@ -864,12 +864,12 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
                   <div className="bg-surface-elevated rounded-lg shadow-sm p-4 mb-3">
                     <div className="flex items-center gap-3 mb-3">
                       <img
-                        src={bot.image}
-                        alt={bot.name}
+                        src={assistant.image}
+                        alt={assistant.name}
                         className="w-8 h-8 rounded-full"
                         style={{ borderColor: primaryColor, borderWidth: 2 }}
                       />
-                      <span className="font-medium text-foreground">{bot.name}</span>
+                      <span className="font-medium text-foreground">{assistant.name}</span>
                     </div>
                     <div className="space-y-2">
                       <div className="bg-background-tertiary rounded-lg p-2 max-w-[80%]">

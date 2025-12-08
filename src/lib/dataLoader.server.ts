@@ -9,25 +9,25 @@ import fs from 'fs';
 import path from 'path';
 import type {
   Client,
-  Bot,
+  Assistant,
   Workspace,
   User,
   MetricsData,
   Conversation,
   Session,
-  BotSession,
+  AssistantSession,
   Message,
 } from '@/types';
 
 // Cache for loaded data
 let clientsData: Client[] | null = null;
-let botsData: Bot[] | null = null;
+let assistantsData: Assistant[] | null = null;
 let workspacesData: Workspace[] | null = null;
 let usersData: User[] | null = null;
 let metricsData: MetricsData | null = null;
 let conversationsData: Conversation[] | null = null;
 let sessionsData: Session[] | null = null;
-let botSessionsData: BotSession[] | null = null;
+let assistantSessionsData: AssistantSession[] | null = null;
 let messagesData: Message[] | null = null;
 
 function loadJsonFile<T>(filename: string): T {
@@ -43,12 +43,15 @@ export function loadClients(): Client[] {
   return clientsData;
 }
 
-export function loadBots(): Bot[] {
-  if (!botsData) {
-    botsData = loadJsonFile<Bot[]>('bots.json');
+export function loadAssistants(): Assistant[] {
+  if (!assistantsData) {
+    assistantsData = loadJsonFile<Assistant[]>('assistants.json');
   }
-  return botsData;
+  return assistantsData;
 }
+
+/** @deprecated Use loadAssistants() instead */
+export const loadBots = loadAssistants;
 
 export function loadWorkspaces(): Workspace[] {
   if (!workspacesData) {
@@ -85,12 +88,15 @@ export function loadSessions(): Session[] {
   return sessionsData;
 }
 
-export function loadBotSessions(): BotSession[] {
-  if (!botSessionsData) {
-    botSessionsData = loadJsonFile<BotSession[]>('bot_sessions.json');
+export function loadAssistantSessions(): AssistantSession[] {
+  if (!assistantSessionsData) {
+    assistantSessionsData = loadJsonFile<AssistantSession[]>('assistant_sessions.json');
   }
-  return botSessionsData;
+  return assistantSessionsData;
 }
+
+/** @deprecated Use loadAssistantSessions() instead */
+export const loadBotSessions = loadAssistantSessions;
 
 export function loadMessages(): Message[] {
   if (!messagesData) {
@@ -108,17 +114,26 @@ export function getClientBySlug(slug: string): Client | undefined {
   return loadClients().find(c => c.slug === slug);
 }
 
-export function getBotsByClientId(clientId: string): Bot[] {
-  return loadBots().filter(b => b.clientId === clientId);
+export function getAssistantsByClientId(clientId: string): Assistant[] {
+  return loadAssistants().filter(a => a.clientId === clientId);
 }
 
-export function getBotsByWorkspaceId(workspaceId: string): Bot[] {
-  return loadBots().filter(b => b.workspaceId === workspaceId);
+/** @deprecated Use getAssistantsByClientId() instead */
+export const getBotsByClientId = getAssistantsByClientId;
+
+export function getAssistantsByWorkspaceId(workspaceId: string): Assistant[] {
+  return loadAssistants().filter(a => a.workspaceId === workspaceId);
 }
 
-export function getBotById(botId: string): Bot | undefined {
-  return loadBots().find(b => b.id === botId);
+/** @deprecated Use getAssistantsByWorkspaceId() instead */
+export const getBotsByWorkspaceId = getAssistantsByWorkspaceId;
+
+export function getAssistantById(assistantId: string): Assistant | undefined {
+  return loadAssistants().find(a => a.id === assistantId);
 }
+
+/** @deprecated Use getAssistantById() instead */
+export const getBotById = getAssistantById;
 
 export function getWorkspacesByClientId(clientId: string): Workspace[] {
   return loadWorkspaces().filter(w => w.clientId === clientId);
@@ -136,19 +151,22 @@ export function getConversationsByClientId(clientId: string): Conversation[] {
   return loadConversations().filter(c => c.clientId === clientId);
 }
 
-export function getConversationsByBotId(botId: string): Conversation[] {
-  return loadConversations().filter(c => c.botId === botId);
+export function getConversationsByAssistantId(assistantId: string): Conversation[] {
+  return loadConversations().filter(c => c.assistantId === assistantId);
 }
+
+/** @deprecated Use getConversationsByAssistantId() instead */
+export const getConversationsByBotId = getConversationsByAssistantId;
 
 export function getMessagesByConversationId(conversationId: string): Message[] {
   return loadMessages().filter(m => m.conversationId === conversationId);
 }
 
-export function getBotSessionsByClientId(
+export function getAssistantSessionsByClientId(
   clientId: string,
   dateRange?: { start: Date; end: Date }
-): BotSession[] {
-  let sessions = loadBotSessions().filter(s => s.client_id === clientId);
+): AssistantSession[] {
+  let sessions = loadAssistantSessions().filter(s => s.client_id === clientId);
 
   if (dateRange) {
     sessions = sessions.filter(s => {
@@ -160,11 +178,14 @@ export function getBotSessionsByClientId(
   return sessions;
 }
 
-export function getBotSessionsByBotId(
-  botId: string,
+/** @deprecated Use getAssistantSessionsByClientId() instead */
+export const getBotSessionsByClientId = getAssistantSessionsByClientId;
+
+export function getAssistantSessionsByAssistantId(
+  assistantId: string,
   dateRange?: { start: Date; end: Date }
-): BotSession[] {
-  let sessions = loadBotSessions().filter(s => s.bot_id === botId);
+): AssistantSession[] {
+  let sessions = loadAssistantSessions().filter(s => s.assistant_id === assistantId);
 
   if (dateRange) {
     sessions = sessions.filter(s => {
@@ -175,6 +196,9 @@ export function getBotSessionsByBotId(
 
   return sessions;
 }
+
+/** @deprecated Use getAssistantSessionsByAssistantId() instead */
+export const getBotSessionsByBotId = getAssistantSessionsByAssistantId;
 
 export function getClientMetrics(clientId: string) {
   const metrics = loadMetrics();
@@ -185,10 +209,13 @@ export function getClientMetrics(clientId: string) {
   };
 }
 
-export function getBotMetrics(botId: string) {
+export function getAssistantMetrics(assistantId: string) {
   const metrics = loadMetrics();
   return {
-    usageByDay: metrics.botUsageByDay[botId] || [],
-    topIntents: metrics.botIntents[botId] || [],
+    usageByDay: metrics.assistantUsageByDay[assistantId] || [],
+    topIntents: metrics.assistantIntents[assistantId] || [],
   };
 }
+
+/** @deprecated Use getAssistantMetrics() instead */
+export const getBotMetrics = getAssistantMetrics;

@@ -2,27 +2,27 @@
 
 import { useState, useRef, useEffect } from 'react';
 import { ChevronDown } from 'lucide-react';
-import type { Bot, Workspace } from '@/types';
+import type { Assistant, Workspace } from '@/types';
 
-interface BotSelectorProps {
-  bots: Bot[];
+interface AssistantSelectorProps {
+  assistants: Assistant[];
   workspaces: Workspace[];
   selectedWorkspace: string;
-  selectedBots: string[];
-  onBotToggle: (botId: string) => void;
+  selectedAssistants: string[];
+  onAssistantToggle: (assistantId: string) => void;
   brandColor: string;
   fullWidth?: boolean;
 }
 
-export function BotSelector({
-  bots,
+export function AssistantSelector({
+  assistants,
   workspaces,
   selectedWorkspace,
-  selectedBots,
-  onBotToggle,
+  selectedAssistants,
+  onAssistantToggle,
   brandColor,
   fullWidth = false,
-}: BotSelectorProps) {
+}: AssistantSelectorProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -37,20 +37,20 @@ export function BotSelector({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Filter bots based on workspace
-  const workspaceFilteredBots = bots.filter(
-    (bot) => selectedWorkspace === 'all' || bot.workspaceId === selectedWorkspace
+  // Filter assistants based on workspace
+  const workspaceFilteredAssistants = assistants.filter(
+    (assistant) => selectedWorkspace === 'all' || assistant.workspaceId === selectedWorkspace
   );
 
   const getSelectionLabel = () => {
-    if (selectedBots.includes('all') || selectedBots.length === 0) {
-      return 'All Bots';
+    if (selectedAssistants.includes('all') || selectedAssistants.length === 0) {
+      return 'All AI Assistants';
     }
-    if (selectedBots.length === 1) {
-      const bot = workspaceFilteredBots.find((b) => b.id === selectedBots[0]);
-      return bot?.name || 'Select Bots';
+    if (selectedAssistants.length === 1) {
+      const assistant = workspaceFilteredAssistants.find((a) => a.id === selectedAssistants[0]);
+      return assistant?.name || 'Select AI Assistants';
     }
-    return `${selectedBots.length} Bots Selected`;
+    return `${selectedAssistants.length} AI Assistants Selected`;
   };
 
   return (
@@ -73,18 +73,18 @@ export function BotSelector({
       {dropdownOpen && (
         <div className="absolute top-full left-0 mt-1 w-72 bg-surface-elevated border border-border rounded-lg shadow-lg z-50">
           <div className="p-3 border-b border-border">
-            <h4 className="font-medium text-sm text-foreground-secondary">Select Bots to Compare</h4>
+            <h4 className="font-medium text-sm text-foreground-secondary">Select AI Assistants to Compare</h4>
           </div>
           <div className="max-h-48 overflow-y-auto">
-            {/* All Bots option */}
+            {/* All AI Assistants option */}
             <label className="flex items-center gap-3 p-3 hover:bg-background-hover cursor-pointer">
               <input
                 type="checkbox"
-                checked={selectedBots.includes('all') || selectedBots.length === 0}
-                onChange={() => onBotToggle('all')}
+                checked={selectedAssistants.includes('all') || selectedAssistants.length === 0}
+                onChange={() => onAssistantToggle('all')}
                 className="rounded border-border text-interactive focus:ring-interactive"
               />
-              <span className="text-sm font-medium text-foreground">All Bots</span>
+              <span className="text-sm font-medium text-foreground">All AI Assistants</span>
             </label>
             <hr className="mx-3 border-border" />
 
@@ -92,20 +92,20 @@ export function BotSelector({
             {selectedWorkspace === 'all' ? (
               // Group by workspace
               workspaces.map((workspace) => {
-                const workspaceBots = bots.filter((bot) => bot.workspaceId === workspace.id);
-                if (workspaceBots.length === 0) return null;
+                const workspaceAssistants = assistants.filter((assistant) => assistant.workspaceId === workspace.id);
+                if (workspaceAssistants.length === 0) return null;
 
                 return (
                   <div key={workspace.id}>
                     <div className="px-3 py-2 text-xs font-medium text-foreground-tertiary bg-background-secondary border-t border-border">
                       {workspace.name}
                     </div>
-                    {workspaceBots.map((bot) => (
-                      <BotOption
-                        key={bot.id}
-                        bot={bot}
-                        selected={selectedBots.includes(bot.id)}
-                        onToggle={() => onBotToggle(bot.id)}
+                    {workspaceAssistants.map((assistant) => (
+                      <AssistantOption
+                        key={assistant.id}
+                        assistant={assistant}
+                        selected={selectedAssistants.includes(assistant.id)}
+                        onToggle={() => onAssistantToggle(assistant.id)}
                         brandColor={brandColor}
                       />
                     ))}
@@ -114,12 +114,12 @@ export function BotSelector({
               })
             ) : (
               // Flat list for selected workspace
-              workspaceFilteredBots.map((bot) => (
-                <BotOption
-                  key={bot.id}
-                  bot={bot}
-                  selected={selectedBots.includes(bot.id)}
-                  onToggle={() => onBotToggle(bot.id)}
+              workspaceFilteredAssistants.map((assistant) => (
+                <AssistantOption
+                  key={assistant.id}
+                  assistant={assistant}
+                  selected={selectedAssistants.includes(assistant.id)}
+                  onToggle={() => onAssistantToggle(assistant.id)}
                   brandColor={brandColor}
                 />
               ))
@@ -131,14 +131,14 @@ export function BotSelector({
   );
 }
 
-// Individual bot option in dropdown
-function BotOption({
-  bot,
+// Individual assistant option in dropdown
+function AssistantOption({
+  assistant,
   selected,
   onToggle,
   brandColor,
 }: {
-  bot: Bot;
+  assistant: Assistant;
   selected: boolean;
   onToggle: () => void;
   brandColor: string;
@@ -151,30 +151,30 @@ function BotOption({
         onChange={onToggle}
         className="rounded border-border text-interactive focus:ring-interactive"
       />
-      {bot.image && (
+      {assistant.image && (
         <img
-          src={bot.image}
-          alt={bot.name}
+          src={assistant.image}
+          alt={assistant.name}
           className="w-6 h-6 rounded-full"
           style={{ backgroundColor: brandColor }}
         />
       )}
       <div className="flex-1">
-        <span className="text-sm font-medium text-foreground">{bot.name}</span>
+        <span className="text-sm font-medium text-foreground">{assistant.name}</span>
       </div>
       <span
         className={`text-xs px-2 py-0.5 rounded-full ${
-          bot.status === 'Live'
+          assistant.status === 'Active'
             ? 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500'
-            : bot.status === 'Paused'
+            : assistant.status === 'Paused'
             ? 'bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500'
             : 'bg-error-100 dark:bg-error-700/30 text-error-700 dark:text-error-500'
         }`}
       >
-        {bot.status}
+        {assistant.status}
       </span>
     </label>
   );
 }
 
-export default BotSelector;
+export default AssistantSelector;

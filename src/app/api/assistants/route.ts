@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBotsByClientId, getBotsByWorkspaceId, loadBots } from '@/lib/dataLoader.server';
+import { getAssistantsByClientId, getAssistantsByWorkspaceId, loadAssistants } from '@/lib/dataLoader.server';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,24 +9,24 @@ export async function GET(request: NextRequest) {
     const clientId = searchParams.get('clientId');
     const workspaceId = searchParams.get('workspaceId');
 
-    let bots;
+    let assistants;
 
     if (workspaceId) {
-      bots = await getBotsByWorkspaceId(workspaceId);
+      assistants = await getAssistantsByWorkspaceId(workspaceId);
     } else if (clientId) {
-      bots = await getBotsByClientId(clientId);
+      assistants = await getAssistantsByClientId(clientId);
     } else {
-      // Return all bots (admin view)
-      bots = await loadBots();
+      // Return all assistants (admin view)
+      assistants = await loadAssistants();
     }
 
-    return NextResponse.json({ data: bots });
+    return NextResponse.json({ data: assistants });
   } catch (error) {
-    console.error('Error fetching bots:', error);
+    console.error('Error fetching assistants:', error);
     return NextResponse.json(
       {
         code: 'INTERNAL_ERROR',
-        message: 'Failed to fetch bots',
+        message: 'Failed to fetch assistants',
       },
       { status: 500 }
     );

@@ -1,8 +1,8 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { getClientById, getWorkspacesByClientId, getBotsByWorkspaceId } from '@/lib/dataService';
-import type { Client, Workspace, Bot } from '@/lib/dataService';
-import BotCard from '@/components/BotCard';
+import { getClientById, getWorkspacesByClientId, getAssistantsByWorkspaceId } from '@/lib/dataService';
+import type { Client, Workspace, Assistant } from '@/lib/dataService';
+import AssistantCard from '@/components/AssistantCard';
 import { Plus, Search, Filter, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -17,12 +17,12 @@ import {
   EmptyState,
 } from '@/components/ui';
 
-export default function AllBotsPage({ params }: { params: { clientId: string } }) {
+export default function AllAssistantsPage({ params }: { params: { clientId: string } }) {
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedWorkspace, setSelectedWorkspace] = useState<string>('all');
   const [client, setClient] = useState<Client | undefined>();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
-  const [allBots, setAllBots] = useState<(Bot & { workspaceName: string; workspace: Workspace })[]>([]);
+  const [allAssistants, setAllAssistants] = useState<(Assistant & { workspaceName: string; workspace: Workspace })[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -36,19 +36,19 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
         setClient(clientData);
         setWorkspaces(workspacesData || []);
 
-        // Load all bots from all workspaces
-        const botsWithWorkspace: (Bot & { workspaceName: string; workspace: Workspace })[] = [];
+        // Load all assistants from all workspaces
+        const assistantsWithWorkspace: (Assistant & { workspaceName: string; workspace: Workspace })[] = [];
         for (const ws of workspacesData || []) {
-          const bots = await getBotsByWorkspaceId(ws.id);
-          bots.forEach(bot => {
-            botsWithWorkspace.push({
-              ...bot,
+          const assistants = await getAssistantsByWorkspaceId(ws.id);
+          assistants.forEach(assistant => {
+            assistantsWithWorkspace.push({
+              ...assistant,
               workspaceName: ws.name,
               workspace: ws
             });
           });
         }
-        setAllBots(botsWithWorkspace);
+        setAllAssistants(assistantsWithWorkspace);
 
       } catch (error) {
         console.error('Error loading data:', error);
@@ -81,16 +81,16 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
     );
   }
 
-  // Filter bots based on search term and selected workspace
-  const filteredBots = allBots.filter(bot => {
+  // Filter assistants based on search term and selected workspace
+  const filteredAssistants = allAssistants.filter(assistant => {
     const matchesSearch =
-      bot.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bot.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      bot.workspaceName.toLowerCase().includes(searchTerm.toLowerCase());
+      assistant.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      assistant.description.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      assistant.workspaceName.toLowerCase().includes(searchTerm.toLowerCase());
 
     const matchesWorkspace =
       selectedWorkspace === 'all' ||
-      bot.workspaceId === selectedWorkspace;
+      assistant.workspaceId === selectedWorkspace;
 
     return matchesSearch && matchesWorkspace;
   });
@@ -104,7 +104,7 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
     <Page>
       <PageContent>
             <PageHeader
-              title="All Bots"
+              title="Your AI Assistants"
               description={`Manage all your AI assistants across all workspaces for ${client.name}`}
             />
 
@@ -113,7 +113,7 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
               <div className="flex-1 max-w-md">
                 <Input
                   icon={<Search size={20} />}
-                  placeholder="Search bots and workspaces..."
+                  placeholder="Search AI assistants and workspaces..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
                 />
@@ -130,44 +130,44 @@ export default function AllBotsPage({ params }: { params: { clientId: string } }
 
               <Link href={`/app/${client.id}/marketplace`}>
                 <Button icon={<Plus size={18} />}>
-                  New Bot
+                  New AI Assistant
                 </Button>
               </Link>
             </div>
 
-            {/* Bot Cards Grid */}
+            {/* Assistant Cards Grid */}
             <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">
-              {filteredBots.map(bot => (
-                <BotCard
-                  key={bot.id}
-                  bot={bot}
+              {filteredAssistants.map(assistant => (
+                <AssistantCard
+                  key={assistant.id}
+                  assistant={assistant}
                   clientId={client.id}
-                  workspaceName={bot.workspaceName}
-                  workspace={bot.workspace}
+                  workspaceName={assistant.workspaceName}
+                  workspace={assistant.workspace}
                 />
               ))}
             </div>
 
             {/* Empty States */}
-            {filteredBots.length === 0 && allBots.length === 0 && (
+            {filteredAssistants.length === 0 && allAssistants.length === 0 && (
               <EmptyState
                 icon={<BotIcon size={48} />}
-                title="No bots yet"
-                message="Create your first bot to get started with AI assistance."
+                title="No AI assistants yet"
+                message="Create your first AI assistant to get started."
                 action={
                   <Link href={`/app/${client.id}/marketplace`}>
                     <Button icon={<Plus size={18} />}>
-                      Create First Bot
+                      Create First AI Assistant
                     </Button>
                   </Link>
                 }
               />
             )}
 
-            {filteredBots.length === 0 && allBots.length > 0 && (
+            {filteredAssistants.length === 0 && allAssistants.length > 0 && (
               <EmptyState
                 title="No results found"
-                message="No bots found matching your search criteria."
+                message="No AI assistants found matching your search criteria."
                 action={
                   <Button
                     variant="ghost"

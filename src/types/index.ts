@@ -104,28 +104,40 @@ export type Workspace = {
 };
 
 // =============================================================================
-// Bot (formerly "Mascot" in some places)
+// AI Assistant (formerly "Bot" / "Mascot")
+// Entity name: "AI Assistant" | Operational actions: "Agent" (Pause Agent, Activate Agent, etc.)
 // =============================================================================
 
-export type BotStatus = 'Live' | 'Paused' | 'Needs finalization';
+/** Agent status for operational control (Activate Agent, Pause Agent, Disable Agent) */
+export type AgentStatus = 'Active' | 'Paused' | 'Disabled' | 'Draft';
 
-export type BotMetrics = {
+export type AssistantMetrics = {
   responseTime: number;
   resolutionRate: number;
   csat: number;
 };
 
-export type Bot = {
+export type Assistant = {
   id: string;
   clientId: string;
   workspaceId: string;
   name: string;
   image: string;
-  status: BotStatus;
+  status: AgentStatus;
   conversations: number;
   description: string;
-  metrics: BotMetrics;
+  metrics: AssistantMetrics;
 };
+
+// Legacy aliases for backward compatibility
+/** @deprecated Use `Assistant` instead */
+export type Bot = Assistant;
+/** @deprecated Use `AgentStatus` instead */
+export type BotStatus = AgentStatus;
+/** @deprecated Use `AssistantStatus` instead - now AgentStatus */
+export type AssistantStatus = AgentStatus;
+/** @deprecated Use `AssistantMetrics` instead */
+export type BotMetrics = AssistantMetrics;
 
 // =============================================================================
 // User (Team Member)
@@ -157,7 +169,7 @@ export type Channel = 'webchat' | 'whatsapp' | 'facebook' | 'telegram';
 
 export type Conversation = {
   id: string;
-  botId: string;
+  assistantId: string;
   clientId: string;
   userId: string;
   userName: string;
@@ -175,7 +187,7 @@ export type Conversation = {
 // Message
 // =============================================================================
 
-export type MessageSender = 'user' | 'bot' | 'agent';
+export type MessageSender = 'user' | 'assistant' | 'agent';
 
 export type Message = {
   id: string;
@@ -215,7 +227,7 @@ export type Session = {
 };
 
 // =============================================================================
-// Bot Session (Analytics)
+// Assistant Session (Analytics)
 // =============================================================================
 
 export type Sentiment = 'positive' | 'neutral' | 'negative';
@@ -225,9 +237,9 @@ export type CompletionStatus = 'completed' | 'incomplete' | 'escalated' | 'parti
 export type UserType = 'new' | 'returning' | 'existing';
 export type DeviceType = 'desktop' | 'mobile' | 'tablet';
 
-export type BotSession = {
+export type AssistantSession = {
   session_id: string;
-  bot_id: string;
+  assistant_id: string;
   client_id: string;
   start_time: string;
   end_time: string;
@@ -257,10 +269,13 @@ export type BotSession = {
   session_steps: number;
   goal_achieved: boolean;
   error_occurred: boolean;
-  bot_handoff: boolean;
+  assistant_handoff: boolean;
   human_cost_equivalent: number;
   automation_saving: number;
 };
+
+/** @deprecated Use `AssistantSession` instead */
+export type BotSession = AssistantSession;
 
 // =============================================================================
 // Metrics & Analytics
@@ -279,9 +294,9 @@ export type IntentData = {
 
 export type MetricsData = {
   usageByDay: Record<string, UsageData[]>;
-  botUsageByDay: Record<string, UsageData[]>;
+  assistantUsageByDay: Record<string, UsageData[]>;
   topIntents: Record<string, IntentData[]>;
-  botIntents: Record<string, IntentData[]>;
+  assistantIntents: Record<string, IntentData[]>;
   csat: Record<string, number>;
 };
 
@@ -307,7 +322,7 @@ export type CounterSummary = {
   clientId: string;
   totals: {
     workspaces: number;
-    bots: number;
+    assistants: number;
     activeConversations: number;
     totalConversations: number;
     resolvedToday: number;
@@ -331,9 +346,9 @@ export type CounterSummary = {
 // =============================================================================
 
 /**
- * @deprecated Use `Bot` instead. Mascot was the old name for Bot.
+ * @deprecated Use `Assistant` instead. Mascot was the old name.
  */
-export type Mascot = Bot;
+export type Mascot = Assistant;
 
 // =============================================================================
 // Chat Session Analytics (Supabase-aligned)
@@ -345,7 +360,7 @@ export type Mascot = Bot;
  */
 export type ChatSession = {
   id: string;
-  mascot_id: string; // Maps to bot_id in platform
+  mascot_id: string; // Maps to assistant_id in platform
   client_id: string;
   session_started_at: string;
   session_ended_at: string | null;
@@ -375,7 +390,7 @@ export type ChatSession = {
   utm_term: string | null;
   total_messages: number;
   user_messages: number;
-  bot_messages: number;
+  assistant_messages: number;
   total_tokens: number;
   input_tokens: number;
   output_tokens: number;
@@ -397,7 +412,7 @@ export type ChatSession = {
  * Single message in a transcript (matches Supabase format)
  */
 export type TranscriptMessage = {
-  author: 'user' | 'bot';
+  author: 'user' | 'assistant';
   message: string;
   timestamp: string;
   easter?: string; // Easter egg triggered (empty string if none)

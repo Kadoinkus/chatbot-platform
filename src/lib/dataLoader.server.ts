@@ -116,7 +116,8 @@ function loadJsonFile<T>(filename: string): T {
 }
 
 export function loadClients(): Client[] {
-  if (!clientsData) {
+  // Always prefer fresh data if login credentials are missing
+  if (!clientsData || clientsData.some(c => !(c as any).login)) {
     clientsData = loadJsonFile<Client[]>('clients.json');
   }
   return clientsData;

@@ -280,7 +280,7 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
                           <div className="flex items-center gap-2">
                             <Calendar size={14} className="text-foreground-tertiary" />
                             <span className="text-sm text-foreground-secondary">
-                              {new Date(user.joinedDate).toLocaleDateString()}
+                              {(user.joinedAt || user.joinedDate) ? new Date(user.joinedAt || user.joinedDate!).toLocaleDateString() : 'N/A'}
                             </span>
                           </div>
                         </TableCell>

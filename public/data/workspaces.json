@@ -1,190 +1,134 @@
 [
   {
-    "id": "ws_jumbo_customer_service",
-    "clientId": "demo-jumbo",
+    "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "client_slug": "demo-jumbo",
     "name": "Customer Service",
     "description": "Main customer support workspace",
     "plan": "premium",
-    "bundleLoads": {
-      "limit": 25000,
-      "used": 18500,
-      "remaining": 6500
-    },
-    "messages": {
-      "limit": 500000,
-      "used": 234000,
-      "remaining": 266000
-    },
-    "apiCalls": {
-      "limit": 1000000,
-      "used": 445000,
-      "remaining": 555000
-    },
-    "sessions": {
-      "limit": 125000,
-      "used": 89500,
-      "remaining": 35500
-    },
-    "walletCredits": 50.00,
-    "overageRates": {
-      "bundleLoads": 0.25,
-      "messages": 0.0015,
-      "apiCalls": 0.0001,
-      "sessions": 0.01
-    },
-    "subscriptionStartDate": "2024-01-01",
-    "billingResetDay": 1,
-    "usageResetInterval": "monthly",
-    "overageTracking": {
-      "bundleOverageUsed": 0,
-      "sessionOverageUsed": 0,
-      "creditsSpentOnOverage": 0
-    },
     "status": "active",
-    "createdAt": "2024-01-01",
-    "billingCycle": "annual",
-    "nextBillingDate": "2026-01-01",
-    "monthlyFee": 2499.00
+    "monthly_fee": 2499.00,
+    "billing_cycle": "annual",
+    "usage_reset_interval": "monthly",
+    "billing_reset_day": 1,
+    "subscription_start_date": "2024-01-01",
+    "next_billing_date": "2026-01-01",
+    "next_usage_reset_date": "2025-01-01",
+    "bundle_loads_limit": 25000,
+    "bundle_loads_used": 18500,
+    "messages_limit": 500000,
+    "messages_used": 234000,
+    "api_calls_limit": 1000000,
+    "api_calls_used": 445000,
+    "sessions_limit": 125000,
+    "sessions_used": 89500,
+    "wallet_credits": 50.00,
+    "overage_rate_bundle_loads": 0.25,
+    "overage_rate_messages": 0.0015,
+    "overage_rate_api_calls": 0.0001,
+    "overage_rate_sessions": 0.01,
+    "bundle_overage_used": 0,
+    "session_overage_used": 0,
+    "credits_spent_on_overage": 0,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-12-09T10:00:00Z"
   },
   {
-    "id": "ws_jumbo_hr",
-    "clientId": "demo-jumbo",
+    "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+    "client_slug": "demo-jumbo",
     "name": "HR Support",
     "description": "Internal employee assistance",
     "plan": "basic",
-    "bundleLoads": {
-      "limit": 5000,
-      "used": 1200,
-      "remaining": 3800
-    },
-    "messages": {
-      "limit": 100000,
-      "used": 28000,
-      "remaining": 72000
-    },
-    "apiCalls": {
-      "limit": 250000,
-      "used": 65000,
-      "remaining": 185000
-    },
-    "sessions": {
-      "limit": 25000,
-      "used": 6200,
-      "remaining": 18800
-    },
-    "walletCredits": 25.00,
-    "overageRates": {
-      "bundleLoads": 0.30,
-      "messages": 0.002,
-      "apiCalls": 0.00015,
-      "sessions": 0.015
-    },
-    "subscriptionStartDate": "2024-01-15",
-    "billingResetDay": 15,
-    "usageResetInterval": "monthly",
-    "overageTracking": {
-      "bundleOverageUsed": 0,
-      "sessionOverageUsed": 0,
-      "creditsSpentOnOverage": 0
-    },
     "status": "active",
-    "createdAt": "2024-01-15",
-    "billingCycle": "annual",
-    "nextBillingDate": "2026-01-15",
-    "monthlyFee": 299.00
+    "monthly_fee": 299.00,
+    "billing_cycle": "annual",
+    "usage_reset_interval": "monthly",
+    "billing_reset_day": 15,
+    "subscription_start_date": "2024-01-15",
+    "next_billing_date": "2026-01-15",
+    "next_usage_reset_date": "2025-01-15",
+    "bundle_loads_limit": 5000,
+    "bundle_loads_used": 1200,
+    "messages_limit": 100000,
+    "messages_used": 28000,
+    "api_calls_limit": 250000,
+    "api_calls_used": 65000,
+    "sessions_limit": 25000,
+    "sessions_used": 6200,
+    "wallet_credits": 25.00,
+    "overage_rate_bundle_loads": 0.30,
+    "overage_rate_messages": 0.002,
+    "overage_rate_api_calls": 0.00015,
+    "overage_rate_sessions": 0.015,
+    "bundle_overage_used": 0,
+    "session_overage_used": 0,
+    "credits_spent_on_overage": 0,
+    "created_at": "2024-01-15T00:00:00Z",
+    "updated_at": "2024-12-09T10:00:00Z"
   },
   {
-    "id": "ws_jumbo_store",
-    "clientId": "demo-jumbo",
+    "id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+    "client_slug": "demo-jumbo",
     "name": "Store Locator",
     "description": "Simple store information bot",
     "plan": "starter",
-    "bundleLoads": {
-      "limit": 1000,
-      "used": 890,
-      "remaining": 110
-    },
-    "messages": {
-      "limit": 25000,
-      "used": 12000,
-      "remaining": 13000
-    },
-    "apiCalls": {
-      "limit": 50000,
-      "used": 18000,
-      "remaining": 32000
-    },
-    "sessions": {
-      "limit": 5000,
-      "used": 4200,
-      "remaining": 800
-    },
-    "walletCredits": 0,
-    "overageRates": {
-      "bundleLoads": 0.35,
-      "messages": 0.0025,
-      "apiCalls": 0.0002,
-      "sessions": 0.02
-    },
-    "subscriptionStartDate": "2024-01-20",
-    "billingResetDay": 20,
-    "usageResetInterval": "monthly",
-    "overageTracking": {
-      "bundleOverageUsed": 0,
-      "sessionOverageUsed": 0,
-      "creditsSpentOnOverage": 0
-    },
     "status": "active",
-    "createdAt": "2024-01-20",
-    "billingCycle": "annual",
-    "nextBillingDate": "2026-01-20",
-    "monthlyFee": 99.00
+    "monthly_fee": 99.00,
+    "billing_cycle": "annual",
+    "usage_reset_interval": "daily",
+    "billing_reset_day": 20,
+    "subscription_start_date": "2024-01-20",
+    "next_billing_date": "2026-01-20",
+    "next_usage_reset_date": "2024-12-10",
+    "bundle_loads_limit": 1000,
+    "bundle_loads_used": 890,
+    "messages_limit": 25000,
+    "messages_used": 12000,
+    "api_calls_limit": 50000,
+    "api_calls_used": 18000,
+    "sessions_limit": 5000,
+    "sessions_used": 4200,
+    "wallet_credits": 0,
+    "overage_rate_bundle_loads": 0.35,
+    "overage_rate_messages": 0.0025,
+    "overage_rate_api_calls": 0.0002,
+    "overage_rate_sessions": 0.02,
+    "bundle_overage_used": 0,
+    "session_overage_used": 0,
+    "credits_spent_on_overage": 0,
+    "created_at": "2024-01-20T00:00:00Z",
+    "updated_at": "2024-12-09T10:00:00Z"
   },
   {
-    "id": "ws_techstart_main",
-    "clientId": "demo-hitapes",
+    "id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+    "client_slug": "demo-hitapes",
     "name": "Main Workspace",
     "description": "All company operations",
     "plan": "basic",
-    "bundleLoads": {
-      "limit": 5000,
-      "used": 5150,
-      "remaining": 0
-    },
-    "messages": {
-      "limit": 100000,
-      "used": 56000,
-      "remaining": 44000
-    },
-    "apiCalls": {
-      "limit": 250000,
-      "used": 123000,
-      "remaining": 127000
-    },
-    "sessions": {
-      "limit": 25000,
-      "used": 15800,
-      "remaining": 9200
-    },
-    "walletCredits": 43.00,
-    "overageRates": {
-      "bundleLoads": 0.30,
-      "messages": 0.002,
-      "apiCalls": 0.00015,
-      "sessions": 0.015
-    },
-    "subscriptionStartDate": "2024-01-01",
-    "billingResetDay": 1,
-    "usageResetInterval": "monthly",
-    "overageTracking": {
-      "bundleOverageUsed": 150,
-      "sessionOverageUsed": 0,
-      "creditsSpentOnOverage": 57.00
-    },
     "status": "active",
-    "createdAt": "2024-01-01",
-    "billingCycle": "annual",
-    "nextBillingDate": "2026-01-01",
-    "monthlyFee": 299.00
+    "monthly_fee": 299.00,
+    "billing_cycle": "annual",
+    "usage_reset_interval": "monthly",
+    "billing_reset_day": 1,
+    "subscription_start_date": "2024-01-01",
+    "next_billing_date": "2026-01-01",
+    "next_usage_reset_date": "2025-01-01",
+    "bundle_loads_limit": 5000,
+    "bundle_loads_used": 5150,
+    "messages_limit": 100000,
+    "messages_used": 56000,
+    "api_calls_limit": 250000,
+    "api_calls_used": 123000,
+    "sessions_limit": 25000,
+    "sessions_used": 15800,
+    "wallet_credits": 43.00,
+    "overage_rate_bundle_loads": 0.30,
+    "overage_rate_messages": 0.002,
+    "overage_rate_api_calls": 0.00015,
+    "overage_rate_sessions": 0.015,
+    "bundle_overage_used": 150,
+    "session_overage_used": 0,
+    "credits_spent_on_overage": 57.00,
+    "created_at": "2024-01-01T00:00:00Z",
+    "updated_at": "2024-12-09T10:00:00Z"
   }
 ]

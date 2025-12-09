@@ -9,7 +9,7 @@ export default function LoginPage() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect');
 
-  const [email, setEmail] = useState(clients[0].login.email);
+  const [email, setEmail] = useState(clients[0].email || '');
   const [password, setPassword] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -86,8 +86,8 @@ export default function LoginPage() {
                 value={email}
                 onChange={e => setEmail(e.target.value)}
                 options={clients.map(c => ({
-                  value: c.login.email,
-                  label: `${c.name} — ${c.login.email}`
+                  value: c.email || '',
+                  label: `${c.name} — ${c.email || 'No email'}`
                 }))}
               />
             ) : (

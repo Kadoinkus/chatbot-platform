@@ -38,15 +38,30 @@ export type ClientLogin = {
   password: string;
 };
 
+export type ClientStatus = 'active' | 'suspended' | 'trial' | 'cancelled';
+export type CompanySize = '1-10' | '11-50' | '51-200' | '201-500' | '500+';
+
 export type Client = {
   id: string;
   name: string;
   slug: string;
+  email?: string;
+  phone?: string;
+  website?: string;
+  logoUrl?: string;
+  industry?: string;
+  companySize?: CompanySize;
+  country?: string;
+  timezone?: string;
   palette: Palette;
   login: ClientLogin;
   defaultWorkspaceId?: string;
   /** Demo accounts have read-only access and display a demo badge */
   isDemo?: boolean;
+  status?: ClientStatus;
+  trialEndsAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 // =============================================================================
@@ -56,7 +71,7 @@ export type Client = {
 export type PlanType = 'starter' | 'basic' | 'premium' | 'enterprise' | 'custom';
 export type WorkspaceStatus = 'active' | 'suspended' | 'trial';
 export type BillingCycle = 'monthly' | 'quarterly' | 'annual';  // Invoice frequency
-export type UsageResetInterval = 'monthly' | 'quarterly' | 'annual';  // When usage counters reset
+export type UsageResetInterval = 'daily' | 'monthly' | 'quarterly' | 'annual';  // When usage counters reset
 
 export type UsageCounter = {
   limit: number;
@@ -80,7 +95,8 @@ export type OverageTracking = {
 
 export type Workspace = {
   id: string;
-  clientId: string;
+  clientId?: string;                    // @deprecated - use clientSlug
+  clientSlug: string;                   // FK to clients.slug
   name: string;
   description?: string;
   plan: PlanType;
@@ -96,11 +112,13 @@ export type Workspace = {
   monthlyFee: number;                   // Base fee per period
   nextBillingDate: string;              // Next invoice date
   // Usage reset (separate from billing - when counters reset)
-  usageResetInterval?: UsageResetInterval;  // Defaults to 'monthly' - most plans reset monthly
+  usageResetInterval?: UsageResetInterval;  // Defaults to 'monthly' - daily, monthly, quarterly, annual
   subscriptionStartDate?: string;       // ISO date when subscription started
-  billingResetDay?: number;             // Day of month usage resets (1-28)
+  billingResetDay?: number;             // Day of month usage resets (1-28, ignored for daily)
+  nextUsageResetDate?: string;          // Next counter reset date
   overageTracking?: OverageTracking;    // Track overage this usage period
   createdAt: string;
+  updatedAt?: string;
 };
 
 // =============================================================================
@@ -144,20 +162,30 @@ export type BotMetrics = AssistantMetrics;
 // =============================================================================
 
 export type TeamRole = 'admin' | 'manager' | 'agent' | 'viewer';
-export type UserStatus = 'active' | 'inactive' | 'pending';
+export type UserStatus = 'active' | 'inactive' | 'pending' | 'suspended';
 
 export type User = {
   id: string;
-  clientId: string;
+  clientId?: string;                   // @deprecated - use clientSlug
+  clientSlug: string;                  // FK to clients.slug
   name: string;
   email: string;
   role: TeamRole;
   status: UserStatus;
-  avatar: string;
-  lastActive: string;
+  avatar?: string;                     // @deprecated - use avatarUrl
+  avatarUrl?: string;
+  lastActive?: string;                 // @deprecated - use lastActiveAt
+  lastActiveAt?: string | null;
+  lastLoginAt?: string | null;
   conversationsHandled: number;
-  joinedDate: string;
-  phone?: string;
+  joinedDate?: string;                 // @deprecated - use joinedAt
+  joinedAt?: string | null;
+  phone?: string | null;
+  emailVerified?: boolean;
+  invitedBy?: string | null;           // FK to users.id
+  invitedAt?: string | null;
+  createdAt?: string;
+  updatedAt?: string;
 };
 
 // =============================================================================
@@ -339,6 +367,125 @@ export type CounterSummary = {
     resolutionRateChange: string;
     csatChange: string;
   };
+};
+
+// =============================================================================
+// Mascot (Supabase table - maps to Assistant in UI)
+// =============================================================================
+
+/**
+ * Mascot record from Supabase mascots table
+ * Extended with allocation and usage tracking
+ */
+export type MascotDB = {
+  id: string;
+  mascotSlug: string;                  // Unique identifier (e.g., m1, m2)
+  clientSlug: string;                  // FK to clients.slug
+  workspaceId: string;                 // FK to workspaces.id
+  name: string;
+  description?: string | null;
+  imageUrl?: string | null;
+  status: AgentStatus;
+  // Lifetime stats
+  totalConversations: number;
+  totalMessages: number;
+  // Performance metrics
+  avgResponseTimeMs?: number | null;
+  resolutionRate?: number | null;      // % resolved
+  csatScore?: number | null;           // 1.0-5.0
+  configVersion?: string | null;
+  // Allocation percentages (null = equal split among workspace mascots)
+  bundleAllocationPct?: number | null;
+  sessionsAllocationPct?: number | null;
+  messagesAllocationPct?: number | null;
+  // Current period usage (per mascot)
+  bundleLoadsUsed: number;
+  sessionsUsed: number;
+  messagesUsed: number;
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+// =============================================================================
+// Usage History (Daily Snapshots)
+// =============================================================================
+
+/**
+ * Daily usage snapshot for trend reporting
+ */
+export type UsageHistory = {
+  id: string;
+  workspaceId: string;
+  date: string;                        // YYYY-MM-DD
+  bundleLoads: number;
+  messages: number;
+  apiCalls: number;
+  sessions: number;
+  tokensUsed: number;
+  costEur: number;
+  createdAt: string;
+};
+
+// =============================================================================
+// Usage Resets (Counter Reset Records)
+// =============================================================================
+
+/**
+ * Record of usage counter reset at end of billing period
+ */
+export type UsageReset = {
+  id: string;
+  workspaceId: string;
+  resetAt: string;                     // When reset occurred
+  periodStart: string;                 // YYYY-MM-DD
+  periodEnd: string;                   // YYYY-MM-DD
+  bundleLoadsFinal: number;
+  messagesFinal: number;
+  apiCallsFinal: number;
+  sessionsFinal: number;
+  overageChargedEur: number;
+  creditsSpentEur: number;
+  createdAt: string;
+};
+
+// =============================================================================
+// Credit Transactions (Wallet Ledger)
+// =============================================================================
+
+export type CreditTransactionType = 'purchase' | 'bonus' | 'overage_deduction' | 'refund' | 'adjustment';
+
+/**
+ * Wallet credit transaction record
+ */
+export type CreditTransaction = {
+  id: string;
+  workspaceId: string;
+  type: CreditTransactionType;
+  amountEur: number;                   // Positive = credit, negative = debit
+  balanceAfterEur: number;
+  description?: string | null;
+  referenceId?: string | null;         // External reference (payment ID, reset ID)
+  createdBy?: string | null;           // FK to users.id
+  createdAt: string;
+};
+
+// =============================================================================
+// Workspace Members (RBAC)
+// =============================================================================
+
+export type WorkspaceMemberRole = 'admin' | 'manager' | 'agent' | 'viewer';
+
+/**
+ * User access and role per workspace
+ */
+export type WorkspaceMember = {
+  id: string;
+  workspaceId: string;
+  userId: string;
+  role: WorkspaceMemberRole;
+  permissions?: Record<string, boolean> | null;  // Custom permission overrides
+  createdAt: string;
+  updatedAt: string;
 };
 
 // =============================================================================

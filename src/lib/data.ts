@@ -64,6 +64,8 @@ export const clients = (clientsJson as DB_Client[]).map(client => {
     country: client.country,
     timezone: client.timezone,
     palette,
+    // Demo login credentials (not in production DB, only for mock data)
+    login: (client as any).login as { email: string; password: string } | undefined,
     defaultWorkspaceId: client.default_workspace_id,
     isDemo: client.is_demo,
     status: client.status,

@@ -7,6 +7,11 @@ export default function StatusBadge({ status }: { status: AgentStatus }) {
     'Disabled': { color: 'bg-status-needs-finalization', label: 'Disabled' },
     'Draft': { color: 'bg-status-needs-finalization', label: 'Draft' }
   };
-  const config = map[status];
-  return <span className="badge bg-background-tertiary text-foreground-secondary"><span className={`status-dot ${config.color}`}></span>{config.label}</span>;
+  const config = map[status] || { color: 'bg-status-needs-finalization', label: status || 'Unknown' };
+  return (
+    <span className="badge bg-background-tertiary text-foreground-secondary">
+      <span className={`status-dot ${config.color}`}></span>
+      {config.label}
+    </span>
+  );
 }

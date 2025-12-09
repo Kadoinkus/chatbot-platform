@@ -149,6 +149,17 @@ export function loadClients(): Client[] {
   return clientsData;
 }
 
+function normalizeStatus(rawStatus: string | undefined): Assistant['status'] {
+  const normalized = (rawStatus || 'Draft').toLowerCase();
+  const map: Record<string, Assistant['status']> = {
+    active: 'Active',
+    paused: 'Paused',
+    disabled: 'Disabled',
+    draft: 'Draft',
+  };
+  return map[normalized] || 'Draft';
+}
+
 export function loadAssistants(): Assistant[] {
   if (!assistantsData) {
     // Load from mascots.json (snake_case) and convert to Assistant format
@@ -159,7 +170,7 @@ export function loadAssistants(): Assistant[] {
       workspaceId: m.workspace_id,
       name: m.name,
       image: m.image_url || '',
-      status: m.status,
+      status: normalizeStatus(m.status),
       conversations: m.total_conversations || 0,
       description: m.description || '',
       metrics: {

@@ -182,8 +182,35 @@ export async function loadClients(): Promise<Client[]> {
 
 export async function loadAssistants(): Promise<Assistant[]> {
   if (assistantsData) return assistantsData;
-  const response = await fetch('/data/assistants.json');
-  assistantsData = await response.json();
+  const response = await fetch('/data/mascots.json');
+  const raw = await response.json();
+  // Convert snake_case to camelCase and normalize status casing
+  const normalizeStatus = (status: string | undefined): Assistant['status'] => {
+    const normalized = (status || 'Draft').toLowerCase();
+    const map: Record<string, Assistant['status']> = {
+      active: 'Active',
+      paused: 'Paused',
+      disabled: 'Disabled',
+      draft: 'Draft',
+    };
+    return map[normalized] || 'Draft';
+  };
+
+  assistantsData = (raw as any[]).map((m: any) => ({
+    id: m.mascot_slug,
+    clientId: m.client_slug,
+    workspaceId: m.workspace_id,
+    name: m.name,
+    image: m.image_url || '',
+    status: normalizeStatus(m.status),
+    conversations: m.total_conversations || 0,
+    description: m.description || '',
+    metrics: {
+      responseTime: m.avg_response_time_ms ? m.avg_response_time_ms / 1000 : 0,
+      resolutionRate: m.resolution_rate || 0,
+      csat: m.csat_score || 0,
+    }
+  }));
   return assistantsData!;
 }
 

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { resolveClientSlug } from '@/lib/slugResolver';
+import { db } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
@@ -7,9 +7,9 @@ export async function GET(
 ) {
   try {
     const { slug } = params;
-    const resolution = await resolveClientSlug(slug);
+    const client = await db.clients.getBySlug(slug);
 
-    if (!resolution) {
+    if (!client) {
       return NextResponse.json(
         {
           code: 'CLIENT_NOT_FOUND',
@@ -20,7 +20,7 @@ export async function GET(
     }
 
     // Return client without password
-    const { login, ...clientData } = resolution.client;
+    const { login, ...clientData } = client;
 
     return NextResponse.json({ data: clientData });
   } catch (error) {

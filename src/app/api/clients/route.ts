@@ -1,18 +1,18 @@
 import { NextResponse } from 'next/server';
-import { loadClients } from '@/lib/dataLoader.server';
+import { db } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
 export async function GET() {
   try {
-    const clients = await loadClients();
+    const clients = await db.clients.getAll();
 
     // Return list of clients for login dropdown (without passwords)
     const clientList = clients.map(client => ({
       id: client.id,
       name: client.name,
       slug: client.slug,
-      email: client.login.email,
+      email: (client as any).login?.email || client.email || '',
     }));
 
     return NextResponse.json({ data: clientList });

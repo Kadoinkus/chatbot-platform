@@ -167,7 +167,6 @@ export interface DB_Mascot {
   // Performance metrics
   avg_response_time_ms: number | null;
   resolution_rate: number | null;      // percentage
-  csat_score: number | null;           // 1.0-5.0
   config_version: string | null;
   // Allocation percentages (null = equal split)
   bundle_allocation_pct: number | null;

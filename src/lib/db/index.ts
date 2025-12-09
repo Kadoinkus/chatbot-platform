@@ -19,16 +19,37 @@
  */
 
 import * as mockDb from './mock';
-// import * as supabaseDb from './supabase'; // Uncomment when ready
+import * as supabaseDb from './supabase';
+import { isDemoClient, isSupabaseConfigured, shouldUseMockData } from './config';
+import type { DbOperations } from './types';
 
 export type { DbClient, DbOperations } from './types';
 
 // Determine which implementation to use
-const useMockData = process.env.USE_MOCK_DATA === 'true' ||
-  (process.env.NODE_ENV === 'development' && !process.env.SUPABASE_URL);
+const supabaseConfigured = isSupabaseConfigured();
+const useMockData = shouldUseMockData();
 
-// Export the appropriate implementation
-export const db = useMockData ? mockDb : mockDb; // Replace second mockDb with supabaseDb when ready
+function getBaseDb(): DbOperations {
+  if (useMockData) return mockDb;
+  if (supabaseConfigured) return supabaseDb;
+  console.warn('[DB] Supabase not configured, falling back to mock data');
+  return mockDb;
+}
+
+/**
+ * Get the appropriate DB implementation for a client.
+ * Demo clients always use mock data. Real clients use Supabase when available,
+ * otherwise fall back to mock.
+ */
+export function getDbForClient(clientId: string): DbOperations {
+  if (isDemoClient(clientId)) {
+    return mockDb;
+  }
+  return getBaseDb();
+}
+
+// Export the default implementation (use client-aware helpers when possible)
+export const db = getBaseDb();
 
 // Re-export for convenience
 export const {
@@ -72,5 +93,10 @@ export type {
 
 // Log which mode we're using (server-side only, won't show in browser)
 if (typeof window === 'undefined') {
-  console.log(`[DB] Using ${useMockData ? 'MOCK' : 'SUPABASE'} data source`);
+  const source = useMockData
+    ? 'MOCK (forced)'
+    : supabaseConfigured
+      ? 'SUPABASE'
+      : 'MOCK (supabase not configured)';
+  console.log(`[DB] Using ${source} data source`);
 }

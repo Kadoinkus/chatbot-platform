@@ -16,24 +16,8 @@
 
 import * as mockAnalytics from './mock';
 import * as supabaseAnalytics from './supabase';
+import { isDemoClient, isSupabaseConfigured } from '../config';
 import type { AnalyticsOperations } from './types';
-
-// Demo client IDs that should always use mock data
-const DEMO_CLIENT_IDS = ['demo-jumbo', 'demo-hitapes'];
-
-/**
- * Check if a client is a demo account
- */
-export function isDemoClient(clientId: string): boolean {
-  return DEMO_CLIENT_IDS.includes(clientId);
-}
-
-/**
- * Check if Supabase is configured
- */
-function isSupabaseConfigured(): boolean {
-  return !!(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
-}
 
 /**
  * Get the appropriate analytics implementation for a client
@@ -86,8 +70,8 @@ export async function getAnalyticsForAssistant(
 }
 
 // Export default analytics (for when you know the client context)
-// Default to mock for safety - use getAnalyticsForClient() for proper routing
-export const analytics: AnalyticsOperations = mockAnalytics;
+// Default picks Supabase when configured, otherwise falls back to mock
+export const analytics: AnalyticsOperations = isSupabaseConfigured() ? supabaseAnalytics : mockAnalytics;
 
 // Re-export types
 export type {
@@ -115,3 +99,5 @@ export type {
 
 // Export both implementations for direct access if needed
 export { mockAnalytics, supabaseAnalytics };
+// Re-export demo helper so consumers don't need to import config directly
+export { isDemoClient } from '../config';

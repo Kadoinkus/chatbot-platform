@@ -54,7 +54,7 @@ export type Client = {
   country?: string;
   timezone?: string;
   palette: Palette;
-  login: ClientLogin;
+  login?: ClientLogin;
   defaultWorkspaceId?: string;
   /** Demo accounts have read-only access and display a demo badge */
   isDemo?: boolean;
@@ -132,7 +132,6 @@ export type AgentStatus = 'Active' | 'Paused' | 'Disabled' | 'Draft';
 export type AssistantMetrics = {
   responseTime: number;
   resolutionRate: number;
-  csat: number;
 };
 
 export type Assistant = {
@@ -325,7 +324,6 @@ export type MetricsData = {
   assistantUsageByDay: Record<string, UsageData[]>;
   topIntents: Record<string, IntentData[]>;
   assistantIntents: Record<string, IntentData[]>;
-  csat: Record<string, number>;
 };
 
 // =============================================================================
@@ -365,7 +363,6 @@ export type CounterSummary = {
   trends: {
     conversationsChange: string;
     resolutionRateChange: string;
-    csatChange: string;
   };
 };
 
@@ -392,7 +389,6 @@ export type MascotDB = {
   // Performance metrics
   avgResponseTimeMs?: number | null;
   resolutionRate?: number | null;      // % resolved
-  csatScore?: number | null;           // 1.0-5.0
   configVersion?: string | null;
   // Allocation percentages (null = equal split among workspace mascots)
   bundleAllocationPct?: number | null;

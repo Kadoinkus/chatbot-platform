@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAssistantsByClientId, getAssistantsByWorkspaceId, loadAssistants } from '@/lib/dataLoader.server';
+import { db as baseDb, getDbForClient } from '@/lib/db';
+import * as mockDb from '@/lib/db/mock';
 
 export const dynamic = 'force-dynamic';
 
@@ -12,12 +13,18 @@ export async function GET(request: NextRequest) {
     let assistants;
 
     if (workspaceId) {
-      assistants = await getAssistantsByWorkspaceId(workspaceId);
+      // Prefer client-scoped DB when possible; fall back to mock for demo data when Supabase is configured
+      const byWorkspace =
+        (await baseDb.assistants.getByWorkspaceId(workspaceId)) ||
+        (await mockDb.assistants.getByWorkspaceId(workspaceId));
+      assistants = byWorkspace;
     } else if (clientId) {
-      assistants = await getAssistantsByClientId(clientId);
+      const scopedDb = getDbForClient(clientId);
+      assistants = await scopedDb.assistants.getByClientId(clientId);
     } else {
       // Return all assistants (admin view)
-      assistants = await loadAssistants();
+      const all = await baseDb.assistants.getAll();
+      assistants = all.length > 0 ? all : await mockDb.assistants.getAll();
     }
 
     return NextResponse.json({ data: assistants });

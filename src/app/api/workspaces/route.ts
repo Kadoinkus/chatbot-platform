@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getWorkspacesByClientId } from '@/lib/dataLoader.server';
+import { getDbForClient } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,7 +18,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    const workspaces = await getWorkspacesByClientId(clientId);
+    const db = getDbForClient(clientId);
+    const workspaces = await db.workspaces.getByClientId(clientId);
 
     return NextResponse.json({ data: workspaces });
   } catch (error) {

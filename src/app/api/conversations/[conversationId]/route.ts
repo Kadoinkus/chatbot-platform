@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { loadConversations, getMessagesByConversationId } from '@/lib/dataLoader.server';
+import { db as baseDb } from '@/lib/db';
+import * as mockDb from '@/lib/db/mock';
 
 export async function GET(
   request: NextRequest,
@@ -9,8 +10,10 @@ export async function GET(
     const { conversationId } = params;
 
     // Get conversation
-    const conversations = await loadConversations();
-    const conversation = conversations.find(c => c.id === conversationId);
+    let conversation = await baseDb.conversations.getById(conversationId);
+    if (!conversation) {
+      conversation = await mockDb.conversations.getById(conversationId);
+    }
 
     if (!conversation) {
       return NextResponse.json(
@@ -23,7 +26,9 @@ export async function GET(
     }
 
     // Get messages
-    const messages = await getMessagesByConversationId(conversationId);
+    const messages =
+      (await baseDb.messages.getByConversationId(conversationId)) ||
+      (await mockDb.messages.getByConversationId(conversationId));
 
     return NextResponse.json({
       data: {

@@ -20,7 +20,9 @@
 
 import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { loadClients } from '@/lib/dataLoader.server';
+import { getDbForClient } from '@/lib/db';
+import * as mockDb from '@/lib/db/mock';
+import { supabaseClient } from '@/lib/db/supabase/client';
 import { LoginRequestSchema, formatZodErrors } from '@/lib/schemas';
 import type { AuthSession } from '@/types';
 
@@ -51,11 +53,64 @@ export async function POST(request: NextRequest) {
 
     const { email, password } = validation.data;
 
-    // Load clients and find matching credentials
-    const clients = await loadClients();
-    const client = clients.find(
-      c => c.login.email === email && c.login.password === password
-    );
+    // Resolve client and authenticate:
+    // - Demo clients: check mock credentials (email/password in JSON)
+    // - Real clients: use Supabase auth when configured
+    const db = getDbForClient(''); // default DB selection
+    const [clientsBase, clientsMock] = await Promise.all([
+      db.clients.getAll(),
+      mockDb.clients.getAll(),
+    ]);
+    const allClients = [...clientsBase, ...clientsMock];
+
+    // Demo path: credentials stored in login
+    const demoMatch = allClients.find(c => c.login?.email === email && c.login?.password === password);
+
+    let client = demoMatch || null;
+    let supabaseUserId: string | null = null;
+
+    if (!demoMatch) {
+      // Attempt Supabase auth for real clients
+      if (!supabaseClient) {
+        return NextResponse.json(
+          {
+            code: 'INVALID_CREDENTIALS',
+            message: 'Invalid email or password',
+          },
+          { status: 401 }
+        );
+      }
+
+      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      if (error || !data.session) {
+        return NextResponse.json(
+          {
+            code: 'INVALID_CREDENTIALS',
+            message: 'Invalid email or password',
+          },
+          { status: 401 }
+        );
+      }
+
+      supabaseUserId = data.session.user.id;
+
+      // Find client by email (or domain) in client list
+      const emailLower = email.toLowerCase();
+      client =
+        allClients.find(c => (c.email || '').toLowerCase() === emailLower) ||
+        allClients.find(c => (c.login?.email || '').toLowerCase() === emailLower) ||
+        null;
+
+      if (!client) {
+        return NextResponse.json(
+          {
+            code: 'CLIENT_NOT_FOUND',
+            message: 'Authenticated user is not linked to a client',
+          },
+          { status: 403 }
+        );
+      }
+    }
 
     if (!client) {
       return NextResponse.json(
@@ -71,9 +126,10 @@ export async function POST(request: NextRequest) {
     const session: AuthSession = {
       clientId: client.id,
       clientSlug: client.slug,
-      userId: `user_${client.id}_owner`, // Mock user ID for now
-      role: 'owner',
+      userId: supabaseUserId || `user_${client.id}_owner`, // Supabase user id when available
+      role: 'owner', // Future: derive from Supabase role/claims
       defaultWorkspaceId: client.defaultWorkspaceId,
+      // Future: include source flag to distinguish supabase vs mock
     };
 
     // Set session cookie

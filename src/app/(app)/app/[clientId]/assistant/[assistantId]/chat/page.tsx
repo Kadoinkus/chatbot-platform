@@ -1,7 +1,8 @@
 'use client';
 import { useState, useRef, useEffect } from 'react';
-import { clients } from '@/lib/data';
 import { getClientBrandColor } from '@/lib/brandColors';
+import { getClientById, getAssistantById } from '@/lib/dataService';
+import type { Client, Assistant } from '@/types';
 import { ArrowLeft, Send, Paperclip, MoreVertical, Phone, Video, Info, Smile, Mic, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -21,8 +22,19 @@ interface Message {
 }
 
 export default function AssistantChatPage({ params }: { params: { clientId: string; assistantId: string } }) {
-  const client = clients.find(c => c.id === params.clientId);
-  const assistant = client?.assistants.find(m => m.id === params.assistantId);
+  const [client, setClient] = useState<Client | null>(null);
+  const [assistant, setAssistant] = useState<Assistant | null>(null);
+  useEffect(() => {
+    async function loadData() {
+      const [clientData, assistantData] = await Promise.all([
+        getClientById(params.clientId),
+        getAssistantById(params.assistantId),
+      ]);
+      setClient(clientData || null);
+      setAssistant(assistantData || null);
+    }
+    loadData();
+  }, [params.clientId, params.assistantId]);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',

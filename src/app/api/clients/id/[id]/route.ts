@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getClientById } from '@/lib/dataLoader.server';
+import { db } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
@@ -7,7 +7,8 @@ export async function GET(
 ) {
   try {
     const { id } = params;
-    const client = await getClientById(id);
+    // Accept either UUID or slug for convenience in demo links
+    const client = (await db.clients.getById(id)) || (await db.clients.getBySlug(id)) || null;
 
     if (!client) {
       return NextResponse.json(

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getWorkspaceById, getBotsByWorkspaceId } from '@/lib/dataLoader.server';
+import { db as baseDb, getDbForClient } from '@/lib/db';
+import * as mockDb from '@/lib/db/mock';
 
 export async function GET(
   request: NextRequest,
@@ -7,7 +8,10 @@ export async function GET(
 ) {
   try {
     const { workspaceId } = params;
-    const workspace = await getWorkspaceById(workspaceId);
+    // Try base DB first, then fall back to mock (important when Supabase is configured but demo data lives in mock)
+    const workspace =
+      (await baseDb.workspaces.getById(workspaceId)) ||
+      (await mockDb.workspaces.getById(workspaceId));
 
     if (!workspace) {
       return NextResponse.json(
@@ -19,8 +23,10 @@ export async function GET(
       );
     }
 
-    // Get bots in this workspace
-    const bots = await getBotsByWorkspaceId(workspaceId);
+    // Choose DB for assistants based on workspace client context
+    const clientKey = (workspace as any).clientSlug || (workspace as any).clientId || workspace.clientId;
+    const assistantDb = clientKey ? getDbForClient(String(clientKey)) : baseDb;
+    const bots = await assistantDb.assistants.getByWorkspaceId(workspaceId);
     const botSummary = bots.map(bot => ({
       id: bot.id,
       name: bot.name,

@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getConversationsByClientId, getConversationsByBotId } from '@/lib/dataLoader.server';
+import { getDbForClient } from '@/lib/db';
+import * as mockDb from '@/lib/db/mock';
 
 export const dynamic = 'force-dynamic';
 
@@ -22,12 +23,20 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const db = getDbForClient(clientId);
+
     // Get conversations
     let conversations;
     if (botId) {
-      conversations = await getConversationsByBotId(botId);
+      conversations = await db.conversations.getByAssistantId(botId);
+      if (!conversations || conversations.length === 0) {
+        conversations = await mockDb.conversations.getByAssistantId(botId);
+      }
     } else {
-      conversations = await getConversationsByClientId(clientId);
+      conversations = await db.conversations.getByClientId(clientId);
+      if (!conversations || conversations.length === 0) {
+        conversations = await mockDb.conversations.getByClientId(clientId);
+      }
     }
 
     // Filter by status if provided

@@ -28,7 +28,6 @@ export interface DateRange {
 export interface ClientMetrics {
   usageByDay: UsageData[];
   topIntents: IntentData[];
-  csat: number;
 }
 
 export interface AssistantMetricsResult {

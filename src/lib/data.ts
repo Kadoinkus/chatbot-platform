@@ -12,19 +12,16 @@ export type {
   BotStatus,
 } from '@/types';
 
-// Import the async data functions
-import { getClientsWithAssistants } from './dataService';
-import type { AgentStatus, Assistant, Palette } from '@/types';
+import type { AgentStatus, Assistant, Palette, Client } from '@/types';
 
-// Import JSON data directly for synchronous access (needed for auth)
-// These are in snake_case format (DB format) - matching Supabase
+// Synchronous mock data for legacy/demo flows (used by some client components)
+// These imports are tree-shaken out of production builds when not used.
 import clientsJson from '../../public/data/clients.json';
 import mascotsJson from '../../public/data/mascots.json';
 import type { DB_Client, DB_Mascot } from '@/types/database';
 
-// For authentication and initial page loads, we need synchronous data
-// This merges clients with their mascots/assistants for backward compatibility
-export const clients = (clientsJson as DB_Client[]).map(client => {
+// Build a synchronous clients array (legacy/demo)
+export const clients: Client[] = (clientsJson as DB_Client[]).map(client => {
   // Find mascots for this client (using snake_case field from JSON)
   const clientMascots: Assistant[] = (mascotsJson as DB_Mascot[])
     .filter(mascot => mascot.client_slug === client.slug)
@@ -40,7 +37,6 @@ export const clients = (clientsJson as DB_Client[]).map(client => {
       metrics: {
         responseTime: mascot.avg_response_time_ms ? mascot.avg_response_time_ms / 1000 : 0,
         resolutionRate: mascot.resolution_rate || 0,
-        csat: mascot.csat_score || 0,
       }
     }));
 
@@ -55,38 +51,22 @@ export const clients = (clientsJson as DB_Client[]).map(client => {
     id: client.slug, // Use slug as id for backward compatibility
     slug: client.slug,
     name: client.name,
-    email: client.email,
-    phone: client.phone,
-    website: client.website,
-    logoUrl: client.logo_url,
-    industry: client.industry,
-    companySize: client.company_size,
-    country: client.country,
-    timezone: client.timezone,
+    email: client.email || undefined,
+    phone: client.phone || undefined,
+    website: client.website || undefined,
+    logoUrl: client.logo_url || undefined,
+    industry: client.industry || undefined,
+    companySize: client.company_size || undefined,
+    country: client.country || undefined,
+    timezone: client.timezone || undefined,
     palette,
     // Demo login credentials (not in production DB, only for mock data)
     login: (client as any).login as { email: string; password: string } | undefined,
-    defaultWorkspaceId: client.default_workspace_id,
+    defaultWorkspaceId: client.default_workspace_id || undefined,
     isDemo: client.is_demo,
     status: client.status,
-    trialEndsAt: client.trial_ends_at,
+    trialEndsAt: client.trial_ends_at || undefined,
     createdAt: client.created_at,
-    updatedAt: client.updated_at,
-    assistants: clientMascots,
-    metrics: {
-      usageByDay: [],
-      topIntents: [],
-      csat: 0
-    }
+    updatedAt: client.updated_at || undefined,
   };
 });
-
-// Async function to get full client data
-export async function getFullClientData() {
-  try {
-    return await getClientsWithAssistants();
-  } catch (error) {
-    console.warn('Failed to load external data, falling back to minimal data:', error);
-    return clients;
-  }
-}

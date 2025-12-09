@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getUsersByClientId, loadUsers } from '@/lib/dataLoader.server';
+import { db as baseDb, getDbForClient } from '@/lib/db';
+import * as mockDb from '@/lib/db/mock';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,9 +11,15 @@ export async function GET(request: NextRequest) {
 
     let users;
     if (clientId) {
-      users = await getUsersByClientId(clientId);
+      const scopedDb = getDbForClient(clientId);
+      users = await scopedDb.users.getByClientId(clientId);
+      if (!users || users.length === 0) {
+        // Fallback to mock data for demo clients when Supabase is configured
+        users = await mockDb.users.getByClientId(clientId);
+      }
     } else {
-      users = await loadUsers();
+      const all = await baseDb.users.getAll();
+      users = all.length > 0 ? all : await mockDb.users.getAll();
     }
 
     return NextResponse.json({ data: users });

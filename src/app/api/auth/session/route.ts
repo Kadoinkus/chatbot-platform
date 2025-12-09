@@ -5,7 +5,7 @@
 
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { getClientById } from '@/lib/slugResolver';
+import { db } from '@/lib/db';
 import type { AuthSession } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -42,7 +42,7 @@ export async function GET() {
     }
 
     // Get client data
-    const client = await getClientById(session.clientId);
+    const client = await db.clients.getById(session.clientId);
 
     if (!client) {
       // Client no longer exists, clear session

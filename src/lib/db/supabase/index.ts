@@ -367,7 +367,6 @@ export const metrics: MetricsOperations = {
     return {
       usageByDay: [],
       topIntents: [],
-      csat: 0,
     };
   },
 

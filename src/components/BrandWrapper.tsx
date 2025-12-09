@@ -1,10 +1,40 @@
 'use client';
-import { clients } from '@/lib/data';
-import React from 'react';
-export default function BrandWrapper({ clientId, children }:{ clientId: string; children: React.ReactNode }) {
-  // Match by id OR slug since URL uses slug
-  const client = clients.find(c => c.id === clientId || c.slug === clientId);
-  const palette = client?.palette ?? { primary: '#0EA5E9', primaryDark: '#0284C7', accent: '#111827' };
+import React, { useEffect, useState } from 'react';
+import { getClientById } from '@/lib/dataService';
+import { useAuth } from '@/hooks/useAuth';
+
+type Palette = {
+  primary: string;
+  primaryDark: string;
+  accent: string;
+};
+
+const fallbackPalette: Palette = { primary: '#0EA5E9', primaryDark: '#0284C7', accent: '#111827' };
+
+export default function BrandWrapper({ clientId, children }: { clientId: string; children: React.ReactNode }) {
+  const { client: authClient } = useAuth();
+  const [palette, setPalette] = useState<Palette>(fallbackPalette);
+
+  useEffect(() => {
+    // Prefer the palette from the authenticated client if it matches
+    if (authClient && (authClient.id === clientId || authClient.slug === clientId) && authClient.palette) {
+      setPalette(authClient.palette as Palette);
+      return;
+    }
+
+    // Otherwise fetch the client to get palette
+    let cancelled = false;
+    (async () => {
+      const client = await getClientById(clientId);
+      if (!cancelled && client?.palette) {
+        setPalette(client.palette as Palette);
+      }
+    })();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [authClient, clientId]);
 
   return (
     <div style={{ ['--brand' as any]: palette.primary, ['--brandDark' as any]: palette.primaryDark } as React.CSSProperties}>

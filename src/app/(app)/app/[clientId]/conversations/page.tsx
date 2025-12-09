@@ -1,11 +1,11 @@
 'use client';
 
 import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
-import { clients } from '@/lib/data';
+import { getClientById, getAssistantsByClientId } from '@/lib/dataService';
 import { getAnalyticsForClient } from '@/lib/db/analytics';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { getContrastTextColor } from '@/lib/chartColors';
-import type { ChatSessionWithAnalysis, Workspace } from '@/types';
+import type { ChatSessionWithAnalysis, Workspace, Client, Assistant } from '@/types';
 import {
   Search,
   Download,
@@ -49,7 +49,8 @@ import {
 
 
 export default function ConversationHistoryPage({ params }: { params: { clientId: string } }) {
-  const client = clients.find((c) => c.id === params.clientId);
+  const [client, setClient] = useState<Client | null>(null);
+  const [assistants, setAssistants] = useState<Assistant[]>([]);
 
   // Tab state
   const [activeTab, setActiveTab] = useState('overview');
@@ -78,10 +79,8 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
   // Get assistant info by mascot slug
   const getAssistantInfo = useCallback(
-    (mascotId: string) => {
-      return client?.assistants.find((a) => a.id === mascotId);
-    },
-    [client?.assistants]
+    (mascotId: string) => assistants.find((a) => a.id === mascotId),
+    [assistants]
   );
 
   // Get date range filter
@@ -108,6 +107,23 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
     return { start, end: now };
   }, [dateRange]);
+
+  // Fetch client + assistants
+  useEffect(() => {
+    async function loadClientData() {
+      try {
+        const [clientData, assistantsData] = await Promise.all([
+          getClientById(params.clientId),
+          getAssistantsByClientId(params.clientId),
+        ]);
+        setClient(clientData || null);
+        setAssistants(assistantsData || []);
+      } catch (error) {
+        console.error('Error loading client/assistants:', error);
+      }
+    }
+    loadClientData();
+  }, [params.clientId]);
 
   // Fetch sessions
   useEffect(() => {
@@ -177,7 +193,6 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
   // Filter sessions
   const filteredSessions = useMemo(() => {
-    if (!client) return [];
     return sessions.filter((session) => {
       if (selectedBot !== 'all' && (session as any).mascot_slug !== selectedBot) return false;
 
@@ -212,7 +227,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
       return true;
     });
-  }, [sessions, selectedBot, selectedStatus, selectedWorkspace, searchTerm, client, getAssistantInfo]);
+  }, [sessions, selectedBot, selectedStatus, selectedWorkspace, searchTerm, getAssistantInfo]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
@@ -257,7 +272,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
   // Use workspace filter hook for bot filtering
   const { botOptions, workspaceOptions } = useWorkspaceFilter({
-    assistants: client?.assistants || [],
+    assistants,
     workspaces,
     selectedWorkspace,
     selectedBot,

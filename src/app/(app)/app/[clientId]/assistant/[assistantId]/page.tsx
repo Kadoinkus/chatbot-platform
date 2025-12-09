@@ -3,7 +3,7 @@ import { getClientById, getAssistantById, getAssistantMetrics } from '@/lib/data
 import { useState, useEffect } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import { UsageLine, IntentBars } from '@/components/Charts';
-import { ArrowLeft, MessageSquare, Clock, TrendingUp, Star, Bot as BotIcon } from 'lucide-react';
+import { ArrowLeft, MessageSquare, Clock, TrendingUp, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, Assistant } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
@@ -113,7 +113,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
                 </div>
               </div>
 
-            <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+            <div className="grid grid-cols-2 lg:grid-cols-3 gap-4 lg:gap-6">
               <div className="bg-background-secondary rounded-lg p-4">
                 <div className="flex items-center gap-2 text-foreground-secondary mb-2">
                   <MessageSquare size={16} />
@@ -139,15 +139,6 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
                 </div>
                 <p className="text-2xl font-bold text-foreground">{assistant.metrics.resolutionRate}%</p>
                 <p className="text-xs text-success-600 dark:text-success-500 mt-1">Above average</p>
-              </div>
-
-              <div className="bg-background-secondary rounded-lg p-4">
-                <div className="flex items-center gap-2 text-foreground-secondary mb-2">
-                  <Star size={16} />
-                  <span className="text-sm">Satisfaction</span>
-                </div>
-                <p className="text-2xl font-bold text-foreground">{assistant.metrics.csat}/5</p>
-                <p className="text-xs text-foreground-tertiary mt-1">Last 7 days</p>
               </div>
             </div>
             </Card>

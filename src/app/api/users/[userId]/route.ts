@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { loadUsers } from '@/lib/dataLoader.server';
+import { db as baseDb } from '@/lib/db';
+import * as mockDb from '@/lib/db/mock';
 
 export async function GET(
   request: NextRequest,
@@ -7,8 +8,8 @@ export async function GET(
 ) {
   try {
     const { userId } = params;
-    const users = await loadUsers();
-    const user = users.find(u => u.id === userId);
+    const fromBase = await baseDb.users.getById(userId);
+    const user = fromBase || (await mockDb.users.getById(userId));
 
     if (!user) {
       return NextResponse.json(

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getBotSessionsByClientId, getBotSessionsByBotId } from '@/lib/dataLoader.server';
+import { getDbForClient } from '@/lib/db';
+import type { AssistantSession } from '@/types';
+import * as mockDb from '@/lib/db/mock';
 
 export const dynamic = 'force-dynamic';
 
@@ -26,12 +28,20 @@ export async function GET(request: NextRequest) {
       ? { start: new Date(from), end: new Date(to) }
       : undefined;
 
+    const db = getDbForClient(clientId);
+
     // Get sessions
-    let sessions;
+    let sessions: AssistantSession[];
     if (botId) {
-      sessions = await getBotSessionsByBotId(botId, dateRange);
+      sessions = await db.sessions.getAssistantSessions(botId, dateRange);
+      if (!sessions || sessions.length === 0) {
+        sessions = await mockDb.sessions.getAssistantSessions(botId, dateRange);
+      }
     } else {
-      sessions = await getBotSessionsByClientId(clientId, dateRange);
+      sessions = await db.sessions.getAssistantSessionsByClientId(clientId, dateRange);
+      if (!sessions || sessions.length === 0) {
+        sessions = await mockDb.sessions.getAssistantSessionsByClientId(clientId, dateRange);
+      }
     }
 
     // Calculate summary statistics
@@ -39,8 +49,8 @@ export async function GET(request: NextRequest) {
     const avgDuration = total > 0
       ? sessions.reduce((sum, s) => {
           const start = new Date(s.start_time).getTime();
-          const end = new Date(s.end_time).getTime();
-          return sum + (end - start) / 1000 / 60; // minutes
+          const end = new Date(s.end_time || s.start_time).getTime();
+          return sum + Math.max((end - start) / 1000 / 60, 0); // minutes
         }, 0) / total
       : 0;
     const avgMessages = total > 0

@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
-import { clients } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { getClientById } from '@/lib/dataService';
+import type { Client } from '@/types';
 import {
   Settings,
   Building,
@@ -39,18 +40,35 @@ import {
 } from '@/components/ui';
 
 export default function SettingsPage({ params }: { params: { clientId: string } }) {
+  const [client, setClient] = useState<Client | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState('general');
   const [hasChanges, setHasChanges] = useState(false);
   const [saving, setSaving] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
 
-  const client = clients.find(c => c.id === params.clientId);
+  useEffect(() => {
+    async function loadClient() {
+      try {
+        setError(null);
+        const data = await getClientById(params.clientId);
+        setClient(data ?? null);
+      } catch (err) {
+        console.error('Failed to load client:', err);
+        setError('Failed to load settings. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadClient();
+  }, [params.clientId]);
 
   // General settings
   const [generalSettings, setGeneralSettings] = useState({
-    companyName: client?.name || '',
-    companyEmail: 'contact@' + (client?.slug || 'company') + '.com',
+    companyName: '',
+    companyEmail: '',
     companyPhone: '+1 (555) 123-4567',
     companyAddress: '123 Business Ave, New York, NY 10001',
     timezone: 'America/New_York',
@@ -89,13 +107,28 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
   // Billing settings
   const [billing, setBilling] = useState({
     plan: 'Professional',
-    billingEmail: 'billing@' + (client?.slug || 'company') + '.com',
+    billingEmail: '',
     billingCycle: 'monthly',
     paymentMethod: 'Credit Card',
     cardLast4: '4242',
     nextBilling: '2025-09-01',
     autoRenew: true
   });
+
+  // Update form values when client loads
+  useEffect(() => {
+    if (client) {
+      setGeneralSettings(prev => ({
+        ...prev,
+        companyName: client.name || '',
+        companyEmail: 'contact@' + (client.slug || 'company') + '.com',
+      }));
+      setBilling(prev => ({
+        ...prev,
+        billingEmail: 'billing@' + (client.slug || 'company') + '.com',
+      }));
+    }
+  }, [client]);
 
   const tabs = [
     { id: 'general', label: 'General', icon: Building },
@@ -182,6 +215,37 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
     }
     setHasChanges(true);
   };
+
+  if (loading) {
+    return (
+      <Page>
+        <PageContent>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground" />
+          </div>
+        </PageContent>
+      </Page>
+    );
+  }
+
+  if (error) {
+    return (
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<AlertCircle size={48} />}
+            title="Error loading settings"
+            message={error}
+            action={
+              <Button onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
+            }
+          />
+        </PageContent>
+      </Page>
+    );
+  }
 
   if (!client) {
     return (

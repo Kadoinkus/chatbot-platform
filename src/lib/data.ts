@@ -20,8 +20,13 @@ import clientsJson from '../../public/data/clients.json';
 import mascotsJson from '../../public/data/mascots.json';
 import type { DB_Client, DB_Mascot } from '@/types/database';
 
+// Extended DB_Client type for demo JSON which includes login credentials
+type DemoClient = DB_Client & {
+  login?: { email: string; password: string };
+};
+
 // Build a synchronous clients array (legacy/demo)
-export const clients: Client[] = (clientsJson as DB_Client[]).map(client => {
+export const clients: Client[] = (clientsJson as DemoClient[]).map(client => {
   // Find mascots for this client (using snake_case field from JSON)
   const clientMascots: Assistant[] = (mascotsJson as DB_Mascot[])
     .filter(mascot => mascot.client_slug === client.slug)
@@ -61,7 +66,7 @@ export const clients: Client[] = (clientsJson as DB_Client[]).map(client => {
     timezone: client.timezone || undefined,
     palette,
     // Demo login credentials (not in production DB, only for mock data)
-    login: (client as any).login as { email: string; password: string } | undefined,
+    login: client.login,
     defaultWorkspaceId: client.default_workspace_id || undefined,
     isDemo: client.is_demo,
     status: client.status,

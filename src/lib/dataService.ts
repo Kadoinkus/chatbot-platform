@@ -52,15 +52,22 @@ import type {
   IntentData,
 } from '@/types';
 
+// API response shape from our routes
+interface ApiResponse<T> {
+  data?: T;
+  code?: string;
+  message?: string;
+}
+
 async function apiGet<T>(url: string): Promise<T | null> {
   const response = await fetch(url, { cache: 'no-store' });
   if (!response.ok) return null;
-  const json = await response.json();
-  return (json as any).data as T;
+  const json: ApiResponse<T> = await response.json();
+  return json.data ?? null;
 }
 
 // Basic caching to reduce duplicate fetches during a session
-const cache: Record<string, any> = {};
+const cache: Record<string, unknown> = {};
 function memoize<T>(key: string, value: T) {
   cache[key] = value;
   return value;

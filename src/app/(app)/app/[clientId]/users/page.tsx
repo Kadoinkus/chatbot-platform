@@ -1,6 +1,5 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { clients } from '@/lib/data';
 import { getUsersByClientId, type User } from '@/lib/dataService';
 import {
   Users,
@@ -46,8 +45,6 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
   const [statusFilter, setStatusFilter] = useState<string>('all');
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
-
-  const client = clients.find(c => c.id === params.clientId);
 
   useEffect(() => {
     async function loadUsers() {

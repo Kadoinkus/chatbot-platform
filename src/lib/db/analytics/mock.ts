@@ -38,7 +38,23 @@ import chatSessionsData from '../../../../public/data/chat_sessions.json';
 import chatSessionAnalysesData from '../../../../public/data/chat_session_analyses.json';
 import chatMessagesData from '../../../../public/data/chat_messages.json';
 
-// Type for raw JSON data (different from Supabase schema)
+// Types for raw JSON data (different from Supabase schema)
+// These use index signature to allow for flexible JSON structure
+type RawChatSessionAnalysis = {
+  session_id: string;
+  mascot_id?: string;
+  mascot_slug?: string;
+} & Record<string, unknown>;
+
+type RawChatMessage = {
+  session_id: string;
+  mascot_id?: string;
+  mascot_slug?: string;
+  message: string;
+  author: string;
+  timestamp: string;
+} & Record<string, unknown>;
+
 interface RawChatSession {
   id: string;
   mascot_id?: string;
@@ -169,20 +185,20 @@ function getChatSessions(): ChatSession[] {
 
 function getChatSessionAnalyses(): ChatSessionAnalysis[] {
   if (!cachedAnalyses) {
-    cachedAnalyses = (chatSessionAnalysesData as any[]).map(a => ({
+    cachedAnalyses = (chatSessionAnalysesData as RawChatSessionAnalysis[]).map(a => ({
       ...a,
-      mascot_slug: (a as any).mascot_slug || (a as any).mascot_id,
-    }));
+      mascot_slug: a.mascot_slug || a.mascot_id || '',
+    })) as ChatSessionAnalysis[];
   }
   return cachedAnalyses;
 }
 
 function getChatMessages(): ChatMessage[] {
   if (!cachedMessages) {
-    cachedMessages = (chatMessagesData as any[]).map(m => ({
+    cachedMessages = (chatMessagesData as RawChatMessage[]).map(m => ({
       ...m,
-      mascot_slug: (m as any).mascot_slug || (m as any).mascot_id,
-    }));
+      mascot_slug: m.mascot_slug || m.mascot_id || '',
+    })) as ChatMessage[];
   }
   return cachedMessages;
 }

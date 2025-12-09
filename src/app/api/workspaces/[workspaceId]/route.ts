@@ -24,8 +24,8 @@ export async function GET(
     }
 
     // Choose DB for assistants based on workspace client context
-    const clientKey = (workspace as any).clientSlug || (workspace as any).clientId || workspace.clientId;
-    const assistantDb = clientKey ? getDbForClient(String(clientKey)) : baseDb;
+    const clientKey = workspace.clientSlug || workspace.clientId;
+    const assistantDb = clientKey ? getDbForClient(clientKey) : baseDb;
     const bots = await assistantDb.assistants.getByWorkspaceId(workspaceId);
     const botSummary = bots.map(bot => ({
       id: bot.id,

@@ -9,6 +9,12 @@ type Palette = {
   accent: string;
 };
 
+// Extend CSSProperties to allow custom CSS variables
+interface BrandCSSProperties extends React.CSSProperties {
+  '--brand'?: string;
+  '--brandDark'?: string;
+}
+
 const fallbackPalette: Palette = { primary: '#0EA5E9', primaryDark: '#0284C7', accent: '#111827' };
 
 export default function BrandWrapper({ clientId, children }: { clientId: string; children: React.ReactNode }) {
@@ -37,7 +43,7 @@ export default function BrandWrapper({ clientId, children }: { clientId: string;
   }, [authClient, clientId]);
 
   return (
-    <div style={{ ['--brand' as any]: palette.primary, ['--brandDark' as any]: palette.primaryDark } as React.CSSProperties}>
+    <div style={{ '--brand': palette.primary, '--brandDark': palette.primaryDark } as BrandCSSProperties}>
       {children}
       <style jsx global>{`
         :root { --brand: ${palette.primary}; --brandDark: ${palette.primaryDark}; }

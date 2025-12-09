@@ -1,6 +1,5 @@
 'use client';
 import { useState } from 'react';
-import { clients } from '@/lib/data';
 import Sidebar from '@/components/Sidebar';
 import AuthGuard from '@/components/AuthGuard';
 import { useAuth } from '@/hooks/useAuth';
@@ -18,18 +17,20 @@ import {
 } from '@/components/ui';
 
 export default function UserProfilePage() {
-  const { session } = useAuth();
-  const client = clients.find(c => c.id === session?.clientId);
+  const { session, client } = useAuth();
   const [activeTab, setActiveTab] = useState('profile');
   const [hasChanges, setHasChanges] = useState(false);
 
-  // Profile form states
+  // Profile form states - uses client data from auth context
+  const clientSlug = client?.slug || 'company';
+  const clientName = client?.name || 'Company Inc';
+
   const [profileData, setProfileData] = useState({
     firstName: 'John',
     lastName: 'Anderson',
-    email: 'john@' + (client?.slug || 'company') + '.com',
+    email: 'john@' + clientSlug + '.com',
     phone: '+1 (555) 123-4567',
-    company: client?.name || 'Company Inc',
+    company: clientName,
     position: 'Customer Success Manager',
     location: 'New York, NY',
     timezone: 'America/New_York',

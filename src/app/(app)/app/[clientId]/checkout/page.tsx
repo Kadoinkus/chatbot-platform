@@ -21,12 +21,16 @@ import {
 } from '@/components/ui';
 
 type CheckoutStep = 'cart' | 'billing' | 'payment' | 'confirmation';
+type BillingMethod = 'subscription' | 'credits' | 'one-time';
+
+const isBillingMethod = (value: string): value is BillingMethod =>
+  ['subscription', 'credits', 'one-time'].includes(value);
 
 export default function CheckoutPage({ params }: { params: { clientId: string } }) {
   const [client, setClient] = useState<Client | undefined>();
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('cart');
-  const [billingMethod, setBillingMethod] = useState<'subscription' | 'credits' | 'one-time'>('subscription');
+  const [billingMethod, setBillingMethod] = useState<BillingMethod>('subscription');
   const [paymentMethod, setPaymentMethod] = useState('card-4242');
   const [orderPlaced, setOrderPlaced] = useState(false);
 
@@ -234,7 +238,7 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
                             name="billing"
                             value="subscription"
                             checked={billingMethod === 'subscription'}
-                            onChange={(e) => setBillingMethod(e.target.value as any)}
+                            onChange={(e) => isBillingMethod(e.target.value) && setBillingMethod(e.target.value)}
                             className="sr-only"
                           />
                           <div className="flex items-center gap-3">
@@ -254,7 +258,7 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
                             name="billing"
                             value="credits"
                             checked={billingMethod === 'credits'}
-                            onChange={(e) => setBillingMethod(e.target.value as any)}
+                            onChange={(e) => isBillingMethod(e.target.value) && setBillingMethod(e.target.value)}
                             className="sr-only"
                           />
                           <div className="flex items-center gap-3">
@@ -274,7 +278,7 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
                             name="billing"
                             value="one-time"
                             checked={billingMethod === 'one-time'}
-                            onChange={(e) => setBillingMethod(e.target.value as any)}
+                            onChange={(e) => isBillingMethod(e.target.value) && setBillingMethod(e.target.value)}
                             className="sr-only"
                           />
                           <div className="flex items-center gap-3">

@@ -25,9 +25,8 @@ export async function GET(
     }
 
     // If we have client context, ensure subsequent related lookups use correct DB
-    if ((assistant as any).clientId || (assistant as any).client_slug) {
-      const clientId = (assistant as any).clientId || (assistant as any).client_slug;
-      const scopedDb = getDbForClient(String(clientId));
+    if (assistant.clientId) {
+      const scopedDb = getDbForClient(assistant.clientId);
       // Refresh from scoped DB to ensure consistency when we initially hit the wrong source
       const refreshed = await scopedDb.assistants.getById(assistantId);
       if (refreshed) {

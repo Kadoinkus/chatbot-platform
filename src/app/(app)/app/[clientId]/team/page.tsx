@@ -1,6 +1,7 @@
 'use client';
-import { useState } from 'react';
-import { clients } from '@/lib/data';
+import { useState, useEffect } from 'react';
+import { getClientById } from '@/lib/dataService';
+import type { Client } from '@/types';
 import { Search, Mail, Shield, MoreVertical, UserPlus, Settings, Key, Activity, ArrowLeft, Users } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -30,17 +31,36 @@ interface TeamMember {
 }
 
 export default function TeamManagementPage({ params }: { params: { clientId: string } }) {
-  const client = clients.find(c => c.id === params.clientId);
+  const [client, setClient] = useState<Client | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [selectedRole, setSelectedRole] = useState('all');
 
-  // Mock team data
-  const [teamMembers] = useState<TeamMember[]>([
+  useEffect(() => {
+    async function loadClient() {
+      try {
+        setError(null);
+        const data = await getClientById(params.clientId);
+        setClient(data ?? null);
+      } catch (err) {
+        console.error('Failed to load client:', err);
+        setError('Failed to load team data. Please try again.');
+      } finally {
+        setLoading(false);
+      }
+    }
+    loadClient();
+  }, [params.clientId]);
+
+  // Mock team data - uses client slug for email domains
+  const clientSlug = client?.slug || 'company';
+  const teamMembers: TeamMember[] = [
     {
       id: '1',
       name: 'John Anderson',
-      email: 'john@' + (client?.slug || 'company') + '.com',
+      email: 'john@' + clientSlug + '.com',
       role: 'owner',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=John',
       status: 'active',
@@ -51,7 +71,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
     {
       id: '2',
       name: 'Sarah Mitchell',
-      email: 'sarah@' + (client?.slug || 'company') + '.com',
+      email: 'sarah@' + clientSlug + '.com',
       role: 'admin',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Sarah',
       status: 'active',
@@ -62,7 +82,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
     {
       id: '3',
       name: 'Mike Chen',
-      email: 'mike@' + (client?.slug || 'company') + '.com',
+      email: 'mike@' + clientSlug + '.com',
       role: 'agent',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Mike',
       status: 'active',
@@ -73,7 +93,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
     {
       id: '4',
       name: 'Emily Rodriguez',
-      email: 'emily@' + (client?.slug || 'company') + '.com',
+      email: 'emily@' + clientSlug + '.com',
       role: 'agent',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Emily',
       status: 'active',
@@ -84,7 +104,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
     {
       id: '5',
       name: 'David Kim',
-      email: 'david@' + (client?.slug || 'company') + '.com',
+      email: 'david@' + clientSlug + '.com',
       role: 'viewer',
       avatar: 'https://api.dicebear.com/7.x/avataaars/svg?seed=David',
       status: 'invited',
@@ -92,7 +112,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
       joinedDate: new Date(),
       permissions: ['view_analytics']
     }
-  ]);
+  ];
 
   // Role icons mapping (colors now come from Badge component)
   const roleIcons = {
@@ -114,6 +134,37 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
     const matchesRole = selectedRole === 'all' || member.role === selectedRole;
     return matchesSearch && matchesRole;
   });
+
+  if (loading) {
+    return (
+      <Page>
+        <PageContent>
+          <div className="flex items-center justify-center min-h-[400px]">
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-foreground" />
+          </div>
+        </PageContent>
+      </Page>
+    );
+  }
+
+  if (error) {
+    return (
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<Users size={48} />}
+            title="Error loading team"
+            message={error}
+            action={
+              <Button onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
+            }
+          />
+        </PageContent>
+      </Page>
+    );
+  }
 
   if (!client) {
     return (

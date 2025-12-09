@@ -12,7 +12,7 @@ export async function GET() {
       id: client.id,
       name: client.name,
       slug: client.slug,
-      email: (client as any).login?.email || client.email || '',
+      email: client.login?.email || client.email || '',
     }));
 
     return NextResponse.json({ data: clientList });

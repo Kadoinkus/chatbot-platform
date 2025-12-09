@@ -66,6 +66,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   const [sessions, setSessions] = useState<ChatSessionWithAnalysis[]>([]);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
 
   // Modal state
   const [selectedSession, setSelectedSession] = useState<ChatSessionWithAnalysis | null>(null);
@@ -112,14 +113,16 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   useEffect(() => {
     async function loadClientData() {
       try {
+        setError(null);
         const [clientData, assistantsData] = await Promise.all([
           getClientById(params.clientId),
           getAssistantsByClientId(params.clientId),
         ]);
         setClient(clientData || null);
         setAssistants(assistantsData || []);
-      } catch (error) {
-        console.error('Error loading client/assistants:', error);
+      } catch (err) {
+        console.error('Error loading client/assistants:', err);
+        setError('Failed to load client data. Please try again.');
       }
     }
     loadClientData();
@@ -194,7 +197,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   // Filter sessions
   const filteredSessions = useMemo(() => {
     return sessions.filter((session) => {
-      if (selectedBot !== 'all' && (session as any).mascot_slug !== selectedBot) return false;
+      if (selectedBot !== 'all' && session.mascot_slug !== selectedBot) return false;
 
       if (selectedStatus !== 'all') {
         const status = session.analysis?.resolution_status;
@@ -206,7 +209,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
       }
 
       if (selectedWorkspace !== 'all') {
-        const bot = getAssistantInfo((session as any).mascot_slug);
+        const bot = getAssistantInfo(session.mascot_slug);
         if (bot?.workspaceId !== selectedWorkspace) return false;
       }
 
@@ -405,6 +408,21 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
           <Spinner size="lg" />
           <span className="ml-3 text-foreground-secondary">Loading conversations...</span>
         </Card>
+      );
+    }
+
+    if (error) {
+      return (
+        <EmptyState
+          icon={<MessageSquare size={48} />}
+          title="Error loading conversations"
+          message={error}
+          action={
+            <Button onClick={() => window.location.reload()}>
+              Try Again
+            </Button>
+          }
+        />
       );
     }
 

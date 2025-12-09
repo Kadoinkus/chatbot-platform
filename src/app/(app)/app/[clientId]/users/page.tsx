@@ -5,6 +5,7 @@ import { getUsersByClientId, type User } from '@/lib/dataService';
 import {
   Users,
   UserPlus,
+  User as UserIcon,
   Search,
   Edit,
   Trash2,
@@ -36,6 +37,8 @@ import {
   Spinner,
   EmptyState,
 } from '@/components/ui';
+import { KpiCard, KpiGrid } from '@/components/analytics';
+import { MobileCard, MobileBadge } from '@/components/analytics/MobileTable';
 
 export default function UsersPage({ params }: { params: { clientId: string } }) {
   const [searchTerm, setSearchTerm] = useState('');
@@ -133,55 +136,28 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
             />
 
             {/* Stats Cards */}
-            <div className="grid grid-cols-1 lg:grid-cols-4 gap-6 mb-6 lg:mb-8">
-              <Card>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-info-100 dark:bg-info-700/30 rounded-lg flex items-center justify-center">
-                    <Users className="w-6 h-6 text-info-600 dark:text-info-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-foreground-secondary">Total Users</p>
-                    <p className="text-2xl font-bold text-foreground">{users.length}</p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-success-100 dark:bg-success-700/30 rounded-lg flex items-center justify-center">
-                    <CheckCircle className="w-6 h-6 text-success-600 dark:text-success-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-foreground-secondary">Active</p>
-                    <p className="text-2xl font-bold text-foreground">{users.filter(u => u.status === 'active').length}</p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-warning-100 dark:bg-warning-700/30 rounded-lg flex items-center justify-center">
-                    <Clock className="w-6 h-6 text-warning-600 dark:text-warning-500" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-foreground-secondary">Pending</p>
-                    <p className="text-2xl font-bold text-foreground">{users.filter(u => u.status === 'pending').length}</p>
-                  </div>
-                </div>
-              </Card>
-
-              <Card>
-                <div className="flex items-center gap-3">
-                  <div className="w-12 h-12 bg-plan-premium-bg rounded-lg flex items-center justify-center">
-                    <Crown className="w-6 h-6 text-plan-premium-text" />
-                  </div>
-                  <div>
-                    <p className="text-sm text-foreground-secondary">Admins</p>
-                    <p className="text-2xl font-bold text-foreground">{users.filter(u => u.role === 'admin').length}</p>
-                  </div>
-                </div>
-              </Card>
-            </div>
+            <KpiGrid className="mb-6">
+              <KpiCard
+                icon={Users}
+                label="Total Users"
+                value={users.length}
+              />
+              <KpiCard
+                icon={CheckCircle}
+                label="Active"
+                value={users.filter(u => u.status === 'active').length}
+              />
+              <KpiCard
+                icon={Clock}
+                label="Pending"
+                value={users.filter(u => u.status === 'pending').length}
+              />
+              <KpiCard
+                icon={Crown}
+                label="Admins"
+                value={users.filter(u => u.role === 'admin').length}
+              />
+            </KpiGrid>
 
             {/* Filters */}
             <Card className="mb-6">
@@ -213,8 +189,8 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
               </div>
             </Card>
 
-            {/* Users Table */}
-            <Card padding="none" className="overflow-hidden">
+            {/* Desktop Users Table */}
+            <Card padding="none" className="overflow-hidden hidden lg:block">
               <div className="overflow-x-auto">
                 <Table>
                   <TableHeader>
@@ -233,11 +209,20 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
                       <TableRow key={user.id}>
                         <TableCell>
                           <div className="flex items-center gap-3">
-                            <img
-                              src={user.avatar}
-                              alt={user.name}
-                              className="w-10 h-10 rounded-full"
-                            />
+                            <div className="w-10 h-10 rounded-full bg-background-tertiary flex items-center justify-center overflow-hidden">
+                              {user.avatar ? (
+                                <img
+                                  src={user.avatar}
+                                  alt={user.name}
+                                  className="w-full h-full object-cover"
+                                  onError={(e) => {
+                                    e.currentTarget.style.display = 'none';
+                                    e.currentTarget.nextElementSibling?.classList.remove('hidden');
+                                  }}
+                                />
+                              ) : null}
+                              <UserIcon className={`w-5 h-5 text-foreground-secondary ${user.avatar ? 'hidden' : ''}`} />
+                            </div>
                             <div>
                               <p className="font-semibold text-foreground">{user.name}</p>
                               <div className="flex items-center gap-2 text-sm text-foreground-secondary">
@@ -312,6 +297,85 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
                 </Table>
               </div>
             </Card>
+
+            {/* Mobile Users Cards */}
+            <div className="lg:hidden space-y-3">
+              {filteredUsers.map((user) => (
+                <MobileCard key={user.id}>
+                  {/* Header with avatar, name and actions */}
+                  <div className="flex items-start justify-between mb-3">
+                    <div className="flex items-center gap-3">
+                      <div className="w-12 h-12 rounded-full bg-background-tertiary flex items-center justify-center overflow-hidden">
+                        {user.avatar ? (
+                          <img
+                            src={user.avatar}
+                            alt={user.name}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <UserIcon className="w-6 h-6 text-foreground-secondary" />
+                        )}
+                      </div>
+                      <div>
+                        <p className="font-semibold text-foreground">{user.name}</p>
+                        <p className="text-sm text-foreground-secondary">{user.email}</p>
+                      </div>
+                    </div>
+                    <button
+                      className="p-2 text-foreground-tertiary hover:text-foreground hover:bg-background-hover rounded-lg transition-colors"
+                      aria-label="More options"
+                    >
+                      <MoreVertical size={18} />
+                    </button>
+                  </div>
+
+                  {/* Info grid */}
+                  <div className="grid grid-cols-2 gap-3 mb-3">
+                    <div>
+                      <p className="text-xs text-foreground-tertiary">Role</p>
+                      <div className="flex items-center gap-1.5 mt-0.5">
+                        {getRoleIcon(user.role)}
+                        <span className="text-sm font-medium text-foreground capitalize">{user.role}</span>
+                      </div>
+                    </div>
+                    <div>
+                      <p className="text-xs text-foreground-tertiary">Conversations</p>
+                      <p className="text-sm font-medium text-foreground mt-0.5">{user.conversationsHandled.toLocaleString()}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-foreground-tertiary">Last Active</p>
+                      <p className="text-sm text-foreground-secondary mt-0.5">{user.lastActive || 'Never'}</p>
+                    </div>
+                    <div>
+                      <p className="text-xs text-foreground-tertiary">Joined</p>
+                      <p className="text-sm text-foreground-secondary mt-0.5">
+                        {(user.joinedAt || user.joinedDate) ? new Date(user.joinedAt || user.joinedDate!).toLocaleDateString() : 'N/A'}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Status badge */}
+                  <div className="flex items-center gap-2">
+                    <MobileBadge
+                      variant={
+                        user.status === 'active' ? 'success' :
+                        user.status === 'pending' ? 'warning' :
+                        user.status === 'inactive' ? 'default' : 'error'
+                      }
+                    >
+                      {getStatusIcon(user.status)}
+                      <span className="ml-1 capitalize">{user.status}</span>
+                    </MobileBadge>
+                    {user.phone && (
+                      <span className="text-xs text-foreground-tertiary flex items-center gap-1">
+                        <Phone size={12} />
+                        {user.phone}
+                      </span>
+                    )}
+                  </div>
+                </MobileCard>
+              ))}
+            </div>
 
             {filteredUsers.length === 0 && (
               <EmptyState

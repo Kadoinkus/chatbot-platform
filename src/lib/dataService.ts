@@ -250,7 +250,28 @@ export async function loadWorkspaces(): Promise<Workspace[]> {
 export async function loadUsers(): Promise<User[]> {
   if (usersData) return usersData;
   const response = await fetch('/data/users.json');
-  usersData = await response.json();
+  const raw = await response.json();
+  // Convert snake_case to camelCase
+  usersData = raw.map((u: any) => ({
+    id: u.id,
+    clientId: u.client_slug,
+    clientSlug: u.client_slug,
+    name: u.name,
+    email: u.email,
+    avatarUrl: u.avatar_url,
+    phone: u.phone,
+    role: u.role,
+    status: u.status,
+    emailVerified: u.email_verified,
+    lastLoginAt: u.last_login_at,
+    lastActiveAt: u.last_active_at,
+    invitedBy: u.invited_by,
+    invitedAt: u.invited_at,
+    joinedAt: u.joined_at,
+    conversationsHandled: u.conversations_handled || 0,
+    createdAt: u.created_at,
+    updatedAt: u.updated_at,
+  }));
   return usersData!;
 }
 

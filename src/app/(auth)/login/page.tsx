@@ -2,14 +2,13 @@
 import { useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { signIn } from '@/lib/auth';
-import { clients } from '@/lib/data';
-import { Card, Button, Input, Select, Alert, Spinner } from '@/components/ui';
+import { Card, Button, Input, Alert, Spinner } from '@/components/ui';
 
 export default function LoginPage() {
   const searchParams = useSearchParams();
   const redirectTo = searchParams.get('redirect');
 
-  const [email, setEmail] = useState(clients[0].login?.email || clients[0].email || '');
+  const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [err, setErr] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
@@ -80,25 +79,13 @@ export default function LoginPage() {
             </div>
 
           <div className="space-y-6">
-            {isLogin ? (
-              <Select
-                label="Account"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                options={clients.map(c => ({
-                  value: c.login?.email || c.email || '',
-                  label: `${c.name} — ${c.login?.email || c.email || 'No email'}`
-                }))}
-              />
-            ) : (
-              <Input
-                label="Email Address"
-                type="email"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                placeholder="Enter your email"
-              />
-            )}
+            <Input
+              label="Email Address"
+              type="email"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              placeholder="Enter your email"
+            />
 
             <Input
               label="Password"

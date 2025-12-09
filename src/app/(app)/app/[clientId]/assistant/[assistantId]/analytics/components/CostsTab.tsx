@@ -66,14 +66,6 @@ export function CostsTab({
     .slice(0, 5)
     .map((s, idx) => ({ ...s, rank: idx + 1, shortId: `${s.id.slice(0, 3)}...` }));
 
-  const chartData = expensiveSessions.map((s) => ({
-    session: `#${s.rank}`,
-    conversation: s.total_cost_eur || 0,
-    analysis: s.analysis?.analytics_total_cost_eur || 0,
-    conversationTokens: s.total_tokens || 0,
-    analysisTokens: s.analysis?.analytics_total_tokens || 0,
-  }));
-
   const [copiedId, setCopiedId] = useState<string | null>(null);
   useEffect(() => {
     if (!copiedId) return;
@@ -201,7 +193,13 @@ export function CostsTab({
         </p>
       <div className="h-[240px] sm:h-[300px] lg:h-[340px] overflow-visible">
         <StackedBarChart
-          data={chartData}
+          data={sessions.map((s, i) => ({
+            session: `#${i + 1}`,
+            conversation: s.total_cost_eur || 0,
+            analysis: s.analysis?.analytics_total_cost_eur || 0,
+            conversationTokens: s.total_tokens || 0,
+            analysisTokens: s.analysis?.analytics_total_tokens || 0,
+          }))}
           series={[
             { key: 'conversation', name: 'Conversation Cost', color: brandColor },
             { key: 'analysis', name: 'Analysis Cost', color: GREY[500] },

@@ -118,14 +118,56 @@ function loadJsonFile<T>(filename: string): T {
 export function loadClients(): Client[] {
   // Always prefer fresh data if login credentials are missing
   if (!clientsData || clientsData.some(c => !(c as any).login)) {
-    clientsData = loadJsonFile<Client[]>('clients.json');
+    // Load from clients.json (snake_case) and convert to Client format
+    const raw = loadJsonFile<any[]>('clients.json');
+    clientsData = raw.map(c => ({
+      id: c.slug, // Use slug as id for backward compat
+      slug: c.slug,
+      name: c.name,
+      email: c.email,
+      phone: c.phone,
+      website: c.website,
+      logoUrl: c.logo_url,
+      industry: c.industry,
+      companySize: c.company_size,
+      country: c.country,
+      timezone: c.timezone,
+      palette: {
+        primary: c.palette_primary || '#6366F1',
+        primaryDark: c.palette_primary_dark || '#4F46E5',
+        accent: c.palette_accent || '#111827',
+      },
+      login: c.login, // Demo login credentials
+      defaultWorkspaceId: c.default_workspace_id,
+      isDemo: c.is_demo,
+      status: c.status,
+      trialEndsAt: c.trial_ends_at,
+      createdAt: c.created_at,
+      updatedAt: c.updated_at,
+    }));
   }
   return clientsData;
 }
 
 export function loadAssistants(): Assistant[] {
   if (!assistantsData) {
-    assistantsData = loadJsonFile<Assistant[]>('assistants.json');
+    // Load from mascots.json (snake_case) and convert to Assistant format
+    const mascots = loadJsonFile<any[]>('mascots.json');
+    assistantsData = mascots.map(m => ({
+      id: m.mascot_slug,
+      clientId: m.client_slug,
+      workspaceId: m.workspace_id,
+      name: m.name,
+      image: m.image_url || '',
+      status: m.status,
+      conversations: m.total_conversations || 0,
+      description: m.description || '',
+      metrics: {
+        responseTime: m.avg_response_time_ms ? m.avg_response_time_ms / 1000 : 0,
+        resolutionRate: m.resolution_rate || 0,
+        csat: m.csat_score || 0,
+      }
+    }));
   }
   return assistantsData;
 }
@@ -135,14 +177,89 @@ export const loadBots = loadAssistants;
 
 export function loadWorkspaces(): Workspace[] {
   if (!workspacesData) {
-    workspacesData = loadJsonFile<Workspace[]>('workspaces.json');
+    // Load from workspaces.json (snake_case) and convert to Workspace format
+    const raw = loadJsonFile<any[]>('workspaces.json');
+    workspacesData = raw.map(w => ({
+      id: w.id,
+      clientId: w.client_slug, // Map client_slug to clientId for backward compat
+      clientSlug: w.client_slug,
+      name: w.name,
+      description: w.description,
+      plan: w.plan,
+      status: w.status,
+      bundleLoads: {
+        limit: w.bundle_loads_limit || 0,
+        used: w.bundle_loads_used || 0,
+        remaining: (w.bundle_loads_limit || 0) - (w.bundle_loads_used || 0),
+      },
+      messages: {
+        limit: w.messages_limit || 0,
+        used: w.messages_used || 0,
+        remaining: (w.messages_limit || 0) - (w.messages_used || 0),
+      },
+      apiCalls: {
+        limit: w.api_calls_limit || 0,
+        used: w.api_calls_used || 0,
+        remaining: (w.api_calls_limit || 0) - (w.api_calls_used || 0),
+      },
+      sessions: {
+        limit: w.sessions_limit || 0,
+        used: w.sessions_used || 0,
+        remaining: (w.sessions_limit || 0) - (w.sessions_used || 0),
+      },
+      walletCredits: w.wallet_credits || 0,
+      overageRates: {
+        bundleLoads: w.overage_rate_bundle_loads || 0,
+        messages: w.overage_rate_messages || 0,
+        apiCalls: w.overage_rate_api_calls || 0,
+        sessions: w.overage_rate_sessions || 0,
+      },
+      billingCycle: w.billing_cycle || 'monthly',
+      monthlyFee: w.monthly_fee || 0,
+      nextBillingDate: w.next_billing_date || '',
+      usageResetInterval: w.usage_reset_interval,
+      subscriptionStartDate: w.subscription_start_date,
+      billingResetDay: w.billing_reset_day,
+      nextUsageResetDate: w.next_usage_reset_date,
+      overageTracking: {
+        bundleOverageUsed: w.bundle_overage_used || 0,
+        sessionOverageUsed: w.session_overage_used || 0,
+        creditsSpentOnOverage: w.credits_spent_on_overage || 0,
+      },
+      createdAt: w.created_at,
+      updatedAt: w.updated_at,
+    }));
   }
   return workspacesData;
 }
 
 export function loadUsers(): User[] {
   if (!usersData) {
-    usersData = loadJsonFile<User[]>('users.json');
+    // Load from users.json (snake_case) and convert to User format
+    const raw = loadJsonFile<any[]>('users.json');
+    usersData = raw.map(u => ({
+      id: u.id,
+      clientId: u.client_slug, // Map client_slug to clientId for backward compat
+      clientSlug: u.client_slug,
+      name: u.name,
+      email: u.email,
+      role: u.role,
+      status: u.status,
+      avatar: u.avatar_url,
+      avatarUrl: u.avatar_url,
+      phone: u.phone,
+      emailVerified: u.email_verified,
+      lastActive: u.last_active_at,
+      lastActiveAt: u.last_active_at,
+      lastLoginAt: u.last_login_at,
+      conversationsHandled: u.conversations_handled || 0,
+      joinedDate: u.joined_at,
+      joinedAt: u.joined_at,
+      invitedBy: u.invited_by,
+      invitedAt: u.invited_at,
+      createdAt: u.created_at,
+      updatedAt: u.updated_at,
+    }));
   }
   return usersData;
 }

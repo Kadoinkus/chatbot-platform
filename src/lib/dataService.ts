@@ -151,7 +151,32 @@ function normalizeChatSession(raw: any): ChatSession {
 export async function loadClients(): Promise<Client[]> {
   if (clientsData) return clientsData;
   const response = await fetch('/data/clients.json');
-  clientsData = await response.json();
+  const raw = await response.json();
+  clientsData = (raw as any[]).map(c => ({
+    id: c.slug, // keep slug as id for compatibility
+    slug: c.slug,
+    name: c.name,
+    email: c.email,
+    phone: c.phone,
+    website: c.website,
+    logoUrl: c.logo_url,
+    industry: c.industry,
+    companySize: c.company_size,
+    country: c.country,
+    timezone: c.timezone,
+    palette: {
+      primary: c.palette_primary || '#6366F1',
+      primaryDark: c.palette_primary_dark || '#4F46E5',
+      accent: c.palette_accent || '#111827',
+    },
+    login: c.login,
+    defaultWorkspaceId: c.default_workspace_id,
+    isDemo: c.is_demo,
+    status: c.status,
+    trialEndsAt: c.trial_ends_at,
+    createdAt: c.created_at,
+    updatedAt: c.updated_at,
+  }));
   return clientsData!;
 }
 
@@ -168,7 +193,57 @@ export const loadBots = loadAssistants;
 export async function loadWorkspaces(): Promise<Workspace[]> {
   if (workspacesData) return workspacesData;
   const response = await fetch('/data/workspaces.json');
-  workspacesData = await response.json();
+  const raw = await response.json();
+  workspacesData = (raw as any[]).map((w: any) => ({
+    id: w.id,
+    clientId: w.client_slug,
+    clientSlug: w.client_slug,
+    name: w.name,
+    description: w.description,
+    plan: w.plan,
+    status: w.status,
+    bundleLoads: {
+      limit: w.bundle_loads_limit || 0,
+      used: w.bundle_loads_used || 0,
+      remaining: (w.bundle_loads_limit || 0) - (w.bundle_loads_used || 0),
+    },
+    messages: {
+      limit: w.messages_limit || 0,
+      used: w.messages_used || 0,
+      remaining: (w.messages_limit || 0) - (w.messages_used || 0),
+    },
+    apiCalls: {
+      limit: w.api_calls_limit || 0,
+      used: w.api_calls_used || 0,
+      remaining: (w.api_calls_limit || 0) - (w.api_calls_used || 0),
+    },
+    sessions: {
+      limit: w.sessions_limit || 0,
+      used: w.sessions_used || 0,
+      remaining: (w.sessions_limit || 0) - (w.sessions_used || 0),
+    },
+    walletCredits: w.wallet_credits || 0,
+    overageRates: {
+      bundleLoads: w.overage_rate_bundle_loads || 0,
+      messages: w.overage_rate_messages || 0,
+      apiCalls: w.overage_rate_api_calls || 0,
+      sessions: w.overage_rate_sessions || 0,
+    },
+    billingCycle: w.billing_cycle || 'monthly',
+    monthlyFee: w.monthly_fee || 0,
+    nextBillingDate: w.next_billing_date || '',
+    usageResetInterval: w.usage_reset_interval,
+    subscriptionStartDate: w.subscription_start_date,
+    billingResetDay: w.billing_reset_day,
+    nextUsageResetDate: w.next_usage_reset_date,
+    overageTracking: {
+      bundleOverageUsed: w.bundle_overage_used || 0,
+      sessionOverageUsed: w.session_overage_used || 0,
+      creditsSpentOnOverage: w.credits_spent_on_overage || 0,
+    },
+    createdAt: w.created_at,
+    updatedAt: w.updated_at,
+  }));
   return workspacesData!;
 }
 

@@ -23,8 +23,8 @@
           "client_id": "clients.id"
         },
         "key_columns": [
-          "id", "mascot_id", "client_id", "domain",
-          "session_started_at", "session_ended_at", "first_message_at", "last_message_at",
+          "id", "mascot_slug", "client_slug", "domain",
+          "session_start", "session_end", "first_message_at", "last_message_at",
           "is_active", "end_reason", "is_dev",
           "ip_address", "user_agent",
           "country", "city", "device_type", "browser", "os",
@@ -34,7 +34,8 @@
           "total_tokens", "total_prompt_tokens", "total_completion_tokens",
           "total_cost_usd", "total_cost_eur", "average_response_time_ms",
           "easter_eggs_triggered",
-          "glb_source", "glb_transfer_size", "glb_encoded_body_size", "glb_response_end", "glb_url",
+          "glb_source", "glb_transfer_size", "glb_url",
+          "analysis_processed", "analysis_status", "analysis_attempts", "analysis_locked_at", "analysis_processed_at", "analysis_last_error",
           "full_transcript",
           "created_at", "updated_at"
         ]
@@ -56,13 +57,13 @@
       "chat_messages": {
         "primary_key": "id",
         "key_columns": [
-          "id", "session_id", "mascot_id",
+          "id", "session_id", "mascot_slug",
           "message", "author", "timestamp",
           "response_time_ms",
           "prompt_tokens", "completion_tokens", "total_tokens",
           "model_used", "cost_usd", "cost_eur", "finish_reason",
           "response_animation", "easter_egg_animation", "wait_sequence", "has_easter_egg",
-          "raw_response",
+          "raw_response", "error_message",
           "created_at"
         ]
       }

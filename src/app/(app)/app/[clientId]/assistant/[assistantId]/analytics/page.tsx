@@ -209,7 +209,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
   // Handle export for current tab
   const handleExport = useCallback((format: ExportFormat) => {
     const { startDate, endDate } = getExportDateRange();
-    const mascotId = params.assistantId;
+    const mascotSlug = params.assistantId;
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
 
@@ -220,7 +220,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
     switch (activeTab) {
       case 'overview': {
         const data = timeSeries.map(ts => ({
-          mascot_id: mascotId,
+          mascot_slug: mascotSlug,
           date: ts.date,
           sessions: ts.sessions,
           messages: ts.messages,
@@ -229,7 +229,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
           start_date: startDateStr,
           end_date: endDateStr,
         }));
-        const filename = generateExportFilename('overview', mascotId, startDate, endDate);
+        const filename = generateExportFilename('overview', mascotSlug, startDate, endDate);
         exportFn(data, filename, 'Overview');
         break;
       }
@@ -237,7 +237,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
       case 'conversations': {
         const data = sessions.map(s => ({
           session_id: s.id,
-          mascot_id: s.mascot_id,
+          mascot_slug: s.mascot_slug,
           start_date: s.session_started_at,
           end_date: s.session_ended_at || '',
           duration_seconds: s.session_duration_seconds || 0,
@@ -256,7 +256,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
           export_start_date: startDateStr,
           export_end_date: endDateStr,
         }));
-        const filename = generateExportFilename('conversations', mascotId, startDate, endDate);
+        const filename = generateExportFilename('conversations', mascotSlug, startDate, endDate);
         exportFn(data, filename, 'Conversations');
         break;
       }
@@ -266,7 +266,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
         const questionData = questions.map(q => ({
           type: 'question',
           session_id: '',
-          mascot_id: mascotId,
+          mascot_slug: mascotSlug,
           content: q.question,
           category: '',
           frequency: q.frequency,
@@ -278,7 +278,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
         const unansweredData = unansweredQuestions.map(q => ({
           type: 'unanswered_question',
           session_id: '',
-          mascot_id: mascotId,
+          mascot_slug: mascotSlug,
           content: q.question,
           category: '',
           frequency: q.frequency,
@@ -302,7 +302,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
         const urlData = urlHandoffs.map(h => ({
           type: 'url_handoff',
           session_id: '',
-          mascot_id: mascotId,
+          mascot_slug: mascotSlug,
           content: h.destination,
           category: h.category,
           frequency: h.count,
@@ -326,7 +326,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
         const emailData = emailHandoffs.map(h => ({
           type: 'email_handoff',
           session_id: '',
-          mascot_id: mascotId,
+          mascot_slug: mascotSlug,
           content: h.destination,
           category: h.category,
           frequency: h.count,
@@ -336,7 +336,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
         }));
 
         const allData = [...questionData, ...unansweredData, ...urlData, ...emailData];
-        const filename = generateExportFilename('questions_gaps', mascotId, startDate, endDate);
+        const filename = generateExportFilename('questions_gaps', mascotSlug, startDate, endDate);
         exportFn(allData, filename, 'Questions & Gaps');
         break;
       }
@@ -348,7 +348,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
           name: c.country,
           count: c.count,
           percentage: c.percentage,
-          mascot_id: mascotId,
+          mascot_slug: mascotSlug,
           start_date: startDateStr,
           end_date: endDateStr,
         }));
@@ -358,7 +358,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
           name: l.language,
           count: l.count,
           percentage: l.percentage,
-          mascot_id: mascotId,
+          mascot_slug: mascotSlug,
           start_date: startDateStr,
           end_date: endDateStr,
         }));
@@ -368,13 +368,13 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
           name: d.deviceType,
           count: d.count,
           percentage: d.percentage,
-          mascot_id: mascotId,
+          mascot_slug: mascotSlug,
           start_date: startDateStr,
           end_date: endDateStr,
         }));
 
         const allData = [...countryData, ...languageData, ...deviceData];
-        const filename = generateExportFilename('audience', mascotId, startDate, endDate);
+        const filename = generateExportFilename('audience', mascotSlug, startDate, endDate);
         exportFn(allData, filename, 'Audience');
         break;
       }
@@ -386,7 +386,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
             type: 'animation',
             name: a.animation,
             count: a.count,
-            mascot_id: mascotId,
+            mascot_slug: mascotSlug,
             start_date: startDateStr,
             end_date: endDateStr,
           })),
@@ -394,7 +394,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
             type: 'easter_egg',
             name: e.animation,
             count: e.count,
-            mascot_id: mascotId,
+            mascot_slug: mascotSlug,
             start_date: startDateStr,
             end_date: endDateStr,
           })),
@@ -402,12 +402,12 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
             type: 'wait_sequence',
             name: w.sequence,
             count: w.count,
-            mascot_id: mascotId,
+            mascot_slug: mascotSlug,
             start_date: startDateStr,
             end_date: endDateStr,
           })),
         ];
-        const filename = generateExportFilename('animations', mascotId, startDate, endDate);
+        const filename = generateExportFilename('animations', mascotSlug, startDate, endDate);
         exportFn(animationData, filename, 'Animations');
         break;
       }
@@ -415,7 +415,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
       case 'costs': {
         const data = sessions.map(s => ({
           session_id: s.id,
-          mascot_id: s.mascot_id,
+          mascot_slug: s.mascot_slug,
           date: s.session_started_at,
           total_tokens: s.total_tokens,
           input_tokens: s.input_tokens,
@@ -426,7 +426,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
           start_date: startDateStr,
           end_date: endDateStr,
         }));
-        const filename = generateExportFilename('costs', mascotId, startDate, endDate);
+        const filename = generateExportFilename('costs', mascotSlug, startDate, endDate);
         exportFn(data, filename, 'Costs');
         break;
       }

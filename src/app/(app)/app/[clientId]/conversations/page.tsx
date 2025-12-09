@@ -76,7 +76,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 10;
 
-  // Get assistant info by mascot_id
+  // Get assistant info by mascot slug
   const getAssistantInfo = useCallback(
     (mascotId: string) => {
       return client?.assistants.find((a) => a.id === mascotId);
@@ -179,7 +179,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   const filteredSessions = useMemo(() => {
     if (!client) return [];
     return sessions.filter((session) => {
-      if (selectedBot !== 'all' && session.mascot_id !== selectedBot) return false;
+      if (selectedBot !== 'all' && (session as any).mascot_slug !== selectedBot) return false;
 
       if (selectedStatus !== 'all') {
         const status = session.analysis?.resolution_status;
@@ -191,7 +191,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
       }
 
       if (selectedWorkspace !== 'all') {
-        const bot = getAssistantInfo(session.mascot_id);
+        const bot = getAssistantInfo((session as any).mascot_slug);
         if (bot?.workspaceId !== selectedWorkspace) return false;
       }
 

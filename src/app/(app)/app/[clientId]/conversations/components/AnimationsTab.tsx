@@ -52,7 +52,7 @@ export function AnimationsTab({
         onPageChange={onPageChange}
       >
         {paginatedSessions.map((session) => {
-          const assistant = getAssistantInfo(session.mascot_id);
+          const assistant = getAssistantInfo(session.mascot_slug);
           const { uniqueEasterEggs, easterEggCount } = getEasterEggInfo(session);
 
           return (
@@ -102,7 +102,7 @@ export function AnimationsTab({
         onPageChange={onPageChange}
       >
         {paginatedSessions.map((session) => {
-          const assistant = getAssistantInfo(session.mascot_id);
+          const assistant = getAssistantInfo(session.mascot_slug);
           const { uniqueEasterEggs, easterEggCount } = getEasterEggInfo(session);
 
           return (

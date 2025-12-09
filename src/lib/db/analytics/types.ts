@@ -123,7 +123,7 @@ export interface QuestionAnalytics {
 export interface ChatMessage {
   id: string;
   session_id: string;
-  mascot_id: string;
+  mascot_slug: string;
   message: string;
   author: 'user' | 'bot';
   timestamp: string;

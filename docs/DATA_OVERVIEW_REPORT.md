@@ -187,11 +187,11 @@ Use this as a quick mental model or to seed a small demo. Full file is in `docs/
   "chat_sessions": [
     {
       "id": "sess-001",
-      "mascot_id": "b1",
-      "client_id": "c1",
+      "mascot_slug": "b1",
+      "client_slug": "c1",
       "domain": "acme.com",
-      "session_started_at": "2025-08-29T09:00:00Z",
-      "session_ended_at": "2025-08-29T09:05:00Z",
+      "session_start": "2025-08-29T09:00:00Z",
+      "session_end": "2025-08-29T09:05:00Z",
       "first_message_at": "2025-08-29T09:00:05Z",
       "last_message_at": "2025-08-29T09:04:30Z",
       "is_active": false,
@@ -218,11 +218,15 @@ Use this as a quick mental model or to seed a small demo. Full file is in `docs/
       "is_dev": false,
       "glb_source": "browser_cache",
       "glb_transfer_size": 0,
-      "glb_encoded_body_size": 5242880,
-      "glb_response_end": 1234.56,
       "glb_url": "https://cdn.example.com/model.glb",
       "created_at": "2025-08-29T09:00:00Z",
-      "updated_at": "2025-08-29T09:05:00Z"
+      "updated_at": "2025-08-29T09:05:00Z",
+      "analysis_processed": true,
+      "analysis_status": "succeeded",
+      "analysis_attempts": 0,
+      "analysis_locked_at": null,
+      "analysis_processed_at": "2025-08-29T09:06:00Z",
+      "analysis_last_error": null
     }
   ],
   "chat_messages": [

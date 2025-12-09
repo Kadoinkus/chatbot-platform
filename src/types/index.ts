@@ -360,8 +360,8 @@ export type Mascot = Assistant;
  */
 export type ChatSession = {
   id: string;
-  mascot_id: string; // Maps to assistant_id in platform
-  client_id: string;
+  mascot_slug: string; // Maps to assistant_slug in platform
+  client_slug: string;
   domain?: string | null;
   user_id?: string | null;
   session_started_at: string;
@@ -458,7 +458,7 @@ export type ConversationType = 'casual' | 'goal_driven' | 'support' | 'sales';
  */
 export type ChatSessionAnalysis = {
   session_id: string;
-  mascot_id: string;
+  mascot_slug: string;
   language: string | null;
   sentiment: AnalysisSentiment | null;
   escalated: boolean;
@@ -497,7 +497,7 @@ export type ChatSessionWithAnalysis = ChatSession & {
 export type ChatMessage = {
   id: string;
   session_id: string;
-  mascot_id: string;
+  mascot_slug: string;
   message: string;
   author: 'user' | 'bot';
   timestamp: string;

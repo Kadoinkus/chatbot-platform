@@ -62,7 +62,7 @@ export const chatSessions: ChatSessionOperations = {
     let query = supabase
       .from('chat_sessions')
       .select('*')
-      .eq('mascot_id', botId)
+      .eq('mascot_slug', botId)
       .order('session_started_at', { ascending: false });
 
     if (filters?.dateRange) {
@@ -82,7 +82,7 @@ export const chatSessions: ChatSessionOperations = {
     let query = supabase
       .from('chat_sessions')
       .select('*')
-      .eq('client_id', clientId)
+      .eq('client_slug', clientId)
       .order('session_started_at', { ascending: false });
 
     if (filters?.dateRange) {
@@ -121,7 +121,7 @@ export const chatSessions: ChatSessionOperations = {
         *,
         analysis:chat_session_analyses(*)
       `)
-      .eq('mascot_id', botId)
+      .eq('mascot_slug', botId)
       .order('session_started_at', { ascending: false });
 
     if (filters?.dateRange) {
@@ -152,7 +152,7 @@ export const chatSessions: ChatSessionOperations = {
         *,
         analysis:chat_session_analyses(*)
       `)
-      .eq('client_id', clientId)
+      .eq('client_slug', clientId)
       .order('session_started_at', { ascending: false });
 
     if (filters?.dateRange) {
@@ -192,7 +192,7 @@ export const analyses: ChatSessionAnalysisOperations = {
     let query = supabase
       .from('chat_session_analyses')
       .select('*')
-      .eq('mascot_id', botId)
+      .eq('mascot_slug', botId)
       .order('created_at', { ascending: false });
 
     if (filters?.dateRange) {
@@ -289,7 +289,7 @@ export const aggregations: AnalyticsAggregations = {
     let sessionQuery = supabase
       .from('chat_sessions')
       .select('total_messages, total_tokens, total_cost_eur, average_response_time_ms, session_duration_seconds')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       sessionQuery = sessionQuery
@@ -304,7 +304,7 @@ export const aggregations: AnalyticsAggregations = {
     let analysisQuery = supabase
       .from('chat_session_analyses')
       .select('resolution_status, escalated')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       analysisQuery = analysisQuery
@@ -354,7 +354,7 @@ export const aggregations: AnalyticsAggregations = {
     let sessionQuery = supabase
       .from('chat_sessions')
       .select('total_messages, total_tokens, total_cost_eur, average_response_time_ms, session_duration_seconds')
-      .eq('client_id', clientId);
+      .eq('client_slug', clientId);
 
     if (dateRange) {
       sessionQuery = sessionQuery
@@ -369,7 +369,7 @@ export const aggregations: AnalyticsAggregations = {
     let sessionIdsQuery = supabase
       .from('chat_sessions')
       .select('id')
-      .eq('client_id', clientId);
+      .eq('client_slug', clientId);
 
     if (dateRange) {
       sessionIdsQuery = sessionIdsQuery
@@ -428,7 +428,7 @@ export const aggregations: AnalyticsAggregations = {
     let query = supabase
       .from('chat_session_analyses')
       .select('sentiment')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
@@ -452,7 +452,7 @@ export const aggregations: AnalyticsAggregations = {
     let query = supabase
       .from('chat_session_analyses')
       .select('category')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
@@ -485,7 +485,7 @@ export const aggregations: AnalyticsAggregations = {
     let query = supabase
       .from('chat_session_analyses')
       .select('language')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
@@ -518,7 +518,7 @@ export const aggregations: AnalyticsAggregations = {
     let query = supabase
       .from('chat_sessions')
       .select('device_type')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
@@ -551,7 +551,7 @@ export const aggregations: AnalyticsAggregations = {
     let query = supabase
       .from('chat_sessions')
       .select('visitor_country')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
@@ -584,7 +584,7 @@ export const aggregations: AnalyticsAggregations = {
     let query = supabase
       .from('chat_sessions')
       .select('session_started_at, total_messages, total_tokens, total_cost_eur')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
@@ -626,7 +626,7 @@ export const aggregations: AnalyticsAggregations = {
     let query = supabase
       .from('chat_session_analyses')
       .select('questions, unanswered_questions')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
@@ -670,7 +670,7 @@ export const aggregations: AnalyticsAggregations = {
     let query = supabase
       .from('chat_session_analyses')
       .select('unanswered_questions')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
@@ -704,7 +704,7 @@ export const aggregations: AnalyticsAggregations = {
     let query = supabase
       .from('chat_session_analyses')
       .select('created_at, sentiment')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
@@ -743,7 +743,7 @@ export const aggregations: AnalyticsAggregations = {
     let query = supabase
       .from('chat_sessions')
       .select('session_started_at')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
@@ -780,7 +780,7 @@ export const aggregations: AnalyticsAggregations = {
     let query = supabase
       .from('chat_session_analyses')
       .select('engagement_level')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
@@ -814,7 +814,7 @@ export const aggregations: AnalyticsAggregations = {
     let query = supabase
       .from('chat_session_analyses')
       .select('conversation_type')
-      .eq('mascot_id', botId);
+      .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
@@ -847,7 +847,7 @@ export const aggregations: AnalyticsAggregations = {
     let messagesQuery = supabase
       .from('chat_messages')
       .select('session_id, response_animation, easter_egg_animation, has_easter_egg, wait_sequence')
-      .eq('mascot_id', botId)
+      .eq('mascot_slug', botId)
       .eq('author', 'bot');
 
     if (dateRange) {

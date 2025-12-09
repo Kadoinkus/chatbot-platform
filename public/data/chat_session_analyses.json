@@ -1,7 +1,6 @@
 [
   {
     "session_id": "sess-001",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "positive",
     "escalated": false,
@@ -32,11 +31,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer inquired about store opening hours. All questions answered successfully."
-    }
+    },
+    "analytics_total_prompt_tokens": 120,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-002",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "neutral",
     "escalated": false,
@@ -70,11 +72,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer asked about organic product availability. Partial information provided."
-    }
+    },
+    "analytics_total_prompt_tokens": 145,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-003",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "negative",
     "escalated": true,
@@ -108,11 +113,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer complaint about damaged product. Escalated to human support for refund processing."
-    }
+    },
+    "analytics_total_prompt_tokens": 180,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-004",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "positive",
     "escalated": false,
@@ -142,11 +150,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer looking for pasta recipes. Directed to recipe section."
-    }
+    },
+    "analytics_total_prompt_tokens": 95,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-005",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "positive",
     "escalated": false,
@@ -178,11 +189,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer asked about store locations and facilities. All questions answered."
-    }
+    },
+    "analytics_total_prompt_tokens": 165,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-006",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "positive",
     "escalated": false,
@@ -208,11 +222,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "User greeted the assistant but did not ask specific questions."
-    }
+    },
+    "analytics_total_prompt_tokens": 75,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-007",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "neutral",
     "escalated": false,
@@ -245,11 +262,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer had questions about home delivery service. All information provided."
-    }
+    },
+    "analytics_total_prompt_tokens": 190,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-008",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "negative",
     "escalated": true,
@@ -283,11 +303,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer frustrated about incorrect order. Escalated to customer service."
-    }
+    },
+    "analytics_total_prompt_tokens": 210,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-009",
-    "mascot_id": "m1",
     "language": "de",
     "sentiment": "positive",
     "escalated": false,
@@ -315,11 +338,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "German-speaking customer greeted the assistant. Brief casual interaction."
-    }
+    },
+    "analytics_total_prompt_tokens": 85,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-010",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "positive",
     "escalated": false,
@@ -351,11 +377,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer asked about cheese products. All information provided."
-    }
+    },
+    "analytics_total_prompt_tokens": 155,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-011",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "neutral",
     "escalated": false,
@@ -381,11 +410,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "User browsed but didn't engage much with the assistant."
-    }
+    },
+    "analytics_total_prompt_tokens": 90,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-012",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "negative",
     "escalated": true,
@@ -420,11 +452,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer filed quality complaint. Escalated to complaints department."
-    }
+    },
+    "analytics_total_prompt_tokens": 225,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-013",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "neutral",
     "escalated": false,
@@ -450,11 +485,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "User said hi but left shortly after."
-    }
+    },
+    "analytics_total_prompt_tokens": 70,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-014",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "positive",
     "escalated": false,
@@ -487,11 +525,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer looking for dinner recipe ideas. Several suggestions provided."
-    }
+    },
+    "analytics_total_prompt_tokens": 175,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-015",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "positive",
     "escalated": false,
@@ -522,11 +563,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Belgian customer asked about store in Antwerp. Information provided."
-    }
+    },
+    "analytics_total_prompt_tokens": 130,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-016",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "neutral",
     "escalated": false,
@@ -557,11 +601,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer asked about the Jumbo app. Download link provided."
-    }
+    },
+    "analytics_total_prompt_tokens": 115,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-017",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "positive",
     "escalated": false,
@@ -589,11 +636,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "User had a casual conversation with the mascot."
-    }
+    },
+    "analytics_total_prompt_tokens": 80,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-018",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "negative",
     "escalated": true,
@@ -628,11 +678,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer had questions about return policy. Some questions required human support."
-    }
+    },
+    "analytics_total_prompt_tokens": 240,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-019",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "positive",
     "escalated": false,
@@ -664,11 +717,14 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer asked about Jumbo Extra loyalty program. All info provided."
-    }
+    },
+    "analytics_total_prompt_tokens": 160,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   },
   {
     "session_id": "sess-020",
-    "mascot_id": "m1",
     "language": "nl",
     "sentiment": "positive",
     "escalated": false,
@@ -699,6 +755,10 @@
     "raw_response": {
       "payload": {},
       "raw_text": "Customer asked about current promotions. Directed to offers page."
-    }
+    },
+    "analytics_total_prompt_tokens": 125,
+    "analytics_total_completion_tokens": 0,
+    "analytics_total_cost_usd": 0,
+    "mascot_slug": "m1"
   }
 ]

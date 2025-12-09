@@ -43,7 +43,7 @@ export function CostsTab({
         onPageChange={onPageChange}
       >
         {paginatedSessions.map((session) => {
-          const assistant = getAssistantInfo(session.mascot_id);
+          const assistant = getAssistantInfo(session.mascot_slug);
           const analysisCost = session.analysis?.analytics_total_cost_eur || 0;
           const chatCost = session.total_cost_eur || 0;
           const totalCost = chatCost + analysisCost;
@@ -80,7 +80,7 @@ export function CostsTab({
         onPageChange={onPageChange}
       >
         {paginatedSessions.map((session) => {
-          const assistant = getAssistantInfo(session.mascot_id);
+          const assistant = getAssistantInfo(session.mascot_slug);
           const analysisCost = session.analysis?.analytics_total_cost_eur || 0;
           const chatCost = session.total_cost_eur || 0;
           const totalCost = chatCost + analysisCost;

@@ -41,8 +41,10 @@ import chatMessagesData from '../../../../public/data/chat_messages.json';
 // Type for raw JSON data (different from Supabase schema)
 interface RawChatSession {
   id: string;
-  mascot_id: string;
-  client_id: string;
+  mascot_id?: string;
+  mascot_slug?: string;
+  client_id?: string;
+  client_slug?: string;
   domain?: string | null;
   widget_version?: string | null;
   session_start?: string;
@@ -97,8 +99,8 @@ function mapToChatSession(raw: RawChatSession): ChatSession {
 
   return {
     id: raw.id,
-    mascot_id: raw.mascot_id,
-    client_id: raw.client_id,
+    mascot_slug: raw.mascot_slug || raw.mascot_id || '',
+    client_slug: raw.client_slug || raw.client_id || '',
     domain: raw.domain || null,
     session_started_at: sessionStartedAt,
     session_ended_at: sessionEndedAt,
@@ -167,14 +169,20 @@ function getChatSessions(): ChatSession[] {
 
 function getChatSessionAnalyses(): ChatSessionAnalysis[] {
   if (!cachedAnalyses) {
-    cachedAnalyses = chatSessionAnalysesData as ChatSessionAnalysis[];
+    cachedAnalyses = (chatSessionAnalysesData as any[]).map(a => ({
+      ...a,
+      mascot_slug: (a as any).mascot_slug || (a as any).mascot_id,
+    }));
   }
   return cachedAnalyses;
 }
 
 function getChatMessages(): ChatMessage[] {
   if (!cachedMessages) {
-    cachedMessages = chatMessagesData as ChatMessage[];
+    cachedMessages = (chatMessagesData as any[]).map(m => ({
+      ...m,
+      mascot_slug: (m as any).mascot_slug || (m as any).mascot_id,
+    }));
   }
   return cachedMessages;
 }
@@ -233,7 +241,7 @@ function applyAnalysisFilters(
 // Chat session operations
 export const chatSessions: ChatSessionOperations = {
   async getByBotId(botId: string, filters?: ChatSessionFilters): Promise<ChatSession[]> {
-    let sessions = getChatSessions().filter(s => s.mascot_id === botId);
+    let sessions = getChatSessions().filter(s => s.mascot_slug === botId);
     if (filters?.dateRange) {
       sessions = filterByDateRange(sessions, filters.dateRange);
     }
@@ -241,7 +249,7 @@ export const chatSessions: ChatSessionOperations = {
   },
 
   async getByClientId(clientId: string, filters?: ChatSessionFilters): Promise<ChatSession[]> {
-    let sessions = getChatSessions().filter(s => s.client_id === clientId);
+    let sessions = getChatSessions().filter(s => s.client_slug === clientId);
     if (filters?.dateRange) {
       sessions = filterByDateRange(sessions, filters.dateRange);
     }
@@ -286,7 +294,7 @@ export const analyses: ChatSessionAnalysisOperations = {
   },
 
   async getByBotId(botId: string, filters?: ChatSessionFilters): Promise<ChatSessionAnalysis[]> {
-    let result = getChatSessionAnalyses().filter(a => a.mascot_id === botId);
+    let result = getChatSessionAnalyses().filter(a => a.mascot_slug === botId);
     return applyAnalysisFilters(result, filters);
   },
 
@@ -641,7 +649,7 @@ export const aggregations: AnalyticsAggregations = {
 
   async getAnimationStatsByBotId(botId: string, dateRange?: DateRange): Promise<AnimationStats> {
     const botSessions = await chatSessions.getByBotId(botId, { dateRange });
-    const messages = getChatMessages().filter(m => m.mascot_id === botId);
+    const messages = getChatMessages().filter(m => m.mascot_slug === botId);
 
     // Get session IDs in date range
     const sessionIds = new Set(botSessions.map(s => s.id));

@@ -44,7 +44,7 @@ export function QuestionsTab({
         onPageChange={onPageChange}
       >
         {paginatedSessions.map((session) => {
-          const assistant = getAssistantInfo(session.mascot_id);
+          const assistant = getAssistantInfo(session.mascot_slug);
           return (
             <TableRow key={session.id}>
               <SessionCell session={session} />
@@ -139,7 +139,7 @@ export function QuestionsTab({
         onPageChange={onPageChange}
       >
         {paginatedSessions.map((session) => {
-          const assistant = getAssistantInfo(session.mascot_id);
+          const assistant = getAssistantInfo(session.mascot_slug);
           return (
             <MobileCard key={session.id}>
               <MobileCardHeader

@@ -53,8 +53,8 @@ function normalizeChatSession(raw: any): ChatSession {
 
   return {
     id: raw.id,
-    mascot_id: raw.mascot_id,
-    client_id: raw.client_id,
+    mascot_slug: raw.mascot_slug || raw.mascot_id,
+    client_slug: raw.client_slug || raw.client_id,
     domain: raw.domain || null,
     user_id: raw.user_id || null,
     session_started_at: sessionStartedAt,
@@ -188,8 +188,8 @@ export function loadConversations(): Conversation[] {
 
     return {
       id: session.id,
-      assistantId: session.mascot_id,
-      clientId: session.client_id,
+      assistantId: session.mascot_slug,
+      clientId: session.client_slug,
       userId: session.user_id ?? 'visitor',
       userName: session.user_id ?? 'Visitor',
       status: session.session_ended_at ? 'resolved' : 'active',

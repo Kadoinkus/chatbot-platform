@@ -255,11 +255,11 @@ CREATE INDEX idx_messages_created_at ON messages(created_at);
 ```json
 {
   "id": "sess-001",
-  "mascot_id": "m1",
-  "client_id": "demo-jumbo",
+  "mascot_slug": "m1",
+  "client_slug": "demo-jumbo",
   "domain": "jumbo.com",
-  "session_started_at": "2025-11-15T09:15:00Z",
-  "session_ended_at": "2025-11-15T09:22:00Z",
+  "session_start": "2025-11-15T09:15:00Z",
+  "session_end": "2025-11-15T09:22:00Z",
   "first_message_at": "2025-11-15T09:15:30Z",
   "last_message_at": "2025-11-15T09:21:45Z",
   "is_active": false,
@@ -287,15 +287,19 @@ CREATE INDEX idx_messages_created_at ON messages(created_at);
   "is_dev": false,
   "glb_source": "memory_cache",
   "glb_transfer_size": 0,
-  "glb_encoded_body_size": 5242880,
-  "glb_response_end": 1234.56,
   "glb_url": "https://cdn.example.com/model.glb",
   "full_transcript": [
     { "author": "user", "message": "Hello", "timestamp": "2025-11-15T09:15:30Z", "easter": "" },
     { "author": "assistant", "message": "Hi!", "timestamp": "2025-11-15T09:15:31Z", "easter": "" }
   ],
   "created_at": "2025-11-15T09:15:00Z",
-  "updated_at": "2025-11-15T09:22:00Z"
+  "updated_at": "2025-11-15T09:22:00Z",
+  "analysis_processed": true,
+  "analysis_status": "succeeded",
+  "analysis_attempts": 0,
+  "analysis_locked_at": null,
+  "analysis_processed_at": "2025-11-15T09:23:00Z",
+  "analysis_last_error": null
 }
 ```
 
@@ -303,11 +307,11 @@ CREATE INDEX idx_messages_created_at ON messages(created_at);
 ```sql
 CREATE TABLE chat_sessions (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  mascot_id TEXT NOT NULL,
-  client_id TEXT NOT NULL,
+  mascot_slug TEXT NOT NULL,
+  client_slug TEXT NOT NULL,
   domain TEXT,
-  session_started_at TIMESTAMPTZ NOT NULL,
-  session_ended_at TIMESTAMPTZ,
+  session_start TIMESTAMPTZ NOT NULL,
+  session_end TIMESTAMPTZ,
   first_message_at TIMESTAMPTZ,
   last_message_at TIMESTAMPTZ,
   is_active BOOLEAN DEFAULT FALSE,
@@ -335,17 +339,21 @@ CREATE TABLE chat_sessions (
   is_dev BOOLEAN DEFAULT FALSE,
   glb_source TEXT,
   glb_transfer_size INTEGER,
-  glb_encoded_body_size INTEGER,
-  glb_response_end DOUBLE PRECISION,
   glb_url TEXT,
   full_transcript JSONB,
+  analysis_processed BOOLEAN DEFAULT FALSE,
+  analysis_status TEXT DEFAULT 'pending',
+  analysis_attempts INTEGER DEFAULT 0,
+  analysis_locked_at TIMESTAMPTZ,
+  analysis_processed_at TIMESTAMPTZ,
+  analysis_last_error TEXT,
   created_at TIMESTAMPTZ DEFAULT NOW(),
   updated_at TIMESTAMPTZ DEFAULT NOW()
 );
 
-CREATE INDEX idx_chat_sessions_mascot_id ON chat_sessions(mascot_id);
-CREATE INDEX idx_chat_sessions_client_id ON chat_sessions(client_id);
-CREATE INDEX idx_chat_sessions_started_at ON chat_sessions(session_started_at DESC);
+CREATE INDEX idx_chat_sessions_mascot_slug ON chat_sessions(mascot_slug);
+CREATE INDEX idx_chat_sessions_client_slug ON chat_sessions(client_slug);
+CREATE INDEX idx_chat_sessions_started_at ON chat_sessions(session_start DESC);
 CREATE INDEX idx_chat_sessions_domain ON chat_sessions(domain);
 ```
 

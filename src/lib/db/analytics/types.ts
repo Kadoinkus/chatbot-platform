@@ -140,6 +140,7 @@ export interface ChatMessage {
   cost_eur?: number | null;
   finish_reason?: string | null;
   raw_response?: string | null;
+  error_message?: string | null;
 }
 
 // Chat session operations

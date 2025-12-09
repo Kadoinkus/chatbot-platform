@@ -6,11 +6,7 @@
  */
 
 import { supabaseAdmin } from '../supabase/client';
-import type {
-  ChatSession,
-  ChatSessionAnalysis,
-  ChatSessionWithAnalysis,
-} from '@/types';
+import type { ChatSession, ChatSessionAnalysis, ChatSessionWithAnalysis } from '@/types';
 import type {
   ChatSessionOperations,
   ChatSessionAnalysisOperations,
@@ -46,12 +42,108 @@ function requireSupabase() {
 function applyDateRange<T extends { gte: (col: string, val: string) => T; lte: (col: string, val: string) => T }>(
   query: T,
   dateRange?: DateRange,
-  column = 'session_started_at'
+  column = 'session_start'
 ): T {
   if (!dateRange) return query;
   return query
     .gte(column, dateRange.start.toISOString())
     .lte(column, dateRange.end.toISOString());
+}
+
+// Map chat_sessions row (session_start/session_end naming) to ChatSession type expected by the app
+function mapChatSession(row: any): ChatSession {
+  const sessionStartedAt = row.session_start || row.session_started_at || row.created_at;
+  const sessionEndedAt = row.session_end ?? row.session_ended_at ?? null;
+  const totalUserMessages = row.total_user_messages ?? row.user_messages ?? 0;
+  const totalAssistantMessages = row.total_bot_messages ?? row.assistant_messages ?? 0;
+  const totalMessages =
+    row.total_messages ?? (Number.isFinite(totalUserMessages) && Number.isFinite(totalAssistantMessages)
+      ? totalUserMessages + totalAssistantMessages
+      : 0);
+  const status: ChatSession['status'] =
+    row.end_reason === 'timeout'
+      ? 'timeout'
+      : row.end_reason === 'error'
+        ? 'error'
+        : row.is_active === false
+          ? 'ended'
+          : 'active';
+
+  const durationSeconds =
+    sessionStartedAt && sessionEndedAt
+      ? Math.round((new Date(sessionEndedAt).getTime() - new Date(sessionStartedAt).getTime()) / 1000)
+      : null;
+
+  return {
+    id: row.id,
+    mascot_slug: row.mascot_slug,
+    client_slug: row.client_slug ?? '',
+    domain: row.domain ?? null,
+    user_id: row.user_id ?? null,
+    session_started_at: sessionStartedAt,
+    session_ended_at: sessionEndedAt,
+    first_message_at: row.first_message_at ?? null,
+    last_message_at: row.last_message_at ?? null,
+    ip_address: row.ip_address ?? null,
+    user_agent: row.user_agent ?? null,
+    visitor_ip_hash: row.ip_address ? row.ip_address.replace(/\.\d+$/, '.xxx') : null,
+    visitor_country: row.country ?? null,
+    visitor_city: row.city ?? null,
+    visitor_region: null,
+    visitor_timezone: null,
+    visitor_language: null,
+    device_type: row.device_type ?? null,
+    browser_name: row.browser ?? null,
+    browser_version: null,
+    os_name: row.os ?? null,
+    os_version: null,
+    is_mobile: row.device_type ? row.device_type.toLowerCase() === 'mobile' : false,
+    screen_width: null,
+    screen_height: null,
+    widget_version: row.widget_version ?? null,
+    referrer_url: row.referrer_url ?? null,
+    referrer_domain: null,
+    landing_page_url: row.page_url ?? null,
+    utm_source: null,
+    utm_medium: null,
+    utm_campaign: null,
+    utm_content: null,
+    utm_term: null,
+    total_messages: totalMessages,
+    user_messages: totalUserMessages,
+    assistant_messages: totalAssistantMessages,
+    total_tokens: row.total_tokens ?? 0,
+    input_tokens: row.total_prompt_tokens ?? row.input_tokens ?? 0,
+    output_tokens: row.total_completion_tokens ?? row.output_tokens ?? 0,
+    total_cost_usd: row.total_cost_usd ?? null,
+    total_cost_eur: row.total_cost_eur ?? 0,
+    average_response_time_ms: row.average_response_time_ms ?? null,
+    session_duration_seconds: durationSeconds,
+    status,
+    easter_eggs_triggered: row.easter_eggs_triggered ?? 0,
+    created_at: row.created_at,
+    updated_at: row.updated_at,
+    glb_source: row.glb_source ?? null,
+    glb_transfer_size: row.glb_transfer_size ?? null,
+    glb_encoded_body_size: row.glb_encoded_body_size ?? null,
+    glb_response_end: row.glb_response_end ?? null,
+    glb_url: row.glb_url ?? null,
+    full_transcript: row.full_transcript ?? null,
+  };
+}
+
+function mapChatSessionAnalysis(row: any): ChatSessionAnalysis {
+  const promptTokens = row.analytics_total_prompt_tokens ?? null;
+  const completionTokens = row.analytics_total_completion_tokens ?? null;
+  const totalTokens =
+    row.analytics_total_tokens ??
+    (promptTokens != null && completionTokens != null ? promptTokens + completionTokens : promptTokens ?? completionTokens);
+
+  return {
+    ...row,
+    analytics_total_tokens: totalTokens ?? null,
+    analytics_total_cost_usd: row.analytics_total_cost_usd ?? null,
+  } as ChatSessionAnalysis;
 }
 
 // Chat session operations
@@ -63,17 +155,17 @@ export const chatSessions: ChatSessionOperations = {
       .from('chat_sessions')
       .select('*')
       .eq('mascot_slug', botId)
-      .order('session_started_at', { ascending: false });
+      .order('session_start', { ascending: false });
 
     if (filters?.dateRange) {
       query = query
-        .gte('session_started_at', filters.dateRange.start.toISOString())
-        .lte('session_started_at', filters.dateRange.end.toISOString());
+        .gte('session_start', filters.dateRange.start.toISOString())
+        .lte('session_start', filters.dateRange.end.toISOString());
     }
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return (data || []).map(mapChatSession);
   },
 
   async getByClientId(clientId: string, filters?: ChatSessionFilters): Promise<ChatSession[]> {
@@ -83,17 +175,17 @@ export const chatSessions: ChatSessionOperations = {
       .from('chat_sessions')
       .select('*')
       .eq('client_slug', clientId)
-      .order('session_started_at', { ascending: false });
+      .order('session_start', { ascending: false });
 
     if (filters?.dateRange) {
       query = query
-        .gte('session_started_at', filters.dateRange.start.toISOString())
-        .lte('session_started_at', filters.dateRange.end.toISOString());
+        .gte('session_start', filters.dateRange.start.toISOString())
+        .lte('session_start', filters.dateRange.end.toISOString());
     }
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return (data || []).map(mapChatSession);
   },
 
   async getById(sessionId: string): Promise<ChatSession | null> {
@@ -106,7 +198,7 @@ export const chatSessions: ChatSessionOperations = {
       .single();
 
     if (error && error.code !== 'PGRST116') throw error;
-    return data || null;
+    return data ? mapChatSession(data) : null;
   },
 
   async getWithAnalysisByBotId(
@@ -122,12 +214,12 @@ export const chatSessions: ChatSessionOperations = {
         analysis:chat_session_analyses(*)
       `)
       .eq('mascot_slug', botId)
-      .order('session_started_at', { ascending: false });
+      .order('session_start', { ascending: false });
 
     if (filters?.dateRange) {
       query = query
-        .gte('session_started_at', filters.dateRange.start.toISOString())
-        .lte('session_started_at', filters.dateRange.end.toISOString());
+        .gte('session_start', filters.dateRange.start.toISOString())
+        .lte('session_start', filters.dateRange.end.toISOString());
     }
 
     const { data, error } = await query;
@@ -135,8 +227,8 @@ export const chatSessions: ChatSessionOperations = {
 
     // Transform the nested analysis array to single object
     return (data || []).map((row: any) => ({
-      ...row,
-      analysis: row.analysis?.[0] || null,
+      ...mapChatSession(row),
+      analysis: row.analysis?.[0] ? mapChatSessionAnalysis(row.analysis[0]) : null,
     }));
   },
 
@@ -153,20 +245,20 @@ export const chatSessions: ChatSessionOperations = {
         analysis:chat_session_analyses(*)
       `)
       .eq('client_slug', clientId)
-      .order('session_started_at', { ascending: false });
+      .order('session_start', { ascending: false });
 
     if (filters?.dateRange) {
       query = query
-        .gte('session_started_at', filters.dateRange.start.toISOString())
-        .lte('session_started_at', filters.dateRange.end.toISOString());
+        .gte('session_start', filters.dateRange.start.toISOString())
+        .lte('session_start', filters.dateRange.end.toISOString());
     }
 
     const { data, error } = await query;
     if (error) throw error;
 
     return (data || []).map((row: any) => ({
-      ...row,
-      analysis: row.analysis?.[0] || null,
+      ...mapChatSession(row),
+      analysis: row.analysis?.[0] ? mapChatSessionAnalysis(row.analysis[0]) : null,
     }));
   },
 };
@@ -183,7 +275,7 @@ export const analyses: ChatSessionAnalysisOperations = {
       .single();
 
     if (error && error.code !== 'PGRST116') throw error;
-    return data || null;
+    return data ? mapChatSessionAnalysis(data) : null;
   },
 
   async getByBotId(botId: string, filters?: ChatSessionFilters): Promise<ChatSessionAnalysis[]> {
@@ -223,7 +315,7 @@ export const analyses: ChatSessionAnalysisOperations = {
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return (data || []).map(mapChatSessionAnalysis);
   },
 
   async getByClientId(clientId: string, filters?: ChatSessionFilters): Promise<ChatSessionAnalysis[]> {
@@ -237,8 +329,8 @@ export const analyses: ChatSessionAnalysisOperations = {
 
     if (filters?.dateRange) {
       sessionQuery = sessionQuery
-        .gte('session_started_at', filters.dateRange.start.toISOString())
-        .lte('session_started_at', filters.dateRange.end.toISOString());
+        .gte('session_start', filters.dateRange.start.toISOString())
+        .lte('session_start', filters.dateRange.end.toISOString());
     }
 
     const { data: sessions, error: sessionsError } = await sessionQuery;
@@ -276,7 +368,7 @@ export const analyses: ChatSessionAnalysisOperations = {
 
     const { data, error } = await analysisQuery;
     if (error) throw error;
-    return data || [];
+    return (data || []).map(mapChatSessionAnalysis);
   },
 };
 
@@ -288,17 +380,18 @@ export const aggregations: AnalyticsAggregations = {
     // Get session aggregates
     let sessionQuery = supabase
       .from('chat_sessions')
-      .select('total_messages, total_tokens, total_cost_eur, average_response_time_ms, session_duration_seconds')
+      .select('*')
       .eq('mascot_slug', botId);
 
     if (dateRange) {
       sessionQuery = sessionQuery
-        .gte('session_started_at', dateRange.start.toISOString())
-        .lte('session_started_at', dateRange.end.toISOString());
+        .gte('session_start', dateRange.start.toISOString())
+        .lte('session_start', dateRange.end.toISOString());
     }
 
     const { data: sessions, error: sessionError } = await sessionQuery;
     if (sessionError) throw sessionError;
+    const mappedSessions = (sessions || []).map(mapChatSession);
 
     // Get analysis aggregates
     let analysisQuery = supabase
@@ -315,19 +408,19 @@ export const aggregations: AnalyticsAggregations = {
     const { data: analysesData, error: analysisError } = await analysisQuery;
     if (analysisError) throw analysisError;
 
-    const totalSessions = sessions?.length || 0;
-    const totalMessages = sessions?.reduce((sum, s) => sum + (s.total_messages || 0), 0) || 0;
-    const totalTokens = sessions?.reduce((sum, s) => sum + (s.total_tokens || 0), 0) || 0;
-    const totalCostEur = sessions?.reduce((sum, s) => sum + (s.total_cost_eur || 0), 0) || 0;
+    const totalSessions = mappedSessions.length;
+    const totalMessages = mappedSessions.reduce((sum, s) => sum + (s.total_messages || 0), 0);
+    const totalTokens = mappedSessions.reduce((sum, s) => sum + (s.total_tokens || 0), 0);
+    const totalCostEur = mappedSessions.reduce((sum, s) => sum + (s.total_cost_eur || 0), 0);
 
-    const validResponseTimes = sessions?.filter(s => s.average_response_time_ms != null) || [];
+    const validResponseTimes = mappedSessions.filter(s => s.average_response_time_ms != null);
     const averageResponseTimeMs = validResponseTimes.length > 0
-      ? validResponseTimes.reduce((sum, s) => sum + s.average_response_time_ms, 0) / validResponseTimes.length
+      ? validResponseTimes.reduce((sum, s) => sum + (s.average_response_time_ms || 0), 0) / validResponseTimes.length
       : 0;
 
-    const validDurations = sessions?.filter(s => s.session_duration_seconds != null) || [];
+    const validDurations = mappedSessions.filter(s => s.session_duration_seconds != null);
     const averageSessionDurationSeconds = validDurations.length > 0
-      ? validDurations.reduce((sum, s) => sum + s.session_duration_seconds, 0) / validDurations.length
+      ? validDurations.reduce((sum, s) => sum + (s.session_duration_seconds || 0), 0) / validDurations.length
       : 0;
 
     const resolved = analysesData?.filter(a => a.resolution_status === 'resolved').length || 0;
@@ -353,17 +446,18 @@ export const aggregations: AnalyticsAggregations = {
 
     let sessionQuery = supabase
       .from('chat_sessions')
-      .select('total_messages, total_tokens, total_cost_eur, average_response_time_ms, session_duration_seconds')
+      .select('*')
       .eq('client_slug', clientId);
 
     if (dateRange) {
       sessionQuery = sessionQuery
-        .gte('session_started_at', dateRange.start.toISOString())
-        .lte('session_started_at', dateRange.end.toISOString());
+        .gte('session_start', dateRange.start.toISOString())
+        .lte('session_start', dateRange.end.toISOString());
     }
 
     const { data: sessions, error: sessionError } = await sessionQuery;
     if (sessionError) throw sessionError;
+    const mappedSessions = (sessions || []).map(mapChatSession);
 
     // Get analysis data via session IDs
     let sessionIdsQuery = supabase
@@ -373,8 +467,8 @@ export const aggregations: AnalyticsAggregations = {
 
     if (dateRange) {
       sessionIdsQuery = sessionIdsQuery
-        .gte('session_started_at', dateRange.start.toISOString())
-        .lte('session_started_at', dateRange.end.toISOString());
+        .gte('session_start', dateRange.start.toISOString())
+        .lte('session_start', dateRange.end.toISOString());
     }
 
     const { data: sessionIds } = await sessionIdsQuery;
@@ -389,19 +483,19 @@ export const aggregations: AnalyticsAggregations = {
       analysesData = data || [];
     }
 
-    const totalSessions = sessions?.length || 0;
-    const totalMessages = sessions?.reduce((sum, s) => sum + (s.total_messages || 0), 0) || 0;
-    const totalTokens = sessions?.reduce((sum, s) => sum + (s.total_tokens || 0), 0) || 0;
-    const totalCostEur = sessions?.reduce((sum, s) => sum + (s.total_cost_eur || 0), 0) || 0;
+    const totalSessions = mappedSessions.length;
+    const totalMessages = mappedSessions.reduce((sum, s) => sum + (s.total_messages || 0), 0);
+    const totalTokens = mappedSessions.reduce((sum, s) => sum + (s.total_tokens || 0), 0);
+    const totalCostEur = mappedSessions.reduce((sum, s) => sum + (s.total_cost_eur || 0), 0);
 
-    const validResponseTimes = sessions?.filter(s => s.average_response_time_ms != null) || [];
+    const validResponseTimes = mappedSessions.filter(s => s.average_response_time_ms != null);
     const averageResponseTimeMs = validResponseTimes.length > 0
-      ? validResponseTimes.reduce((sum, s) => sum + s.average_response_time_ms, 0) / validResponseTimes.length
+      ? validResponseTimes.reduce((sum, s) => sum + (s.average_response_time_ms || 0), 0) / validResponseTimes.length
       : 0;
 
-    const validDurations = sessions?.filter(s => s.session_duration_seconds != null) || [];
+    const validDurations = mappedSessions.filter(s => s.session_duration_seconds != null);
     const averageSessionDurationSeconds = validDurations.length > 0
-      ? validDurations.reduce((sum, s) => sum + s.session_duration_seconds, 0) / validDurations.length
+      ? validDurations.reduce((sum, s) => sum + (s.session_duration_seconds || 0), 0) / validDurations.length
       : 0;
 
     const resolved = analysesData.filter(a => a.resolution_status === 'resolved').length;
@@ -522,8 +616,8 @@ export const aggregations: AnalyticsAggregations = {
 
     if (dateRange) {
       query = query
-        .gte('session_started_at', dateRange.start.toISOString())
-        .lte('session_started_at', dateRange.end.toISOString());
+        .gte('session_start', dateRange.start.toISOString())
+        .lte('session_start', dateRange.end.toISOString());
     }
 
     const { data, error } = await query;
@@ -550,13 +644,13 @@ export const aggregations: AnalyticsAggregations = {
 
     let query = supabase
       .from('chat_sessions')
-      .select('visitor_country')
+      .select('country')
       .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
-        .gte('session_started_at', dateRange.start.toISOString())
-        .lte('session_started_at', dateRange.end.toISOString());
+        .gte('session_start', dateRange.start.toISOString())
+        .lte('session_start', dateRange.end.toISOString());
     }
 
     const { data, error } = await query;
@@ -565,7 +659,7 @@ export const aggregations: AnalyticsAggregations = {
     const total = data?.length || 0;
     const counts: Record<string, number> = {};
     (data || []).forEach(s => {
-      const country = s.visitor_country || 'Unknown';
+      const country = s.country || 'Unknown';
       counts[country] = (counts[country] || 0) + 1;
     });
 
@@ -583,22 +677,23 @@ export const aggregations: AnalyticsAggregations = {
 
     let query = supabase
       .from('chat_sessions')
-      .select('session_started_at, total_messages, total_tokens, total_cost_eur')
+      .select('*')
       .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
-        .gte('session_started_at', dateRange.start.toISOString())
-        .lte('session_started_at', dateRange.end.toISOString());
+        .gte('session_start', dateRange.start.toISOString())
+        .lte('session_start', dateRange.end.toISOString());
     }
 
-    const { data, error } = await query.order('session_started_at', { ascending: true });
+    const { data, error } = await query.order('session_start', { ascending: true });
     if (error) throw error;
+    const sessions = (data || []).map(mapChatSession);
 
     // Group by date
     const byDate: Record<string, { sessions: number; messages: number; tokens: number; cost: number }> = {};
 
-    (data || []).forEach(s => {
+    sessions.forEach(s => {
       const date = s.session_started_at.split('T')[0];
       if (!byDate[date]) {
         byDate[date] = { sessions: 0, messages: 0, tokens: 0, cost: 0 };
@@ -742,13 +837,13 @@ export const aggregations: AnalyticsAggregations = {
 
     let query = supabase
       .from('chat_sessions')
-      .select('session_started_at')
+      .select('session_start')
       .eq('mascot_slug', botId);
 
     if (dateRange) {
       query = query
-        .gte('session_started_at', dateRange.start.toISOString())
-        .lte('session_started_at', dateRange.end.toISOString());
+        .gte('session_start', dateRange.start.toISOString())
+        .lte('session_start', dateRange.end.toISOString());
     }
 
     const { data, error } = await query;
@@ -761,7 +856,7 @@ export const aggregations: AnalyticsAggregations = {
     }
 
     (data || []).forEach(s => {
-      const hour = new Date(s.session_started_at).getHours();
+      const hour = new Date(s.session_start).getHours();
       hourCounts[hour] = (hourCounts[hour] || 0) + 1;
     });
 
@@ -852,8 +947,8 @@ export const aggregations: AnalyticsAggregations = {
 
     if (dateRange) {
       messagesQuery = messagesQuery
-        .gte('created_at', dateRange.start.toISOString())
-        .lte('created_at', dateRange.end.toISOString());
+        .gte('timestamp', dateRange.start.toISOString())
+        .lte('timestamp', dateRange.end.toISOString());
     }
 
     const { data: messagesData, error: messagesError } = await messagesQuery;

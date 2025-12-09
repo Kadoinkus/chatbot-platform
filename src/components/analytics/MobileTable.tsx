@@ -8,6 +8,7 @@ interface Column<T> {
   render: (item: T) => ReactNode;
   align?: 'left' | 'center' | 'right';
   className?: string;
+  width?: string; // Optional width (e.g., '20%', '120px') for table layout control
 }
 
 interface MobileTableProps<T> {
@@ -18,6 +19,7 @@ interface MobileTableProps<T> {
   onRowClick?: (item: T) => void;
   emptyMessage?: string;
   className?: string;
+  tableClassName?: string;
 }
 
 /**
@@ -33,6 +35,7 @@ export function MobileTable<T>({
   onRowClick,
   emptyMessage = 'No data available',
   className = '',
+  tableClassName = '',
 }: MobileTableProps<T>) {
   if (data.length === 0) {
     return (
@@ -46,7 +49,14 @@ export function MobileTable<T>({
     <>
       {/* Desktop: Traditional table */}
       <div className={`hidden lg:block overflow-x-auto ${className}`}>
-        <table className="w-full text-sm">
+        <table className={`w-full text-sm ${tableClassName}`}>
+          {columns.some((c) => c.width) && (
+            <colgroup>
+              {columns.map((col) => (
+                <col key={col.key} style={col.width ? { width: col.width } : undefined} />
+              ))}
+            </colgroup>
+          )}
           <thead>
             <tr className="border-b border-border">
               {columns.map((col) => (

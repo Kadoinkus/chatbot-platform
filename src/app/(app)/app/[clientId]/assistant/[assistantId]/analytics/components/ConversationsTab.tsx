@@ -1,5 +1,6 @@
 'use client';
 
+import { useEffect, useState } from 'react';
 import {
   Clock,
   MessageSquare,
@@ -8,6 +9,8 @@ import {
   Minus,
   AlertTriangle,
   Eye,
+  Copy,
+  Check,
 } from 'lucide-react';
 import { Card } from '@/components/ui';
 import {
@@ -84,9 +87,17 @@ export function ConversationsTab({
     value: count,
   }));
 
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!copiedId) return;
+    const t = setTimeout(() => setCopiedId(null), 1200);
+    return () => clearTimeout(t);
+  }, [copiedId]);
+
   // Copy to clipboard helper
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
+    setCopiedId(text);
   };
 
   // Table columns for desktop
@@ -97,10 +108,11 @@ export function ConversationsTab({
       render: (session: typeof sessions[0]) => (
         <button
           onClick={() => copyToClipboard(session.id)}
-          className="font-mono text-xs text-foreground-secondary hover:text-foreground transition-colors"
-          title="Click to copy"
+          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-xs text-foreground-secondary hover:bg-background-tertiary hover:text-foreground transition-colors"
+          title={`Copy full ID: ${session.id}`}
         >
-          {session.id.slice(0, 8)}...
+          {session.id.slice(0, 3)}...
+          {copiedId === session.id ? <Check size={12} /> : <Copy size={12} />}
         </button>
       ),
     },
@@ -173,9 +185,11 @@ export function ConversationsTab({
             e.stopPropagation();
             copyToClipboard(session.id);
           }}
-          className="text-xs font-mono text-foreground-tertiary hover:text-foreground"
+          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-mono text-foreground-tertiary hover:bg-background-tertiary hover:text-foreground"
+          title={`Copy full ID: ${session.id}`}
         >
-          {session.id.slice(0, 8)}...
+          {session.id.slice(0, 3)}...
+          {copiedId === session.id ? <Check size={12} /> : <Copy size={12} />}
         </button>
       </div>
       <p className="text-sm text-foreground-secondary mb-3">{session.analysis?.category || 'Uncategorized'}</p>

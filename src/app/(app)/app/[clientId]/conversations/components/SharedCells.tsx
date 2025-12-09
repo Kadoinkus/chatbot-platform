@@ -1,6 +1,7 @@
 'use client';
 
-import { Eye } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Eye, Copy, Check } from 'lucide-react';
 import { TableCell } from '@/components/ui';
 import type { ChatSessionWithAnalysis, Assistant } from '@/types';
 
@@ -12,13 +13,33 @@ interface SessionCellProps {
  * Shared session cell showing country and ID
  */
 export function SessionCell({ session }: SessionCellProps) {
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    if (!copied) return;
+    const t = setTimeout(() => setCopied(false), 1200);
+    return () => clearTimeout(t);
+  }, [copied]);
+
+  const handleCopy = () => {
+    navigator.clipboard.writeText(session.id);
+    setCopied(true);
+  };
+
   return (
     <TableCell>
-      <div>
+      <div className="flex items-center gap-2">
         <p className="font-medium text-sm text-foreground">
           {session.visitor_country || 'Unknown'}
         </p>
-        <p className="text-xs text-foreground-tertiary">{session.id.slice(0, 8)}...</p>
+        <button
+          onClick={handleCopy}
+          className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 text-xs font-mono text-foreground-tertiary hover:bg-background-tertiary hover:text-foreground transition-colors"
+          title={session.id}
+        >
+          {session.id.slice(0, 3)}...
+          {copied ? <Check size={12} /> : <Copy size={12} />}
+        </button>
       </div>
     </TableCell>
   );

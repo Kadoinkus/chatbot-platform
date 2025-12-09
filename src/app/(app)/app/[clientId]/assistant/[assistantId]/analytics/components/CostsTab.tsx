@@ -1,6 +1,7 @@
 'use client';
 
-import { DollarSign, Receipt, TrendingUp, Sparkles } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { DollarSign, Receipt, TrendingUp, Sparkles, Copy, Check } from 'lucide-react';
 import { Card } from '@/components/ui';
 import { StackedBarChart, DonutChart } from '@/components/analytics/charts';
 import { GREY } from '@/lib/chartColors';
@@ -57,27 +58,66 @@ export function CostsTab({
 
   // Most expensive sessions
   const expensiveSessions = sessions
-    .map((s, i) => ({
+    .map((s) => ({
       ...s,
-      index: i + 1,
       totalCost: (s.total_cost_eur || 0) + (s.analysis?.analytics_total_cost_eur || 0),
     }))
     .sort((a, b) => b.totalCost - a.totalCost)
-    .slice(0, 5);
+    .slice(0, 5)
+    .map((s, idx) => ({ ...s, rank: idx + 1, shortId: `${s.id.slice(0, 3)}...` }));
+
+  const chartData = expensiveSessions.map((s) => ({
+    session: `#${s.rank}`,
+    conversation: s.total_cost_eur || 0,
+    analysis: s.analysis?.analytics_total_cost_eur || 0,
+    conversationTokens: s.total_tokens || 0,
+    analysisTokens: s.analysis?.analytics_total_tokens || 0,
+  }));
+
+  const [copiedId, setCopiedId] = useState<string | null>(null);
+  useEffect(() => {
+    if (!copiedId) return;
+    const t = setTimeout(() => setCopiedId(null), 1200);
+    return () => clearTimeout(t);
+  }, [copiedId]);
 
   // Table columns for desktop
   const columns = [
     {
+      key: 'rank',
+      header: 'Rank',
+      align: 'center' as const,
+      className: 'w-[56px]',
+      width: '8%',
+      render: (session: (typeof expensiveSessions)[0]) => (
+        <span className="text-sm font-semibold text-foreground">#{session.rank}</span>
+      ),
+    },
+    {
       key: 'session',
       header: 'Session',
+      className: 'w-[110px]',
+      width: '12%',
       render: (session: (typeof expensiveSessions)[0]) => (
-        <span className="text-sm font-medium text-foreground">#{session.index}</span>
+        <button
+          onClick={() => {
+            navigator.clipboard.writeText(session.id);
+            setCopiedId(session.id);
+          }}
+          className="inline-flex items-center gap-1 rounded px-1 py-0.5 font-mono text-[11px] text-foreground-secondary hover:bg-background-tertiary hover:text-foreground transition-colors"
+          title={`Copy full ID: ${session.id}`}
+        >
+          {session.shortId}
+          {copiedId === session.id ? <Check size={12} /> : <Copy size={12} />}
+        </button>
       ),
     },
     {
       key: 'cost',
       header: 'Total Cost',
       align: 'right' as const,
+      className: 'w-[140px]',
+      width: '20%',
       render: (session: (typeof expensiveSessions)[0]) => (
         <span className="text-sm font-semibold" style={{ color: brandColor }}>
           {formatCurrency(session.totalCost)}
@@ -88,6 +128,8 @@ export function CostsTab({
       key: 'tokens',
       header: 'Tokens',
       align: 'right' as const,
+      className: 'w-[120px]',
+      width: '20%',
       render: (session: (typeof expensiveSessions)[0]) => (
         <span className="text-sm text-foreground">{formatNumber(session.total_tokens || 0)}</span>
       ),
@@ -96,6 +138,8 @@ export function CostsTab({
       key: 'messages',
       header: 'Messages',
       align: 'right' as const,
+      className: 'w-[110px]',
+      width: '12%',
       render: (session: (typeof expensiveSessions)[0]) => (
         <span className="text-sm text-foreground">{session.total_messages || 0}</span>
       ),
@@ -103,6 +147,8 @@ export function CostsTab({
     {
       key: 'resolution',
       header: 'Resolution',
+      className: 'w-[130px]',
+      width: '18%',
       render: (session: (typeof expensiveSessions)[0]) => <ResolutionBadge status={session.analysis?.resolution_status} />,
     },
   ];
@@ -111,7 +157,20 @@ export function CostsTab({
   const renderMobileCard = (session: (typeof expensiveSessions)[0]) => (
     <MobileCard>
       <div className="flex justify-between items-start mb-2">
-        <span className="text-sm font-medium text-foreground">Session #{session.index}</span>
+        <div className="flex items-center gap-2">
+          <span className="text-xs text-foreground-tertiary">#{session.rank}</span>
+          <button
+            onClick={() => {
+              navigator.clipboard.writeText(session.id);
+              setCopiedId(session.id);
+            }}
+            className="inline-flex items-center gap-1 rounded px-1.5 py-0.5 font-mono text-xs text-foreground-tertiary hover:bg-background-tertiary hover:text-foreground transition-colors"
+            title={`Copy full ID: ${session.id}`}
+          >
+            {session.shortId}
+            {copiedId === session.id ? <Check size={12} /> : <Copy size={12} />}
+          </button>
+        </div>
         <span className="text-lg font-bold" style={{ color: brandColor }}>
           {formatCurrency(session.totalCost)}
         </span>
@@ -140,20 +199,14 @@ export function CostsTab({
         <p className="text-sm text-foreground-secondary mb-4">
           Conversation costs vs. analysis costs per session (stacked)
         </p>
-        <div className="h-[240px] sm:h-[300px] lg:h-[340px] overflow-visible">
-          <StackedBarChart
-            data={sessions.map((s, i) => ({
-              session: `#${i + 1}`,
-              conversation: s.total_cost_eur || 0,
-              analysis: s.analysis?.analytics_total_cost_eur || 0,
-              conversationTokens: s.total_tokens || 0,
-              analysisTokens: s.analysis?.analytics_total_tokens || 0,
-            }))}
-            series={[
-              { key: 'conversation', name: 'Conversation Cost', color: brandColor },
-              { key: 'analysis', name: 'Analysis Cost', color: GREY[500] },
-            ]}
-            xAxisKey="session"
+      <div className="h-[240px] sm:h-[300px] lg:h-[340px] overflow-visible">
+        <StackedBarChart
+          data={chartData}
+          series={[
+            { key: 'conversation', name: 'Conversation Cost', color: brandColor },
+            { key: 'analysis', name: 'Analysis Cost', color: GREY[500] },
+          ]}
+          xAxisKey="session"
             yAxisFormatter={(v) => formatAxisCurrency(v as number, 3)}
             brandColor={brandColor}
             customTooltip={({ active, payload, label }) => {
@@ -251,6 +304,7 @@ export function CostsTab({
           columns={columns}
           mobileCard={renderMobileCard}
           keyExtractor={(s) => s.id}
+          tableClassName="table-fixed"
           emptyMessage="No session data available"
         />
       </Card>

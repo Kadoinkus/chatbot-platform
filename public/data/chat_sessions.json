@@ -1,6 +1,6 @@
 [
   {
-    "id": "sess-001",
+    "id": "c0053249-1d22-4da2-a5c0-4cb5b428dff1",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-15T09:21:45+00:00",
@@ -82,7 +82,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-002",
+    "id": "e63b4047-d0a2-422e-9005-b71cb132edf0",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-15T10:44:30+00:00",
@@ -148,12 +148,12 @@
       },
       {
         "author": "bot",
-        "message": "We hebben een breed assortiment biologisch fruit: appels, peren, sinaasappels, citroenen, kiwi's, druiven en meer. Het aanbod kan per seizoen vari\u00ebren.",
+        "message": "We hebben een breed assortiment biologisch fruit: appels, peren, sinaasappels, citroenen, kiwi's, druiven en meer. Het aanbod kan per seizoen variëren.",
         "timestamp": "2025-11-15T10:40:30+00:00"
       },
       {
         "author": "user",
-        "message": "Ok\u00e9 bedankt",
+        "message": "Oké bedankt",
         "timestamp": "2025-11-15T10:44:30+00:00"
       },
       {
@@ -163,8 +163,6 @@
         "easter": "meditate"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-15T10:45:00+00:00",
     "session_start": "2025-11-15T10:30:00+00:00",
@@ -177,7 +175,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-003",
+    "id": "4d335ace-7f06-41ce-baad-817801104985",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-15T14:17:45+00:00",
@@ -258,7 +256,7 @@
       },
       {
         "author": "user",
-        "message": "Ok\u00e9, doe maar",
+        "message": "Oké, doe maar",
         "timestamp": "2025-11-15T14:17:45+00:00"
       },
       {
@@ -267,8 +265,6 @@
         "timestamp": "2025-11-15T14:18:00+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-15T14:18:00+00:00",
     "session_start": "2025-11-15T14:00:00+00:00",
@@ -281,7 +277,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-004",
+    "id": "db540c07-209b-41f5-a306-3833939f842b",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-16T08:51:30+00:00",
@@ -337,12 +333,10 @@
       },
       {
         "author": "bot",
-        "message": "Eet smakelijk! Als je hulp nodig hebt bij het vinden van ingredi\u00ebnten, laat het me weten.",
+        "message": "Eet smakelijk! Als je hulp nodig hebt bij het vinden van ingrediënten, laat het me weten.",
         "timestamp": "2025-11-16T08:51:45+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-16T08:52:00+00:00",
     "session_start": "2025-11-16T08:45:00+00:00",
@@ -355,7 +349,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-005",
+    "id": "a74fbb7d-bd43-4f3f-80e5-210c8600e959",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-16T12:27:45+00:00",
@@ -436,8 +430,6 @@
         "easter": "showLaptop"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-16T12:28:00+00:00",
     "session_start": "2025-11-16T12:15:00+00:00",
@@ -450,7 +442,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-006",
+    "id": "6b34fec4-6be0-4f7a-aac2-d1eef7cd35cd",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-16T16:34:20+00:00",
@@ -500,8 +492,6 @@
         "timestamp": "2025-11-16T16:34:35+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-16T16:35:00+00:00",
     "session_start": "2025-11-16T16:30:00+00:00",
@@ -514,7 +504,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-007",
+    "id": "e7da865a-9c07-4a82-bf1a-ebcf90c89a79",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-17T09:14:30+00:00",
@@ -570,7 +560,7 @@
       },
       {
         "author": "bot",
-        "message": "De bezorgkosten vari\u00ebren van \u20ac2,50 tot \u20ac7,95 afhankelijk van het tijdslot dat je kiest. Bij bestellingen boven een bepaald bedrag is bezorging soms gratis!",
+        "message": "De bezorgkosten variëren van €2,50 tot €7,95 afhankelijk van het tijdslot dat je kiest. Bij bestellingen boven een bepaald bedrag is bezorging soms gratis!",
         "timestamp": "2025-11-17T09:05:30+00:00"
       },
       {
@@ -604,8 +594,6 @@
         "timestamp": "2025-11-17T09:14:45+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-17T09:15:00+00:00",
     "session_start": "2025-11-17T09:00:00+00:00",
@@ -618,7 +606,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-008",
+    "id": "21277343-e11c-4966-94cb-a9fca9c2bb33",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-17T11:41:30+00:00",
@@ -699,7 +687,7 @@
       },
       {
         "author": "user",
-        "message": "Ok\u00e9, maar ik verwacht snel een reactie!",
+        "message": "Oké, maar ik verwacht snel een reactie!",
         "timestamp": "2025-11-17T11:41:30+00:00"
       },
       {
@@ -708,8 +696,6 @@
         "timestamp": "2025-11-17T11:41:45+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-17T11:42:00+00:00",
     "session_start": "2025-11-17T11:30:00+00:00",
@@ -722,7 +708,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-009",
+    "id": "54b32155-5222-41fe-8248-3f9c5cf44c75",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-17T15:07:30+00:00",
@@ -732,7 +718,7 @@
     "end_reason": "sleep_timeout",
     "ip_address": "192.168.1.xxx",
     "country": "DE",
-    "city": "D\u00fcsseldorf",
+    "city": "Düsseldorf",
     "user_agent": "Mozilla/5.0 (Linux; Android 14) Chrome/120.0",
     "device_type": "mobile",
     "browser": "Chrome 120.0",
@@ -778,13 +764,11 @@
       },
       {
         "author": "bot",
-        "message": "Kein Problem! Wenn Sie Fragen haben, bin ich hier um zu helfen. Sch\u00f6nen Tag noch!",
+        "message": "Kein Problem! Wenn Sie Fragen haben, bin ich hier um zu helfen. Schönen Tag noch!",
         "timestamp": "2025-11-17T15:07:45+00:00",
         "easter": "meditate"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-17T15:08:00+00:00",
     "session_start": "2025-11-17T15:00:00+00:00",
@@ -797,7 +781,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-010",
+    "id": "4690bae6-fa6a-493f-9b8c-6df6676fbeb7",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-18T10:11:30+00:00",
@@ -863,7 +847,7 @@
       },
       {
         "author": "bot",
-        "message": "De prijzen vari\u00ebren per product. Lactosevrije kaas begint rond \u20ac2,50 voor een pakje. Je kunt de exacte prijzen zien in onze webshop of in de winkel.",
+        "message": "De prijzen variëren per product. Lactosevrije kaas begint rond €2,50 voor een pakje. Je kunt de exacte prijzen zien in onze webshop of in de winkel.",
         "timestamp": "2025-11-18T10:09:30+00:00"
       },
       {
@@ -877,8 +861,6 @@
         "timestamp": "2025-11-18T10:11:45+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-18T10:12:00+00:00",
     "session_start": "2025-11-18T10:00:00+00:00",
@@ -891,7 +873,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-011",
+    "id": "a545940e-9f5b-42de-bc13-57a5384af07e",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-18T13:37:30+00:00",
@@ -952,7 +934,7 @@
       },
       {
         "author": "user",
-        "message": "\ud83d\udc4d",
+        "message": "👍",
         "timestamp": "2025-11-18T13:37:30+00:00"
       },
       {
@@ -961,8 +943,6 @@
         "timestamp": "2025-11-18T13:37:45+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-18T13:38:00+00:00",
     "session_start": "2025-11-18T13:30:00+00:00",
@@ -975,7 +955,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-012",
+    "id": "d1fcd988-580f-417d-ac4a-88a350281002",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-18T17:19:30+00:00",
@@ -1046,7 +1026,7 @@
       },
       {
         "author": "user",
-        "message": "Hoe dien ik een offici\u00eble klacht in?",
+        "message": "Hoe dien ik een officiële klacht in?",
         "timestamp": "2025-11-18T17:12:00+00:00"
       },
       {
@@ -1066,7 +1046,7 @@
       },
       {
         "author": "user",
-        "message": "Ok\u00e9, stuur maar door dan",
+        "message": "Oké, stuur maar door dan",
         "timestamp": "2025-11-18T17:19:30+00:00"
       },
       {
@@ -1075,8 +1055,6 @@
         "timestamp": "2025-11-18T17:19:45+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-18T17:20:00+00:00",
     "session_start": "2025-11-18T17:00:00+00:00",
@@ -1089,7 +1067,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-013",
+    "id": "5e6a7966-496b-44d0-a950-fd6bc863c4b6",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-19T09:35:30+00:00",
@@ -1139,8 +1117,6 @@
         "timestamp": "2025-11-19T09:35:45+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-19T09:36:00+00:00",
     "session_start": "2025-11-19T09:30:00+00:00",
@@ -1153,7 +1129,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-014",
+    "id": "6f027d55-912f-4adf-a2a3-70d6f31f7b4a",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-19T12:14:30+00:00",
@@ -1229,13 +1205,11 @@
       },
       {
         "author": "bot",
-        "message": "Eet smakelijk vanavond! Als je hulp nodig hebt bij ingredi\u00ebnten, laat het me weten.",
+        "message": "Eet smakelijk vanavond! Als je hulp nodig hebt bij ingrediënten, laat het me weten.",
         "timestamp": "2025-11-19T12:14:45+00:00",
         "easter": "showLaptop"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-19T12:15:00+00:00",
     "session_start": "2025-11-19T12:00:00+00:00",
@@ -1248,7 +1222,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-015",
+    "id": "8bf7dc08-b587-4b73-b7aa-ef71ef97a6f6",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-19T15:44:30+00:00",
@@ -1304,7 +1278,7 @@
       },
       {
         "author": "bot",
-        "message": "De meeste winkels in Belgi\u00eb zijn geopend van maandag t/m zaterdag 8:00-20:00 en zondag 9:00-18:00. De exacte tijden kunnen per winkel verschillen.",
+        "message": "De meeste winkels in België zijn geopend van maandag t/m zaterdag 8:00-20:00 en zondag 9:00-18:00. De exacte tijden kunnen per winkel verschillen.",
         "timestamp": "2025-11-19T15:35:30+00:00"
       },
       {
@@ -1318,8 +1292,6 @@
         "timestamp": "2025-11-19T15:44:45+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-19T15:45:00+00:00",
     "session_start": "2025-11-19T15:30:00+00:00",
@@ -1332,7 +1304,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-016",
+    "id": "b5bde98f-b4da-41cf-8e17-bab3278fa4b0",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-20T08:09:30+00:00",
@@ -1402,8 +1374,6 @@
         "timestamp": "2025-11-20T08:09:45+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-20T08:10:00+00:00",
     "session_start": "2025-11-20T08:00:00+00:00",
@@ -1416,7 +1386,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-017",
+    "id": "853f6c16-56f1-4107-9e75-edf8ed774426",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-20T11:07:30+00:00",
@@ -1476,8 +1446,6 @@
         "timestamp": "2025-11-20T11:07:45+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-20T11:08:00+00:00",
     "session_start": "2025-11-20T11:00:00+00:00",
@@ -1490,7 +1458,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-018",
+    "id": "155bc4e3-5470-4ac3-8049-05ad280b848c",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-20T14:49:30+00:00",
@@ -1581,7 +1549,7 @@
       },
       {
         "author": "user",
-        "message": "Ok\u00e9 bedankt",
+        "message": "Oké bedankt",
         "timestamp": "2025-11-20T14:49:30+00:00"
       },
       {
@@ -1590,8 +1558,6 @@
         "timestamp": "2025-11-20T14:49:45+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-20T14:50:00+00:00",
     "session_start": "2025-11-20T14:30:00+00:00",
@@ -1604,7 +1570,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-019",
+    "id": "95098475-6d18-4ce0-8360-f488099b8488",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-20T18:11:30+00:00",
@@ -1685,8 +1651,6 @@
         "easter": "meditate"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-20T18:12:00+00:00",
     "session_start": "2025-11-20T18:00:00+00:00",
@@ -1699,7 +1663,7 @@
     "client_slug": "demo-jumbo"
   },
   {
-    "id": "sess-020",
+    "id": "deb18834-6b7e-4849-9892-cdfc107f9561",
     "domain": "jumbo.com",
     "widget_version": "0.0.3",
     "last_activity": "2025-11-21T10:39:30+00:00",
@@ -1769,8 +1733,6 @@
         "timestamp": "2025-11-21T10:39:45+00:00"
       }
     ],
-    "glb_encoded_body_size": 0,
-    "glb_response_end": 0,
     "glb_url": "https://cdn.example.com/model.glb",
     "updated_at": "2025-11-21T10:40:00+00:00",
     "session_start": "2025-11-21T10:30:00+00:00",

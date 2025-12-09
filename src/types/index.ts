@@ -475,7 +475,10 @@ export type ChatSessionAnalysis = {
   engagement_level: EngagementLevel | null;
   conversation_type: ConversationType | null;
   analytics_total_tokens: number | null;
+  analytics_total_prompt_tokens?: number | null;
+  analytics_total_completion_tokens?: number | null;
   analytics_total_cost_eur: number | null;
+  analytics_total_cost_usd?: number | null;
   analytics_model_used: string | null;
   created_at: string;
   updated_at?: string;
@@ -514,4 +517,5 @@ export type ChatMessage = {
   cost_eur?: number | null;
   finish_reason?: string | null;
   raw_response?: string | null;
+  error_message?: string | null;
 };

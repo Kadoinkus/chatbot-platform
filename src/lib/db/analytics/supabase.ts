@@ -233,7 +233,7 @@ export const analyses: ChatSessionAnalysisOperations = {
     let sessionQuery = supabase
       .from('chat_sessions')
       .select('id')
-      .eq('client_id', clientId);
+      .eq('client_slug', clientId);
 
     if (filters?.dateRange) {
       sessionQuery = sessionQuery

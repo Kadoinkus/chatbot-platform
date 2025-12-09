@@ -299,7 +299,7 @@ export function getAssistantSessionsByClientId(
   clientId: string,
   dateRange?: { start: Date; end: Date }
 ): AssistantSession[] {
-  let sessions = loadAssistantSessions().filter(s => s.client_id === clientId);
+  let sessions = loadAssistantSessions().filter(s => s.client_slug === clientId);
 
   if (dateRange) {
     sessions = sessions.filter(s => {

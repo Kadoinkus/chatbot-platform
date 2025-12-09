@@ -377,7 +377,7 @@ export const sessions: SessionOperations = {
 
   async getAssistantSessionsByClientId(clientId: string, dateRange?: DateRange) {
     const resolvedId = await clients.resolveId(clientId) || clientId;
-    let result = getAssistantSessions().filter(s => s.client_id === resolvedId);
+    let result = getAssistantSessions().filter(s => s.client_slug === resolvedId);
 
     if (dateRange) {
       result = result.filter(s => {

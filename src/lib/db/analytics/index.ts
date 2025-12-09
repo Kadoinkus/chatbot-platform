@@ -71,7 +71,7 @@ export async function getAnalyticsForAssistant(
   // This is a fallback - ideally clientId should always be provided
   const sessions = await mockAnalytics.chatSessions.getByBotId(assistantId);
   if (sessions.length > 0) {
-    const firstClientId = sessions[0].client_id;
+    const firstClientId = sessions[0].client_slug;
     if (isDemoClient(firstClientId)) {
       return mockAnalytics;
     }

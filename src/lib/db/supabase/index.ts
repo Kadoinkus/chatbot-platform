@@ -114,7 +114,7 @@ export const assistants: AssistantOperations = {
     const { data, error } = await supabase
       .from('bots')
       .select('*')
-      .eq('client_id', resolvedId)
+      .eq('client_slug', resolvedId)
       .order('name');
 
     if (error) throw error;
@@ -166,7 +166,7 @@ export const workspaces: WorkspaceOperations = {
     const { data, error } = await supabase
       .from('workspaces')
       .select('*')
-      .eq('client_id', resolvedId)
+      .eq('client_slug', resolvedId)
       .order('name');
 
     if (error) throw error;
@@ -206,7 +206,7 @@ export const users: UserOperations = {
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('client_id', resolvedId)
+      .eq('client_slug', resolvedId)
       .order('name');
 
     if (error) throw error;
@@ -246,7 +246,7 @@ export const conversations: ConversationOperations = {
     const { data, error } = await supabase
       .from('conversations')
       .select('*')
-      .eq('client_id', resolvedId)
+      .eq('client_slug', resolvedId)
       .order('started_at', { ascending: false });
 
     if (error) throw error;
@@ -290,7 +290,7 @@ export const sessions: SessionOperations = {
     const { data, error } = await supabase
       .from('sessions')
       .select('*')
-      .eq('client_id', resolvedId)
+      .eq('client_slug', resolvedId)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -304,7 +304,7 @@ export const sessions: SessionOperations = {
     const { data, error } = await supabase
       .from('sessions')
       .select('*')
-      .eq('client_id', resolvedId)
+      .eq('client_slug', resolvedId)
       .eq('status', 'active')
       .order('created_at', { ascending: false });
 
@@ -338,7 +338,7 @@ export const sessions: SessionOperations = {
     let query = supabase
       .from('bot_sessions')
       .select('*')
-      .eq('client_id', resolvedId);
+      .eq('client_slug', resolvedId);
 
     if (dateRange) {
       query = query

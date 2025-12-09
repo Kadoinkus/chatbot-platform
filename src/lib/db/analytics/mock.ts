@@ -300,7 +300,7 @@ export const analyses: ChatSessionAnalysisOperations = {
 
   async getByClientId(clientId: string, filters?: ChatSessionFilters): Promise<ChatSessionAnalysis[]> {
     // Get analyses for all sessions belonging to this client
-    const sessions = getChatSessions().filter(s => s.client_id === clientId);
+    const sessions = getChatSessions().filter(s => s.client_slug === clientId);
     const sessionIds = new Set(sessions.map(s => s.id));
     let result = getChatSessionAnalyses().filter(a => sessionIds.has(a.session_id));
     return applyAnalysisFilters(result, filters);
@@ -664,7 +664,7 @@ export const aggregations: AnalyticsAggregations = {
     let easterEggsTriggered = 0;
 
     filteredMessages.forEach(m => {
-      if (m.response_animation) {
+      if (m.response_animation && typeof m.response_animation === 'string') {
         animationCounts[m.response_animation] = (animationCounts[m.response_animation] || 0) + 1;
         totalTriggers += 1;
       }

@@ -413,7 +413,7 @@ export const getBotSessionsByBotId = getAssistantSessionsByAssistantId;
 
 export async function getAssistantSessionsByClientId(clientId: string, dateRange?: { start: Date; end: Date }): Promise<AssistantSession[]> {
   const sessions = await loadAssistantSessions();
-  let filtered = sessions.filter(s => s.client_id === clientId);
+  let filtered = sessions.filter(s => s.client_slug === clientId);
 
   if (dateRange) {
     filtered = filtered.filter(s => {

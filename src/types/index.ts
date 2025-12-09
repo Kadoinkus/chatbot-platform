@@ -240,7 +240,7 @@ export type DeviceType = 'desktop' | 'mobile' | 'tablet';
 export type AssistantSession = {
   session_id: string;
   assistant_id: string;
-  client_id: string;
+  client_slug: string;
   start_time: string;
   end_time: string;
   ip_address: string;

@@ -42,6 +42,7 @@ export interface ClientOperations {
   getBySlug(slug: string): Promise<Client | null>;
   getByIdOrSlug(idOrSlug: string): Promise<Client | null>;
   resolveId(idOrSlug: string): Promise<string | null>;
+  resolveSlug(idOrSlug: string): Promise<string | null>;
 }
 
 // Assistant operations

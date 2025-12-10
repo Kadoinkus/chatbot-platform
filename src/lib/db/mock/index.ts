@@ -200,6 +200,11 @@ export const clients: ClientOperations = {
     const client = await this.getByIdOrSlug(idOrSlug);
     return client?.id || null;
   },
+
+  async resolveSlug(idOrSlug: string) {
+    const client = await this.getByIdOrSlug(idOrSlug);
+    return client?.slug || null;
+  },
 };
 
 // Assistant operations

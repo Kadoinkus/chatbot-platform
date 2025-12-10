@@ -203,7 +203,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
       const { data, error } = await query;
       if (error) throw error;
 
-      return (data || []).map(row => ({
+      return (data || []).map((row: any) => ({
         ...mapChatSession(row),
         analysis: row.chat_session_analysis ? mapChatSessionAnalysis(row.chat_session_analysis) : null,
       }));

@@ -31,6 +31,20 @@ export const dynamic = 'force-dynamic';
 const SESSION_COOKIE_NAME = 'notsoai-session';
 const SESSION_MAX_AGE = 60 * 60 * 24 * 7; // 7 days
 
+// Demo credentials from environment variables (not exposed in public files)
+const DEMO_CREDENTIALS: Record<string, { email: string; password: string; clientSlug: string }> = {
+  [process.env.DEMO_JUMBO_EMAIL || '']: {
+    email: process.env.DEMO_JUMBO_EMAIL || '',
+    password: process.env.DEMO_JUMBO_PASSWORD || '',
+    clientSlug: 'demo-jumbo',
+  },
+  [process.env.DEMO_HITAPES_EMAIL || '']: {
+    email: process.env.DEMO_HITAPES_EMAIL || '',
+    password: process.env.DEMO_HITAPES_PASSWORD || '',
+    clientSlug: 'demo-hitapes',
+  },
+};
+
 // TODO: Replace with signed JWT before production
 // TODO: Add rate limiting before production
 
@@ -54,7 +68,7 @@ export async function POST(request: NextRequest) {
     const { email, password } = validation.data;
 
     // Resolve client and authenticate:
-    // - Demo clients: check mock credentials (email/password in JSON)
+    // - Demo clients: check credentials from environment variables
     // - Real clients: use Supabase auth when configured
     const db = getDbForClient(''); // default DB selection
     const [clientsBase, clientsMock] = await Promise.all([
@@ -63,8 +77,11 @@ export async function POST(request: NextRequest) {
     ]);
     const allClients = [...clientsBase, ...clientsMock];
 
-    // Demo path: credentials stored in login
-    const demoMatch = allClients.find(c => c.login?.email === email && c.login?.password === password);
+    // Demo path: check credentials from environment variables (not from JSON)
+    const demoCred = DEMO_CREDENTIALS[email];
+    const demoMatch = demoCred && demoCred.password === password
+      ? allClients.find(c => c.slug === demoCred.clientSlug)
+      : null;
 
     let client = demoMatch || null;
     let supabaseUserId: string | null = null;

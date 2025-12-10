@@ -46,6 +46,12 @@ export const clients: ClientOperations = {
   },
 
   async getById(id: string) {
+    // Only query if it looks like a valid UUID
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return null; // Not a valid UUID, return null instead of throwing
+    }
+
     const supabase = requireSupabase();
     const { data, error } = await supabase
       .from('clients')
@@ -105,6 +111,11 @@ export const assistants: AssistantOperations = {
   },
 
   async getById(id: string) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return null;
+    }
+
     const supabase = requireSupabase();
     const { data, error } = await supabase
       .from('mascots')
@@ -157,6 +168,11 @@ export const workspaces: WorkspaceOperations = {
   },
 
   async getById(id: string) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return null;
+    }
+
     const supabase = requireSupabase();
     const { data, error } = await supabase
       .from('workspaces')
@@ -197,6 +213,11 @@ export const users: UserOperations = {
   },
 
   async getById(id: string) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return null;
+    }
+
     const supabase = requireSupabase();
     const { data, error } = await supabase
       .from('users')
@@ -237,6 +258,11 @@ export const conversations: ConversationOperations = {
   },
 
   async getById(id: string) {
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      return null;
+    }
+
     const supabase = requireSupabase();
     const { data, error } = await supabase
       .from('conversations')

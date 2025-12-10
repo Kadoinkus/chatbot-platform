@@ -256,7 +256,7 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
                           </div>
                         </TableCell>
                         <TableCell>
-                          <span className="text-sm font-medium text-foreground">{user.conversationsHandled.toLocaleString()}</span>
+                          <span className="text-sm font-medium text-foreground">{(user.conversationsHandled ?? 0).toLocaleString()}</span>
                         </TableCell>
                         <TableCell>
                           <div className="flex items-center gap-2">

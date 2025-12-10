@@ -5,7 +5,7 @@
 
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
-import { db } from '@/lib/db';
+import { getDbForClient } from '@/lib/db';
 import type { AuthSession } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -41,8 +41,10 @@ export async function GET() {
       });
     }
 
-    // Get client data
-    const client = await db.clients.getById(session.clientId);
+    // Get client data - use client-aware db to route demo clients to mock data
+    // Use clientSlug to determine which DB (demo clients are identified by slug pattern)
+    const clientDb = getDbForClient(session.clientSlug || session.clientId);
+    const client = await clientDb.clients.getById(session.clientId);
 
     if (!client) {
       // Client no longer exists, clear session

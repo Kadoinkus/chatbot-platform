@@ -69,7 +69,7 @@ export default function AssistantsClient({
           onSearchChange={setSearchTerm}
           searchPlaceholder="Search AI assistants and workspaces..."
           extraActions={
-            <Link href={`/app/${client.id}/marketplace`}>
+            <Link href={`/app/${client.slug}/marketplace`}>
               <Button icon={<Plus size={18} />}>
                 New AI Assistant
               </Button>
@@ -83,7 +83,7 @@ export default function AssistantsClient({
             <AssistantCard
               key={assistant.id}
               assistant={assistant}
-              clientId={client.id}
+              clientId={client.slug}
               workspaceName={assistant.workspaceName}
               workspace={assistant.workspace}
             />
@@ -97,7 +97,7 @@ export default function AssistantsClient({
             title="No AI assistants yet"
             message="Create your first AI assistant to get started."
             action={
-              <Link href={`/app/${client.id}/marketplace`}>
+              <Link href={`/app/${client.slug}/marketplace`}>
                 <Button icon={<Plus size={18} />}>
                   Create First AI Assistant
                 </Button>

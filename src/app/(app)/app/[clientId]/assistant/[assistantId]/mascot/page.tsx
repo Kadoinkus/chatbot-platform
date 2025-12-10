@@ -47,7 +47,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
       try {
         const [clientData, assistantData] = await Promise.all([
           getClientById(params.clientId),
-          getAssistantById(params.assistantId)
+          getAssistantById(params.assistantId, params.clientId)
         ]);
         setClient(clientData);
         setAssistant(assistantData);
@@ -254,7 +254,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
             description="Customize appearance and chat interface"
             backLink={
               <Link
-                href={`/app/${client.id}`}
+                href={`/app/${client.slug}`}
                 className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
               >
                 <ArrowLeft size={16} />

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db as baseDb } from '@/lib/db';
-import * as mockDb from '@/lib/db/mock';
+import { getDbForClient } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
@@ -8,12 +7,18 @@ export async function GET(
 ) {
   try {
     const { conversationId } = params;
+    const { searchParams } = new URL(request.url);
+    const clientId = searchParams.get('clientId');
 
-    // Get conversation
-    let conversation = await baseDb.conversations.getById(conversationId);
-    if (!conversation) {
-      conversation = await mockDb.conversations.getById(conversationId);
+    if (!clientId) {
+      return NextResponse.json(
+        { code: 'BAD_REQUEST', message: 'clientId query parameter is required' },
+        { status: 400 }
+      );
     }
+
+    const db = getDbForClient(clientId);
+    const conversation = await db.conversations.getById(conversationId);
 
     if (!conversation) {
       return NextResponse.json(
@@ -25,10 +30,7 @@ export async function GET(
       );
     }
 
-    // Get messages
-    const messages =
-      (await baseDb.messages.getByConversationId(conversationId)) ||
-      (await mockDb.messages.getByConversationId(conversationId));
+    const messages = await db.messages.getByConversationId(conversationId);
 
     return NextResponse.json({
       data: {

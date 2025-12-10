@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db as baseDb, getDbForClient } from '@/lib/db';
-import * as mockDb from '@/lib/db/mock';
+import { getDbForClient } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
@@ -8,11 +7,18 @@ export async function GET(
 ) {
   try {
     const { assistantId } = params;
-    // Try base DB first, then mock (important when Supabase is configured but demo data is mock-only)
-    let assistant = await baseDb.assistants.getById(assistantId);
-    if (!assistant) {
-      assistant = await mockDb.assistants.getById(assistantId);
+    const { searchParams } = new URL(request.url);
+    const clientId = searchParams.get('clientId');
+
+    if (!clientId) {
+      return NextResponse.json(
+        { code: 'BAD_REQUEST', message: 'clientId query parameter is required' },
+        { status: 400 }
+      );
     }
+
+    const db = getDbForClient(clientId);
+    const assistant = await db.assistants.getById(assistantId);
 
     if (!assistant) {
       return NextResponse.json(
@@ -22,16 +28,6 @@ export async function GET(
         },
         { status: 404 }
       );
-    }
-
-    // If we have client context, ensure subsequent related lookups use correct DB
-    if (assistant.clientId) {
-      const scopedDb = getDbForClient(assistant.clientId);
-      // Refresh from scoped DB to ensure consistency when we initially hit the wrong source
-      const refreshed = await scopedDb.assistants.getById(assistantId);
-      if (refreshed) {
-        assistant = refreshed;
-      }
     }
 
     return NextResponse.json({ data: assistant });

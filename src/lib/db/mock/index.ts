@@ -178,6 +178,39 @@ function getMetrics(): MetricsData {
   return cache.metrics;
 }
 
+// Aggregate assistant usage from chat sessions (fallback when metrics.json lacks per-assistant data)
+function aggregateAssistantUsageFromSessions(assistantId: string): {
+  usageByDay: ClientMetrics['usageByDay'];
+  topIntents: ClientMetrics['topIntents'];
+} {
+  const sessions = getChatSessions().filter(s => s.mascot_slug === assistantId);
+  const usageByDayMap = new Map<string, { conversations: number; resolved: number }>();
+  const intentCounts = new Map<string, number>();
+
+  sessions.forEach(session => {
+    const date = session.session_started_at?.slice(0, 10) || 'unknown';
+    const prev = usageByDayMap.get(date) || { conversations: 0, resolved: 0 };
+    prev.conversations += 1;
+    // Treat sessions with an end time as resolved
+    if (session.session_ended_at) prev.resolved += 1;
+    usageByDayMap.set(date, prev);
+
+    if (session.referrer_domain) {
+      intentCounts.set(session.referrer_domain, (intentCounts.get(session.referrer_domain) || 0) + 1);
+    }
+  });
+
+  const usageByDay = Array.from(usageByDayMap.entries())
+    .sort(([a], [b]) => a.localeCompare(b))
+    .map(([date, counts]) => ({ date, conversations: counts.conversations, resolved: counts.resolved }));
+
+  const topIntents = Array.from(intentCounts.entries())
+    .sort((a, b) => b[1] - a[1])
+    .map(([intent, count]) => ({ intent, count }));
+
+  return { usageByDay, topIntents };
+}
+
 // Client operations
 export const clients: ClientOperations = {
   async getAll() {
@@ -218,9 +251,9 @@ export const assistants: AssistantOperations = {
   },
 
   async getByClientId(clientId: string) {
-    // Resolve slug to id if needed
-    const resolvedId = await clients.resolveId(clientId) || clientId;
-    return getAssistants().filter(a => a.clientId === resolvedId);
+    // Mock assistants store client slug in clientId; accept either id or slug
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
+    return getAssistants().filter(a => a.clientId === resolvedSlug || a.clientId === clientId);
   },
 
   async getByWorkspaceId(workspaceId: string) {
@@ -235,12 +268,12 @@ export const workspaces: WorkspaceOperations = {
   },
 
   async getById(id: string) {
-    return getWorkspaces().find(w => w.id === id) || null;
+    return getWorkspaces().find(w => w.id === id || w.slug === id) || null;
   },
 
   async getByClientId(clientId: string) {
-    const resolvedId = await clients.resolveId(clientId) || clientId;
-    return getWorkspaces().filter(w => w.clientId === resolvedId);
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
+    return getWorkspaces().filter(w => w.clientId === resolvedSlug || w.clientSlug === resolvedSlug);
   },
 };
 
@@ -255,8 +288,8 @@ export const users: UserOperations = {
   },
 
   async getByClientId(clientId: string) {
-    const resolvedId = await clients.resolveId(clientId) || clientId;
-    return getUsers().filter(u => u.clientId === resolvedId);
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
+    return getUsers().filter(u => u.clientId === resolvedSlug || u.clientSlug === resolvedSlug);
   },
 };
 
@@ -271,8 +304,8 @@ export const conversations: ConversationOperations = {
   },
 
   async getByClientId(clientId: string) {
-    const resolvedId = await clients.resolveId(clientId) || clientId;
-    return getConversations().filter(c => c.clientId === resolvedId);
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
+    return getConversations().filter(c => c.clientId === resolvedSlug || c.clientId === clientId);
   },
 
   async getByAssistantId(assistantId: string) {
@@ -290,13 +323,13 @@ export const messages: MessageOperations = {
 // Session operations
 export const sessions: SessionOperations = {
   async getByClientId(clientId: string) {
-    const resolvedId = await clients.resolveId(clientId) || clientId;
-    return getSessions().filter(s => s.clientId === resolvedId);
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
+    return getSessions().filter(s => s.clientId === resolvedSlug || s.clientId === clientId);
   },
 
   async getActiveByClientId(clientId: string) {
-    const resolvedId = await clients.resolveId(clientId) || clientId;
-    return getSessions().filter(s => s.clientId === resolvedId && s.status === 'active');
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
+    return getSessions().filter(s => (s.clientId === resolvedSlug || s.clientId === clientId) && s.status === 'active');
   },
 
   async getAssistantSessions(assistantId: string, dateRange?: DateRange) {
@@ -313,8 +346,8 @@ export const sessions: SessionOperations = {
   },
 
   async getAssistantSessionsByClientId(clientId: string, dateRange?: DateRange) {
-    const resolvedId = await clients.resolveId(clientId) || clientId;
-    let result = getAssistantSessions().filter(s => s.client_slug === resolvedId);
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
+    let result = getAssistantSessions().filter(s => s.client_slug === resolvedSlug || s.client_slug === clientId);
 
     if (dateRange) {
       result = result.filter(s => {
@@ -330,19 +363,40 @@ export const sessions: SessionOperations = {
 // Metrics operations
 export const metrics: MetricsOperations = {
   async getClientMetrics(clientId: string): Promise<ClientMetrics> {
-    const resolvedId = await clients.resolveId(clientId) || clientId;
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
     const metricsData = getMetrics();
     return {
-      usageByDay: metricsData.usageByDay[resolvedId] || [],
-      topIntents: metricsData.topIntents[resolvedId] || [],
+      usageByDay: metricsData.usageByDay[resolvedSlug] || [],
+      topIntents: metricsData.topIntents[resolvedSlug] || [],
     };
   },
 
   async getAssistantMetrics(assistantId: string): Promise<AssistantMetricsResult> {
     const metricsData = getMetrics();
-    return {
-      usageByDay: metricsData.assistantUsageByDay?.[assistantId] || [],
-      topIntents: metricsData.assistantIntents?.[assistantId] || [],
-    };
+    let usageByDay = metricsData.assistantUsageByDay?.[assistantId] || [];
+    let topIntents = metricsData.assistantIntents?.[assistantId] || [];
+
+    // Fallback: if no per-assistant metrics, derive from client metrics
+    if (!usageByDay.length || !topIntents.length) {
+      const assistant = getAssistants().find(a => a.id === assistantId);
+      const clientSlug = assistant?.clientId;
+      if (clientSlug) {
+        if (!usageByDay.length) {
+          usageByDay = metricsData.usageByDay[clientSlug] || [];
+        }
+        if (!topIntents.length) {
+          topIntents = metricsData.topIntents[clientSlug] || [];
+        }
+      }
+    }
+
+    // Final fallback: aggregate from chat sessions for that assistant
+    if (!usageByDay.length || !topIntents.length) {
+      const aggregated = aggregateAssistantUsageFromSessions(assistantId);
+      if (!usageByDay.length) usageByDay = aggregated.usageByDay;
+      if (!topIntents.length) topIntents = aggregated.topIntents;
+    }
+
+    return { usageByDay, topIntents };
   },
 };

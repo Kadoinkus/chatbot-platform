@@ -80,7 +80,7 @@ export default function SupportPage({ params }: { params: { clientId: string; as
       try {
         const [clientData, assistantData] = await Promise.all([
           getClientById(params.clientId),
-          getAssistantById(params.assistantId)
+          getAssistantById(params.assistantId, params.clientId)
         ]);
         setClient(clientData);
         setAssistant(assistantData);
@@ -154,7 +154,7 @@ export default function SupportPage({ params }: { params: { clientId: string; as
               description="Manage support requests and tickets"
               backLink={
                 <Link
-                  href={`/app/${client.id}`}
+                  href={`/app/${client.slug}`}
                   className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
                 >
                   <ArrowLeft size={16} />

@@ -15,9 +15,13 @@
  */
 
 import * as mockAnalytics from './mock';
-import * as supabaseAnalytics from './supabase';
+import { createSupabaseAnalytics } from './supabase';
 import { isDemoClient, isSupabaseConfigured } from '../config';
+import { supabaseAdminProd, supabaseAdminDemo } from '../supabase/client';
 import type { AnalyticsOperations } from './types';
+
+const supabaseProdAnalytics = createSupabaseAnalytics(supabaseAdminProd, 'PROD');
+const supabaseDemoAnalytics = createSupabaseAnalytics(supabaseAdminDemo, 'DEMO');
 
 /**
  * Get the appropriate analytics implementation for a client
@@ -26,12 +30,16 @@ import type { AnalyticsOperations } from './types';
  */
 export function getAnalyticsForClient(clientId: string): AnalyticsOperations {
   if (isDemoClient(clientId)) {
+    if (isSupabaseConfigured('demo')) {
+      return supabaseDemoAnalytics;
+    }
+    console.warn('[Analytics] Demo client but DEMO Supabase not configured, falling back to mock');
     return mockAnalytics;
   }
 
   // For real clients, use Supabase if configured
-  if (isSupabaseConfigured()) {
-    return supabaseAnalytics;
+  if (isSupabaseConfigured('prod')) {
+    return supabaseProdAnalytics;
   }
 
   // Fall back to mock if Supabase not configured (development)
@@ -62,8 +70,8 @@ export async function getAnalyticsForAssistant(
   }
 
   // Default to Supabase if configured
-  if (isSupabaseConfigured()) {
-    return supabaseAnalytics;
+  if (isSupabaseConfigured('prod')) {
+    return supabaseProdAnalytics;
   }
 
   return mockAnalytics;
@@ -71,7 +79,11 @@ export async function getAnalyticsForAssistant(
 
 // Export default analytics (for when you know the client context)
 // Default picks Supabase when configured, otherwise falls back to mock
-export const analytics: AnalyticsOperations = isSupabaseConfigured() ? supabaseAnalytics : mockAnalytics;
+export const analytics: AnalyticsOperations = isSupabaseConfigured('prod')
+  ? supabaseProdAnalytics
+  : isSupabaseConfigured('demo')
+    ? supabaseDemoAnalytics
+    : mockAnalytics;
 
 // Re-export types
 export type {
@@ -98,6 +110,10 @@ export type {
 } from './types';
 
 // Export both implementations for direct access if needed
-export { mockAnalytics, supabaseAnalytics };
+export {
+  mockAnalytics,
+  supabaseProdAnalytics as supabaseAnalytics,
+  supabaseDemoAnalytics,
+};
 // Re-export demo helper so consumers don't need to import config directly
 export { isDemoClient } from '../config';

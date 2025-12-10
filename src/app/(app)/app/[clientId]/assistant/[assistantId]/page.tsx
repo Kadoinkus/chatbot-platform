@@ -28,8 +28,8 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
       try {
         const [clientData, assistantData, metricsData] = await Promise.all([
           getClientById(params.clientId),
-          getAssistantById(params.assistantId),
-          getAssistantMetrics(params.assistantId)
+          getAssistantById(params.assistantId, params.clientId),
+          getAssistantMetrics(params.assistantId, params.clientId)
         ]);
         setClient(clientData);
         setAssistant(assistantData);
@@ -75,7 +75,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
               description={assistant.description}
               backLink={
                 <Link
-                  href={`/app/${client.id}`}
+              href={`/app/${client.slug}`}
                   className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
                 >
                   <ArrowLeft size={16} />

@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db as baseDb, getDbForClient } from '@/lib/db';
-import * as mockDb from '@/lib/db/mock';
+import { getDbForClient } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -10,21 +9,20 @@ export async function GET(request: NextRequest) {
     const clientId = searchParams.get('clientId');
     const workspaceId = searchParams.get('workspaceId');
 
+    if (!clientId) {
+      return NextResponse.json(
+        { code: 'BAD_REQUEST', message: 'clientId is required' },
+        { status: 400 }
+      );
+    }
+
+    const db = getDbForClient(clientId);
     let assistants;
 
     if (workspaceId) {
-      // Prefer client-scoped DB when possible; fall back to mock for demo data when Supabase is configured
-      const byWorkspace =
-        (await baseDb.assistants.getByWorkspaceId(workspaceId)) ||
-        (await mockDb.assistants.getByWorkspaceId(workspaceId));
-      assistants = byWorkspace;
-    } else if (clientId) {
-      const scopedDb = getDbForClient(clientId);
-      assistants = await scopedDb.assistants.getByClientId(clientId);
+      assistants = await db.assistants.getByWorkspaceId(workspaceId);
     } else {
-      // Return all assistants (admin view)
-      const all = await baseDb.assistants.getAll();
-      assistants = all.length > 0 ? all : await mockDb.assistants.getAll();
+      assistants = await db.assistants.getByClientId(clientId);
     }
 
     return NextResponse.json({ data: assistants });

@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db } from '@/lib/db';
+import { getDbForClient } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
@@ -7,6 +7,7 @@ export async function GET(
 ) {
   try {
     const { id } = params;
+    const db = getDbForClient(id);
     // Accept either UUID or slug for convenience in demo links
     const client = (await db.clients.getById(id)) || (await db.clients.getBySlug(id)) || null;
 

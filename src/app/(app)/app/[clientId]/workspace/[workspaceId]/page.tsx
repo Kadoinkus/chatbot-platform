@@ -37,11 +37,16 @@ export default function WorkspaceDetailPage({
   useEffect(() => {
     async function loadData() {
       try {
-        const [clientData, workspaceData, assistantsData] = await Promise.all([
+        const [clientData, workspaceData] = await Promise.all([
           getClientById(params.clientId),
-          getWorkspaceById(params.workspaceId),
-          getAssistantsByWorkspaceId(params.workspaceId)
+          getWorkspaceById(params.workspaceId, params.clientId)
         ]);
+
+        let assistantsData: Assistant[] = [];
+        if (workspaceData) {
+          assistantsData = await getAssistantsByWorkspaceId(workspaceData.id, params.clientId);
+        }
+
         setClient(clientData);
         setWorkspace(workspaceData);
         setAssistants(assistantsData || []);
@@ -131,7 +136,7 @@ export default function WorkspaceDetailPage({
               description={workspace.description}
               backLink={
                 <Link
-                  href={`/app/${client.id}/home`}
+                  href={`/app/${client.slug}/home`}
                   className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
                 >
                   <ArrowLeft size={16} />

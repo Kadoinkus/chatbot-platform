@@ -59,8 +59,20 @@ export function middleware(request: NextRequest) {
     const pathParts = pathname.split('/');
     const urlClientId = pathParts[2]; // /app/[clientId]/...
 
-    if (urlClientId && urlClientId !== session.clientId && urlClientId !== session.clientSlug) {
-      // User is trying to access a different client's data - redirect to their own
+    // If URL uses a different tenant or uses the UUID while we have a slug, redirect to canonical slug
+    const isWrongTenant =
+      urlClientId &&
+      urlClientId !== session.clientId &&
+      urlClientId !== session.clientSlug;
+
+    const isUuidWhenSlugAvailable =
+      urlClientId &&
+      session.clientSlug &&
+      urlClientId === session.clientId &&
+      session.clientSlug !== session.clientId;
+
+    if (isWrongTenant || isUuidWhenSlugAvailable) {
+      // User is trying to access a different client or using UUID; redirect to slug
       const correctUrl = new URL(
         pathname.replace(`/app/${urlClientId}`, `/app/${session.clientSlug}`),
         request.url

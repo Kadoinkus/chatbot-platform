@@ -88,7 +88,7 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
             title="Your cart is empty"
             message="Add some bot templates from the marketplace to get started"
             action={
-              <Link href={`/app/${client.id}/marketplace`}>
+              <Link href={`/app/${client.slug}/marketplace`}>
                 <Button>Browse Marketplace</Button>
               </Link>
             }
@@ -119,7 +119,7 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
               description={`Complete your purchase of ${totalItems} item${totalItems !== 1 ? 's' : ''}`}
               backLink={
                 <Link
-                  href={`/app/${client.id}/marketplace`}
+                  href={`/app/${client.slug}/marketplace`}
                   className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
                 >
                   <ArrowLeft size={16} />
@@ -405,10 +405,10 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
                       </div>
 
                       <div className="flex gap-4 justify-center">
-                        <Link href={`/app/${client.id}`}>
+                        <Link href={`/app/${client.slug}`}>
                           <Button>View My Bots</Button>
                         </Link>
-                        <Link href={`/app/${client.id}/marketplace`}>
+                        <Link href={`/app/${client.slug}/marketplace`}>
                           <Button variant="secondary">Browse More Templates</Button>
                         </Link>
                       </div>

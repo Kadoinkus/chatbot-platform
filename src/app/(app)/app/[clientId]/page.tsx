@@ -1,5 +1,5 @@
 import { Suspense } from 'react';
-import { db } from '@/lib/db';
+import { getDbForClient } from '@/lib/db';
 import type { Assistant, Client, Workspace } from '@/types';
 import { Spinner } from '@/components/ui';
 import AssistantsClient from './AssistantsClient';
@@ -7,6 +7,7 @@ import AssistantsClient from './AssistantsClient';
 type AssistantWithWorkspace = Assistant & { workspace?: Workspace; workspaceName?: string };
 
 async function fetchData(clientId: string) {
+  const db = getDbForClient(clientId);
   const [client, workspaces, assistants] = await Promise.all([
     db.clients.getByIdOrSlug(clientId),
     db.workspaces.getByClientId(clientId),

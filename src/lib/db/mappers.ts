@@ -103,7 +103,7 @@ function normalizeAssistantStatus(status: string | undefined): Assistant['status
 
 export function mapClient(raw: any): Client {
   return {
-    id: raw.slug || raw.id,
+    id: raw.id,
     slug: raw.slug || raw.id,
     name: raw.name,
     email: raw.email || undefined,
@@ -149,6 +149,7 @@ export function mapAssistantFromMascot(raw: any): Assistant {
 export function mapWorkspace(raw: any): Workspace {
   return {
     id: raw.id,
+    slug: raw.slug || raw.id,
     clientId: raw.client_slug,
     clientSlug: raw.client_slug,
     name: raw.name,

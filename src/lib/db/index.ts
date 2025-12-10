@@ -19,30 +19,38 @@
  */
 
 import * as mockDb from './mock';
-import * as supabaseDb from './supabase';
+import { supabaseProdDb, supabaseDemoDb } from './supabase';
 import { isDemoClient, isSupabaseConfigured, shouldUseMockData } from './config';
 import type { DbOperations } from './types';
 
 export type { DbClient, DbOperations } from './types';
 
 // Determine which implementation to use
-const supabaseConfigured = isSupabaseConfigured();
 const useMockData = shouldUseMockData();
+const prodSupabaseConfigured = isSupabaseConfigured('prod');
+const demoSupabaseConfigured = isSupabaseConfigured('demo');
 
 function getBaseDb(): DbOperations {
   if (useMockData) return mockDb;
-  if (supabaseConfigured) return supabaseDb;
+  if (prodSupabaseConfigured) return supabaseProdDb;
+  if (demoSupabaseConfigured) return supabaseDemoDb;
   console.warn('[DB] Supabase not configured, falling back to mock data');
   return mockDb;
 }
 
 /**
  * Get the appropriate DB implementation for a client.
- * Demo clients always use mock data. Real clients use Supabase when available,
- * otherwise fall back to mock.
+ * Demo clients use the demo Supabase instance when configured (fallback: prod Supabase -> mock).
+ * Real clients use the prod Supabase instance when available (fallback: demo Supabase -> mock).
  */
 export function getDbForClient(clientId: string): DbOperations {
+  if (useMockData) return mockDb;
+
   if (isDemoClient(clientId)) {
+    if (demoSupabaseConfigured) {
+      return supabaseDemoDb;
+    }
+    console.warn('[DB] Demo client requested but demo Supabase not configured, using MOCK data');
     return mockDb;
   }
   return getBaseDb();
@@ -95,8 +103,10 @@ export type {
 if (typeof window === 'undefined') {
   const source = useMockData
     ? 'MOCK (forced)'
-    : supabaseConfigured
-      ? 'SUPABASE'
-      : 'MOCK (supabase not configured)';
+    : prodSupabaseConfigured
+      ? 'SUPABASE (prod)'
+      : demoSupabaseConfigured
+        ? 'SUPABASE (demo)'
+        : 'MOCK (supabase not configured)';
   console.log(`[DB] Using ${source} data source`);
 }

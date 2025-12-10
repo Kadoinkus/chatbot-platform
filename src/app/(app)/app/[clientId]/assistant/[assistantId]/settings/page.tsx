@@ -28,7 +28,7 @@ export default function AssistantSettingsPage({ params }: { params: { clientId: 
     async function loadData() {
       const [clientData, assistantData] = await Promise.all([
         getClientById(params.clientId),
-        getAssistantById(params.assistantId),
+        getAssistantById(params.assistantId, params.clientId),
       ]);
       setClient(clientData ?? null);
       setAssistant(assistantData ?? null);
@@ -102,7 +102,7 @@ export default function AssistantSettingsPage({ params }: { params: { clientId: 
               description="Technical configuration and administration"
               backLink={
                 <Link
-                  href={`/app/${client.id}`}
+                  href={`/app/${client.slug}`}
                   className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
                 >
                   <ArrowLeft size={16} />
@@ -211,7 +211,7 @@ export default function AssistantSettingsPage({ params }: { params: { clientId: 
                       label="Embed Code"
                       readOnly
                       rows={4}
-                      value={`<script src="https://api.chatbot.com/widget.js"\n  data-bot-id="${assistant.id}"\n  data-client-id="${client.id}">\n</script>`}
+                      value={`<script src="https://api.chatbot.com/widget.js"\n  data-bot-id="${assistant.id}"\n  data-client-id="${client.slug}">\n</script>`}
                       className="font-mono text-sm"
                     />
                     <Button variant="secondary">Copy Code</Button>
@@ -444,7 +444,7 @@ export default function AssistantSettingsPage({ params }: { params: { clientId: 
                     </div>
 
                     <div>
-                      <Link href={`/app/${client.id}/billing`}>
+                      <Link href={`/app/${client.slug}/billing`}>
                         <Button variant="secondary" icon={<CreditCard size={16} />}>
                           Manage Billing
                         </Button>

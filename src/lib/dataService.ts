@@ -107,8 +107,9 @@ export async function getWorkspacesByClientId(clientIdOrSlug: string): Promise<W
   return data ?? [];
 }
 
-export async function getWorkspaceById(id: string): Promise<Workspace | undefined> {
-  const data = await apiGet<Workspace>(`/api/workspaces/${encodeURIComponent(id)}`);
+export async function getWorkspaceById(idOrSlug: string, clientId: string): Promise<Workspace | undefined> {
+  const params = new URLSearchParams({ clientId });
+  const data = await apiGet<Workspace>(`/api/workspaces/${encodeURIComponent(idOrSlug)}?${params.toString()}`);
   return data ?? undefined;
 }
 
@@ -117,13 +118,15 @@ export async function getAssistantsByClientId(clientIdOrSlug: string): Promise<A
   return data ?? [];
 }
 
-export async function getAssistantsByWorkspaceId(workspaceId: string): Promise<Assistant[]> {
-  const data = await apiGet<Assistant[]>(`/api/assistants?workspaceId=${encodeURIComponent(workspaceId)}`);
+export async function getAssistantsByWorkspaceId(workspaceId: string, clientId: string): Promise<Assistant[]> {
+  const params = new URLSearchParams({ workspaceId, clientId });
+  const data = await apiGet<Assistant[]>(`/api/assistants?${params.toString()}`);
   return data ?? [];
 }
 
-export async function getAssistantById(id: string): Promise<Assistant | undefined> {
-  const data = await apiGet<Assistant>(`/api/assistants/${encodeURIComponent(id)}`);
+export async function getAssistantById(id: string, clientId: string): Promise<Assistant | undefined> {
+  const params = new URLSearchParams({ clientId });
+  const data = await apiGet<Assistant>(`/api/assistants/${encodeURIComponent(id)}?${params.toString()}`);
   return data ?? undefined;
 }
 
@@ -149,18 +152,10 @@ export async function getClientMetrics(clientIdOrSlug: string): Promise<{
   };
 }
 
-export async function getAssistantMetrics(assistantId: string): Promise<{
+export async function getAssistantMetrics(assistantId: string, clientId: string): Promise<{
   usageByDay: UsageData[];
   topIntents: IntentData[];
 }> {
-  // Determine client context for analytics routing
-  const assistant = await getAssistantById(assistantId);
-  const clientId = assistant?.clientId;
-
-  if (!clientId) {
-    return { usageByDay: [], topIntents: [] };
-  }
-
   const [daily, intents] = await Promise.all([
     apiGet<{ data: UsageData[] }>(
       `/api/analytics/daily?clientId=${encodeURIComponent(clientId)}&botId=${encodeURIComponent(assistantId)}`
@@ -178,12 +173,19 @@ export async function getAssistantMetrics(assistantId: string): Promise<{
 
 // Legacy compatibility - reconstructed client objects with nested assistants and minimal metrics
 export async function getClientsWithAssistants(): Promise<any[]> {
-  const [clients, assistants] = await Promise.all([getClients(), apiGet<Assistant[]>('/api/assistants')]);
-  const allAssistants = assistants ?? [];
+  const clients = await getClients();
+
+  const assistantsByClient = await Promise.all(
+    clients.map(async client => ({
+      clientId: client.id,
+      assistants: await getAssistantsByClientId(client.id),
+    }))
+  );
+  const lookup = new Map(assistantsByClient.map(entry => [entry.clientId, entry.assistants]));
 
   return clients.map(client => ({
     ...client,
-    assistants: allAssistants.filter(a => a.clientId === client.id),
+    assistants: lookup.get(client.id) || [],
     metrics: {
       usageByDay: [],
       topIntents: [],

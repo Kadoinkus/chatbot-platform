@@ -28,7 +28,7 @@ export default function AssistantChatPage({ params }: { params: { clientId: stri
     async function loadData() {
       const [clientData, assistantData] = await Promise.all([
         getClientById(params.clientId),
-        getAssistantById(params.assistantId),
+        getAssistantById(params.assistantId, params.clientId),
       ]);
       setClient(clientData || null);
       setAssistant(assistantData || null);
@@ -137,7 +137,7 @@ export default function AssistantChatPage({ params }: { params: { clientId: stri
             <div className="flex items-center justify-between">
               <div className="flex items-center gap-4">
                 <Link
-                  href={`/app/${client.id}/assistant/${assistant.id}`}
+                  href={`/app/${client.slug}/assistant/${assistant.id}`}
                   className="text-foreground-secondary hover:text-foreground"
                 >
                   <ArrowLeft size={20} />

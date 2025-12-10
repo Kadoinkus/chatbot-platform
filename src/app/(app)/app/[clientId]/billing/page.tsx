@@ -45,7 +45,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
         // Load assistants for each workspace
         const assistantsData: Record<string, Assistant[]> = {};
         for (const workspace of workspacesData || []) {
-          const assistants = await getAssistantsByWorkspaceId(workspace.id);
+          const assistants = await getAssistantsByWorkspaceId(workspace.id, params.clientId);
           assistantsData[workspace.id] = assistants || [];
         }
         setWorkspaceAssistants(assistantsData);
@@ -557,7 +557,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                             {/* Action Buttons */}
                             <div className="space-y-3">
                               <div className="flex gap-2">
-                                <Link href={`/app/${client.id}/plans`} className="flex-1">
+                                <Link href={`/app/${client.slug}/plans`} className="flex-1">
                                   <Button fullWidth>
                                     Upgrade Plan
                                   </Button>
@@ -566,7 +566,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                                   Add Credits
                                 </Button>
                               </div>
-                              <Link href={`/app/${client.id}/workspace/${workspace.id}`}>
+                              <Link href={`/app/${client.slug}/workspace/${workspace.slug || workspace.id}`}>
                                 <Button variant="secondary" fullWidth>
                                   Manage Workspace →
                                 </Button>

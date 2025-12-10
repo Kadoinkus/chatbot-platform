@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { db as baseDb, getDbForClient } from '@/lib/db';
-import * as mockDb from '@/lib/db/mock';
+import { getDbForClient } from '@/lib/db';
 
 export const dynamic = 'force-dynamic';
 
@@ -9,18 +8,15 @@ export async function GET(request: NextRequest) {
     const { searchParams } = new URL(request.url);
     const clientId = searchParams.get('clientId');
 
-    let users;
-    if (clientId) {
-      const scopedDb = getDbForClient(clientId);
-      users = await scopedDb.users.getByClientId(clientId);
-      if (!users || users.length === 0) {
-        // Fallback to mock data for demo clients when Supabase is configured
-        users = await mockDb.users.getByClientId(clientId);
-      }
-    } else {
-      const all = await baseDb.users.getAll();
-      users = all.length > 0 ? all : await mockDb.users.getAll();
+    if (!clientId) {
+      return NextResponse.json(
+        { code: 'BAD_REQUEST', message: 'clientId is required' },
+        { status: 400 }
+      );
     }
+
+    const db = getDbForClient(clientId);
+    const users = await db.users.getByClientId(clientId);
 
     return NextResponse.json({ data: users });
   } catch (error) {

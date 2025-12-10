@@ -11,17 +11,44 @@ const envDemoIds = (process.env.DEMO_CLIENT_IDS || process.env.NEXT_PUBLIC_DEMO_
   .map((id) => id.trim())
   .filter(Boolean);
 
-const defaultDemoIds = ['demo-jumbo', 'demo-hitapes'];
+// Include both slugs and UUIDs for built-in demo clients so id-based lookups
+// (e.g., session.clientId) are treated as demo as well.
+const defaultDemoIds = [
+  'demo-jumbo',
+  'demo-hitapes',
+  'c1a2b3c4-d5e6-4f7a-8b9c-0d1e2f3a4b5c', // Jumbo demo id
+  'd2e3f4a5-b6c7-4d8e-9f0a-1b2c3d4e5f6a', // HiTapes demo id
+];
 
-export const DEMO_CLIENT_IDS = envDemoIds.length > 0 ? envDemoIds : defaultDemoIds;
+// Always include the default demo ids; allow env to add more but not remove UUID variants
+export const DEMO_CLIENT_IDS = Array.from(new Set([...defaultDemoIds, ...envDemoIds]));
 const demoClientSet = new Set(DEMO_CLIENT_IDS.map((id) => id.toLowerCase()));
 
 export function isDemoClient(clientId: string): boolean {
   return demoClientSet.has((clientId || '').toLowerCase());
 }
 
-export function isSupabaseConfigured(): boolean {
-  return Boolean(process.env.SUPABASE_URL && process.env.SUPABASE_SERVICE_ROLE_KEY);
+function getSupabaseConfig(target: 'prod' | 'demo') {
+  if (target === 'demo') {
+    return {
+      url: process.env.DEMO_SUPABASE_URL || process.env.NEXT_PUBLIC_DEMO_SUPABASE_URL,
+      key: process.env.DEMO_SUPABASE_SERVICE_ROLE_KEY,
+    };
+  }
+
+  return {
+    url: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
+    key: process.env.SUPABASE_SERVICE_ROLE_KEY,
+  };
+}
+
+export function isSupabaseConfigured(target: 'prod' | 'demo' = 'prod'): boolean {
+  const { url, key } = getSupabaseConfig(target);
+  return Boolean(url && key);
+}
+
+export function isAnySupabaseConfigured(): boolean {
+  return isSupabaseConfigured('prod') || isSupabaseConfigured('demo');
 }
 
 /**
@@ -33,5 +60,5 @@ export function isSupabaseConfigured(): boolean {
 export function shouldUseMockData(): boolean {
   if (process.env.USE_MOCK_DATA === 'true') return true;
   if (process.env.USE_MOCK_DATA === 'false') return false;
-  return process.env.NODE_ENV === 'development' && !isSupabaseConfigured();
+  return process.env.NODE_ENV === 'development' && !isAnySupabaseConfigured();
 }

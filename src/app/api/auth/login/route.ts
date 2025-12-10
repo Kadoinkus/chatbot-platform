@@ -22,7 +22,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { getDbForClient } from '@/lib/db';
 import * as mockDb from '@/lib/db/mock';
-import { supabaseClient } from '@/lib/db/supabase/client';
+import { supabaseClientProd } from '@/lib/db/supabase/client';
 import { LoginRequestSchema, formatZodErrors } from '@/lib/schemas';
 import type { AuthSession } from '@/types';
 
@@ -94,28 +94,16 @@ export async function POST(request: NextRequest) {
     const demoCredentials = getDemoCredentials();
     const demoCred = demoCredentials[email];
 
-    // Debug logging
-    console.log('[Login] Attempting login for:', email);
-    console.log('[Login] Demo credentials configured:', Object.keys(demoCredentials));
-    console.log('[Login] Demo cred found for email:', !!demoCred);
-    if (demoCred) {
-      console.log('[Login] Password match:', demoCred.password === password);
-      console.log('[Login] Looking for client slug:', demoCred.clientSlug);
-    }
-    console.log('[Login] All client slugs:', allClients.map(c => c.slug));
-
     const demoMatch = demoCred && demoCred.password === password
       ? allClients.find(c => c.slug === demoCred.clientSlug)
       : null;
-
-    console.log('[Login] Demo client match:', demoMatch ? demoMatch.slug : 'none');
 
     let client = demoMatch || null;
     let supabaseUserId: string | null = null;
 
     if (!demoMatch) {
       // Attempt Supabase auth for real clients
-      if (!supabaseClient) {
+      if (!supabaseClientProd) {
         return NextResponse.json(
           {
             code: 'INVALID_CREDENTIALS',
@@ -125,7 +113,7 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      const { data, error } = await supabaseClient.auth.signInWithPassword({ email, password });
+      const { data, error } = await supabaseClientProd.auth.signInWithPassword({ email, password });
       if (error || !data.session) {
         return NextResponse.json(
           {

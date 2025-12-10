@@ -95,6 +95,7 @@ export type OverageTracking = {
 
 export type Workspace = {
   id: string;
+  slug?: string;
   clientId?: string;                    // @deprecated - use clientSlug
   clientSlug: string;                   // FK to clients.slug
   name: string;

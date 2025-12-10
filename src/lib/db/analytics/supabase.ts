@@ -140,7 +140,8 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
         `[Analytics:${label}] Supabase not configured. Set ${label === 'DEMO' ? 'DEMO_SUPABASE_URL/DEMO_SUPABASE_SERVICE_ROLE_KEY' : 'SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY'}.`
       );
     }
-    return adminClient;
+    // Cast to any to avoid Postgrest type frictions in analytics queries
+    return adminClient as any;
   };
 
   // Chat session operations

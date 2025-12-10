@@ -70,9 +70,13 @@ export const clients: ClientOperations = {
   },
 
   async getByIdOrSlug(idOrSlug: string) {
-    // Try by id first, then by slug
-    const byId = await this.getById(idOrSlug);
-    if (byId) return byId;
+    // Check if it looks like a UUID before trying getById
+    const uuidRegex = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (uuidRegex.test(idOrSlug)) {
+      const byId = await this.getById(idOrSlug);
+      if (byId) return byId;
+    }
+    // Otherwise try by slug
     return this.getBySlug(idOrSlug);
   },
 
@@ -80,14 +84,19 @@ export const clients: ClientOperations = {
     const client = await this.getByIdOrSlug(idOrSlug);
     return client?.id || null;
   },
+
+  async resolveSlug(idOrSlug: string) {
+    const client = await this.getByIdOrSlug(idOrSlug);
+    return client?.slug || null;
+  },
 };
 
-// Assistant operations (Supabase table still uses 'bots' for backward compatibility)
+// Assistant operations (uses 'mascots' table in Supabase)
 export const assistants: AssistantOperations = {
   async getAll() {
     const supabase = requireSupabase();
     const { data, error } = await supabase
-      .from('bots')
+      .from('mascots')
       .select('*')
       .order('name');
 
@@ -98,7 +107,7 @@ export const assistants: AssistantOperations = {
   async getById(id: string) {
     const supabase = requireSupabase();
     const { data, error } = await supabase
-      .from('bots')
+      .from('mascots')
       .select('*')
       .eq('id', id)
       .single();
@@ -109,12 +118,12 @@ export const assistants: AssistantOperations = {
 
   async getByClientId(clientId: string) {
     const supabase = requireSupabase();
-    const resolvedId = await clients.resolveId(clientId) || clientId;
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
 
     const { data, error } = await supabase
-      .from('bots')
+      .from('mascots')
       .select('*')
-      .eq('client_slug', resolvedId)
+      .eq('client_slug', resolvedSlug)
       .order('name');
 
     if (error) throw error;
@@ -124,7 +133,7 @@ export const assistants: AssistantOperations = {
   async getByWorkspaceId(workspaceId: string) {
     const supabase = requireSupabase();
     const { data, error } = await supabase
-      .from('bots')
+      .from('mascots')
       .select('*')
       .eq('workspace_id', workspaceId)
       .order('name');
@@ -161,12 +170,12 @@ export const workspaces: WorkspaceOperations = {
 
   async getByClientId(clientId: string) {
     const supabase = requireSupabase();
-    const resolvedId = await clients.resolveId(clientId) || clientId;
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
 
     const { data, error } = await supabase
       .from('workspaces')
       .select('*')
-      .eq('client_slug', resolvedId)
+      .eq('client_slug', resolvedSlug)
       .order('name');
 
     if (error) throw error;
@@ -201,12 +210,12 @@ export const users: UserOperations = {
 
   async getByClientId(clientId: string) {
     const supabase = requireSupabase();
-    const resolvedId = await clients.resolveId(clientId) || clientId;
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
 
     const { data, error } = await supabase
       .from('users')
       .select('*')
-      .eq('client_slug', resolvedId)
+      .eq('client_slug', resolvedSlug)
       .order('name');
 
     if (error) throw error;
@@ -241,12 +250,12 @@ export const conversations: ConversationOperations = {
 
   async getByClientId(clientId: string) {
     const supabase = requireSupabase();
-    const resolvedId = await clients.resolveId(clientId) || clientId;
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
 
     const { data, error } = await supabase
       .from('conversations')
       .select('*')
-      .eq('client_slug', resolvedId)
+      .eq('client_slug', resolvedSlug)
       .order('started_at', { ascending: false });
 
     if (error) throw error;
@@ -285,12 +294,12 @@ export const messages: MessageOperations = {
 export const sessions: SessionOperations = {
   async getByClientId(clientId: string) {
     const supabase = requireSupabase();
-    const resolvedId = await clients.resolveId(clientId) || clientId;
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
 
     const { data, error } = await supabase
       .from('sessions')
       .select('*')
-      .eq('client_slug', resolvedId)
+      .eq('client_slug', resolvedSlug)
       .order('created_at', { ascending: false });
 
     if (error) throw error;
@@ -299,12 +308,12 @@ export const sessions: SessionOperations = {
 
   async getActiveByClientId(clientId: string) {
     const supabase = requireSupabase();
-    const resolvedId = await clients.resolveId(clientId) || clientId;
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
 
     const { data, error } = await supabase
       .from('sessions')
       .select('*')
-      .eq('client_slug', resolvedId)
+      .eq('client_slug', resolvedSlug)
       .eq('status', 'active')
       .order('created_at', { ascending: false });
 
@@ -333,12 +342,12 @@ export const sessions: SessionOperations = {
 
   async getAssistantSessionsByClientId(clientId: string, dateRange?: DateRange) {
     const supabase = requireSupabase();
-    const resolvedId = await clients.resolveId(clientId) || clientId;
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
 
     let query = supabase
       .from('bot_sessions')
       .select('*')
-      .eq('client_slug', resolvedId);
+      .eq('client_slug', resolvedSlug);
 
     if (dateRange) {
       query = query
@@ -357,7 +366,7 @@ export const sessions: SessionOperations = {
 export const metrics: MetricsOperations = {
   async getClientMetrics(clientId: string): Promise<ClientMetrics> {
     const supabase = requireSupabase();
-    const resolvedId = await clients.resolveId(clientId) || clientId;
+    const resolvedSlug = await clients.resolveSlug(clientId) || clientId;
 
     // TODO: Implement actual metrics queries
     // This will depend on your Supabase schema for metrics

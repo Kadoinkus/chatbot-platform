@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useEffect } from 'react';
+import dynamic from 'next/dynamic';
 import { getClientById, getAssistantsByClientId, getWorkspacesByClientId } from '@/lib/dataService';
 import {
   fetchAssistantComparisonData,
@@ -19,18 +20,24 @@ import {
   Modal,
 } from '@/components/ui';
 import { TabNavigation, ANALYTICS_TABS } from '@/components/analytics';
+import { FilterBar } from './components';
 
-// Tab Components
-import {
-  FilterBar,
-  OverviewTab,
-  ConversationsTab,
-  QuestionsTab,
-  AudienceTab,
-  AnimationsTab,
-  CostsTab,
-  CustomTab,
-} from './components';
+// Lazy-loaded tab components
+const OverviewTab = dynamic(() => import('./components/OverviewTab'), { loading: () => <TabFallback /> });
+const ConversationsTab = dynamic(() => import('./components/ConversationsTab'), { loading: () => <TabFallback /> });
+const QuestionsTab = dynamic(() => import('./components/QuestionsTab'), { loading: () => <TabFallback /> });
+const AudienceTab = dynamic(() => import('./components/AudienceTab'), { loading: () => <TabFallback /> });
+const AnimationsTab = dynamic(() => import('./components/AnimationsTab'), { loading: () => <TabFallback /> });
+const CostsTab = dynamic(() => import('./components/CostsTab'), { loading: () => <TabFallback /> });
+const CustomTab = dynamic(() => import('./components/CustomTab'), { loading: () => <TabFallback /> });
+
+function TabFallback() {
+  return (
+    <div className="py-10 flex justify-center">
+      <Spinner size="lg" />
+    </div>
+  );
+}
 
 export default function AnalyticsDashboardPage({ params }: { params: { clientId: string } }) {
   // Data state

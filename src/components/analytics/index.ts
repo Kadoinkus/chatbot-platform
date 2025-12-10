@@ -4,6 +4,7 @@ export * from './metrics';
 export * from './tables';
 export * from './layout';
 export * from './utils';
+export * from './CustomTab';
 
 // New mobile-friendly components
 export * from './KpiCard';

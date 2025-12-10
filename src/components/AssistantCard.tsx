@@ -1,5 +1,6 @@
-import Link from 'next/link';
 import { useState, useRef, useEffect } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
 import StatusBadge from '@/components/StatusBadge';
 import Progress from '@/components/ui/Progress';
 import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, Users, Calendar, MoreVertical, Settings, Trash2, Copy } from 'lucide-react';
@@ -109,18 +110,25 @@ export default function AssistantCard({ assistant, clientId, workspaceName, work
     <div className="card-hover group relative flex flex-col overflow-hidden">
       {/* Header Section */}
       <div className="p-6 pb-4 flex-1">
-        <div className="flex items-start justify-between mb-4">
-          <div className="flex items-center gap-4">
-            <div className="relative flex-shrink-0">
-              <img
-                src={assistant.image}
-                alt={assistant.name}
-                className="w-24 h-24 rounded-full group-hover:scale-105 transition-transform duration-300"
-                style={{ backgroundColor: brandColor }}
-              />
-              {/* Status indicator - warning if cannot operate */}
-              {!canOperate && (
+          <div className="flex items-start justify-between mb-4">
+            <div className="flex items-center gap-4">
+              <div className="relative flex-shrink-0">
                 <div
+                  className="relative w-24 h-24 rounded-full overflow-hidden group-hover:scale-105 transition-transform duration-300"
+                  style={{ backgroundColor: brandColor }}
+                >
+                  <Image
+                    src={assistant.image}
+                    alt={assistant.name}
+                    fill
+                    sizes="96px"
+                    className="object-cover"
+                    loading="lazy"
+                  />
+                </div>
+                {/* Status indicator - warning if cannot operate */}
+                {!canOperate && (
+                  <div
                   className="absolute -bottom-1 -right-1 w-6 h-6 rounded-full border-2 border-surface-elevated flex items-center justify-center bg-error-600 text-white text-xs font-bold shadow-sm"
                   title="Widget stopped - add credits to continue"
                 >

@@ -58,15 +58,13 @@ import {
 import { TabNavigation, ANALYTICS_TABS } from '@/components/analytics';
 
 // Tab components
-import {
-  OverviewTab,
-  ConversationsTab,
-  QuestionsTab,
-  AudienceTab,
-  AnimationsTab,
-  CostsTab,
-  CustomTab,
-} from './components';
+const OverviewTab = dynamic(() => import('./components/OverviewTab'), { loading: () => <TabFallback /> });
+const ConversationsTab = dynamic(() => import('./components/ConversationsTab'), { loading: () => <TabFallback /> });
+const QuestionsTab = dynamic(() => import('./components/QuestionsTab'), { loading: () => <TabFallback /> });
+const AudienceTab = dynamic(() => import('./components/AudienceTab'), { loading: () => <TabFallback /> });
+const AnimationsTab = dynamic(() => import('./components/AnimationsTab'), { loading: () => <TabFallback /> });
+const CostsTab = dynamic(() => import('./components/CostsTab'), { loading: () => <TabFallback /> });
+const CustomTab = dynamic(() => import('./components/CustomTab'), { loading: () => <TabFallback /> });
 
 // Import Cell and Legend directly for remaining raw charts
 import { Cell, Legend } from 'recharts';
@@ -81,6 +79,14 @@ const YAxis = dynamic(() => import('recharts').then(mod => mod.YAxis), { ssr: fa
 const CartesianGrid = dynamic(() => import('recharts').then(mod => mod.CartesianGrid), { ssr: false });
 const Tooltip = dynamic(() => import('recharts').then(mod => mod.Tooltip), { ssr: false });
 const ResponsiveContainer = dynamic(() => import('recharts').then(mod => mod.ResponsiveContainer), { ssr: false });
+
+function TabFallback() {
+  return (
+    <div className="py-8 flex items-center justify-center">
+      <Spinner size="lg" />
+    </div>
+  );
+}
 
 
 export default function AssistantAnalyticsPage({ params }: { params: { clientId: string; assistantId: string } }) {

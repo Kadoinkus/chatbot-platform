@@ -9,7 +9,10 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "check:env": "node scripts/check-env.js"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.86.1",
@@ -35,6 +38,7 @@
     "postcss": "8.4.38",
     "prettier": "3.3.3",
     "tailwindcss": "3.4.9",
-    "typescript": "5.5.4"
+    "typescript": "5.5.4",
+    "vitest": "^2.1.4"
   }
 }

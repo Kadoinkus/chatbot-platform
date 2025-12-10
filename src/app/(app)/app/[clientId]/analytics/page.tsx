@@ -412,7 +412,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
 
       setShowExportDropdown(false);
     },
-    [activeTab, assistantMetrics, customDateRange, dateRange, normalizedSessions, params.clientId, useCustomRange, getExportDateRange]
+    [activeTab, assistantMetrics, normalizedSessions, params.clientId, getExportDateRange]
   );
 
   // Loading state

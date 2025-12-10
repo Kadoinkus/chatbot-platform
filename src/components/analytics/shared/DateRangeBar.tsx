@@ -37,7 +37,7 @@ export function DateRangeBar({
   // Keep local state in sync with upstream changes
   useEffect(() => {
     setLocalRange(customDateRange);
-  }, [customDateRange.start, customDateRange.end]);
+  }, [customDateRange]);
 
   const displayLabel = useMemo(() => {
     if (useCustomRange && customDateRange.start && customDateRange.end) {

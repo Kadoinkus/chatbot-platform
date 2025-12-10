@@ -22,20 +22,6 @@ export default function AssistantsClient({
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedWorkspace, setSelectedWorkspace] = useState<string>('all');
 
-  if (!client) {
-    return (
-      <Page>
-        <PageContent>
-          <EmptyState
-            icon={<BotIcon size={48} />}
-            title="Client not found"
-            message="The requested client could not be found."
-          />
-        </PageContent>
-      </Page>
-    );
-  }
-
   const filteredAssistants = useMemo(() => {
     const query = searchTerm.toLowerCase();
     return assistants.filter(assistant => {
@@ -51,6 +37,20 @@ export default function AssistantsClient({
       return matchesSearch && matchesWorkspace;
     });
   }, [assistants, searchTerm, selectedWorkspace]);
+
+  if (!client) {
+    return (
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<BotIcon size={48} />}
+            title="Client not found"
+            message="The requested client could not be found."
+          />
+        </PageContent>
+      </Page>
+    );
+  }
 
   return (
     <Page>

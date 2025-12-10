@@ -14,6 +14,15 @@ type WorkspaceWithAssistants = Workspace & { assistants: Assistant[] };
 export default function HomeClient({ client, workspaces }: { client: Client | null; workspaces: WorkspaceWithAssistants[] }) {
   const [searchTerm, setSearchTerm] = useState('');
 
+  const filteredWorkspaces = useMemo(() => {
+    const query = searchTerm.toLowerCase();
+    return workspaces.filter(workspace =>
+      workspace.name.toLowerCase().includes(query) ||
+      workspace.description?.toLowerCase().includes(query) ||
+      workspace.assistants.some(assistant => assistant.name.toLowerCase().includes(query))
+    );
+  }, [searchTerm, workspaces]);
+
   if (!client) {
     return (
       <Page>
@@ -27,15 +36,6 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
       </Page>
     );
   }
-
-  const filteredWorkspaces = useMemo(() => {
-    const query = searchTerm.toLowerCase();
-    return workspaces.filter(workspace =>
-      workspace.name.toLowerCase().includes(query) ||
-      workspace.description?.toLowerCase().includes(query) ||
-      workspace.assistants.some(assistant => assistant.name.toLowerCase().includes(query))
-    );
-  }, [searchTerm, workspaces]);
 
   const getPlanBadge = (plan: string) => {
     const planMap: Record<string, 'starter' | 'basic' | 'premium' | 'enterprise'> = {

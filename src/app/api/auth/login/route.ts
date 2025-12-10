@@ -94,16 +94,21 @@ export async function POST(request: NextRequest) {
     const demoCredentials = getDemoCredentials();
     const demoCred = demoCredentials[email];
 
-    // Debug logging (only in development)
-    if (process.env.ENABLE_DEBUG_LOGGING === 'true') {
-      console.log('[Login] Attempting login for:', email);
-      console.log('[Login] Demo credentials configured:', Object.keys(demoCredentials));
-      console.log('[Login] Demo match found:', !!demoCred);
+    // Debug logging
+    console.log('[Login] Attempting login for:', email);
+    console.log('[Login] Demo credentials configured:', Object.keys(demoCredentials));
+    console.log('[Login] Demo cred found for email:', !!demoCred);
+    if (demoCred) {
+      console.log('[Login] Password match:', demoCred.password === password);
+      console.log('[Login] Looking for client slug:', demoCred.clientSlug);
     }
+    console.log('[Login] All client slugs:', allClients.map(c => c.slug));
 
     const demoMatch = demoCred && demoCred.password === password
       ? allClients.find(c => c.slug === demoCred.clientSlug)
       : null;
+
+    console.log('[Login] Demo client match:', demoMatch ? demoMatch.slug : 'none');
 
     let client = demoMatch || null;
     let supabaseUserId: string | null = null;

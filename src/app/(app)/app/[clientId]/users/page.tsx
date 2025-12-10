@@ -337,7 +337,7 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
                     </div>
                     <div>
                       <p className="text-xs text-foreground-tertiary">Conversations</p>
-                      <p className="text-sm font-medium text-foreground mt-0.5">{user.conversationsHandled.toLocaleString()}</p>
+                      <p className="text-sm font-medium text-foreground mt-0.5">{(user.conversationsHandled ?? 0).toLocaleString()}</p>
                     </div>
                     <div>
                       <p className="text-xs text-foreground-tertiary">Last Active</p>

@@ -299,6 +299,7 @@ export function generateMultiAssistantTimeSeries(
  * Format duration in seconds to human-readable string
  */
 export function formatDuration(seconds: number): string {
+  if (seconds === null || seconds === undefined || isNaN(seconds)) return '0s';
   if (seconds < 60) return `${Math.round(seconds)}s`;
   const minutes = Math.floor(seconds / 60);
   const secs = Math.round(seconds % 60);
@@ -309,6 +310,7 @@ export function formatDuration(seconds: number): string {
  * Format cost to EUR currency string
  */
 export function formatCost(cost: number): string {
+  if (cost === null || cost === undefined || isNaN(cost)) return '€0.00';
   return `€${cost.toFixed(2)}`;
 }
 
@@ -316,6 +318,7 @@ export function formatCost(cost: number): string {
  * Format percentage
  */
 export function formatPercent(value: number): string {
+  if (value === null || value === undefined || isNaN(value)) return '0%';
   return `${Math.round(value)}%`;
 }
 
@@ -323,6 +326,7 @@ export function formatPercent(value: number): string {
  * Format large numbers with K/M suffixes
  */
 export function formatNumber(value: number): string {
+  if (value === null || value === undefined || isNaN(value)) return '0';
   if (value >= 1000000) return `${(value / 1000000).toFixed(1)}M`;
   if (value >= 1000) return `${(value / 1000).toFixed(1)}K`;
   return value.toLocaleString();

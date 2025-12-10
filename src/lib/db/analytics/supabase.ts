@@ -401,7 +401,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
   return {
     chatSessions,
-    chatSessionAnalysis,
+    analyses: chatSessionAnalysis,
     aggregations,
   };
 }

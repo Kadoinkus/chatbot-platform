@@ -11,6 +11,7 @@ import type {
   DateRange,
   ClientMetrics,
   AssistantMetricsResult,
+  DbOperations,
 } from '../types';
 
 interface SupabaseDbOptions {

@@ -19,7 +19,8 @@
       "Bash(xargs sed -i 's/params\\.botId/params.assistantId/g; s/botId: string/assistantId: string/g; s/getBotById/getAssistantById/g; s/getBotMetrics/getAssistantMetrics/g; s/Bot }/Assistant }/g; s/type Bot,/type Assistant,/g; s/type Bot$/type Assistant/g; s/<Bot>/<Assistant>/g; s/Bot \\|/Assistant |/g; s/Bot;/Assistant;/g')",
       "Bash(xargs sed:*)",
       "Bash(pnpm run build:*)",
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(git diff:*)"
     ],
     "deny": [],
     "ask": []

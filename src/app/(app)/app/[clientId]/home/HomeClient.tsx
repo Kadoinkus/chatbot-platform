@@ -5,17 +5,9 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import type { Assistant, Client, Workspace } from '@/types';
 import { getClientBrandColor } from '@/lib/brandColors';
-import { Plus, Search, Building2, ChevronRight } from 'lucide-react';
-import {
-  Page,
-  PageContent,
-  PageHeader,
-  Button,
-  Input,
-  Card,
-  Badge,
-  EmptyState,
-} from '@/components/ui';
+import { Plus, Building2, ChevronRight } from 'lucide-react';
+import { Page, PageContent, PageHeader, Button, Card, Badge, EmptyState } from '@/components/ui';
+import { FilterBar } from '@/components/analytics';
 
 type WorkspaceWithAssistants = Workspace & { assistants: Assistant[] };
 
@@ -63,20 +55,16 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
           description={`Manage your workspaces and AI assistants for ${client.name}`}
         />
 
-        <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6 mb-6">
-          <div className="flex-1 max-w-md">
-            <Input
-              icon={<Search size={20} />}
-              placeholder="Search workspaces and AI assistants..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          <Button icon={<Plus size={18} />}>
-            New Workspace
-          </Button>
-        </div>
+        <FilterBar
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Search workspaces and AI assistants..."
+          extraActions={
+            <Button icon={<Plus size={18} />}>
+              New Workspace
+            </Button>
+          }
+        />
 
         {/* Workspace Cards - 2 column grid */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

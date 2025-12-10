@@ -2,18 +2,11 @@
 
 import Link from 'next/link';
 import { useMemo, useState } from 'react';
-import { Plus, Search, Bot as BotIcon } from 'lucide-react';
+import { Plus, Bot as BotIcon } from 'lucide-react';
 import type { Assistant, Client, Workspace } from '@/types';
 import AssistantCard from '@/components/AssistantCard';
-import {
-  Page,
-  PageContent,
-  PageHeader,
-  Button,
-  Input,
-  Select,
-  EmptyState,
-} from '@/components/ui';
+import { Page, PageContent, PageHeader, Button, EmptyState } from '@/components/ui';
+import { FilterBar } from '@/components/analytics';
 
 type AssistantWithWorkspace = Assistant & { workspace?: Workspace; workspaceName?: string };
 
@@ -59,11 +52,6 @@ export default function AssistantsClient({
     });
   }, [assistants, searchTerm, selectedWorkspace]);
 
-  const workspaceOptions = [
-    { value: 'all', label: 'All Workspaces' },
-    ...workspaces.map(ws => ({ value: ws.id, label: ws.name }))
-  ];
-
   return (
     <Page>
       <PageContent>
@@ -73,31 +61,21 @@ export default function AssistantsClient({
         />
 
         {/* Search and Filters */}
-        <div className="flex flex-col lg:flex-row lg:items-center gap-4 lg:gap-6 mb-6">
-          <div className="flex-1 max-w-md">
-            <Input
-              icon={<Search size={20} />}
-              placeholder="Search AI assistants and workspaces..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-          </div>
-
-          {/* Workspace Filter */}
-          <Select
-            fullWidth={false}
-            options={workspaceOptions}
-            value={selectedWorkspace}
-            onChange={(e) => setSelectedWorkspace(e.target.value)}
-            minWidth="180px"
-          />
-
-          <Link href={`/app/${client.id}/marketplace`}>
-            <Button icon={<Plus size={18} />}>
-              New AI Assistant
-            </Button>
-          </Link>
-        </div>
+        <FilterBar
+          workspaces={workspaces}
+          selectedWorkspace={selectedWorkspace}
+          onWorkspaceChange={setSelectedWorkspace}
+          searchValue={searchTerm}
+          onSearchChange={setSearchTerm}
+          searchPlaceholder="Search AI assistants and workspaces..."
+          extraActions={
+            <Link href={`/app/${client.id}/marketplace`}>
+              <Button icon={<Plus size={18} />}>
+                New AI Assistant
+              </Button>
+            </Link>
+          }
+        />
 
         {/* Assistant Cards Grid */}
         <div className="grid gap-4 sm:grid-cols-1 lg:grid-cols-2 xl:grid-cols-3">

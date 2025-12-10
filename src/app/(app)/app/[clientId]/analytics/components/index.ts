@@ -8,7 +8,6 @@ export { CostsTab } from './CostsTab';
 export { CustomTab } from './CustomTab';
 
 // Shared Components
-export { FilterBar } from './FilterBar';
 export { AssistantSelector } from './AssistantSelector';
 
 // Types

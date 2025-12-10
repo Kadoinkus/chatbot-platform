@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, type ReactNode } from 'react';
+import { useState, useMemo, type ReactNode, Fragment } from 'react';
 import { ChevronLeft, ChevronRight, ChevronDown, ChevronUp, ArrowUpDown } from 'lucide-react';
 import type { AssistantWithMetrics } from '@/lib/analytics/assistantComparison';
 import { getClientBrandColor } from '@/lib/brandColors';
@@ -235,9 +235,8 @@ export function AssistantComparisonTable({
           </thead>
           <tbody>
             {displayAssistants.map((assistant) => (
-              <>
+              <Fragment key={assistant.assistantId}>
                 <tr
-                  key={assistant.assistantId}
                   onClick={() => onAssistantClick?.(assistant.assistantId)}
                   className={onAssistantClick ? 'cursor-pointer' : ''}
                 >
@@ -294,13 +293,13 @@ export function AssistantComparisonTable({
                   ))}
                 </tr>
                 {expandableContent && expandedAssistants.has(assistant.assistantId) && (
-                  <tr key={`${assistant.assistantId}-expanded`} className="bg-background-secondary">
+                  <tr className="bg-background-secondary">
                     <td colSpan={columns.length + 2} className="p-4">
                       {expandableContent(assistant)}
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             ))}
           </tbody>
         </table>

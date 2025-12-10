@@ -12,6 +12,7 @@ interface AssistantSelectorProps {
   onAssistantToggle: (assistantId: string) => void;
   brandColor: string;
   fullWidth?: boolean;
+  selectionMode?: 'single' | 'multi';
 }
 
 /**
@@ -31,6 +32,7 @@ export function AssistantSelector({
   onAssistantToggle,
   brandColor,
   fullWidth = false,
+  selectionMode = 'multi',
 }: AssistantSelectorProps) {
   const [dropdownOpen, setDropdownOpen] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -63,7 +65,7 @@ export function AssistantSelector({
   };
 
   return (
-    <div className={`relative ${fullWidth ? 'w-full' : ''}`} ref={dropdownRef}>
+    <div className={`relative ${fullWidth ? 'w-full' : ''} overflow-visible`} ref={dropdownRef}>
       <button
         onClick={() => setDropdownOpen(!dropdownOpen)}
         className={`flex items-center gap-2 h-11 px-4 bg-info-100 dark:bg-info-700/30 border-2 border-info-500/30 rounded-xl hover:bg-info-100/80 dark:hover:bg-info-700/40 focus:outline-none focus:ring-2 focus:ring-info-500 ${
@@ -80,23 +82,8 @@ export function AssistantSelector({
       </button>
 
       {dropdownOpen && (
-        <div className="absolute top-full left-0 mt-1 w-72 bg-surface-elevated border border-border rounded-lg shadow-lg z-50">
-          <div className="p-3 border-b border-border">
-            <h4 className="font-medium text-sm text-foreground-secondary">Select AI Assistants to Compare</h4>
-          </div>
-          <div className="max-h-48 overflow-y-auto">
-            {/* Your AI Assistants option */}
-            <label className="flex items-center gap-3 p-3 hover:bg-background-hover cursor-pointer">
-              <input
-                type="checkbox"
-                checked={selectedAssistants.includes('all') || selectedAssistants.length === 0}
-                onChange={() => onAssistantToggle('all')}
-                className="rounded border-border text-interactive focus:ring-interactive"
-              />
-              <span className="text-sm font-medium text-foreground">Your AI Assistants</span>
-            </label>
-            <hr className="mx-3 border-border" />
-
+        <div className="absolute top-full left-0 mt-1 w-72 bg-surface-elevated border border-border rounded-lg shadow-lg z-[60]">
+          <div className="max-h-56 overflow-y-auto p-2">
             {/* Grouped by workspace or flat list */}
             {selectedWorkspace === 'all' ? (
               // Group by workspace
@@ -113,9 +100,14 @@ export function AssistantSelector({
                       <AssistantOption
                         key={assistant.id}
                         assistant={assistant}
-                        selected={selectedAssistants.includes(assistant.id)}
+                        selected={
+                          selectionMode === 'single'
+                            ? selectedAssistants[0] === assistant.id
+                            : selectedAssistants.includes(assistant.id)
+                        }
                         onToggle={() => onAssistantToggle(assistant.id)}
                         brandColor={brandColor}
+                        selectionMode={selectionMode}
                       />
                     ))}
                   </div>
@@ -127,9 +119,14 @@ export function AssistantSelector({
                 <AssistantOption
                   key={assistant.id}
                   assistant={assistant}
-                  selected={selectedAssistants.includes(assistant.id)}
+                  selected={
+                    selectionMode === 'single'
+                      ? selectedAssistants[0] === assistant.id
+                      : selectedAssistants.includes(assistant.id)
+                  }
                   onToggle={() => onAssistantToggle(assistant.id)}
                   brandColor={brandColor}
+                  selectionMode={selectionMode}
                 />
               ))
             )}
@@ -146,16 +143,18 @@ function AssistantOption({
   selected,
   onToggle,
   brandColor,
+  selectionMode = 'multi',
 }: {
   assistant: Assistant;
   selected: boolean;
   onToggle: () => void;
   brandColor: string;
+  selectionMode?: 'single' | 'multi';
 }) {
   return (
     <label className="flex items-center gap-3 p-3 hover:bg-background-hover cursor-pointer">
       <input
-        type="checkbox"
+        type={selectionMode === 'single' ? 'radio' : 'checkbox'}
         checked={selected}
         onChange={onToggle}
         className="rounded border-border text-interactive focus:ring-interactive"
@@ -168,20 +167,7 @@ function AssistantOption({
           style={{ backgroundColor: brandColor }}
         />
       )}
-      <div className="flex-1">
-        <span className="text-sm font-medium text-foreground">{assistant.name}</span>
-      </div>
-      <span
-        className={`text-xs px-2 py-0.5 rounded-full ${
-          assistant.status === 'Active'
-            ? 'bg-success-100 dark:bg-success-700/30 text-success-700 dark:text-success-500'
-            : assistant.status === 'Paused'
-            ? 'bg-warning-100 dark:bg-warning-700/30 text-warning-700 dark:text-warning-500'
-            : 'bg-error-100 dark:bg-error-700/30 text-error-700 dark:text-error-500'
-        }`}
-      >
-        {assistant.status}
-      </span>
+      <span className="text-sm font-medium text-foreground">{assistant.name}</span>
     </label>
   );
 }

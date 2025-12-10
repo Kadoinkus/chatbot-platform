@@ -12,13 +12,14 @@ import {
   Calendar,
   Download,
   ChevronDown,
-  BarChart3,
+  MessageSquare,
   Bot as BotIcon,
   ThumbsUp,
   ThumbsDown,
   Minus,
   AlertTriangle,
   CheckCircle,
+  BarChart3,
   ArrowUpRight,
   MapPin,
   Smartphone,
@@ -34,7 +35,7 @@ import {
 import { getClientById, getAssistantById } from '@/lib/dataService';
 import { getAnalyticsForClient } from '@/lib/db/analytics';
 import { getClientBrandColor } from '@/lib/brandColors';
-import { getChartColors, GREY, GREYS, getContrastTextColor, ensureReadableColor } from '@/lib/chartColors';
+import { getChartColors, ensureReadableColor } from '@/lib/chartColors';
 import { tooltipStyle } from '@/lib/chartStyles';
 import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
 import type { Client, Assistant, ChatSessionWithAnalysis } from '@/types';
@@ -55,11 +56,18 @@ import {
   formatAxisCurrency,
   type CustomTooltipContent,
 } from '@/components/analytics/charts';
-import { TabNavigation, ANALYTICS_TABS } from '@/components/analytics';
+import {
+  TabNavigation,
+  ANALYTICS_TABS,
+  ConversationsTab as SharedConversationsTab,
+  KpiCard,
+  KpiGrid,
+  normalizeAssistantSessions,
+} from '@/components/analytics';
+import { DateRangeBar } from '@/components/analytics/shared';
 
 // Tab components
 const OverviewTab = dynamic(() => import('./components/OverviewTab'), { loading: () => <TabFallback /> });
-const ConversationsTab = dynamic(() => import('./components/ConversationsTab'), { loading: () => <TabFallback /> });
 const QuestionsTab = dynamic(() => import('./components/QuestionsTab'), { loading: () => <TabFallback /> });
 const AudienceTab = dynamic(() => import('./components/AudienceTab'), { loading: () => <TabFallback /> });
 const AnimationsTab = dynamic(() => import('./components/AnimationsTab'), { loading: () => <TabFallback /> });
@@ -94,11 +102,14 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
   const [client, setClient] = useState<Client | undefined>();
   const [assistant, setAssistant] = useState<Assistant | undefined>();
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+  const [hasLoaded, setHasLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
   const [dateRange, setDateRange] = useState(30);
-  const [showDatePicker, setShowDatePicker] = useState(false);
   const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
   const [useCustomRange, setUseCustomRange] = useState(false);
+  const [conversationPage, setConversationPage] = useState(1);
+  const CONVERSATIONS_PER_PAGE = 10;
 
   // Analytics data state
   const [overview, setOverview] = useState<OverviewMetrics | null>(null);
@@ -207,7 +218,8 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
     } else {
       endDate = new Date();
       startDate = new Date();
-      startDate.setDate(startDate.getDate() - dateRange);
+      const days = typeof dateRange === 'number' ? dateRange : 30;
+      startDate.setDate(startDate.getDate() - days);
     }
     return { startDate, endDate };
   }, [useCustomRange, customDateRange, dateRange]);
@@ -453,24 +465,107 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
     return ensureReadableColor(brandColor);
   }, [brandColor]);
 
+  const assistantResolutionData = useMemo(() => {
+    if (!sessions.length) return [];
+    const colors = getChartColors(brandColor, 3);
+    const resolvedCount = sessions.filter((s) => s.analysis?.resolution_status === 'resolved').length;
+    const partialCount = sessions.filter((s) => s.analysis?.resolution_status === 'partial').length;
+    const unresolvedCount = sessions.filter((s) => s.analysis?.resolution_status === 'unresolved').length;
+
+    return [
+      { name: 'Resolved', value: resolvedCount, color: colors[0] },
+      { name: 'Partial', value: partialCount, color: colors[2] },
+      { name: 'Unresolved', value: unresolvedCount, color: colors[1] },
+    ].filter((entry) => entry.value > 0);
+  }, [sessions, brandColor]);
+
+  const assistantPeakHours = useMemo(
+    () =>
+      (hourlyBreakdown || [])
+        .map((item) => ({
+          hour: item.hour,
+          count: item.count,
+          percentage: item.percentage,
+        }))
+        .filter((item) => item.count > 0),
+    [hourlyBreakdown]
+  );
+
+  const assistantDurationBuckets = useMemo(() => {
+    if (!sessions.length) return [];
+    const buckets = [
+      { name: '0-1 min', value: 0 },
+      { name: '1-5 min', value: 0 },
+      { name: '5-10 min', value: 0 },
+      { name: '10+ min', value: 0 },
+    ];
+
+    sessions.forEach((session) => {
+      const duration = session.session_duration_seconds || 0;
+      if (duration <= 60) {
+        buckets[0].value += 1;
+      } else if (duration <= 300) {
+        buckets[1].value += 1;
+      } else if (duration <= 600) {
+        buckets[2].value += 1;
+      } else {
+        buckets[3].value += 1;
+      }
+    });
+
+    return buckets.filter((bucket) => bucket.value > 0);
+  }, [sessions]);
+
+  const assistantInsights = useMemo(
+    () => ({
+      sentimentTimeSeries,
+      resolution: assistantResolutionData,
+      peakHours: assistantPeakHours,
+      durationBuckets: assistantDurationBuckets,
+    }),
+    [assistantDurationBuckets, assistantPeakHours, assistantResolutionData, sentimentTimeSeries]
+  );
+
+  const { sessions: normalizedSessions, stats: conversationStats } = useMemo(
+    () => normalizeAssistantSessions(assistant, sessions),
+    [assistant, sessions]
+  );
+
+  const totalConversationPages = Math.max(1, Math.ceil(normalizedSessions.length / CONVERSATIONS_PER_PAGE));
+  const paginatedConversations = useMemo(() => {
+    const startIndex = (conversationPage - 1) * CONVERSATIONS_PER_PAGE;
+    return normalizedSessions.slice(startIndex, startIndex + CONVERSATIONS_PER_PAGE);
+  }, [normalizedSessions, conversationPage, CONVERSATIONS_PER_PAGE]);
+
+  useEffect(() => {
+    setConversationPage(1);
+  }, [assistant?.id, dateRange, useCustomRange, customDateRange, sessions.length]);
+
   // Load data
   useEffect(() => {
     async function loadData() {
+      const shouldShowPageSpinner = !hasLoaded;
       try {
-        setLoading(true);
+        if (shouldShowPageSpinner) {
+          setLoading(true);
+        } else {
+          setRefreshing(true);
+        }
 
         // Calculate date range
         let startDate: Date, endDate: Date;
+        endDate = new Date();
+        endDate.setHours(23, 59, 59, 999);
+        startDate = new Date(endDate);
+
         if (useCustomRange && customDateRange.start && customDateRange.end) {
           startDate = new Date(customDateRange.start);
           startDate.setHours(0, 0, 0, 0);
           endDate = new Date(customDateRange.end);
           endDate.setHours(23, 59, 59, 999);
         } else {
-          endDate = new Date();
-          endDate.setHours(23, 59, 59, 999);
-          startDate = new Date();
-          startDate.setDate(startDate.getDate() - dateRange);
+          const presetDays = typeof dateRange === 'number' ? dateRange : 30;
+          startDate.setDate(startDate.getDate() - presetDays);
           startDate.setHours(0, 0, 0, 0);
         }
 
@@ -542,11 +637,13 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
         console.error('Error loading analytics:', error);
       } finally {
         setLoading(false);
+        setRefreshing(false);
+        setHasLoaded(true);
       }
     }
 
     loadData();
-  }, [params.clientId, params.assistantId, dateRange, useCustomRange, customDateRange]);
+  }, [params.clientId, params.assistantId, dateRange, useCustomRange, customDateRange, hasLoaded]);
 
   // Format helpers
   const formatDuration = (seconds: number) => {
@@ -588,7 +685,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
   };
 
   // Loading state
-  if (loading) {
+  if (loading && !hasLoaded) {
     return (
       <Page className="flex items-center justify-center">
         <Spinner size="lg" />
@@ -610,22 +707,6 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
       </Page>
     );
   }
-
-  // Sentiment data for pie chart - using getChartColors order (brand → black → white)
-  const sentimentColors = getChartColors(brandColor, 3);
-  const sentimentChartData = sentiment ? [
-    { name: 'Positive', value: sentiment.positive, fill: sentimentColors[0] },  // Brand
-    { name: 'Neutral', value: sentiment.neutral, fill: sentimentColors[2] },    // White
-    { name: 'Negative', value: sentiment.negative, fill: sentimentColors[1] }   // Black
-  ] : [];
-
-  // Resolution data - using getChartColors order (brand → black → white)
-  const resolutionColors = getChartColors(brandColor, 3);
-  const resolutionData = sessions.length > 0 ? [
-    { name: 'Resolved', value: sessions.filter(s => s.analysis?.resolution_status === 'resolved').length, fill: resolutionColors[0] },   // Brand
-    { name: 'Partial', value: sessions.filter(s => s.analysis?.resolution_status === 'partial').length, fill: resolutionColors[2] },    // White
-    { name: 'Unresolved', value: sessions.filter(s => s.analysis?.resolution_status === 'unresolved').length, fill: resolutionColors[1] } // Black
-  ] : [];
 
   return (
     <Page>
@@ -749,132 +830,19 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
             </div>
           </div>
 
-          {/* Date Range Selector - Desktop */}
-          <div className="hidden lg:flex items-center justify-between flex-wrap gap-4">
-            <div className="flex items-center gap-4">
-              <Calendar size={16} className="text-foreground-tertiary" />
-              <span className="text-sm font-medium text-foreground-secondary">Time Period:</span>
-
-              <div className="flex gap-1 bg-background-tertiary p-1 rounded-lg">
-                {[7, 30, 90].map((days) => (
-                  <button
-                    key={days}
-                    onClick={() => { setUseCustomRange(false); setDateRange(days); }}
-                    className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                      !useCustomRange && dateRange === days
-                        ? 'bg-surface-elevated text-foreground shadow-sm'
-                        : 'text-foreground-secondary hover:text-foreground hover:bg-background-hover'
-                    }`}
-                    style={!useCustomRange && dateRange === days ? { color: brandColor } : {}}
-                  >
-                    Last {days} days
-                  </button>
-                ))}
-              </div>
-
-              <button
-                onClick={() => setShowDatePicker(!showDatePicker)}
-                className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
-                  useCustomRange
-                    ? 'text-white shadow-sm'
-                    : 'bg-surface-elevated text-foreground-secondary border-border hover:bg-background-hover'
-                }`}
-                style={useCustomRange ? { backgroundColor: brandColor, borderColor: brandColor } : {}}
-              >
-                Custom Range
-              </button>
-            </div>
-
-            <div className="flex items-center gap-2 text-sm text-foreground-tertiary bg-background-secondary px-3 py-2 rounded-lg">
-              <BarChart3 size={14} />
-              {useCustomRange && customDateRange.start && customDateRange.end
-                ? `${new Date(customDateRange.start).toLocaleDateString()} - ${new Date(customDateRange.end).toLocaleDateString()}`
-                : `Showing last ${dateRange} days`}
-            </div>
-          </div>
-
-          {/* Date Range Selector - Mobile */}
-          <div className="lg:hidden space-y-3">
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <label className="text-xs font-medium text-foreground-secondary mb-1 block">Time Period</label>
-                <Select
-                  fullWidth
-                  value={useCustomRange ? 'custom' : String(dateRange)}
-                  onChange={(e) => {
-                    const val = e.target.value;
-                    if (val === 'custom') {
-                      setShowDatePicker(true);
-                    } else {
-                      setUseCustomRange(false);
-                      setDateRange(Number(val));
-                    }
-                  }}
-                  options={[
-                    { value: '7', label: 'Last 7 days' },
-                    { value: '30', label: 'Last 30 days' },
-                    { value: '90', label: 'Last 90 days' },
-                    { value: 'custom', label: 'Custom Range' },
-                  ]}
-                />
-              </div>
-              <div className="flex items-end">
-                <div className="flex items-center gap-2 text-xs text-foreground-tertiary bg-background-secondary px-3 py-2.5 rounded-lg w-full">
-                  <BarChart3 size={12} />
-                  <span className="truncate">
-                    {useCustomRange && customDateRange.start && customDateRange.end
-                      ? `${new Date(customDateRange.start).toLocaleDateString()} - ${new Date(customDateRange.end).toLocaleDateString()}`
-                      : `Last ${dateRange} days`}
-                  </span>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          {/* Custom Date Picker */}
-          {showDatePicker && (
-            <div className="bg-background-secondary rounded-lg p-4 border border-border mt-4">
-              <h4 className="font-medium text-foreground mb-3">Select Custom Date Range</h4>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <Input
-                  label="Start Date"
-                  type="date"
-                  value={customDateRange.start}
-                  onChange={(e) => setCustomDateRange(prev => ({ ...prev, start: e.target.value }))}
-                  max={customDateRange.end || new Date().toISOString().split('T')[0]}
-                />
-                <Input
-                  label="End Date"
-                  type="date"
-                  value={customDateRange.end}
-                  onChange={(e) => setCustomDateRange(prev => ({ ...prev, end: e.target.value }))}
-                  min={customDateRange.start}
-                  max={new Date().toISOString().split('T')[0]}
-                />
-              </div>
-              <div className="flex justify-end gap-2 mt-4">
-                <Button
-                  variant="secondary"
-                  size="sm"
-                  onClick={() => { setShowDatePicker(false); setUseCustomRange(false); }}
-                >
-                  Cancel
-                </Button>
-                <Button
-                  size="sm"
-                  onClick={() => {
-                    if (customDateRange.start && customDateRange.end) {
-                      setUseCustomRange(true);
-                      setShowDatePicker(false);
-                    }
-                  }}
-                  disabled={!customDateRange.start || !customDateRange.end}
-                >
-                  Apply Range
-                </Button>
-              </div>
-            </div>
-          )}
+          <DateRangeBar
+            brandColor={brandColor}
+            dateRange={dateRange}
+            useCustomRange={useCustomRange}
+            customDateRange={customDateRange}
+            presets={[1, 7, 30, 90]}
+            onPresetChange={(days) => {
+              setUseCustomRange(false);
+              setDateRange(days);
+            }}
+            onCustomApply={(range) => setCustomDateRange(range)}
+            onCustomToggle={(enabled) => setUseCustomRange(enabled)}
+          />
         </Card>
 
         {/* Tab Navigation - Using shared component */}
@@ -905,19 +873,53 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
         )}
 
         {activeTab === 'conversations' && (
-          <ConversationsTab
-            brandColor={brandColor}
-            sessions={sessions}
-            overview={overview}
-            sentiment={sentiment}
-            sentimentTimeSeries={sentimentTimeSeries}
-            hourlyBreakdown={hourlyBreakdown}
-            formatNumber={formatNumber}
-            formatPercent={formatPercent}
-            formatCurrency={formatCurrency}
-            formatDuration={formatDuration}
-            onOpenTranscript={handleOpenTranscript}
-          />
+          normalizedSessions.length === 0 ? (
+            <EmptyState
+              icon={<MessageSquare size={48} />}
+              title="No conversations"
+              message="Adjust your filters to view conversation analytics."
+            />
+          ) : (
+            <>
+              <KpiGrid className="mb-6">
+                <KpiCard icon={MessageSquare} label="Total Conversations" value={conversationStats.total} />
+                <KpiCard
+                  icon={CheckCircle}
+                  label="Resolved"
+                  value={conversationStats.resolved}
+                  subtitle={`${conversationStats.resolutionRate.toFixed(0)}% resolution rate`}
+                />
+                <KpiCard
+                  icon={Clock}
+                  label="Avg Duration"
+                  value={`${(conversationStats.avgDurationSeconds / 60).toFixed(1)} min`}
+                />
+                <KpiCard icon={BarChart3} label="Sentiment">
+                  <div className="flex items-center gap-2 flex-wrap mt-1 text-xs">
+                    <span className="text-success-600 dark:text-success-500">+{conversationStats.sentimentCounts.positive}</span>
+                    <span className="text-foreground-secondary">· {conversationStats.sentimentCounts.neutral}</span>
+                    <span className="text-error-600 dark:text-error-500">-{conversationStats.sentimentCounts.negative}</span>
+                  </div>
+                </KpiCard>
+              </KpiGrid>
+              <SharedConversationsTab
+                sessions={normalizedSessions}
+                paginatedSessions={paginatedConversations}
+                brandColor={brandColor}
+                showAssistantColumn={false}
+                showAssistantInsights
+                insights={assistantInsights}
+                onOpenTranscript={handleOpenTranscript}
+                pagination={{
+                  currentPage: conversationPage,
+                  totalPages: totalConversationPages,
+                  totalItems: normalizedSessions.length,
+                  itemsPerPage: CONVERSATIONS_PER_PAGE,
+                  onPageChange: setConversationPage,
+                }}
+              />
+            </>
+          )
         )}
 
         {activeTab === 'questions' && (

@@ -7,8 +7,6 @@ import { getClientBrandColor } from '@/lib/brandColors';
 import { getContrastTextColor } from '@/lib/chartColors';
 import type { ChatSessionWithAnalysis, Workspace, Client, Assistant } from '@/types';
 import {
-  Search,
-  Download,
   MessageSquare,
   Clock,
   CheckCircle,
@@ -20,26 +18,33 @@ import {
   Smartphone,
   Monitor,
   Tablet,
+  Download,
+  ChevronDown,
 } from 'lucide-react';
 import {
   Page,
   PageContent,
   PageHeader,
-  Button,
-  Input,
-  Select,
   Card,
   EmptyState,
   Spinner,
   Modal,
 } from '@/components/ui';
-import { KpiCard, KpiGrid, TabNavigation, ANALYTICS_TABS } from '@/components/analytics';
-import { useWorkspaceFilter } from '@/lib/hooks';
+import {
+  KpiCard,
+  KpiGrid,
+  TabNavigation,
+  ANALYTICS_TABS,
+  FilterBar,
+  ConversationsTab as SharedConversationsTab,
+  normalizeSessions,
+} from '@/components/analytics';
+import { DateRangeBar } from '@/components/analytics/shared';
+import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
 
 // Tab Components
 import {
   OverviewTab,
-  ConversationsTab,
   QuestionsTab,
   AudienceTab,
   AnimationsTab,
@@ -60,7 +65,11 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   const [selectedBot, setSelectedBot] = useState('all');
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedWorkspace, setSelectedWorkspace] = useState('all');
-  const [dateRange, setDateRange] = useState('30days');
+  const [dateRange, setDateRange] = useState(30);
+  const [useCustomRange, setUseCustomRange] = useState(false);
+  const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
+  const [showExportDropdown, setShowExportDropdown] = useState(false);
+  const exportDropdownRef = useRef<HTMLDivElement>(null);
 
   // Data state
   const [sessions, setSessions] = useState<ChatSessionWithAnalysis[]>([]);
@@ -84,30 +93,38 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     [assistants]
   );
 
+  // Close export dropdown on outside click
+  useEffect(() => {
+    function handleClickOutside(event: PointerEvent) {
+      const target = event.target as Node;
+      if (!exportDropdownRef.current?.contains(target)) {
+        setShowExportDropdown(false);
+      }
+    }
+    document.addEventListener('pointerdown', handleClickOutside);
+    return () => document.removeEventListener('pointerdown', handleClickOutside);
+  }, []);
+
   // Get date range filter
   const getDateRangeFilter = useCallback(() => {
     const now = new Date();
+    now.setHours(23, 59, 59, 999);
     const start = new Date();
 
-    switch (dateRange) {
-      case 'today':
-        start.setHours(0, 0, 0, 0);
-        break;
-      case '7days':
-        start.setDate(start.getDate() - 7);
-        break;
-      case '30days':
-        start.setDate(start.getDate() - 30);
-        break;
-      case '90days':
-        start.setDate(start.getDate() - 90);
-        break;
-      default:
-        start.setDate(start.getDate() - 30);
+    if (useCustomRange && customDateRange.start && customDateRange.end) {
+      const customStartDate = new Date(customDateRange.start);
+      customStartDate.setHours(0, 0, 0, 0);
+      const customEndDate = new Date(customDateRange.end);
+      customEndDate.setHours(23, 59, 59, 999);
+      return { start: customStartDate, end: customEndDate };
     }
 
+    const days = typeof dateRange === 'number' ? dateRange : 30;
+    start.setDate(start.getDate() - days);
+    start.setHours(0, 0, 0, 0);
+
     return { start, end: now };
-  }, [dateRange]);
+  }, [customDateRange, dateRange, useCustomRange]);
 
   // Fetch client + assistants
   useEffect(() => {
@@ -218,8 +235,10 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
         const transcriptText = session.full_transcript?.map((m) => m.message).join(' ') || '';
         const summary = session.analysis?.summary || '';
         const category = session.analysis?.category || '';
+        const sessionId = session.id || '';
 
         if (
+          !sessionId.toLowerCase().includes(searchLower) &&
           !transcriptText.toLowerCase().includes(searchLower) &&
           !summary.toLowerCase().includes(searchLower) &&
           !category.toLowerCase().includes(searchLower)
@@ -235,52 +254,64 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedBot, selectedStatus, selectedWorkspace, searchTerm, activeTab]);
+  }, [selectedBot, selectedStatus, selectedWorkspace, searchTerm, activeTab, dateRange, useCustomRange, customDateRange]);
+
+  // Ensure assistant selection stays in sync with workspace filter
+  useEffect(() => {
+    if (selectedWorkspace === 'all') return;
+    const selectedAssistant = assistants.find((a) => a.id === selectedBot);
+    if (selectedBot !== 'all' && (!selectedAssistant || selectedAssistant.workspaceId !== selectedWorkspace)) {
+      setSelectedBot('all');
+    }
+  }, [assistants, selectedBot, selectedWorkspace]);
+
+  // Normalize sessions for shared tabs + derive stats
+  const { sessions: normalizedSessions, stats } = useMemo(
+    () => normalizeSessions(filteredSessions, assistants),
+    [filteredSessions, assistants]
+  );
+
+  const handleExport = useCallback(
+    (format: ExportFormat) => {
+      const { start, end } = getDateRangeFilter();
+      const startDateStr = start.toISOString();
+      const endDateStr = end.toISOString();
+      const exportFn = format === 'csv' ? exportToCSV : format === 'xlsx' ? exportToXLSX : exportToJSON;
+
+      const data = filteredSessions.map((s) => ({
+        session_id: s.id,
+        assistant_id: s.mascot_slug,
+        date: s.session_started_at,
+        sentiment: s.analysis?.sentiment,
+        category: s.analysis?.category,
+        resolution: s.analysis?.resolution_status,
+        escalated: s.analysis?.escalated || false,
+        messages: s.total_messages,
+        duration_seconds: s.session_duration_seconds || 0,
+        country: s.visitor_country,
+        device: s.device_type,
+        start_date: startDateStr,
+        end_date: endDateStr,
+      }));
+
+      const filename = generateExportFilename('conversations', params.clientId, start, end);
+      exportFn(data, filename, 'Conversations');
+      setShowExportDropdown(false);
+    },
+    [filteredSessions, getDateRangeFilter, params.clientId]
+  );
 
   // Pagination
-  const totalPages = Math.ceil(filteredSessions.length / ITEMS_PER_PAGE);
+  const totalPages = Math.max(1, Math.ceil(normalizedSessions.length / ITEMS_PER_PAGE));
   const paginatedSessions = useMemo(() => {
     const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
-    return filteredSessions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
-  }, [filteredSessions, currentPage]);
-
-  // Calculate stats
-  const stats = useMemo(() => {
-    const total = filteredSessions.length;
-    const resolved = filteredSessions.filter((s) => s.analysis?.resolution_status === 'resolved').length;
-    const avgDuration =
-      total > 0
-        ? filteredSessions.reduce((sum, s) => sum + (s.session_duration_seconds || 0), 0) / total / 60
-        : 0;
-
-    const sentimentCounts = {
-      positive: filteredSessions.filter((s) => s.analysis?.sentiment === 'positive').length,
-      neutral: filteredSessions.filter((s) => s.analysis?.sentiment === 'neutral').length,
-      negative: filteredSessions.filter((s) => s.analysis?.sentiment === 'negative').length,
-    };
-
-    return {
-      total,
-      resolved,
-      resolutionRate: total > 0 ? (resolved / total) * 100 : 0,
-      avgDuration,
-      sentimentCounts,
-    };
-  }, [filteredSessions]);
+    return normalizedSessions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
+  }, [normalizedSessions, currentPage]);
 
   // Brand color
   const brandColor = useMemo(() => {
     return client ? getClientBrandColor(client.id) : '#6B7280';
   }, [client]);
-
-  // Use workspace filter hook for bot filtering
-  const { botOptions, workspaceOptions } = useWorkspaceFilter({
-    assistants,
-    workspaces,
-    selectedWorkspace,
-    selectedBot,
-    onBotChange: setSelectedBot,
-  });
 
   // Helper functions
   const formatTimestamp = (dateStr: string) => {
@@ -352,22 +383,6 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     }
   };
 
-  // Filter options (botOptions and workspaceOptions come from useWorkspaceFilter hook)
-  const statusOptions = [
-    { value: 'all', label: 'All Status' },
-    { value: 'resolved', label: 'Resolved' },
-    { value: 'partial', label: 'Partial' },
-    { value: 'unresolved', label: 'Unresolved' },
-    { value: 'escalated', label: 'Escalated' },
-  ];
-
-  const dateRangeOptions = [
-    { value: 'today', label: 'Today' },
-    { value: '7days', label: 'Last 7 days' },
-    { value: '30days', label: 'Last 30 days' },
-    { value: '90days', label: 'Last 90 days' },
-  ];
-
   // Early return for no client
   if (!client) {
     return (
@@ -385,7 +400,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
   // Shared tab props
   const baseTabProps = {
-    sessions: filteredSessions,
+    sessions: normalizedSessions,
     paginatedSessions,
     brandColor,
     getAssistantInfo,
@@ -395,7 +410,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     formatCost,
     currentPage,
     totalPages,
-    totalItems: filteredSessions.length,
+    totalItems: normalizedSessions.length,
     itemsPerPage: ITEMS_PER_PAGE,
     onPageChange: setCurrentPage,
   };
@@ -451,7 +466,22 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
           />
         );
       case 'conversations':
-        return <ConversationsTab {...baseTabProps} />;
+        return (
+          <SharedConversationsTab
+            sessions={normalizedSessions}
+            paginatedSessions={paginatedSessions}
+            brandColor={brandColor}
+            showAssistantColumn
+            onOpenTranscript={handleOpenTranscript}
+            pagination={{
+              currentPage,
+              totalPages,
+              totalItems: normalizedSessions.length,
+              itemsPerPage: ITEMS_PER_PAGE,
+              onPageChange: setCurrentPage,
+            }}
+          />
+        );
       case 'questions':
         return <QuestionsTab {...baseTabProps} onOpenQuestions={handleOpenQuestions} />;
       case 'audience':
@@ -473,92 +503,78 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
         <PageHeader title="Conversations" description="View and manage all customer conversations" />
 
         {/* Filters Bar */}
-        <Card className="mb-6">
-          {/* Desktop: Original inline layout */}
-          <div className="hidden lg:flex flex-wrap gap-4">
-            <div className="flex-1 min-w-[300px]">
-              <Input
-                icon={<Search size={20} />}
-                placeholder="Search conversations..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-              />
+        <Card className="mb-6 p-4 space-y-4 overflow-visible">
+          <div className="flex flex-col gap-3 lg:flex-row lg:items-center lg:justify-between">
+            <FilterBar
+              workspaces={workspaces}
+              selectedWorkspace={selectedWorkspace}
+              onWorkspaceChange={setSelectedWorkspace}
+              assistants={assistants}
+              assistantSelectionMode="single"
+              selectedAssistants={[selectedBot]}
+            onAssistantChange={(ids) => setSelectedBot(ids[0] || 'all')}
+            statusOptions={[
+              { value: 'all', label: 'All Status' },
+              { value: 'resolved', label: 'Resolved' },
+              { value: 'partial', label: 'Partial' },
+              { value: 'unresolved', label: 'Unresolved' },
+              { value: 'escalated', label: 'Escalated' },
+            ]}
+            selectedStatus={selectedStatus}
+            onStatusChange={setSelectedStatus}
+            searchValue={searchTerm}
+            onSearchChange={setSearchTerm}
+            searchPlaceholder="Search conversations..."
+            brandColor={brandColor}
+          />
+
+            <div className="relative self-start lg:self-auto" ref={exportDropdownRef}>
+              <button
+                onClick={() => setShowExportDropdown((v) => !v)}
+                className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm font-medium text-foreground hover:bg-background-hover transition"
+              >
+                <Download size={16} />
+                Export
+                <ChevronDown size={14} className={`transition-transform ${showExportDropdown ? 'rotate-180' : ''}`} />
+              </button>
+              {showExportDropdown && (
+                <div className="absolute right-0 top-full mt-2 w-32 rounded-lg border border-border bg-surface-elevated shadow-lg z-20">
+                  <button
+                    onClick={() => handleExport('csv')}
+                    className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-background-hover"
+                  >
+                    .csv
+                  </button>
+                  <button
+                    onClick={() => handleExport('xlsx')}
+                    className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-background-hover"
+                  >
+                    .xlsx
+                  </button>
+                  <button
+                    onClick={() => handleExport('json')}
+                    className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-background-hover"
+                  >
+                    .json
+                  </button>
+                </div>
+              )}
             </div>
-
-            <Select
-              fullWidth={false}
-              options={workspaceOptions}
-              value={selectedWorkspace}
-              onChange={(e) => setSelectedWorkspace(e.target.value)}
-            />
-
-            <Select
-              fullWidth={false}
-              options={botOptions}
-              value={selectedBot}
-              onChange={(e) => setSelectedBot(e.target.value)}
-            />
-
-            <Select
-              fullWidth={false}
-              options={statusOptions}
-              value={selectedStatus}
-              onChange={(e) => setSelectedStatus(e.target.value)}
-            />
-
-            <Select
-              fullWidth={false}
-              options={dateRangeOptions}
-              value={dateRange}
-              onChange={(e) => setDateRange(e.target.value)}
-            />
-
-            <Button icon={<Download size={18} />}>Export</Button>
           </div>
 
-          {/* Mobile: Stacked layout */}
-          <div className="lg:hidden space-y-3">
-            <Input
-              icon={<Search size={20} />}
-              placeholder="Search conversations..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-
-            <div className="grid grid-cols-2 gap-3">
-              <Select
-                fullWidth
-                options={workspaceOptions}
-                value={selectedWorkspace}
-                onChange={(e) => setSelectedWorkspace(e.target.value)}
-              />
-
-              <Select
-                fullWidth
-                options={botOptions}
-                value={selectedBot}
-                onChange={(e) => setSelectedBot(e.target.value)}
-              />
-
-              <Select
-                fullWidth
-                options={statusOptions}
-                value={selectedStatus}
-                onChange={(e) => setSelectedStatus(e.target.value)}
-              />
-
-              <Select
-                fullWidth
-                options={dateRangeOptions}
-                value={dateRange}
-                onChange={(e) => setDateRange(e.target.value)}
-              />
-            </div>
-
-            <Button icon={<Download size={18} />} className="w-full">
-              Export
-            </Button>
-          </div>
+          <DateRangeBar
+            brandColor={brandColor}
+            dateRange={dateRange}
+            useCustomRange={useCustomRange}
+            customDateRange={customDateRange}
+            presets={[1, 7, 30, 90]}
+            onPresetChange={(days) => {
+              setUseCustomRange(false);
+              setDateRange(days);
+            }}
+            onCustomApply={(range) => setCustomDateRange(range)}
+            onCustomToggle={(enabled) => setUseCustomRange(enabled)}
+          />
         </Card>
 
         {/* Stats Overview - Using shared KpiCard */}
@@ -571,18 +587,18 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
           <KpiCard
             icon={CheckCircle}
             label="Resolved"
-            value={stats.resolved}
-            subtitle={`${stats.resolutionRate.toFixed(0)}% resolution rate`}
-          />
-          <KpiCard
-            icon={Clock}
-            label="Avg Duration"
-            value={`${stats.avgDuration.toFixed(1)} min`}
-          />
-          <KpiCard icon={BarChart3} label="Sentiment">
-            <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
-              <span className="flex items-center gap-1 text-xs sm:text-sm">
-                <ThumbsUp size={14} className="text-success-600 dark:text-success-500" />
+          value={stats.resolved}
+          subtitle={`${stats.resolutionRate.toFixed(0)}% resolution rate`}
+        />
+        <KpiCard
+          icon={Clock}
+          label="Avg Duration"
+          value={`${(stats.avgDurationSeconds / 60).toFixed(1)} min`}
+        />
+        <KpiCard icon={BarChart3} label="Sentiment">
+          <div className="flex items-center gap-2 sm:gap-3 mt-1 flex-wrap">
+            <span className="flex items-center gap-1 text-xs sm:text-sm">
+              <ThumbsUp size={14} className="text-success-600 dark:text-success-500" />
                 {stats.sentimentCounts.positive}
               </span>
               <span className="flex items-center gap-1 text-xs sm:text-sm">

@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect } from 'react';
-import { getClientById, getWorkspacesByClientId, getAssistantsByWorkspaceId } from '@/lib/dataService';
+import { getClientById, getWorkspacesByClientId, getAssistantsByWorkspaceSlug } from '@/lib/dataService';
 import type { Client, Workspace, Assistant } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import {
@@ -45,8 +45,8 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
         // Load assistants for each workspace
         const assistantsData: Record<string, Assistant[]> = {};
         for (const workspace of workspacesData || []) {
-          const assistants = await getAssistantsByWorkspaceId(workspace.id, params.clientId);
-          assistantsData[workspace.id] = assistants || [];
+          const assistants = await getAssistantsByWorkspaceSlug(workspace.slug, params.clientId);
+          assistantsData[workspace.slug] = assistants || [];
         }
         setWorkspaceAssistants(assistantsData);
 
@@ -98,7 +98,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
     return workspaces.reduce((total, ws) => {
       const planConfig = getPlanConfig(ws.plan);
       const planCost = planConfig.price === 0 ? 0 : planConfig.price;
-      const mascotCost = getWorkspaceMascotTotal(ws.id, ws.plan);
+      const mascotCost = getWorkspaceMascotTotal(ws.slug, ws.plan);
       return total + planCost + mascotCost;
     }, 0);
   };
@@ -165,8 +165,8 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
     return mascot.studioPrice; // Third-party price
   };
 
-  const getWorkspaceMascotTotal = (workspaceId: string, plan: string) => {
-    const assistants = workspaceAssistants[workspaceId] || [];
+  const getWorkspaceMascotTotal = (workspaceSlug: string, plan: string) => {
+    const assistants = workspaceAssistants[workspaceSlug] || [];
     return assistants.reduce((total, assistant) => total + getMascotCost(assistant.id, plan), 0);
   };
 
@@ -284,7 +284,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
             <div className="space-y-4 mb-6">
               {workspaces.map(workspace => {
                 const isExpanded = expandedWorkspaces.has(workspace.id);
-                const assistants = workspaceAssistants[workspace.id] || [];
+                const assistants = workspaceAssistants[workspace.slug] || [];
                 const bundleUsagePercent = (workspace.bundleLoads.used / workspace.bundleLoads.limit) * 100;
                 const messageUsagePercent = (workspace.messages.used / workspace.messages.limit) * 100;
                 const apiUsagePercent = (workspace.apiCalls.used / workspace.apiCalls.limit) * 100;
@@ -325,11 +325,11 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                             ) : (
                               <div>
                                 <p className="text-lg font-semibold text-foreground">
-                                  €{(getPlanConfig(workspace.plan).price + getWorkspaceMascotTotal(workspace.id, workspace.plan)).toLocaleString()}
+                                  €{(getPlanConfig(workspace.plan).price + getWorkspaceMascotTotal(workspace.slug, workspace.plan)).toLocaleString()}
                                 </p>
-                                {getWorkspaceMascotTotal(workspace.id, workspace.plan) > 0 && (
+                                {getWorkspaceMascotTotal(workspace.slug, workspace.plan) > 0 && (
                                   <p className="text-xs text-foreground-tertiary">
-                                    Plan: €{getPlanConfig(workspace.plan).price.toLocaleString()} + Mascots: €{getWorkspaceMascotTotal(workspace.id, workspace.plan)}
+                                    Plan: €{getPlanConfig(workspace.plan).price.toLocaleString()} + Mascots: €{getWorkspaceMascotTotal(workspace.slug, workspace.plan)}
                                   </p>
                                 )}
                               </div>
@@ -536,7 +536,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                                 <div className="flex justify-between items-center mb-2">
                                   <span className="text-sm font-medium text-foreground-secondary">Mascot Costs</span>
                                   <span className="text-sm font-bold text-foreground">
-                                    €{getWorkspaceMascotTotal(workspace.id, workspace.plan)}/mo
+                                    €{getWorkspaceMascotTotal(workspace.slug, workspace.plan)}/mo
                                   </span>
                                 </div>
                                 <div className="text-xs text-foreground-secondary space-y-1">
@@ -566,7 +566,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
                                   Add Credits
                                 </Button>
                               </div>
-                              <Link href={`/app/${client.slug}/workspace/${workspace.slug || workspace.id}`}>
+                              <Link href={`/app/${client.slug}/workspace/${workspace.slug}`}>
                                 <Button variant="secondary" fullWidth>
                                   Manage Workspace →
                                 </Button>
@@ -590,7 +590,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
               <div className="space-y-3">
                 {workspaces.map(workspace => {
                   const planConfig = getPlanConfig(workspace.plan);
-                  const mascotCost = getWorkspaceMascotTotal(workspace.id, workspace.plan);
+                  const mascotCost = getWorkspaceMascotTotal(workspace.slug, workspace.plan);
                   const totalCost = planConfig.price + mascotCost;
 
                   return (

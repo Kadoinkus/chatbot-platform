@@ -6,7 +6,8 @@ export async function GET(
   { params }: { params: { workspaceId: string } }
 ) {
   try {
-    const { workspaceId } = params;
+    // Route param is named workspaceId but we treat it as slug only
+    const workspaceSlug = params.workspaceId;
     const { searchParams } = new URL(request.url);
     const clientId = searchParams.get('clientId');
 
@@ -18,24 +19,19 @@ export async function GET(
     }
 
     const db = getDbForClient(clientId);
-    let workspace = await db.workspaces.getById(workspaceId);
-    if (!workspace) {
-      // Try resolve by slug via client workspaces
-      const byClient = await db.workspaces.getByClientId(clientId);
-      workspace = byClient.find(ws => ws.slug === workspaceId) || null;
-    }
+    const workspace = await db.workspaces.getBySlug(workspaceSlug);
 
     if (!workspace) {
       return NextResponse.json(
         {
           code: 'WORKSPACE_NOT_FOUND',
-          message: `Workspace "${workspaceId}" not found`,
+          message: `Workspace "${workspaceSlug}" not found`,
         },
         { status: 404 }
       );
     }
 
-    const bots = await db.assistants.getByWorkspaceId(workspaceId);
+    const bots = await db.assistants.getByWorkspaceSlug(workspace.slug);
     const botSummary = bots.map(bot => ({
       id: bot.id,
       name: bot.name,

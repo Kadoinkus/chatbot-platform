@@ -178,10 +178,10 @@ export const workspaces = {
     client.get<Workspace[]>(`/workspaces?clientId=${clientId}`),
 
   /**
-   * Get single workspace by ID
+   * Get single workspace by slug
    */
-  get: (workspaceId: string) =>
-    client.get<WorkspaceWithAssistants>(`/workspaces/${workspaceId}`),
+  get: (workspaceSlug: string) =>
+    client.get<WorkspaceWithAssistants>(`/workspaces/${workspaceSlug}`),
 };
 
 // =============================================================================
@@ -190,7 +190,7 @@ export const workspaces = {
 
 export type AssistantListParams = {
   clientId?: string;
-  workspaceId?: string;
+  workspaceSlug?: string;
 };
 
 export const assistants = {
@@ -200,7 +200,7 @@ export const assistants = {
   list: (params: AssistantListParams = {}) => {
     const searchParams = new URLSearchParams();
     if (params.clientId) searchParams.set('clientId', params.clientId);
-    if (params.workspaceId) searchParams.set('workspaceId', params.workspaceId);
+    if (params.workspaceSlug) searchParams.set('workspaceSlug', params.workspaceSlug);
     const query = searchParams.toString();
     return client.get<Assistant[]>(`/assistants${query ? `?${query}` : ''}`);
   },

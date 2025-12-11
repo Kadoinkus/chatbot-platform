@@ -33,7 +33,7 @@ export const clients: Client[] = (clientsJson as DemoClient[]).map(client => {
     .map(mascot => ({
       id: mascot.mascot_slug, // Use mascot_slug as ID for compatibility
       clientId: mascot.client_slug,
-      workspaceId: mascot.workspace_id,
+      workspaceSlug: mascot.workspace_slug,
       name: mascot.name,
       image: mascot.image_url || '',
       status: mascot.status as AgentStatus,

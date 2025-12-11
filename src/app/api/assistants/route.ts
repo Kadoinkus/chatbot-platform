@@ -7,7 +7,7 @@ export async function GET(request: NextRequest) {
   try {
     const { searchParams } = new URL(request.url);
     const clientId = searchParams.get('clientId');
-    const workspaceId = searchParams.get('workspaceId');
+    const workspaceSlug = searchParams.get('workspaceSlug');
 
     if (!clientId) {
       return NextResponse.json(
@@ -19,8 +19,8 @@ export async function GET(request: NextRequest) {
     const db = getDbForClient(clientId);
     let assistants;
 
-    if (workspaceId) {
-      assistants = await db.assistants.getByWorkspaceId(workspaceId);
+    if (workspaceSlug) {
+      assistants = await db.assistants.getByWorkspaceSlug(workspaceSlug);
     } else {
       assistants = await db.assistants.getByClientId(clientId);
     }

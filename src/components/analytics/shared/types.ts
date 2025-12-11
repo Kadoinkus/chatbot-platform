@@ -8,7 +8,7 @@ export type NormalizedAssistant = {
   id: string;
   name: string;
   image?: string;
-  workspaceId?: string;
+  workspaceSlug?: string;
   status?: Assistant['status'];
   clientId?: string;
 };

@@ -50,7 +50,7 @@ export function AssistantSelector({
 
   // Filter assistants based on workspace
   const workspaceFilteredAssistants = assistants.filter(
-    (assistant) => selectedWorkspace === 'all' || assistant.workspaceId === selectedWorkspace
+    (assistant) => selectedWorkspace === 'all' || assistant.workspaceSlug === selectedWorkspace
   );
 
   const getSelectionLabel = () => {
@@ -88,7 +88,7 @@ export function AssistantSelector({
             {selectedWorkspace === 'all' ? (
               // Group by workspace
               workspaces.map((workspace) => {
-                const workspaceAssistants = assistants.filter((assistant) => assistant.workspaceId === workspace.id);
+                const workspaceAssistants = assistants.filter((assistant) => assistant.workspaceSlug === workspace.slug);
                 if (workspaceAssistants.length === 0) return null;
 
                 return (

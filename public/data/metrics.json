@@ -306,7 +306,7 @@
     ]
   },
   "assistantUsageByDay": {
-    "jumboDemo-liza": [
+    "demo-jumbo-ma-001": [
       {
         "date": "2025-10-29",
         "conversations": 62,
@@ -458,7 +458,7 @@
         "resolved": 104
       }
     ],
-    "jumboDemo-remco": [
+    "demo-jumbo-ma-002": [
       {
         "date": "2025-10-29",
         "conversations": 33,
@@ -610,7 +610,7 @@
         "resolved": 41
       }
     ],
-    "jumboDemo-sarah": [
+    "demo-jumbo-ma-003": [
       {
         "date": "2025-10-29",
         "conversations": 62,
@@ -762,7 +762,7 @@
         "resolved": 104
       }
     ],
-    "jumboDemo-max": [
+    "demo-jumbo-ma-004": [
       {
         "date": "2025-10-29",
         "conversations": 33,
@@ -914,7 +914,7 @@
         "resolved": 41
       }
     ],
-    "hitapesDemo-vinny": [
+    "demo-hitapes-ma-001": [
       {
         "date": "2025-10-29",
         "conversations": 48,
@@ -1066,7 +1066,7 @@
         "resolved": 84
       }
     ],
-    "hitapesDemo-tech": [
+    "demo-hitapes-ma-002": [
       {
         "date": "2025-10-29",
         "conversations": 48,
@@ -1290,7 +1290,7 @@
     ]
   },
   "assistantIntents": {
-    "jumboDemo-liza": [
+    "demo-jumbo-ma-001": [
       {
         "intent": "Opening hours",
         "count": 380
@@ -1324,7 +1324,7 @@
         "count": 125
       }
     ],
-    "jumboDemo-remco": [
+    "demo-jumbo-ma-002": [
       {
         "intent": "Returns",
         "count": 95
@@ -1350,7 +1350,7 @@
         "count": 45
       }
     ],
-    "jumboDemo-sarah": [
+    "demo-jumbo-ma-003": [
       {
         "intent": "Opening hours",
         "count": 380
@@ -1384,7 +1384,7 @@
         "count": 125
       }
     ],
-    "jumboDemo-max": [
+    "demo-jumbo-ma-004": [
       {
         "intent": "Returns",
         "count": 95
@@ -1410,7 +1410,7 @@
         "count": 45
       }
     ],
-    "hitapesDemo-vinny": [
+    "demo-hitapes-ma-001": [
       {
         "intent": "Pricing",
         "count": 185
@@ -1436,7 +1436,7 @@
         "count": 48
       }
     ],
-    "hitapesDemo-tech": [
+    "demo-hitapes-ma-002": [
       {
         "intent": "Pricing",
         "count": 185

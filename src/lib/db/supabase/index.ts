@@ -121,12 +121,12 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       return data || [];
     },
 
-    async getByWorkspaceId(workspaceId: string) {
+    async getByWorkspaceSlug(workspaceSlug: string) {
       const supabase = requireSupabase();
       const { data, error } = await supabase
         .from('mascots')
         .select('*')
-        .eq('workspace_id', workspaceId)
+        .eq('workspace_slug', workspaceSlug)
         .order('name');
 
       if (error) throw error;
@@ -151,6 +151,14 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
 
       const supabase = requireSupabase();
       const { data, error } = await supabase.from('workspaces').select('*').eq('id', id).single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data || null;
+    },
+
+    async getBySlug(slug: string) {
+      const supabase = requireSupabase();
+      const { data, error } = await supabase.from('workspaces').select('*').eq('slug', slug).single();
 
       if (error && error.code !== 'PGRST116') throw error;
       return data || null;

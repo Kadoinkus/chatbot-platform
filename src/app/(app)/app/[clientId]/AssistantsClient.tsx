@@ -32,7 +32,7 @@ export default function AssistantsClient({
 
       const matchesWorkspace =
         selectedWorkspace === 'all' ||
-        assistant.workspaceId === selectedWorkspace;
+        assistant.workspaceSlug === selectedWorkspace;
 
       return matchesSearch && matchesWorkspace;
     });

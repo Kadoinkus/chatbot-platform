@@ -15,15 +15,15 @@ async function fetchData(clientId: string) {
   ]);
 
   const assistantsByWorkspace = assistants.reduce<Record<string, Assistant[]>>((acc, assistant) => {
-    const list = acc[assistant.workspaceId] || [];
+    const list = acc[assistant.workspaceSlug] || [];
     list.push(assistant);
-    acc[assistant.workspaceId] = list;
+    acc[assistant.workspaceSlug] = list;
     return acc;
   }, {});
 
   const workspaceList: WorkspaceWithAssistants[] = (workspaces || []).map(ws => ({
     ...ws,
-    assistants: assistantsByWorkspace[ws.id] || [],
+    assistants: assistantsByWorkspace[ws.slug || ws.id] || [],
   }));
 
   return { client, workspaces: workspaceList };

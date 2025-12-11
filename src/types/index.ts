@@ -93,9 +93,17 @@ export type OverageTracking = {
   creditsSpentOnOverage: number;  // EUR deducted from wallet this period
 };
 
+/**
+ * Workspace (Resource Pool)
+ * Uniqueness constraints:
+ *   - slug: UNIQUE globally (e.g., 'demo-jumbo-wp-001')
+ *   - (clientSlug, workspaceNumber): UNIQUE per client
+ * Slug format: {clientSlug}-wp-{workspaceNumber:03d}
+ */
 export type Workspace = {
   id: string;
-  slug?: string;
+  slug: string;                         // UNIQUE globally (e.g., 'demo-jumbo-wp-001')
+  workspaceNumber: number;              // Sequence number per client (1, 2, 3...)
   clientId?: string;                    // @deprecated - use clientSlug
   clientSlug: string;                   // FK to clients.slug
   name: string;
@@ -138,7 +146,7 @@ export type AssistantMetrics = {
 export type Assistant = {
   id: string;
   clientId: string;
-  workspaceId: string;
+  workspaceSlug: string;
   name: string;
   image: string;
   status: AgentStatus;
@@ -373,13 +381,17 @@ export type CounterSummary = {
 
 /**
  * Mascot record from Supabase mascots table
- * Extended with allocation and usage tracking
+ * Uniqueness constraints:
+ *   - mascotSlug: UNIQUE globally (e.g., 'demo-jumbo-ma-001')
+ *   - (clientSlug, mascotNumber): UNIQUE per client
+ * Slug format: {clientSlug}-ma-{mascotNumber:03d}
  */
 export type MascotDB = {
   id: string;
-  mascotSlug: string;                  // Unique identifier (e.g., m1, m2)
+  mascotSlug: string;                  // UNIQUE globally (e.g., 'demo-jumbo-ma-001')
+  mascotNumber: number;                // Sequence number per client (1, 2, 3...)
   clientSlug: string;                  // FK to clients.slug
-  workspaceId: string;                 // FK to workspaces.id
+  workspaceSlug: string;               // FK to workspaces.slug
   name: string;
   description?: string | null;
   imageUrl?: string | null;
@@ -412,7 +424,7 @@ export type MascotDB = {
  */
 export type UsageHistory = {
   id: string;
-  workspaceId: string;
+  workspaceSlug: string;
   date: string;                        // YYYY-MM-DD
   bundleLoads: number;
   messages: number;
@@ -432,7 +444,7 @@ export type UsageHistory = {
  */
 export type UsageReset = {
   id: string;
-  workspaceId: string;
+  workspaceSlug: string;
   resetAt: string;                     // When reset occurred
   periodStart: string;                 // YYYY-MM-DD
   periodEnd: string;                   // YYYY-MM-DD
@@ -456,7 +468,7 @@ export type CreditTransactionType = 'purchase' | 'bonus' | 'overage_deduction' |
  */
 export type CreditTransaction = {
   id: string;
-  workspaceId: string;
+  workspaceSlug: string;
   type: CreditTransactionType;
   amountEur: number;                   // Positive = credit, negative = debit
   balanceAfterEur: number;
@@ -477,7 +489,7 @@ export type WorkspaceMemberRole = 'admin' | 'manager' | 'agent' | 'viewer';
  */
 export type WorkspaceMember = {
   id: string;
-  workspaceId: string;
+  workspaceSlug: string;
   userId: string;
   role: WorkspaceMemberRole;
   permissions?: Record<string, boolean> | null;  // Custom permission overrides

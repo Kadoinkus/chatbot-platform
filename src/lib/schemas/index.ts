@@ -61,7 +61,7 @@ export const BotStatusSchema = z.enum(['active', 'inactive', 'maintenance', 'err
 export const CreateBotRequestSchema = z.object({
   name: z.string().min(1, 'Name is required').max(100),
   description: z.string().max(500).optional(),
-  workspaceId: IdSchema,
+  workspaceSlug: SlugSchema,
   status: BotStatusSchema.default('inactive'),
 });
 
@@ -92,7 +92,7 @@ export const UserStatusSchema = z.enum(['active', 'invited', 'suspended']);
 export const InviteUserRequestSchema = z.object({
   email: EmailSchema,
   role: TeamRoleSchema.default('member'),
-  workspaceIds: z.array(IdSchema).optional(),
+  workspaceSlugs: z.array(SlugSchema).optional(),
 });
 
 // ============================================

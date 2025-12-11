@@ -35,7 +35,7 @@ describe('db mappers', () => {
     const raw = {
       mascot_slug: 'm1',
       client_slug: 'demo',
-      workspace_id: 'ws_1',
+      workspace_slug: 'ws-1',
       name: 'Helper',
       status: 'active',
       total_conversations: 42,
@@ -46,7 +46,7 @@ describe('db mappers', () => {
     const assistant = mapAssistantFromMascot(raw);
     expect(assistant.id).toBe('m1');
     expect(assistant.clientId).toBe('demo');
-    expect(assistant.workspaceId).toBe('ws_1');
+    expect(assistant.workspaceSlug).toBe('ws-1');
     expect(assistant.status).toBe('Active');
     expect(assistant.metrics.responseTime).toBeCloseTo(1.5);
     expect(assistant.metrics.resolutionRate).toBe(87);

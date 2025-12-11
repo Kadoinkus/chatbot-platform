@@ -118,11 +118,14 @@ export async function getAssistantsByClientId(clientIdOrSlug: string): Promise<A
   return data ?? [];
 }
 
-export async function getAssistantsByWorkspaceId(workspaceId: string, clientId: string): Promise<Assistant[]> {
-  const params = new URLSearchParams({ workspaceId, clientId });
+export async function getAssistantsByWorkspaceSlug(workspaceSlug: string, clientId: string): Promise<Assistant[]> {
+  const params = new URLSearchParams({ workspaceSlug, clientId });
   const data = await apiGet<Assistant[]>(`/api/assistants?${params.toString()}`);
   return data ?? [];
 }
+
+/** @deprecated Use getAssistantsByWorkspaceSlug instead */
+export const getAssistantsByWorkspaceId = getAssistantsByWorkspaceSlug;
 
 export async function getAssistantById(id: string, clientId: string): Promise<Assistant | undefined> {
   const params = new URLSearchParams({ clientId });

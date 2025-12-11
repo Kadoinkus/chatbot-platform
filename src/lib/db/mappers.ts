@@ -133,7 +133,7 @@ export function mapAssistantFromMascot(raw: any): Assistant {
   return {
     id: raw.mascot_slug,
     clientId: raw.client_slug,
-    workspaceId: raw.workspace_id,
+    workspaceSlug: raw.workspace_slug,
     name: raw.name,
     image: raw.image_url || '',
     status: normalizeAssistantStatus(raw.status),
@@ -150,6 +150,7 @@ export function mapWorkspace(raw: any): Workspace {
   return {
     id: raw.id,
     slug: raw.slug || raw.id,
+    workspaceNumber: raw.workspace_number || 1,
     clientId: raw.client_slug,
     clientSlug: raw.client_slug,
     name: raw.name,

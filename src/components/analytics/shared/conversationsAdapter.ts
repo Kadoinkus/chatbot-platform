@@ -56,7 +56,7 @@ export function normalizeSessions(
           id: assistant.id,
           name: assistant.name,
           image: assistant.image,
-          workspaceId: assistant.workspaceId,
+          workspaceSlug: assistant.workspaceSlug,
           status: assistant.status,
           clientId: assistant.clientId,
         }
@@ -83,7 +83,7 @@ export function normalizeAssistantSessions(
         id: assistant.id,
         name: assistant.name,
         image: assistant.image,
-        workspaceId: assistant.workspaceId,
+        workspaceSlug: assistant.workspaceSlug,
         status: assistant.status,
         clientId: assistant.clientId,
       }
@@ -112,7 +112,7 @@ export function normalizeAssistantMetrics(
       id: assistantMetrics.assistantId,
       name: assistantMetrics.assistantName,
       image: assistantMetrics.assistantImage,
-      workspaceId: assistant?.workspaceId,
+      workspaceSlug: assistant?.workspaceSlug,
       status: assistant?.status || (assistantMetrics.status as Assistant['status']),
       clientId: assistantMetrics.clientId,
     };

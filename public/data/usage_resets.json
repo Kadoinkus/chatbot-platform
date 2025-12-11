@@ -1,7 +1,7 @@
 [
   {
     "id": "eeee1111-1111-4111-8111-111111111111",
-    "workspace_id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "workspace_slug": "demo-jumbo-wp-001",
     "reset_at": "2024-12-01T00:00:00Z",
     "period_start": "2024-11-01",
     "period_end": "2024-11-30",
@@ -15,7 +15,7 @@
   },
   {
     "id": "eeee2222-2222-4222-8222-222222222222",
-    "workspace_id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
+    "workspace_slug": "demo-jumbo-wp-001",
     "reset_at": "2024-11-01T00:00:00Z",
     "period_start": "2024-10-01",
     "period_end": "2024-10-31",
@@ -29,7 +29,7 @@
   },
   {
     "id": "eeee3333-3333-4333-8333-333333333333",
-    "workspace_id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
+    "workspace_slug": "demo-jumbo-wp-002",
     "reset_at": "2024-12-15T00:00:00Z",
     "period_start": "2024-11-15",
     "period_end": "2024-12-14",
@@ -43,7 +43,7 @@
   },
   {
     "id": "eeee4444-4444-4444-8444-444444444444",
-    "workspace_id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
+    "workspace_slug": "demo-jumbo-wp-003",
     "reset_at": "2024-12-09T00:00:00Z",
     "period_start": "2024-12-08",
     "period_end": "2024-12-08",
@@ -57,7 +57,7 @@
   },
   {
     "id": "eeee5555-5555-4555-8555-555555555555",
-    "workspace_id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
+    "workspace_slug": "demo-hitapes-wp-001",
     "reset_at": "2024-12-01T00:00:00Z",
     "period_start": "2024-11-01",
     "period_end": "2024-11-30",

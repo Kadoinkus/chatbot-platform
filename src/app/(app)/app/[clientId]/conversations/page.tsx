@@ -228,7 +228,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
       if (selectedWorkspace !== 'all') {
         const bot = getAssistantInfo(session.mascot_slug);
-        if (bot?.workspaceId !== selectedWorkspace) return false;
+        if (bot?.workspaceSlug !== selectedWorkspace) return false;
       }
 
       if (searchTerm) {
@@ -261,7 +261,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
   useEffect(() => {
     if (selectedWorkspace === 'all') return;
     const selectedAssistant = assistants.find((a) => a.id === selectedBot);
-    if (selectedBot !== 'all' && (!selectedAssistant || selectedAssistant.workspaceId !== selectedWorkspace)) {
+    if (selectedBot !== 'all' && (!selectedAssistant || selectedAssistant.workspaceSlug !== selectedWorkspace)) {
       setSelectedBot('all');
     }
   }, [assistants, selectedBot, selectedWorkspace]);

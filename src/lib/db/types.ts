@@ -50,13 +50,14 @@ export interface AssistantOperations {
   getAll(): Promise<Assistant[]>;
   getById(id: string): Promise<Assistant | null>;
   getByClientId(clientId: string): Promise<Assistant[]>;
-  getByWorkspaceId(workspaceId: string): Promise<Assistant[]>;
+  getByWorkspaceSlug(workspaceSlug: string): Promise<Assistant[]>;
 }
 
 // Workspace operations
 export interface WorkspaceOperations {
   getAll(): Promise<Workspace[]>;
   getById(id: string): Promise<Workspace | null>;
+  getBySlug(slug: string): Promise<Workspace | null>;
   getByClientId(clientId: string): Promise<Workspace[]>;
 }
 

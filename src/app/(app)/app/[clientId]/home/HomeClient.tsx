@@ -84,7 +84,7 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                         {workspace.plan}
                       </Badge>
                     </div>
-                    <Link href={`/app/${client.slug}/workspace/${workspace.slug || workspace.id}`}>
+                    <Link href={`/app/${client.slug}/workspace/${workspace.slug}`}>
                       <Button size="sm" variant="ghost" iconRight={<ChevronRight size={14} />}>
                         Manage
                       </Button>

@@ -256,8 +256,8 @@ export const assistants: AssistantOperations = {
     return getAssistants().filter(a => a.clientId === resolvedSlug || a.clientId === clientId);
   },
 
-  async getByWorkspaceId(workspaceId: string) {
-    return getAssistants().filter(a => a.workspaceId === workspaceId);
+  async getByWorkspaceSlug(workspaceSlug: string) {
+    return getAssistants().filter(a => a.workspaceSlug === workspaceSlug);
   },
 };
 
@@ -268,7 +268,11 @@ export const workspaces: WorkspaceOperations = {
   },
 
   async getById(id: string) {
-    return getWorkspaces().find(w => w.id === id || w.slug === id) || null;
+    return getWorkspaces().find(w => w.id === id) || null;
+  },
+
+  async getBySlug(slug: string) {
+    return getWorkspaces().find(w => w.slug === slug) || null;
   },
 
   async getByClientId(clientId: string) {

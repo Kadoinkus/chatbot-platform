@@ -15,14 +15,15 @@ async function fetchData(clientId: string) {
   ]);
 
   const workspaceMap = (workspaces || []).reduce<Record<string, Workspace>>((acc, ws) => {
+    if (ws.slug) acc[ws.slug] = ws;
     acc[ws.id] = ws;
     return acc;
   }, {});
 
   const assistantsEnriched: AssistantWithWorkspace[] = assistants.map(a => ({
     ...a,
-    workspace: workspaceMap[a.workspaceId],
-    workspaceName: workspaceMap[a.workspaceId]?.name,
+    workspace: workspaceMap[a.workspaceSlug],
+    workspaceName: workspaceMap[a.workspaceSlug]?.name,
   }));
 
   return { client, workspaces, assistants: assistantsEnriched };

@@ -4,6 +4,8 @@ import type { Workspace } from '@/types';
 
 const baseWorkspace: Workspace = {
   id: 'ws_1',
+  slug: 'c1-wp-001',
+  workspaceNumber: 1,
   clientId: 'c1',
   clientSlug: 'c1',
   name: 'Test Workspace',

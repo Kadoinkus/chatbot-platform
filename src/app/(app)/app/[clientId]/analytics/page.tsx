@@ -127,7 +127,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
         // Filter assistants based on selection
         let filteredAssistantList = assistants;
         if (selectedWorkspace !== 'all') {
-          filteredAssistantList = filteredAssistantList.filter((a) => a.workspaceId === selectedWorkspace);
+          filteredAssistantList = filteredAssistantList.filter((a) => a.workspaceSlug === selectedWorkspace);
         }
         if (!selectedAssistants.includes('all') && selectedAssistants.length > 0) {
           filteredAssistantList = filteredAssistantList.filter((a) => selectedAssistants.includes(a.id));

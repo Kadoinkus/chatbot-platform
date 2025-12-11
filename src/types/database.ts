@@ -50,7 +50,7 @@ export type DB_PlanType = 'starter' | 'basic' | 'premium' | 'enterprise' | 'cust
 export type DB_WorkspaceStatus = 'active' | 'suspended' | 'trial';
 export type DB_BillingCycle = 'monthly' | 'quarterly' | 'annual';
 export type DB_UsageResetInterval = 'daily' | 'monthly' | 'quarterly' | 'annual';
-export type DB_AgentStatus = 'Active' | 'Paused' | 'Disabled' | 'Draft';
+export type DB_AgentStatus = 'active' | 'paused' | 'disabled' | 'draft';
 export type DB_UserRole = 'owner' | 'admin' | 'member' | 'viewer';
 export type DB_TeamRole = 'admin' | 'manager' | 'agent' | 'viewer';
 export type DB_UserStatus = 'active' | 'inactive' | 'pending' | 'suspended';
@@ -85,10 +85,16 @@ export interface DB_Client {
 
 // =============================================================================
 // TABLE: workspaces
+// Uniqueness constraints:
+//   - slug: UNIQUE globally (e.g., 'demo-jumbo-wp-001')
+//   - (client_slug, workspace_number): UNIQUE per client
+// Slug format: {client_slug}-wp-{workspace_number:03d}
 // =============================================================================
 
 export interface DB_Workspace {
   id: string;                          // uuid
+  slug: string;                        // UNIQUE globally (e.g., 'demo-jumbo-wp-001')
+  workspace_number: number;            // Sequence number per client (1, 2, 3...)
   client_slug: string;                 // FK to clients.slug
   name: string;
   description: string | null;
@@ -150,13 +156,18 @@ export interface DB_User {
 
 // =============================================================================
 // TABLE: mascots
+// Uniqueness constraints:
+//   - mascot_slug: UNIQUE globally (e.g., 'demo-jumbo-ma-001')
+//   - (client_slug, mascot_number): UNIQUE per client
+// Slug format: {client_slug}-ma-{mascot_number:03d}
 // =============================================================================
 
 export interface DB_Mascot {
   id: string;                          // uuid
-  mascot_slug: string;                 // unique (e.g., m1, m2)
+  mascot_slug: string;                 // UNIQUE globally (e.g., 'demo-jumbo-ma-001')
+  mascot_number: number;               // Sequence number per client (1, 2, 3...)
   client_slug: string;                 // FK to clients.slug
-  workspace_id: string;                // uuid FK to workspaces.id
+  workspace_slug: string;              // FK to workspaces.slug
   name: string;
   description: string | null;
   image_url: string | null;
@@ -167,6 +178,7 @@ export interface DB_Mascot {
   // Performance metrics
   avg_response_time_ms: number | null;
   resolution_rate: number | null;      // percentage
+  csat_score: number | null;           // customer satisfaction score
   config_version: string | null;
   // Allocation percentages (null = equal split)
   bundle_allocation_pct: number | null;
@@ -186,7 +198,7 @@ export interface DB_Mascot {
 
 export interface DB_WorkspaceMember {
   id: string;                          // uuid
-  workspace_id: string;                // uuid FK
+  workspace_slug: string;              // FK to workspaces.slug
   user_id: string;                     // uuid FK
   role: DB_TeamRole;                   // default: 'viewer'
   permissions: Record<string, boolean> | null; // jsonb
@@ -200,7 +212,7 @@ export interface DB_WorkspaceMember {
 
 export interface DB_UsageHistory {
   id: string;                          // uuid
-  workspace_id: string;                // uuid FK
+  workspace_slug: string;              // FK to workspaces.slug
   date: string;                        // date YYYY-MM-DD
   bundle_loads: number;
   messages: number;
@@ -217,7 +229,7 @@ export interface DB_UsageHistory {
 
 export interface DB_UsageReset {
   id: string;                          // uuid
-  workspace_id: string;                // uuid FK
+  workspace_slug: string;              // FK to workspaces.slug
   reset_at: string;                    // timestamptz
   period_start: string;                // date
   period_end: string;                  // date
@@ -236,7 +248,7 @@ export interface DB_UsageReset {
 
 export interface DB_CreditTransaction {
   id: string;                          // uuid
-  workspace_id: string;                // uuid FK
+  workspace_slug: string;              // FK to workspaces.slug
   type: DB_CreditTransactionType;
   amount_eur: number;                  // decimal (+credit, -debit)
   balance_after_eur: number;           // decimal

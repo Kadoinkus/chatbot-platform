@@ -105,7 +105,7 @@ export function FilterBar({
       const filtered =
         selectedWorkspace === 'all'
           ? assistants
-          : assistants.filter((a) => a.workspaceId === selectedWorkspace);
+          : assistants.filter((a) => a.workspaceSlug === selectedWorkspace);
       return [{ value: 'all', label: 'All Assistants' }, ...filtered.map((a) => ({ value: a.id, label: a.name }))];
     },
     [assistants, selectedWorkspace]
@@ -132,7 +132,7 @@ export function FilterBar({
     const filteredAssistants =
       selectedWorkspace === 'all'
         ? assistants
-        : assistants.filter((a) => a.workspaceId === selectedWorkspace);
+        : assistants.filter((a) => a.workspaceSlug === selectedWorkspace);
 
     return (
       <AssistantSelector

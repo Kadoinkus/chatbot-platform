@@ -49,7 +49,7 @@ export function useWorkspaceFilter({
     if (selectedWorkspace === 'all') {
       return assistants;
     }
-    return assistants.filter((assistant) => assistant.workspaceId === selectedWorkspace);
+    return assistants.filter((assistant) => assistant.workspaceSlug === selectedWorkspace);
   }, [assistants, selectedWorkspace]);
 
   // Generate assistant options for dropdown
@@ -64,7 +64,7 @@ export function useWorkspaceFilter({
   const workspaceOptions = useMemo(() => {
     return [
       { value: 'all', label: 'All Workspaces' },
-      ...workspaces.map((w) => ({ value: w.id, label: w.name })),
+      ...workspaces.map((w) => ({ value: w.slug || w.id, label: w.name })),
     ];
   }, [workspaces]);
 
@@ -116,14 +116,14 @@ export function useMultiAssistantWorkspaceFilter({
     if (selectedWorkspace === 'all') {
       return assistants;
     }
-    return assistants.filter((assistant) => assistant.workspaceId === selectedWorkspace);
+    return assistants.filter((assistant) => assistant.workspaceSlug === selectedWorkspace);
   }, [assistants, selectedWorkspace]);
 
   // Generate workspace options for dropdown
   const workspaceOptions = useMemo(() => {
     return [
       { value: 'all', label: 'All Workspaces' },
-      ...workspaces.map((w) => ({ value: w.id, label: w.name })),
+      ...workspaces.map((w) => ({ value: w.slug || w.id, label: w.name })),
     ];
   }, [workspaces]);
 

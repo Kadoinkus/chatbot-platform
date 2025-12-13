@@ -126,6 +126,10 @@ export type Workspace = {
   billingResetDay?: number;             // Day of month usage resets (1-28, ignored for daily)
   nextUsageResetDate?: string;          // Next counter reset date
   overageTracking?: OverageTracking;    // Track overage this usage period
+  // Lifetime totals (aggregated from mascots)
+  totalConversations?: number;
+  totalMessages?: number;
+  totalBundleLoads?: number;
   createdAt: string;
   updatedAt?: string;
 };
@@ -399,6 +403,7 @@ export type MascotDB = {
   // Lifetime stats
   totalConversations: number;
   totalMessages: number;
+  totalBundleLoads: number;
   // Performance metrics
   avgResponseTimeMs?: number | null;
   resolutionRate?: number | null;      // % resolved

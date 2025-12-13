@@ -719,4 +719,318 @@ export const aggregations: AnalyticsAggregations = {
       waitSequences,
     };
   },
+
+  // ========== CLIENT-LEVEL AGGREGATIONS ==========
+
+  async getSentimentByClientId(clientId: string, dateRange?: DateRange): Promise<SentimentBreakdown> {
+    const clientAnalyses = await analyses.getByClientId(clientId, { dateRange });
+    return {
+      positive: clientAnalyses.filter(a => a.sentiment === 'positive').length,
+      neutral: clientAnalyses.filter(a => a.sentiment === 'neutral').length,
+      negative: clientAnalyses.filter(a => a.sentiment === 'negative').length,
+    };
+  },
+
+  async getCategoriesByClientId(clientId: string, dateRange?: DateRange): Promise<CategoryBreakdown[]> {
+    const clientAnalyses = await analyses.getByClientId(clientId, { dateRange });
+    const total = clientAnalyses.length;
+
+    const categoryCounts: Record<string, number> = {};
+    clientAnalyses.forEach(a => {
+      const category = a.category || 'Unknown';
+      categoryCounts[category] = (categoryCounts[category] || 0) + 1;
+    });
+
+    return Object.entries(categoryCounts)
+      .map(([category, count]) => ({
+        category,
+        count,
+        percentage: total > 0 ? (count / total) * 100 : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+  },
+
+  async getLanguagesByClientId(clientId: string, dateRange?: DateRange): Promise<LanguageBreakdown[]> {
+    const clientAnalyses = await analyses.getByClientId(clientId, { dateRange });
+    const total = clientAnalyses.length;
+
+    const languageCounts: Record<string, number> = {};
+    clientAnalyses.forEach(a => {
+      const language = a.language || 'Unknown';
+      languageCounts[language] = (languageCounts[language] || 0) + 1;
+    });
+
+    return Object.entries(languageCounts)
+      .map(([language, count]) => ({
+        language,
+        count,
+        percentage: total > 0 ? (count / total) * 100 : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+  },
+
+  async getDevicesByClientId(clientId: string, dateRange?: DateRange): Promise<DeviceBreakdown[]> {
+    const clientSessions = await chatSessions.getByClientId(clientId, { dateRange });
+    const total = clientSessions.length;
+
+    const deviceCounts: Record<string, number> = {};
+    clientSessions.forEach(s => {
+      const device = s.device_type || 'Unknown';
+      deviceCounts[device] = (deviceCounts[device] || 0) + 1;
+    });
+
+    return Object.entries(deviceCounts)
+      .map(([deviceType, count]) => ({
+        deviceType,
+        count,
+        percentage: total > 0 ? (count / total) * 100 : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+  },
+
+  async getCountriesByClientId(clientId: string, dateRange?: DateRange): Promise<CountryBreakdown[]> {
+    const clientSessions = await chatSessions.getByClientId(clientId, { dateRange });
+    const total = clientSessions.length;
+
+    const countryCounts: Record<string, number> = {};
+    clientSessions.forEach(s => {
+      const country = s.visitor_country || 'Unknown';
+      countryCounts[country] = (countryCounts[country] || 0) + 1;
+    });
+
+    return Object.entries(countryCounts)
+      .map(([country, count]) => ({
+        country,
+        count,
+        percentage: total > 0 ? (count / total) * 100 : 0,
+      }))
+      .sort((a, b) => b.count - a.count);
+  },
+
+  async getTimeSeriesByClientId(clientId: string, dateRange?: DateRange): Promise<TimeSeriesDataPoint[]> {
+    const clientSessions = await chatSessions.getByClientId(clientId, { dateRange });
+
+    const byDate: Record<string, { sessions: number; messages: number; tokens: number; cost: number }> = {};
+
+    clientSessions.forEach(s => {
+      const date = s.session_started_at.split('T')[0];
+      if (!byDate[date]) {
+        byDate[date] = { sessions: 0, messages: 0, tokens: 0, cost: 0 };
+      }
+      byDate[date].sessions += 1;
+      byDate[date].messages += s.total_messages || 0;
+      byDate[date].tokens += s.total_tokens || 0;
+      byDate[date].cost += s.total_cost_eur || 0;
+    });
+
+    return Object.entries(byDate)
+      .map(([date, data]) => ({
+        date,
+        sessions: data.sessions,
+        messages: data.messages,
+        tokens: data.tokens,
+        cost: data.cost,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  },
+
+  async getQuestionsByClientId(clientId: string, dateRange?: DateRange): Promise<QuestionAnalytics[]> {
+    const clientAnalyses = await analyses.getByClientId(clientId, { dateRange });
+
+    const questionCounts: Record<string, { total: number; unanswered: number }> = {};
+
+    clientAnalyses.forEach(a => {
+      a.questions.forEach(q => {
+        if (!questionCounts[q]) {
+          questionCounts[q] = { total: 0, unanswered: 0 };
+        }
+        questionCounts[q].total += 1;
+      });
+
+      a.unanswered_questions.forEach(q => {
+        if (!questionCounts[q]) {
+          questionCounts[q] = { total: 0, unanswered: 0 };
+        }
+        questionCounts[q].unanswered += 1;
+      });
+    });
+
+    return Object.entries(questionCounts)
+      .map(([question, counts]) => ({
+        question,
+        frequency: counts.total,
+        answered: counts.unanswered === 0,
+      }))
+      .sort((a, b) => b.frequency - a.frequency);
+  },
+
+  async getUnansweredQuestionsByClientId(clientId: string, dateRange?: DateRange): Promise<QuestionAnalytics[]> {
+    const clientAnalyses = await analyses.getByClientId(clientId, { dateRange });
+
+    const questionCounts: Record<string, number> = {};
+
+    clientAnalyses.forEach(a => {
+      a.unanswered_questions.forEach(q => {
+        questionCounts[q] = (questionCounts[q] || 0) + 1;
+      });
+    });
+
+    return Object.entries(questionCounts)
+      .map(([question, frequency]) => ({
+        question,
+        frequency,
+        answered: false,
+      }))
+      .sort((a, b) => b.frequency - a.frequency);
+  },
+
+  async getSentimentTimeSeriesByClientId(clientId: string, dateRange?: DateRange): Promise<SentimentTimeSeriesDataPoint[]> {
+    const clientAnalyses = await analyses.getByClientId(clientId, { dateRange });
+
+    const byDate: Record<string, { positive: number; neutral: number; negative: number }> = {};
+
+    clientAnalyses.forEach(a => {
+      const date = a.created_at.split('T')[0];
+      if (!byDate[date]) {
+        byDate[date] = { positive: 0, neutral: 0, negative: 0 };
+      }
+      if (a.sentiment === 'positive') byDate[date].positive += 1;
+      else if (a.sentiment === 'neutral') byDate[date].neutral += 1;
+      else if (a.sentiment === 'negative') byDate[date].negative += 1;
+    });
+
+    return Object.entries(byDate)
+      .map(([date, data]) => ({
+        date,
+        positive: data.positive,
+        neutral: data.neutral,
+        negative: data.negative,
+      }))
+      .sort((a, b) => a.date.localeCompare(b.date));
+  },
+
+  async getHourlyBreakdownByClientId(clientId: string, dateRange?: DateRange): Promise<HourlyBreakdown[]> {
+    const clientSessions = await chatSessions.getByClientId(clientId, { dateRange });
+    const total = clientSessions.length;
+
+    const hourCounts: Record<number, number> = {};
+    for (let i = 0; i < 24; i++) {
+      hourCounts[i] = 0;
+    }
+
+    clientSessions.forEach(s => {
+      const hour = new Date(s.session_started_at).getHours();
+      hourCounts[hour] = (hourCounts[hour] || 0) + 1;
+    });
+
+    return Object.entries(hourCounts)
+      .map(([hour, count]) => ({
+        hour: parseInt(hour),
+        count,
+        percentage: total > 0 ? (count / total) * 100 : 0,
+      }))
+      .sort((a, b) => a.hour - b.hour);
+  },
+
+  async getEngagementByClientId(clientId: string, dateRange?: DateRange): Promise<EngagementBreakdown[]> {
+    const clientAnalyses = await analyses.getByClientId(clientId, { dateRange });
+    const total = clientAnalyses.length;
+
+    const engagementCounts = {
+      low: 0,
+      medium: 0,
+      high: 0,
+    };
+
+    clientAnalyses.forEach(a => {
+      const level = (a as { engagement_level?: string }).engagement_level;
+      if (level === 'low' || level === 'medium' || level === 'high') {
+        engagementCounts[level] += 1;
+      }
+    });
+
+    return [
+      { level: 'low' as const, count: engagementCounts.low, percentage: total > 0 ? (engagementCounts.low / total) * 100 : 0 },
+      { level: 'medium' as const, count: engagementCounts.medium, percentage: total > 0 ? (engagementCounts.medium / total) * 100 : 0 },
+      { level: 'high' as const, count: engagementCounts.high, percentage: total > 0 ? (engagementCounts.high / total) * 100 : 0 },
+    ];
+  },
+
+  async getConversationTypesByClientId(clientId: string, dateRange?: DateRange): Promise<ConversationTypeBreakdown[]> {
+    const clientAnalyses = await analyses.getByClientId(clientId, { dateRange });
+    const total = clientAnalyses.length;
+
+    const typeCounts = {
+      casual: 0,
+      goal_driven: 0,
+    };
+
+    clientAnalyses.forEach(a => {
+      const type = (a as { conversation_type?: string }).conversation_type;
+      if (type === 'casual') typeCounts.casual += 1;
+      else if (type === 'goal_driven') typeCounts.goal_driven += 1;
+    });
+
+    return [
+      { type: 'casual' as const, count: typeCounts.casual, percentage: total > 0 ? (typeCounts.casual / total) * 100 : 0 },
+      { type: 'goal_driven' as const, count: typeCounts.goal_driven, percentage: total > 0 ? (typeCounts.goal_driven / total) * 100 : 0 },
+    ];
+  },
+
+  async getAnimationStatsByClientId(clientId: string, dateRange?: DateRange): Promise<AnimationStats> {
+    const clientSessions = await chatSessions.getByClientId(clientId, { dateRange });
+    const messages = getChatMessages().filter(m => {
+      const session = clientSessions.find(s => s.id === m.session_id);
+      return session != null;
+    });
+
+    const sessionIds = new Set(clientSessions.map(s => s.id));
+    const filteredMessages = messages.filter(m => sessionIds.has(m.session_id));
+
+    const animationCounts: Record<string, number> = {};
+    const easterEggCounts: Record<string, number> = {};
+    const waitSequenceCounts: Record<string, number> = {};
+    const sessionsWithEasterEggs = new Set<string>();
+    let totalTriggers = 0;
+    let easterEggsTriggered = 0;
+
+    filteredMessages.forEach(m => {
+      if (m.response_animation && typeof m.response_animation === 'string') {
+        animationCounts[m.response_animation] = (animationCounts[m.response_animation] || 0) + 1;
+        totalTriggers += 1;
+      }
+      if (m.has_easter_egg && m.easter_egg_animation) {
+        easterEggCounts[m.easter_egg_animation] = (easterEggCounts[m.easter_egg_animation] || 0) + 1;
+        easterEggsTriggered += 1;
+        sessionsWithEasterEggs.add(m.session_id);
+      }
+      if (m.wait_sequence) {
+        waitSequenceCounts[m.wait_sequence] = (waitSequenceCounts[m.wait_sequence] || 0) + 1;
+      }
+    });
+
+    const topAnimations = Object.entries(animationCounts)
+      .map(([animation, count]) => ({ animation, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const topEasterEggs = Object.entries(easterEggCounts)
+      .map(([animation, count]) => ({ animation, count }))
+      .sort((a, b) => b.count - a.count)
+      .slice(0, 5);
+
+    const waitSequences = Object.entries(waitSequenceCounts)
+      .map(([sequence, count]) => ({ sequence, count }))
+      .sort((a, b) => a.sequence.localeCompare(b.sequence));
+
+    return {
+      totalTriggers,
+      easterEggsTriggered,
+      sessionsWithEasterEggs: sessionsWithEasterEggs.size,
+      totalSessions: sessionIds.size,
+      topAnimations,
+      topEasterEggs,
+      waitSequences,
+    };
+  },
 };

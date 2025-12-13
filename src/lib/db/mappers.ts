@@ -196,6 +196,10 @@ export function mapWorkspace(raw: any): Workspace {
       sessionOverageUsed: raw.session_overage_used || 0,
       creditsSpentOnOverage: raw.credits_spent_on_overage || 0,
     },
+    // Lifetime totals
+    totalConversations: raw.total_conversations || 0,
+    totalMessages: raw.total_messages || 0,
+    totalBundleLoads: raw.total_bundle_loads || 0,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at || undefined,
   };

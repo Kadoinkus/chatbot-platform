@@ -207,9 +207,19 @@ export interface AnalyticsAggregations {
   getSentimentByBotId(botId: string, dateRange?: DateRange): Promise<SentimentBreakdown>;
 
   /**
+   * Get sentiment breakdown for a client
+   */
+  getSentimentByClientId(clientId: string, dateRange?: DateRange): Promise<SentimentBreakdown>;
+
+  /**
    * Get category breakdown for a bot
    */
   getCategoriesByBotId(botId: string, dateRange?: DateRange): Promise<CategoryBreakdown[]>;
+
+  /**
+   * Get category breakdown for a client
+   */
+  getCategoriesByClientId(clientId: string, dateRange?: DateRange): Promise<CategoryBreakdown[]>;
 
   /**
    * Get language breakdown for a bot
@@ -217,9 +227,19 @@ export interface AnalyticsAggregations {
   getLanguagesByBotId(botId: string, dateRange?: DateRange): Promise<LanguageBreakdown[]>;
 
   /**
+   * Get language breakdown for a client
+   */
+  getLanguagesByClientId(clientId: string, dateRange?: DateRange): Promise<LanguageBreakdown[]>;
+
+  /**
    * Get device breakdown for a bot
    */
   getDevicesByBotId(botId: string, dateRange?: DateRange): Promise<DeviceBreakdown[]>;
+
+  /**
+   * Get device breakdown for a client
+   */
+  getDevicesByClientId(clientId: string, dateRange?: DateRange): Promise<DeviceBreakdown[]>;
 
   /**
    * Get country breakdown for a bot
@@ -227,9 +247,19 @@ export interface AnalyticsAggregations {
   getCountriesByBotId(botId: string, dateRange?: DateRange): Promise<CountryBreakdown[]>;
 
   /**
+   * Get country breakdown for a client
+   */
+  getCountriesByClientId(clientId: string, dateRange?: DateRange): Promise<CountryBreakdown[]>;
+
+  /**
    * Get time series data for a bot
    */
   getTimeSeriesByBotId(botId: string, dateRange?: DateRange): Promise<TimeSeriesDataPoint[]>;
+
+  /**
+   * Get time series data for a client
+   */
+  getTimeSeriesByClientId(clientId: string, dateRange?: DateRange): Promise<TimeSeriesDataPoint[]>;
 
   /**
    * Get frequently asked questions for a bot
@@ -237,9 +267,19 @@ export interface AnalyticsAggregations {
   getQuestionsByBotId(botId: string, dateRange?: DateRange): Promise<QuestionAnalytics[]>;
 
   /**
+   * Get frequently asked questions for a client
+   */
+  getQuestionsByClientId(clientId: string, dateRange?: DateRange): Promise<QuestionAnalytics[]>;
+
+  /**
    * Get unanswered questions for a bot
    */
   getUnansweredQuestionsByBotId(botId: string, dateRange?: DateRange): Promise<QuestionAnalytics[]>;
+
+  /**
+   * Get unanswered questions for a client
+   */
+  getUnansweredQuestionsByClientId(clientId: string, dateRange?: DateRange): Promise<QuestionAnalytics[]>;
 
   /**
    * Get sentiment over time for a bot
@@ -247,9 +287,19 @@ export interface AnalyticsAggregations {
   getSentimentTimeSeriesByBotId(botId: string, dateRange?: DateRange): Promise<SentimentTimeSeriesDataPoint[]>;
 
   /**
+   * Get sentiment over time for a client
+   */
+  getSentimentTimeSeriesByClientId(clientId: string, dateRange?: DateRange): Promise<SentimentTimeSeriesDataPoint[]>;
+
+  /**
    * Get hourly session breakdown for a bot (peak hours)
    */
   getHourlyBreakdownByBotId(botId: string, dateRange?: DateRange): Promise<HourlyBreakdown[]>;
+
+  /**
+   * Get hourly session breakdown for a client (peak hours)
+   */
+  getHourlyBreakdownByClientId(clientId: string, dateRange?: DateRange): Promise<HourlyBreakdown[]>;
 
   /**
    * Get engagement level breakdown for a bot
@@ -257,14 +307,29 @@ export interface AnalyticsAggregations {
   getEngagementByBotId(botId: string, dateRange?: DateRange): Promise<EngagementBreakdown[]>;
 
   /**
+   * Get engagement level breakdown for a client
+   */
+  getEngagementByClientId(clientId: string, dateRange?: DateRange): Promise<EngagementBreakdown[]>;
+
+  /**
    * Get conversation type breakdown for a bot
    */
   getConversationTypesByBotId(botId: string, dateRange?: DateRange): Promise<ConversationTypeBreakdown[]>;
 
   /**
+   * Get conversation type breakdown for a client
+   */
+  getConversationTypesByClientId(clientId: string, dateRange?: DateRange): Promise<ConversationTypeBreakdown[]>;
+
+  /**
    * Get animation statistics for a bot
    */
   getAnimationStatsByBotId(botId: string, dateRange?: DateRange): Promise<AnimationStats>;
+
+  /**
+   * Get animation statistics for a client
+   */
+  getAnimationStatsByClientId(clientId: string, dateRange?: DateRange): Promise<AnimationStats>;
 }
 
 // Complete analytics operations interface

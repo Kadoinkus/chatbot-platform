@@ -126,6 +126,10 @@ export interface DB_Workspace {
   bundle_overage_used: number;
   session_overage_used: number;
   credits_spent_on_overage: number;    // decimal
+  // Lifetime totals (aggregated from mascots)
+  total_conversations: number;         // default: 0
+  total_messages: number;              // default: 0
+  total_bundle_loads: number;          // default: 0
   created_at: string;                  // timestamptz
   updated_at: string;                  // timestamptz
 }
@@ -175,6 +179,7 @@ export interface DB_Mascot {
   // Lifetime stats
   total_conversations: number;         // default: 0
   total_messages: number;              // default: 0
+  total_bundle_loads: number;          // default: 0
   // Performance metrics
   avg_response_time_ms: number | null;
   resolution_rate: number | null;      // percentage
@@ -230,15 +235,12 @@ export interface DB_UsageHistory {
 export interface DB_UsageReset {
   id: string;                          // uuid
   workspace_slug: string;              // FK to workspaces.slug
-  reset_at: string;                    // timestamptz
+  reset_date: string;                  // date
   period_start: string;                // date
   period_end: string;                  // date
-  bundle_loads_final: number;
-  messages_final: number;
-  api_calls_final: number;
-  sessions_final: number;
-  overage_charged_eur: number;         // decimal
-  credits_spent_eur: number;           // decimal
+  sessions_used: number;               // default: 0
+  messages_used: number;               // default: 0
+  bundle_loads_used: number;           // default: 0
   created_at: string;                  // timestamptz
 }
 

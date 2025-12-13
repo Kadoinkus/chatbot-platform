@@ -12,7 +12,12 @@
     "format": "prettier --write .",
     "test": "vitest run",
     "test:watch": "vitest",
-    "check:env": "node scripts/check-env.js"
+    "check:env": "node scripts/check-env.js",
+    "db:link": "npx supabase link",
+    "db:push": "npx supabase db push",
+    "db:pull": "npx supabase db pull",
+    "db:diff": "npx supabase db diff",
+    "db:status": "npx supabase migration list"
   },
   "dependencies": {
     "@supabase/supabase-js": "^2.86.1",

@@ -1,6 +1,7 @@
 'use client';
 
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
+import { ChartWrapper } from '../common';
 
 export interface UsageLineProps {
   data: Array<{ date: string; conversations: number; resolved: number }>;
@@ -9,7 +10,7 @@ export interface UsageLineProps {
 export function UsageLine({ data }: UsageLineProps) {
   return (
     <div className="card p-4 h-72">
-      <ResponsiveContainer width="100%" height="100%">
+      <ChartWrapper data={data} width="100%" height="100%">
         <LineChart data={data}>
           <CartesianGrid strokeDasharray="3 3" />
           <XAxis dataKey="date" />
@@ -18,7 +19,7 @@ export function UsageLine({ data }: UsageLineProps) {
           <Line type="monotone" dataKey="conversations" stroke="var(--brand)" strokeWidth={2} dot={false} />
           <Line type="monotone" dataKey="resolved" stroke="var(--brandDark)" strokeWidth={2} dot={false} />
         </LineChart>
-      </ResponsiveContainer>
+      </ChartWrapper>
     </div>
   );
 }

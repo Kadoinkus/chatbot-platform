@@ -511,16 +511,18 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
     }
   };
 
+  const clientName = client?.name ?? 'Client';
+  const headerDescription =
+    selectedWorkspace === 'all'
+      ? `Compare AI assistant performance for ${clientName}`
+      : `${workspaces.find((w) => w.id === selectedWorkspace)?.name || 'Workspace'} - ${clientName}`;
+
   return (
     <Page>
       <PageContent>
         <PageHeader
           title="Analytics Dashboard"
-          description={
-            selectedWorkspace === 'all'
-              ? `Compare AI assistant performance for ${client.name}`
-              : `${workspaces.find((w) => w.id === selectedWorkspace)?.name || 'Workspace'} - ${client.name}`
-          }
+          description={headerDescription}
         />
 
         <Card className="mb-6 p-4 space-y-4 overflow-visible">

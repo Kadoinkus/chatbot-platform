@@ -1,6 +1,7 @@
 'use client';
 
-import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, Legend } from 'recharts';
+import { LineChart, Line, XAxis, YAxis, Tooltip, CartesianGrid, Legend } from 'recharts';
+import { ChartWrapper } from '../common';
 import type { ResponsiveSize } from '../common';
 
 export interface MultiLineChartSeries {
@@ -28,7 +29,7 @@ export function MultiLineChart({
   colors = DEFAULT_COLORS,
 }: MultiLineChartProps) {
   return (
-    <ResponsiveContainer width="100%" height={height}>
+    <ChartWrapper data={data} width="100%" height={height}>
       <LineChart data={data}>
         <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
         <XAxis
@@ -63,6 +64,6 @@ export function MultiLineChart({
           />
         ))}
       </LineChart>
-    </ResponsiveContainer>
+    </ChartWrapper>
   );
 }

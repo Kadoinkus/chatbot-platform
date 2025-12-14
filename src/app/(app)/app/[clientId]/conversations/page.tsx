@@ -458,7 +458,7 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
             <KpiGrid className="mb-6">
               <KpiCard icon={MessageSquare} label="Total Conversations" value={normalizedSessions.length} />
               <KpiCard icon={CheckCircle} label="Resolved" value={normalizedSessions.filter((s) => s.analysis?.resolution_status === 'resolved').length} />
-              <KpiCard icon={Clock} label="Avg Duration" value={normalizedSessions.length ? `${Math.round(normalizedSessions.reduce((sum, s) => sum + (s.analysis?.duration_seconds || 0), 0) / normalizedSessions.length / 60)} min` : '0 min'} />
+              <KpiCard icon={Clock} label="Avg Duration" value={normalizedSessions.length ? `${Math.round(normalizedSessions.reduce((sum, s) => sum + (s.session_duration_seconds || 0), 0) / normalizedSessions.length / 60)} min` : '0 min'} />
               <KpiCard icon={BarChart3} label="Sentiment">
                 <div className="flex items-center gap-2 flex-wrap mt-1 text-xs">
                   <span className="text-success-600 dark:text-success-500">+{normalizedSessions.filter((s) => s.analysis?.sentiment === 'positive').length}</span>

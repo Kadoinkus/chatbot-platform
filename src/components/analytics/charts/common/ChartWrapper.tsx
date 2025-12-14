@@ -8,6 +8,8 @@ interface ChartWrapperProps {
   data: unknown[] | undefined;
   width?: ResponsiveSize;
   height?: ResponsiveSize;
+  /** Ensures charts render even if parent has no explicit height */
+  minHeight?: number;
   children: ReactElement;
 }
 
@@ -21,6 +23,7 @@ export function ChartWrapper({
   data,
   width = '100%',
   height = '100%',
+  minHeight = 240,
   children,
 }: ChartWrapperProps) {
   if (!data || data.length === 0) {
@@ -32,7 +35,7 @@ export function ChartWrapper({
   }
 
   return (
-    <ResponsiveContainer width={width} height={height}>
+    <ResponsiveContainer width={width} height={height} minHeight={minHeight}>
       {children}
     </ResponsiveContainer>
   );

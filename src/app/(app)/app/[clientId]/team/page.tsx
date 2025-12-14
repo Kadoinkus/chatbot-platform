@@ -1,5 +1,5 @@
-'use client';
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect, use } from "react";
 import { getClientById } from '@/lib/dataService';
 import type { Client } from '@/types';
 import { Search, Mail, Shield, MoreVertical, UserPlus, Settings, Key, Activity, ArrowLeft, Users } from 'lucide-react';
@@ -30,7 +30,8 @@ interface TeamMember {
   permissions: string[];
 }
 
-export default function TeamManagementPage({ params }: { params: { clientId: string } }) {
+export default function TeamManagementPage({ params }: { params: Promise<{ clientId: string }> }) {
+  const { clientId } = use(params);
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -42,7 +43,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
     async function loadClient() {
       try {
         setError(null);
-        const data = await getClientById(params.clientId);
+        const data = await getClientById(clientId);
         setClient(data ?? null);
       } catch (err) {
         console.error('Failed to load client:', err);
@@ -52,7 +53,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
       }
     }
     loadClient();
-  }, [params.clientId]);
+  }, [clientId]);
 
   // Mock team data - uses client slug for email domains
   const clientSlug = client?.slug || 'company';
@@ -200,7 +201,7 @@ export default function TeamManagementPage({ params }: { params: { clientId: str
               description="Manage your team and their permissions"
               backLink={
                 <Link
-                  href={`/app/${params.clientId}/settings`}
+                  href={`/app/${clientId}/settings`}
                   className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground transition-colors"
                 >
                   <ArrowLeft size={16} />

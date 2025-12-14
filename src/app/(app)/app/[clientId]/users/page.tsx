@@ -1,5 +1,5 @@
-'use client';
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect, use } from "react";
 import { getUsersByClientId, type User } from '@/lib/dataService';
 import {
   Users,
@@ -39,7 +39,8 @@ import {
 import { KpiCard, KpiGrid } from '@/components/analytics';
 import { MobileCard, MobileBadge } from '@/components/analytics/MobileTable';
 
-export default function UsersPage({ params }: { params: { clientId: string } }) {
+export default function UsersPage({ params }: { params: Promise<{ clientId: string }> }) {
+  const { clientId } = use(params);
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
@@ -49,7 +50,7 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
   useEffect(() => {
     async function loadUsers() {
       try {
-        const clientUsers = await getUsersByClientId(params.clientId);
+        const clientUsers = await getUsersByClientId(clientId);
         setUsers(clientUsers);
       } catch (error) {
         console.error('Failed to load users:', error);
@@ -59,7 +60,7 @@ export default function UsersPage({ params }: { params: { clientId: string } }) 
     }
 
     loadUsers();
-  }, [params.clientId]);
+  }, [clientId]);
 
   const filteredUsers = users.filter(user => {
     const matchesSearch = user.name.toLowerCase().includes(searchTerm.toLowerCase()) ||

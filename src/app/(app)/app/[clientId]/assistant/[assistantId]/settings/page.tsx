@@ -1,5 +1,5 @@
-'use client';
-import { useEffect, useState } from 'react';
+"use client";
+import { useEffect, useState, use } from "react";
 import { getClientById, getAssistantById } from '@/lib/dataService';
 import type { Client, Assistant } from '@/types';
 import { ArrowLeft, Save, Key, Clock, Shield, Bell, AlertTriangle, Database, Webhook, Download, CreditCard, Settings as SettingsIcon } from 'lucide-react';
@@ -18,7 +18,8 @@ import {
   EmptyState,
 } from '@/components/ui';
 
-export default function AssistantSettingsPage({ params }: { params: { clientId: string; assistantId: string } }) {
+export default function AssistantSettingsPage({ params }: { params: Promise<{ clientId: string; assistantId: string }> }) {
+  const { clientId, assistantId } = use(params);
   const [client, setClient] = useState<Client | null>(null);
   const [assistant, setAssistant] = useState<Assistant | null>(null);
   const [activeTab, setActiveTab] = useState('api');
@@ -27,14 +28,14 @@ export default function AssistantSettingsPage({ params }: { params: { clientId: 
   useEffect(() => {
     async function loadData() {
       const [clientData, assistantData] = await Promise.all([
-        getClientById(params.clientId),
-        getAssistantById(params.assistantId, params.clientId),
+        getClientById(clientId),
+        getAssistantById(assistantId, clientId),
       ]);
       setClient(clientData ?? null);
       setAssistant(assistantData ?? null);
     }
     loadData();
-  }, [params.clientId, params.assistantId]);
+  }, [assistantId, clientId]);
 
   // Form states for administrative settings
   const [apiSettings, setApiSettings] = useState({

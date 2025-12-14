@@ -1,6 +1,6 @@
-'use client';
+"use client";
 import { getClientById, getAssistantById } from '@/lib/dataService';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from "react";
 import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Palette, Sparkles, Image, Type, Monitor, Smartphone, User, Eye, Smile, ShirtIcon as Shirt, HardHat, ShoppingCart, Lock, Crown, Zap, Package, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -9,7 +9,8 @@ import { getClientBrandColor } from '@/lib/brandColors';
 import { useCart } from '@/contexts/CartContext';
 import { Page, PageContent, PageHeader, Card, Button, Input, Select, Modal, Spinner, EmptyState } from '@/components/ui';
 
-export default function MascotStudioPage({ params }: { params: { clientId: string; assistantId: string } }) {
+export default function MascotStudioPage({ params }: { params: Promise<{ clientId: string; assistantId: string }> }) {
+  const { clientId, assistantId } = use(params);
   const [client, setClient] = useState<Client | undefined>();
   const [assistant, setAssistant] = useState<Assistant | undefined>();
   const [loading, setLoading] = useState(true);
@@ -46,8 +47,8 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
     async function loadData() {
       try {
         const [clientData, assistantData] = await Promise.all([
-          getClientById(params.clientId),
-          getAssistantById(params.assistantId, params.clientId)
+          getClientById(clientId),
+          getAssistantById(assistantId, clientId)
         ]);
         setClient(clientData);
         setAssistant(assistantData);
@@ -58,7 +59,7 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
       }
     }
     loadData();
-  }, [params.clientId, params.assistantId]);
+  }, [clientId, assistantId]);
 
   if (loading) {
     return (

@@ -29,7 +29,7 @@ export function TabNavigation({ tabs, activeTab, onTabChange, brandColor }: TabN
         <select
           value={activeTab}
           onChange={(e) => onTabChange(e.target.value)}
-          className="w-full p-3 rounded-lg border border-border bg-surface text-foreground font-medium"
+          className="w-full p-3 rounded-lg border border-border bg-background text-foreground font-medium"
           style={{ borderColor: brandColor }}
         >
           {tabs.map((tab) => (

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, use } from 'react';
 import Link from 'next/link';
 import dynamic from 'next/dynamic';
 import {
@@ -97,7 +97,8 @@ function TabFallback() {
 }
 
 
-export default function AssistantAnalyticsPage({ params }: { params: { clientId: string; assistantId: string } }) {
+export default function AssistantAnalyticsPage({ params }: { params: Promise<{ clientId: string; assistantId: string }> }) {
+  const { clientId, assistantId } = use(params);
   // State
   const [client, setClient] = useState<Client | undefined>();
   const [assistant, setAssistant] = useState<Assistant | undefined>();
@@ -227,7 +228,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
   // Handle export for current tab
   const handleExport = useCallback((format: ExportFormat) => {
     const { startDate, endDate } = getExportDateRange();
-    const mascotSlug = params.assistantId;
+    const mascotSlug = assistantId;
     const startDateStr = startDate.toISOString().split('T')[0];
     const endDateStr = endDate.toISOString().split('T')[0];
 
@@ -454,7 +455,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
     }
 
     setShowExportDropdown(false);
-  }, [activeTab, sessions, timeSeries, questions, unansweredQuestions, countries, languages, devices, animationStats, params.assistantId, getExportDateRange]);
+  }, [activeTab, sessions, timeSeries, questions, unansweredQuestions, countries, languages, devices, animationStats, assistantId, getExportDateRange]);
 
   const brandColor = useMemo(() => {
     return client ? getClientBrandColor(client.id) : '#6B7280';
@@ -573,8 +574,8 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
 
         // Load basic data
         const [clientData, assistantData] = await Promise.all([
-          getClientById(params.clientId),
-          getAssistantById(params.assistantId, params.clientId)
+          getClientById(clientId),
+          getAssistantById(assistantId, clientId)
         ]);
 
         setClient(clientData);
@@ -604,19 +605,19 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
           hourlyBreakdownData,
           animationStatsData
         ] = await Promise.all([
-          analytics.aggregations.getOverviewByBotId(params.assistantId, dateRangeFilter),
-          analytics.aggregations.getSentimentByBotId(params.assistantId, dateRangeFilter),
-          analytics.aggregations.getCategoriesByBotId(params.assistantId, dateRangeFilter),
-          analytics.aggregations.getLanguagesByBotId(params.assistantId, dateRangeFilter),
-          analytics.aggregations.getCountriesByBotId(params.assistantId, dateRangeFilter),
-          analytics.aggregations.getDevicesByBotId(params.assistantId, dateRangeFilter),
-          analytics.aggregations.getTimeSeriesByBotId(params.assistantId, dateRangeFilter),
-          analytics.aggregations.getQuestionsByBotId(params.assistantId, dateRangeFilter),
-          analytics.aggregations.getUnansweredQuestionsByBotId(params.assistantId, dateRangeFilter),
-          analytics.chatSessions.getWithAnalysisByBotId(params.assistantId, { dateRange: dateRangeFilter }),
-          analytics.aggregations.getSentimentTimeSeriesByBotId(params.assistantId, dateRangeFilter),
-          analytics.aggregations.getHourlyBreakdownByBotId(params.assistantId, dateRangeFilter),
-          analytics.aggregations.getAnimationStatsByBotId(params.assistantId, dateRangeFilter)
+          analytics.aggregations.getOverviewByBotId(assistantId, dateRangeFilter),
+          analytics.aggregations.getSentimentByBotId(assistantId, dateRangeFilter),
+          analytics.aggregations.getCategoriesByBotId(assistantId, dateRangeFilter),
+          analytics.aggregations.getLanguagesByBotId(assistantId, dateRangeFilter),
+          analytics.aggregations.getCountriesByBotId(assistantId, dateRangeFilter),
+          analytics.aggregations.getDevicesByBotId(assistantId, dateRangeFilter),
+          analytics.aggregations.getTimeSeriesByBotId(assistantId, dateRangeFilter),
+          analytics.aggregations.getQuestionsByBotId(assistantId, dateRangeFilter),
+          analytics.aggregations.getUnansweredQuestionsByBotId(assistantId, dateRangeFilter),
+          analytics.chatSessions.getWithAnalysisByBotId(assistantId, { dateRange: dateRangeFilter }),
+          analytics.aggregations.getSentimentTimeSeriesByBotId(assistantId, dateRangeFilter),
+          analytics.aggregations.getHourlyBreakdownByBotId(assistantId, dateRangeFilter),
+          analytics.aggregations.getAnimationStatsByBotId(assistantId, dateRangeFilter)
         ]);
 
         setOverview(overviewData);
@@ -643,7 +644,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
     }
 
     loadData();
-  }, [params.clientId, params.assistantId, dateRange, useCustomRange, customDateRange, hasLoaded]);
+  }, [clientId, assistantId, dateRange, useCustomRange, customDateRange, hasLoaded]);
 
   // Format helpers
   const formatDuration = (seconds: number) => {

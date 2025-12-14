@@ -1,6 +1,6 @@
-'use client';
+"use client";
 import { getClientById, getAssistantById } from '@/lib/dataService';
-import { useState, useEffect, useMemo } from 'react';
+import { useState, useEffect, useMemo, use } from "react";
 import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Brain, Sliders, BookOpen, MessageSquare, Zap, Shield, Sparkles, GitBranch, Plus, Play, Users, ShoppingCart, GraduationCap, Briefcase, User, ChevronRight, Settings, Copy, Trash2, Edit2, Link2, ExternalLink, CheckCircle, AlertCircle, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
@@ -8,7 +8,8 @@ import { getClientBrandColor } from '@/lib/brandColors';
 import type { Client, Assistant } from '@/lib/dataService';
 import { Page, PageContent, PageHeader, Card, Button, Input, Select, Textarea, Modal, Spinner, EmptyState } from '@/components/ui';
 
-export default function BrainStudioPage({ params }: { params: { clientId: string; assistantId: string } }) {
+export default function BrainStudioPage({ params }: { params: Promise<{ clientId: string; assistantId: string }> }) {
+  const { clientId, assistantId } = use(params);
   const [client, setClient] = useState<Client | undefined>();
   const [assistant, setAssistant] = useState<Assistant | undefined>();
   const [loading, setLoading] = useState(true);
@@ -117,8 +118,8 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
     async function loadData() {
       try {
         const [clientData, assistantData] = await Promise.all([
-          getClientById(params.clientId),
-          getAssistantById(params.assistantId, params.clientId)
+          getClientById(clientId),
+          getAssistantById(assistantId, clientId)
         ]);
         setClient(clientData);
         setAssistant(assistantData);
@@ -130,7 +131,7 @@ export default function BrainStudioPage({ params }: { params: { clientId: string
       }
     }
     loadData();
-  }, [params.clientId, params.assistantId]);
+  }, [clientId, assistantId]);
 
   if (loading) {
     return (

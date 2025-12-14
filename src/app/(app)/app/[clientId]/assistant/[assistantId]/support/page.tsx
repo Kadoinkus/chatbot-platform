@@ -1,6 +1,6 @@
 'use client';
 import { getClientById, getAssistantById } from '@/lib/dataService';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Headphones, Plus, Search, Filter, AlertCircle, CheckCircle, Clock, MessageSquare } from 'lucide-react';
 import Link from 'next/link';
@@ -20,7 +20,8 @@ import {
   Badge,
 } from '@/components/ui';
 
-export default function SupportPage({ params }: { params: { clientId: string; assistantId: string } }) {
+export default function SupportPage({ params }: { params: Promise<{ clientId: string; assistantId: string }> }) {
+  const { clientId, assistantId } = use(params);
   const [client, setClient] = useState<Client | undefined>();
   const [assistant, setAssistant] = useState<Assistant | undefined>();
   const [loading, setLoading] = useState(true);
@@ -79,8 +80,8 @@ export default function SupportPage({ params }: { params: { clientId: string; as
     async function loadData() {
       try {
         const [clientData, assistantData] = await Promise.all([
-          getClientById(params.clientId),
-          getAssistantById(params.assistantId, params.clientId)
+          getClientById(clientId),
+          getAssistantById(assistantId, clientId)
         ]);
         setClient(clientData);
         setAssistant(assistantData);
@@ -91,7 +92,7 @@ export default function SupportPage({ params }: { params: { clientId: string; as
       }
     }
     loadData();
-  }, [params.clientId, params.assistantId]);
+  }, [clientId, assistantId]);
 
   if (loading) {
     return (

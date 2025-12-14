@@ -1,5 +1,5 @@
-'use client';
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect, use } from "react";
 import { getClientById } from '@/lib/dataService';
 import type { Client } from '@/types';
 import {
@@ -39,7 +39,8 @@ import {
   EmptyState,
 } from '@/components/ui';
 
-export default function SettingsPage({ params }: { params: { clientId: string } }) {
+export default function SettingsPage({ params }: { params: Promise<{ clientId: string }> }) {
+  const { clientId } = use(params);
   const [client, setClient] = useState<Client | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -53,7 +54,7 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
     async function loadClient() {
       try {
         setError(null);
-        const data = await getClientById(params.clientId);
+        const data = await getClientById(clientId);
         setClient(data ?? null);
       } catch (err) {
         console.error('Failed to load client:', err);
@@ -63,7 +64,7 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
       }
     }
     loadClient();
-  }, [params.clientId]);
+  }, [clientId]);
 
   // General settings
   const [generalSettings, setGeneralSettings] = useState({
@@ -591,10 +592,10 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
                             <p className="text-sm text-foreground-secondary">Next billing date: {billing.nextBilling}</p>
                           </div>
                           <div className="flex gap-2">
-                            <Link href={`/app/${params.clientId}/plans`}>
+                            <Link href={`/app/${clientId}/plans`}>
                               <Button variant="secondary">View Plans</Button>
                             </Link>
-                            <Link href={`/app/${params.clientId}/plans`}>
+                            <Link href={`/app/${clientId}/plans`}>
                               <Button>Upgrade Plan</Button>
                             </Link>
                           </div>
@@ -638,7 +639,7 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
                       />
 
                       <div className="flex flex-wrap gap-3">
-                        <Link href={`/app/${params.clientId}/billing`}>
+                        <Link href={`/app/${clientId}/billing`}>
                           <Button icon={<CreditCard size={16} />}>Billing & Workspaces</Button>
                         </Link>
                         <Button variant="secondary" icon={<Download size={16} />}>Download Invoice</Button>
@@ -749,7 +750,7 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
 
                       {/* Quick Actions */}
                       <div className="flex flex-wrap gap-3">
-                        <Link href={`/app/${params.clientId}/team`}>
+                        <Link href={`/app/${clientId}/team`}>
                           <Button icon={<Users size={18} />}>Manage Team</Button>
                         </Link>
                         <Button variant="secondary" icon={<UserPlus size={18} />}>Invite Member</Button>
@@ -812,7 +813,7 @@ export default function SettingsPage({ params }: { params: { clientId: string } 
 
                       <Alert variant="info" title="Team Seats">
                         Your plan includes 7 team seats. You have 2 seats available.{' '}
-                        <Link href={`/app/${params.clientId}/settings?tab=billing`} className="underline text-info-600 dark:text-info-500">
+                        <Link href={`/app/${clientId}/settings?tab=billing`} className="underline text-info-600 dark:text-info-500">
                           Upgrade for more
                         </Link>
                       </Alert>

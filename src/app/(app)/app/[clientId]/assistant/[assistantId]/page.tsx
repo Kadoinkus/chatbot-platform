@@ -1,6 +1,6 @@
-'use client';
+"use client";
 import { getClientById, getAssistantById, getAssistantMetrics } from '@/lib/dataService';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from "react";
 import StatusBadge from '@/components/StatusBadge';
 import { UsageLine, IntentBars } from '@/components/Charts';
 import { ArrowLeft, MessageSquare, Clock, TrendingUp, Bot as BotIcon } from 'lucide-react';
@@ -17,7 +17,8 @@ import {
   EmptyState,
 } from '@/components/ui';
 
-export default function AssistantAnalyticsPage({ params }: { params: { clientId: string; assistantId: string } }) {
+export default function AssistantAnalyticsPage({ params }: { params: Promise<{ clientId: string; assistantId: string }> }) {
+  const { clientId, assistantId } = use(params);
   const [client, setClient] = useState<Client | undefined>();
   const [assistant, setAssistant] = useState<Assistant | undefined>();
   const [metrics, setMetrics] = useState<any>();
@@ -27,9 +28,9 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
     async function loadData() {
       try {
         const [clientData, assistantData, metricsData] = await Promise.all([
-          getClientById(params.clientId),
-          getAssistantById(params.assistantId, params.clientId),
-          getAssistantMetrics(params.assistantId, params.clientId)
+          getClientById(clientId),
+          getAssistantById(assistantId, clientId),
+          getAssistantMetrics(assistantId, clientId)
         ]);
         setClient(clientData);
         setAssistant(assistantData);
@@ -41,7 +42,7 @@ export default function AssistantAnalyticsPage({ params }: { params: { clientId:
       }
     }
     loadData();
-  }, [params.clientId, params.assistantId]);
+  }, [assistantId, clientId]);
 
   if (loading) {
     return (

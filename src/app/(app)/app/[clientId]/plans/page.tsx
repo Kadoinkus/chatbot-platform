@@ -1,5 +1,5 @@
-'use client';
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect, use } from "react";
 import { getClientById, getWorkspacesByClientId } from '@/lib/dataService';
 import type { Client, Workspace } from '@/lib/dataService';
 import {
@@ -25,7 +25,8 @@ import {
   EmptyState,
 } from '@/components/ui';
 
-export default function PlansPage({ params }: { params: { clientId: string } }) {
+export default function PlansPage({ params }: { params: Promise<{ clientId: string }> }) {
+  const { clientId } = use(params);
   const [client, setClient] = useState<Client | undefined>();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [loading, setLoading] = useState(true);
@@ -34,8 +35,8 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
     async function loadData() {
       try {
         const [clientData, workspacesData] = await Promise.all([
-          getClientById(params.clientId),
-          getWorkspacesByClientId(params.clientId)
+          getClientById(clientId),
+          getWorkspacesByClientId(clientId)
         ]);
 
         setClient(clientData);
@@ -47,7 +48,7 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
       }
     }
     loadData();
-  }, [params.clientId]);
+  }, [clientId]);
 
   if (loading) {
     return (
@@ -79,7 +80,7 @@ export default function PlansPage({ params }: { params: { clientId: string } }) 
               description="Select the perfect plan for your workspace needs. Each workspace can have its own plan."
               backLink={
                 <Link
-                  href={`/app/${params.clientId}/settings`}
+                  href={`/app/${clientId}/settings`}
                   className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground transition-colors"
                 >
                   <ArrowLeft size={16} />

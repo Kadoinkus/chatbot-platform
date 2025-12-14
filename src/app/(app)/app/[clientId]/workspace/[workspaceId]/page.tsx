@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { getClientById, getWorkspaceById, getAssistantsByWorkspaceSlug } from '@/lib/dataService';
 import type { Client, Workspace, Assistant } from '@/lib/dataService';
 import AssistantCard from '@/components/AssistantCard';
@@ -27,8 +27,9 @@ import {
 export default function WorkspaceDetailPage({
   params
 }: {
-  params: { clientId: string; workspaceId: string }
+  params: Promise<{ clientId: string; workspaceId: string }>
 }) {
+  const { clientId, workspaceId } = use(params);
   const [client, setClient] = useState<Client | undefined>();
   const [workspace, setWorkspace] = useState<Workspace | undefined>();
   const [assistants, setAssistants] = useState<Assistant[]>([]);
@@ -38,13 +39,13 @@ export default function WorkspaceDetailPage({
     async function loadData() {
       try {
         const [clientData, workspaceData] = await Promise.all([
-          getClientById(params.clientId),
-          getWorkspaceById(params.workspaceId, params.clientId)
+          getClientById(clientId),
+          getWorkspaceById(workspaceId, clientId)
         ]);
 
         let assistantsData: Assistant[] = [];
         if (workspaceData?.slug) {
-          assistantsData = await getAssistantsByWorkspaceSlug(workspaceData.slug, params.clientId);
+          assistantsData = await getAssistantsByWorkspaceSlug(workspaceData.slug, clientId);
         }
 
         setClient(clientData);
@@ -57,7 +58,7 @@ export default function WorkspaceDetailPage({
       }
     }
     loadData();
-  }, [params.clientId, params.workspaceId]);
+  }, [clientId, workspaceId]);
 
   if (loading) {
     return (

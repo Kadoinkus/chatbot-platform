@@ -1,5 +1,5 @@
 'use client';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, use } from 'react';
 import { getClientById } from '@/lib/dataService';
 import { useCart } from '@/contexts/CartContext';
 import {
@@ -26,7 +26,8 @@ type BillingMethod = 'subscription' | 'credits' | 'one-time';
 const isBillingMethod = (value: string): value is BillingMethod =>
   ['subscription', 'credits', 'one-time'].includes(value);
 
-export default function CheckoutPage({ params }: { params: { clientId: string } }) {
+export default function CheckoutPage({ params }: { params: Promise<{ clientId: string }> }) {
+  const { clientId } = use(params);
   const [client, setClient] = useState<Client | undefined>();
   const [loading, setLoading] = useState(true);
   const [currentStep, setCurrentStep] = useState<CheckoutStep>('cart');
@@ -46,7 +47,7 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
   useEffect(() => {
     async function loadData() {
       try {
-        const clientData = await getClientById(params.clientId);
+        const clientData = await getClientById(clientId);
         setClient(clientData);
       } catch (error) {
         console.error('Error loading client:', error);
@@ -55,7 +56,7 @@ export default function CheckoutPage({ params }: { params: { clientId: string } 
       }
     }
     loadData();
-  }, [params.clientId]);
+  }, [clientId]);
 
   if (loading) {
     return (

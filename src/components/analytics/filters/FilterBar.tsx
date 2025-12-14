@@ -169,7 +169,7 @@ export function FilterBar({
         {onSearchChange && (
           <div className="min-w-[240px] flex-1">
             <Input
-              icon={<Filter size={18} />}
+              iconRight={<Filter size={18} />}
               placeholder={searchPlaceholder}
               value={searchValue}
               onChange={(e) => onSearchChange(e.target.value)}
@@ -263,7 +263,7 @@ export function FilterBar({
       <div className="lg:hidden space-y-3">
         {onSearchChange && (
           <Input
-            icon={<Filter size={18} />}
+            iconRight={<Filter size={18} />}
             placeholder={searchPlaceholder}
             value={searchValue}
             onChange={(e) => onSearchChange(e.target.value)}

@@ -1,5 +1,5 @@
-'use client';
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect, use } from "react";
 import { getClientById, getWorkspacesByClientId, getAssistantsByWorkspaceSlug } from '@/lib/dataService';
 import type { Client, Workspace, Assistant } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
@@ -23,7 +23,8 @@ import {
   EmptyState,
 } from '@/components/ui';
 
-export default function WorkspaceBillingPage({ params }: { params: { clientId: string } }) {
+export default function WorkspaceBillingPage({ params }: { params: Promise<{ clientId: string }> }) {
+  const { clientId } = use(params);
   const [client, setClient] = useState<Client | undefined>();
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
   const [workspaceAssistants, setWorkspaceAssistants] = useState<Record<string, Assistant[]>>({});
@@ -35,8 +36,8 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
     async function loadData() {
       try {
         const [clientData, workspacesData] = await Promise.all([
-          getClientById(params.clientId),
-          getWorkspacesByClientId(params.clientId)
+          getClientById(clientId),
+          getWorkspacesByClientId(clientId)
         ]);
 
         setClient(clientData);
@@ -45,7 +46,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
         // Load assistants for each workspace
         const assistantsData: Record<string, Assistant[]> = {};
         for (const workspace of workspacesData || []) {
-          const assistants = await getAssistantsByWorkspaceSlug(workspace.slug, params.clientId);
+          const assistants = await getAssistantsByWorkspaceSlug(workspace.slug, clientId);
           assistantsData[workspace.slug] = assistants || [];
         }
         setWorkspaceAssistants(assistantsData);
@@ -57,7 +58,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
       }
     }
     loadData();
-  }, [params.clientId]);
+  }, [clientId]);
 
   const toggleWorkspaceExpansion = (workspaceId: string) => {
     setExpandedWorkspaces(prev => {
@@ -178,7 +179,7 @@ export default function WorkspaceBillingPage({ params }: { params: { clientId: s
               description={`${workspaces.length} workspace${workspaces.length !== 1 ? 's' : ''} with ${getTotalAssistants()} bot${getTotalAssistants() !== 1 ? 's' : ''}`}
               backLink={
                 <Link
-                  href={`/app/${params.clientId}/settings`}
+                  href={`/app/${clientId}/settings`}
                   className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground transition-colors"
                 >
                   <ArrowLeft size={16} />

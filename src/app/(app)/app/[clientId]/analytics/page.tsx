@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useMemo, useEffect, useRef, useCallback } from 'react';
+import { useState, useMemo, useEffect, useRef, useCallback, use } from 'react';
 import dynamic from 'next/dynamic';
 import { getClientById, getAssistantsByClientId, getWorkspacesByClientId } from '@/lib/dataService';
 import {
@@ -48,7 +48,8 @@ function TabFallback() {
   );
 }
 
-export default function AnalyticsDashboardPage({ params }: { params: { clientId: string } }) {
+export default function AnalyticsDashboardPage({ params }: { params: Promise<{ clientId: string }> }) {
+  const { clientId } = use(params);
   // Data state
   const [client, setClient] = useState<Client | null>(null);
   const [workspaces, setWorkspaces] = useState<Workspace[]>([]);
@@ -100,9 +101,9 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
     async function loadData() {
       try {
         const [clientData, workspacesData, assistantsData] = await Promise.all([
-          getClientById(params.clientId),
-          getWorkspacesByClientId(params.clientId),
-          getAssistantsByClientId(params.clientId),
+          getClientById(clientId),
+          getWorkspacesByClientId(clientId),
+          getAssistantsByClientId(clientId),
         ]);
 
         setClient(clientData || null);
@@ -115,7 +116,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
       }
     }
     loadData();
-  }, [params.clientId]);
+  }, [clientId]);
 
   // Load assistant metrics when selection changes
   useEffect(() => {
@@ -154,7 +155,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
 
         const dateRangeParam = { start, end };
 
-        const metrics = await fetchAssistantComparisonData(params.clientId, filteredAssistantList, dateRangeParam);
+        const metrics = await fetchAssistantComparisonData(clientId, filteredAssistantList, dateRangeParam);
         setAssistantMetrics(metrics);
       } catch (error) {
         console.error('Error loading metrics:', error);
@@ -163,7 +164,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
       }
     }
     loadMetrics();
-  }, [client, assistants, selectedWorkspace, selectedAssistants, dateRange, useCustomRange, customDateRange, params.clientId]);
+  }, [client, assistants, selectedWorkspace, selectedAssistants, dateRange, useCustomRange, customDateRange, clientId]);
 
   // Reset assistant selection when workspace changes
   useEffect(() => {
@@ -260,7 +261,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
             start_date: startDateStr,
             end_date: endDateStr,
           }));
-          const filename = generateExportFilename('overview', params.clientId, startDate, endDate);
+          const filename = generateExportFilename('overview', clientId, startDate, endDate);
           exportFn(data, filename, 'Overview');
           break;
         }
@@ -282,7 +283,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
             start_date: startDateStr,
             end_date: endDateStr,
           }));
-          const filename = generateExportFilename('conversations', params.clientId, startDate, endDate);
+          const filename = generateExportFilename('conversations', clientId, startDate, endDate);
           exportFn(data, filename, 'Conversations');
           break;
         }
@@ -310,7 +311,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
               end_date: endDateStr,
             }))
           );
-          const filename = generateExportFilename('questions', params.clientId, startDate, endDate);
+          const filename = generateExportFilename('questions', clientId, startDate, endDate);
           exportFn([...questionRows, ...unansweredRows], filename, 'Questions');
           break;
         }
@@ -352,7 +353,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
               end_date: endDateStr,
             }))
           );
-          const filename = generateExportFilename('audience', params.clientId, startDate, endDate);
+          const filename = generateExportFilename('audience', clientId, startDate, endDate);
           exportFn([...countries, ...languages, ...devices], filename, 'Audience');
           break;
         }
@@ -387,7 +388,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
               end_date: endDateStr,
             })),
           ]);
-          const filename = generateExportFilename('animations', params.clientId, startDate, endDate);
+          const filename = generateExportFilename('animations', clientId, startDate, endDate);
           exportFn(rows, filename, 'Animations');
           break;
         }
@@ -401,7 +402,7 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
             start_date: startDateStr,
             end_date: endDateStr,
           }));
-          const filename = generateExportFilename('costs', params.clientId, startDate, endDate);
+          const filename = generateExportFilename('costs', clientId, startDate, endDate);
           exportFn(rows, filename, 'Costs');
           break;
         }
@@ -412,40 +413,28 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
 
       setShowExportDropdown(false);
     },
-    [activeTab, assistantMetrics, normalizedSessions, params.clientId, getExportDateRange]
+    [activeTab, assistantMetrics, normalizedSessions, clientId, getExportDateRange]
   );
 
-  // Loading state
-  if (loading) {
-    return (
-      <Page className="flex items-center justify-center">
-        <Spinner size="lg" />
-      </Page>
-    );
-  }
+  // Render active tab content
+  const renderTabContent = () => {
+    if (loading || metricsLoading) {
+      return (
+        <Card className="flex items-center justify-center py-12">
+          <Spinner size="lg" />
+        </Card>
+      );
+    }
 
-  // Client not found
-  if (!client) {
-    return (
-      <Page>
-        <PageContent>
+    if (!client) {
+      return (
+        <Card className="py-12">
           <EmptyState
             icon={<BarChart3 size={48} />}
             title="Client not found"
             message="The requested client could not be found."
           />
-        </PageContent>
-      </Page>
-    );
-  }
-
-  // Render active tab content
-  const renderTabContent = () => {
-    if (metricsLoading) {
-      return (
-        <div className="flex items-center justify-center py-12">
-          <Spinner size="lg" />
-        </div>
+        </Card>
       );
     }
 
@@ -453,15 +442,6 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
       case 'overview':
         return <OverviewTab assistantMetrics={assistantMetrics} totals={totals} brandColor={brandColor} />;
       case 'conversations':
-        if (normalizedSessions.length === 0) {
-          return (
-            <EmptyState
-              icon={<MessageSquare size={48} />}
-              title="No conversations"
-              message="Adjust your filters to load conversation analytics."
-            />
-          );
-        }
         return (
           <>
             <KpiGrid className="mb-6">
@@ -485,19 +465,29 @@ export default function AnalyticsDashboardPage({ params }: { params: { clientId:
                 </div>
               </KpiCard>
             </KpiGrid>
-            <SharedConversationsTab
-              sessions={normalizedSessions}
-              paginatedSessions={paginatedConversations}
-              brandColor={brandColor}
-              showAssistantColumn
-              pagination={{
-                currentPage: conversationPage,
-                totalPages: totalConversationPages,
-                totalItems: normalizedSessions.length,
-                itemsPerPage: CONVERSATIONS_PER_PAGE,
-                onPageChange: setConversationPage,
-              }}
-            />
+            {normalizedSessions.length === 0 ? (
+              <Card className="py-12">
+                <EmptyState
+                  icon={<MessageSquare size={48} />}
+                  title="No conversations"
+                  message="Adjust your filters to load conversation analytics."
+                />
+              </Card>
+            ) : (
+              <SharedConversationsTab
+                sessions={normalizedSessions}
+                paginatedSessions={paginatedConversations}
+                brandColor={brandColor}
+                showAssistantColumn
+                pagination={{
+                  currentPage: conversationPage,
+                  totalPages: totalConversationPages,
+                  totalItems: normalizedSessions.length,
+                  itemsPerPage: CONVERSATIONS_PER_PAGE,
+                  onPageChange: setConversationPage,
+                }}
+              />
+            )}
           </>
         );
       case 'questions':

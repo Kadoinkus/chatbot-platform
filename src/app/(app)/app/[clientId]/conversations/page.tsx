@@ -1,6 +1,6 @@
-'use client';
+"use client";
 
-import { useState, useEffect, useMemo, useRef, useCallback } from 'react';
+import { useState, useEffect, useMemo, useRef, useCallback, use } from "react";
 import { getClientById, getAssistantsByClientId } from '@/lib/dataService';
 import { getAnalyticsForClient } from '@/lib/db/analytics';
 import { getClientBrandColor } from '@/lib/brandColors';
@@ -54,7 +54,8 @@ import {
 } from './components';
 
 
-export default function ConversationHistoryPage({ params }: { params: { clientId: string } }) {
+export default function ConversationHistoryPage({ params }: { params: Promise<{ clientId: string }> }) {
+  const { clientId } = use(params);
   const [client, setClient] = useState<Client | null>(null);
   const [assistants, setAssistants] = useState<Assistant[]>([]);
 
@@ -133,8 +134,8 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
       try {
         setError(null);
         const [clientData, assistantsData] = await Promise.all([
-          getClientById(params.clientId),
-          getAssistantsByClientId(params.clientId),
+          getClientById(clientId),
+          getAssistantsByClientId(clientId),
         ]);
         setClient(clientData || null);
         setAssistants(assistantsData || []);
@@ -144,7 +145,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
       }
     }
     loadClientData();
-  }, [params.clientId]);
+  }, [clientId]);
 
   // Fetch sessions
   useEffect(() => {
@@ -153,9 +154,9 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     async function loadData() {
       setLoading(true);
       try {
-        const analytics = getAnalyticsForClient(params.clientId);
+        const analytics = getAnalyticsForClient(clientId);
         const dateFilter = getDateRangeFilter();
-        const sessionsData = await analytics.chatSessions.getWithAnalysisByClientId(params.clientId, {
+        const sessionsData = await analytics.chatSessions.getWithAnalysisByClientId(clientId, {
           dateRange: dateFilter,
         });
         setSessions(sessionsData);
@@ -167,7 +168,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     }
 
     loadData();
-  }, [params.clientId, client, dateRange, getDateRangeFilter]);
+  }, [clientId, client, dateRange, getDateRangeFilter]);
 
   // Fetch workspaces
   useEffect(() => {
@@ -175,7 +176,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
 
     async function loadWorkspaces() {
       try {
-        const res = await fetch(`/api/workspaces?clientId=${params.clientId}`);
+        const res = await fetch(`/api/workspaces?clientId=${clientId}`);
         const json = await res.json();
         setWorkspaces(json.data || []);
       } catch (error) {
@@ -184,7 +185,7 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     }
 
     loadWorkspaces();
-  }, [params.clientId, client]);
+  }, [clientId, client]);
 
   // Modal handlers
   const handleOpenTranscript = useCallback((session: ChatSessionWithAnalysis) => {
@@ -295,11 +296,11 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
         end_date: endDateStr,
       }));
 
-      const filename = generateExportFilename('conversations', params.clientId, start, end);
+      const filename = generateExportFilename('conversations', clientId, start, end);
       exportFn(data, filename, 'Conversations');
       setShowExportDropdown(false);
     },
-    [filteredSessions, getDateRangeFilter, params.clientId]
+    [filteredSessions, getDateRangeFilter, clientId]
   );
 
   // Pagination
@@ -384,21 +385,6 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
     }
   };
 
-  // Early return for no client
-  if (!client) {
-    return (
-      <Page>
-        <PageContent>
-          <EmptyState
-            icon={<MessageSquare size={48} />}
-            title="Client not found"
-            message="The requested client could not be found."
-          />
-        </PageContent>
-      </Page>
-    );
-  }
-
   // Shared tab props
   const baseTabProps = {
     sessions: normalizedSessions,
@@ -427,32 +413,32 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
       );
     }
 
-    if (error) {
+    if (!client) {
       return (
-        <EmptyState
-          icon={<MessageSquare size={48} />}
-          title="Error loading conversations"
-          message={error}
-          action={
-            <Button onClick={() => window.location.reload()}>
-              Try Again
-            </Button>
-          }
-        />
+        <Card className="py-12">
+          <EmptyState
+            icon={<MessageSquare size={48} />}
+            title="Client not found"
+            message="The requested client could not be found."
+          />
+        </Card>
       );
     }
 
-    if (filteredSessions.length === 0) {
+    if (error) {
       return (
-        <EmptyState
-          icon={<MessageSquare size={48} />}
-          title="No conversations found"
-          message={
-            sessions.length === 0
-              ? 'No conversations yet for this time period'
-              : 'Try adjusting your search or filters'
-          }
-        />
+        <Card className="py-12">
+          <EmptyState
+            icon={<MessageSquare size={48} />}
+            title="Error loading conversations"
+            message={error}
+            action={
+              <Button onClick={() => window.location.reload()}>
+                Try Again
+              </Button>
+            }
+          />
+        </Card>
       );
     }
 
@@ -468,20 +454,48 @@ export default function ConversationHistoryPage({ params }: { params: { clientId
         );
       case 'conversations':
         return (
-          <SharedConversationsTab
-            sessions={normalizedSessions}
-            paginatedSessions={paginatedSessions}
-            brandColor={brandColor}
-            showAssistantColumn
-            onOpenTranscript={handleOpenTranscript}
-            pagination={{
-              currentPage,
-              totalPages,
-              totalItems: normalizedSessions.length,
-              itemsPerPage: ITEMS_PER_PAGE,
-              onPageChange: setCurrentPage,
-            }}
-          />
+          <>
+            <KpiGrid className="mb-6">
+              <KpiCard icon={MessageSquare} label="Total Conversations" value={normalizedSessions.length} />
+              <KpiCard icon={CheckCircle} label="Resolved" value={normalizedSessions.filter((s) => s.analysis?.resolution_status === 'resolved').length} />
+              <KpiCard icon={Clock} label="Avg Duration" value={normalizedSessions.length ? `${Math.round(normalizedSessions.reduce((sum, s) => sum + (s.analysis?.duration_seconds || 0), 0) / normalizedSessions.length / 60)} min` : '0 min'} />
+              <KpiCard icon={BarChart3} label="Sentiment">
+                <div className="flex items-center gap-2 flex-wrap mt-1 text-xs">
+                  <span className="text-success-600 dark:text-success-500">+{normalizedSessions.filter((s) => s.analysis?.sentiment === 'positive').length}</span>
+                  <span className="text-foreground-secondary">· {normalizedSessions.filter((s) => s.analysis?.sentiment === 'neutral').length}</span>
+                  <span className="text-error-600 dark:text-error-500">-{normalizedSessions.filter((s) => s.analysis?.sentiment === 'negative').length}</span>
+                </div>
+              </KpiCard>
+            </KpiGrid>
+            {normalizedSessions.length === 0 ? (
+              <Card className="py-12">
+                <EmptyState
+                  icon={<MessageSquare size={48} />}
+                  title="No conversations found"
+                  message={
+                    sessions.length === 0
+                      ? 'No conversations yet for this time period'
+                      : 'Try adjusting your search or filters'
+                  }
+                />
+              </Card>
+            ) : (
+              <SharedConversationsTab
+                sessions={normalizedSessions}
+                paginatedSessions={paginatedSessions}
+                brandColor={brandColor}
+                showAssistantColumn
+                onOpenTranscript={handleOpenTranscript}
+                pagination={{
+                  currentPage,
+                  totalPages,
+                  totalItems: normalizedSessions.length,
+                  itemsPerPage: ITEMS_PER_PAGE,
+                  onPageChange: setCurrentPage,
+                }}
+              />
+            )}
+          </>
         );
       case 'questions':
         return <QuestionsTab {...baseTabProps} onOpenQuestions={handleOpenQuestions} />;

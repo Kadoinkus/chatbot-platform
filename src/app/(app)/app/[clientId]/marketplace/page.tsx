@@ -1,5 +1,5 @@
-'use client';
-import { useState, useEffect } from 'react';
+"use client";
+import { useState, useEffect, use } from "react";
 import { getClientById } from '@/lib/dataService';
 import { useCart } from '@/contexts/CartContext';
 import { Star, Zap, MessageCircle, Heart, ShoppingCart, CheckCircle, Plus, Search } from 'lucide-react';
@@ -191,7 +191,8 @@ const pricingFilters = [
   'Premium'
 ];
 
-export default function MarketplacePage({ params }: { params: { clientId: string } }) {
+export default function MarketplacePage({ params }: { params: Promise<{ clientId: string }> }) {
+  const { clientId } = use(params);
   const [client, setClient] = useState<Client | undefined>();
   const [loading, setLoading] = useState(true);
   const [selectedAppearance, setSelectedAppearance] = useState('All Types');
@@ -205,7 +206,7 @@ export default function MarketplacePage({ params }: { params: { clientId: string
   useEffect(() => {
     async function loadData() {
       try {
-        const clientData = await getClientById(params.clientId);
+        const clientData = await getClientById(clientId);
         setClient(clientData);
       } catch (error) {
         console.error('Error loading client:', error);
@@ -214,7 +215,7 @@ export default function MarketplacePage({ params }: { params: { clientId: string
       }
     }
     loadData();
-  }, [params.clientId]);
+  }, [clientId]);
 
   const filteredTemplates = botTemplates.filter(template => {
     const matchesAppearance = selectedAppearance === 'All Types' || template.appearance === selectedAppearance;

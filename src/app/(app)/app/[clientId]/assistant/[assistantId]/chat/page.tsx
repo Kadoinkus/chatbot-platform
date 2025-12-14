@@ -1,5 +1,5 @@
 'use client';
-import { useState, useRef, useEffect } from 'react';
+import { useState, useRef, useEffect, use } from 'react';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { getClientById, getAssistantById } from '@/lib/dataService';
 import type { Client, Assistant } from '@/types';
@@ -21,20 +21,21 @@ interface Message {
   attachments?: { name: string; size: string; type: string }[];
 }
 
-export default function AssistantChatPage({ params }: { params: { clientId: string; assistantId: string } }) {
+export default function AssistantChatPage({ params }: { params: Promise<{ clientId: string; assistantId: string }> }) {
+  const { clientId, assistantId } = use(params);
   const [client, setClient] = useState<Client | null>(null);
   const [assistant, setAssistant] = useState<Assistant | null>(null);
   useEffect(() => {
     async function loadData() {
       const [clientData, assistantData] = await Promise.all([
-        getClientById(params.clientId),
-        getAssistantById(params.assistantId, params.clientId),
+        getClientById(clientId),
+        getAssistantById(assistantId, clientId),
       ]);
       setClient(clientData || null);
       setAssistant(assistantData || null);
     }
     loadData();
-  }, [params.clientId, params.assistantId]);
+  }, [clientId, assistantId]);
   const [messages, setMessages] = useState<Message[]>([
     {
       id: '1',

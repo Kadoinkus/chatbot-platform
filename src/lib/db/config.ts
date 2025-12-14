@@ -33,18 +33,20 @@ function getSupabaseConfig(target: 'prod' | 'demo') {
     return {
       url: process.env.DEMO_SUPABASE_URL || process.env.NEXT_PUBLIC_DEMO_SUPABASE_URL,
       key: process.env.DEMO_SUPABASE_SERVICE_ROLE_KEY,
+      anon: process.env.DEMO_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_DEMO_SUPABASE_ANON_KEY,
     };
   }
 
   return {
     url: process.env.SUPABASE_URL || process.env.NEXT_PUBLIC_SUPABASE_URL,
     key: process.env.SUPABASE_SERVICE_ROLE_KEY,
+    anon: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY,
   };
 }
 
 export function isSupabaseConfigured(target: 'prod' | 'demo' = 'prod'): boolean {
-  const { url, key } = getSupabaseConfig(target);
-  return Boolean(url && key);
+  const { url, key, anon } = getSupabaseConfig(target) as { url?: string; key?: string; anon?: string };
+  return Boolean(url && (key || anon));
 }
 
 export function isAnySupabaseConfigured(): boolean {

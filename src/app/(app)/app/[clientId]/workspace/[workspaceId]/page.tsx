@@ -24,6 +24,7 @@ import {
   Spinner,
   EmptyState,
 } from '@/components/ui';
+import { calculateNextResetDate } from '@/lib/billingService';
 
 export default function WorkspaceDetailPage({
   params
@@ -129,6 +130,25 @@ export default function WorkspaceDetailPage({
   // Sessions is the client-facing usage metric (messages is admin-only)
   const sessions = workspace.sessions || { used: 0, limit: 5000, remaining: 5000 };
   const usagePercentage = (sessions.used / sessions.limit) * 100;
+  const formatDateSafe = (value?: string, opts?: Intl.DateTimeFormatOptions) => {
+    if (!value) return 'Not set';
+    const d = new Date(value);
+    if (isNaN(d.getTime())) return 'Not set';
+    return d.toLocaleDateString('en-US', opts);
+  };
+  const derivedNextBillingDate = (() => {
+    const raw = workspace.nextBillingDate;
+    if (raw && !isNaN(new Date(raw).getTime())) {
+      return raw;
+    }
+    const start = workspace.subscriptionStartDate || workspace.createdAt;
+    if (!start) return undefined;
+    return calculateNextResetDate(
+      start,
+      workspace.billingResetDay ?? 1,
+      workspace.billingCycle || 'monthly'
+    );
+  })();
 
   const tabs = [
     { id: 'assistants', label: `AI Assistants (${assistants.length})` },
@@ -226,9 +246,10 @@ export default function WorkspaceDetailPage({
                   <Calendar size={18} className="text-foreground-tertiary" />
                 </div>
                 <p className="text-lg font-bold text-foreground">
-                  {new Date(workspace.nextBillingDate).toLocaleDateString('en-US', {
+                  {formatDateSafe(derivedNextBillingDate, {
                     month: 'short',
-                    day: 'numeric'
+                    day: 'numeric',
+                    year: 'numeric',
                   })}
                 </p>
                 <p className="text-xs text-foreground-tertiary mt-1 capitalize">{workspace.billingCycle}</p>
@@ -313,7 +334,7 @@ export default function WorkspaceDetailPage({
                         <div className="flex justify-between py-2 border-b border-border">
                           <span className="text-foreground-secondary">Next Billing Date</span>
                           <span className="font-medium text-foreground">
-                            {new Date(workspace.nextBillingDate).toLocaleDateString()}
+                            {formatDateSafe(derivedNextBillingDate)}
                           </span>
                         </div>
                         <div className="flex justify-between py-2 border-b border-border">

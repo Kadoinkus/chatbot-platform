@@ -32,14 +32,15 @@ import {
   X
 } from 'lucide-react';
 
-import { getClientById, getAssistantById } from '@/lib/dataService';
+import { getClientById, getAssistantById, getWorkspaceById } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { getChartColors, ensureReadableColor } from '@/lib/chartColors';
 import { tooltipStyle } from '@/lib/chartTooltip';
 import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
-import type { Client, Assistant, ChatSessionWithAnalysis } from '@/types';
+import type { Client, Assistant, ChatSessionWithAnalysis, Workspace } from '@/types';
 import type { OverviewMetrics, SentimentBreakdown, CategoryBreakdown, LanguageBreakdown, CountryBreakdown, TimeSeriesDataPoint, QuestionAnalytics, DeviceBreakdown, SentimentTimeSeriesDataPoint, HourlyBreakdown, AnimationStats } from '@/lib/db/analytics';
 import { Page, PageContent, PageHeader, Card, Button, Input, Spinner, EmptyState, Modal, Select } from '@/components/ui';
+import { getCurrentUsagePeriod } from '@/lib/billingService';
 
 // Shared chart components
 import {
@@ -63,7 +64,7 @@ import {
   KpiGrid,
   normalizeAssistantSessions,
 } from '@/components/analytics';
-import { DateRangeBar } from '@/components/analytics/shared';
+import { DateRangeBar, type PresetValue } from '@/components/analytics/shared';
 
 // Tab components
 const OverviewTab = dynamic(() => import('./components/OverviewTab'), { loading: () => <TabFallback /> });
@@ -101,11 +102,12 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
   // State
   const [client, setClient] = useState<Client | undefined>();
   const [assistant, setAssistant] = useState<Assistant | undefined>();
+  const [workspace, setWorkspace] = useState<Workspace | undefined>();
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
   const [hasLoaded, setHasLoaded] = useState(false);
   const [activeTab, setActiveTab] = useState('overview');
-  const [dateRange, setDateRange] = useState(30);
+  const [dateRange, setDateRange] = useState<PresetValue>(30);
   const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
   const [useCustomRange, setUseCustomRange] = useState(false);
   const [conversationPage, setConversationPage] = useState(1);
@@ -209,12 +211,38 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
     navigator.clipboard.writeText(text);
   }, []);
 
+  const billingRange = useMemo(() => {
+    if (!workspace) return null;
+    const { start, end } = getCurrentUsagePeriod(workspace);
+    const toIso = (d: Date) => d.toISOString().split('T')[0];
+    return { start: toIso(start), end: toIso(end) };
+  }, [workspace]);
+
+  const requestKey = useMemo(
+    () =>
+      JSON.stringify({
+        clientId,
+        assistantId,
+        dateRange,
+        useCustomRange,
+        customDateRange,
+        billingRange,
+      }),
+    [clientId, assistantId, dateRange, useCustomRange, customDateRange, billingRange]
+  );
+  const lastRequestKeyRef = useRef<string>('');
+
   // Get current date range for exports
   const getExportDateRange = useCallback(() => {
     let startDate: Date, endDate: Date;
     if (useCustomRange && customDateRange.start && customDateRange.end) {
       startDate = new Date(customDateRange.start);
       endDate = new Date(customDateRange.end);
+    } else if (dateRange === 'billing' && billingRange) {
+      startDate = new Date(billingRange.start);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(billingRange.end);
+      endDate.setHours(23, 59, 59, 999);
     } else {
       endDate = new Date();
       startDate = new Date();
@@ -222,7 +250,7 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
       startDate.setDate(startDate.getDate() - days);
     }
     return { startDate, endDate };
-  }, [useCustomRange, customDateRange, dateRange]);
+  }, [useCustomRange, customDateRange, dateRange, billingRange]);
 
   // Handle export for current tab
   const handleExport = useCallback((format: ExportFormat) => {
@@ -543,6 +571,11 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
 
   // Load data via API (server-side has access to Supabase service key)
   useEffect(() => {
+    if (lastRequestKeyRef.current === requestKey) {
+      return;
+    }
+    lastRequestKeyRef.current = requestKey;
+
     async function loadData() {
       const shouldShowPageSpinner = !hasLoaded;
       try {
@@ -563,6 +596,11 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
           startDate.setHours(0, 0, 0, 0);
           endDate = new Date(customDateRange.end);
           endDate.setHours(23, 59, 59, 999);
+        } else if (dateRange === 'billing' && billingRange) {
+          startDate = new Date(billingRange.start);
+          startDate.setHours(0, 0, 0, 0);
+          endDate = new Date(billingRange.end);
+          endDate.setHours(23, 59, 59, 999);
         } else {
           const presetDays = typeof dateRange === 'number' ? dateRange : 30;
           startDate.setDate(startDate.getDate() - presetDays);
@@ -574,6 +612,12 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
           getClientById(clientId),
           getAssistantById(assistantId, clientId)
         ]);
+
+        let workspaceData: Workspace | undefined;
+        if (assistantData?.workspaceSlug) {
+          workspaceData = await getWorkspaceById(assistantData.workspaceSlug, clientId);
+          setWorkspace(workspaceData);
+        }
 
         setClient(clientData);
         setAssistant(assistantData);
@@ -638,7 +682,7 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
     }
 
     loadData();
-  }, [clientId, assistantId, dateRange, useCustomRange, customDateRange, hasLoaded]);
+  }, [clientId, assistantId, dateRange, useCustomRange, customDateRange, hasLoaded, billingRange, requestKey]);
 
   // Format helpers
   const formatDuration = (seconds: number) => {
@@ -846,7 +890,9 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
             dateRange={dateRange}
             useCustomRange={useCustomRange}
             customDateRange={customDateRange}
-            presets={[1, 7, 30, 90]}
+            presets={[1, 7, 30, 'billing']}
+            billingRange={billingRange || undefined}
+            billingLabel="Current billing cycle"
             onPresetChange={(days) => {
               setUseCustomRange(false);
               setDateRange(days);

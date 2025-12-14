@@ -17,11 +17,12 @@
 import * as mockAnalytics from './mock';
 import { createSupabaseAnalytics } from './supabase';
 import { isDemoClient, isSupabaseConfigured } from '../config';
-import { supabaseAdminProd, supabaseAdminDemo } from '../supabase/client';
+import { supabaseAdminProd, supabaseAdminDemo, supabaseClientProd, supabaseClientDemo } from '../supabase/client';
 import type { AnalyticsOperations } from './types';
 
-const supabaseProdAnalytics = createSupabaseAnalytics(supabaseAdminProd, 'PROD');
-const supabaseDemoAnalytics = createSupabaseAnalytics(supabaseAdminDemo, 'DEMO');
+// Prefer admin (service role) but allow anon client if that's all we have (read-only)
+const supabaseProdAnalytics = createSupabaseAnalytics(supabaseAdminProd ?? supabaseClientProd, 'PROD');
+const supabaseDemoAnalytics = createSupabaseAnalytics(supabaseAdminDemo ?? supabaseClientDemo, 'DEMO');
 
 /**
  * Get the appropriate analytics implementation for a client

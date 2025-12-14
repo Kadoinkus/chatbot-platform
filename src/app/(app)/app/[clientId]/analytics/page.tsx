@@ -29,8 +29,9 @@ import {
   ConversationsTab as SharedConversationsTab,
   normalizeAssistantMetrics,
 } from '@/components/analytics';
-import { DateRangeBar } from '@/components/analytics/shared';
+import { DateRangeBar, type PresetValue } from '@/components/analytics/shared';
 import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
+import { getCurrentUsagePeriod } from '@/lib/billingService';
 
 // Lazy-loaded tab components
 const OverviewTab = dynamic(() => import('./components/OverviewTab'), { loading: () => <TabFallback /> });
@@ -61,7 +62,7 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
   const CONVERSATIONS_PER_PAGE = 10;
 
   // Filter state
-  const [dateRange, setDateRange] = useState(30);
+  const [dateRange, setDateRange] = useState<PresetValue>(30);
   const [useCustomRange, setUseCustomRange] = useState(false);
   const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
   const [selectedWorkspace, setSelectedWorkspace] = useState<string>('all');
@@ -84,6 +85,20 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
   });
 
   const brandColor = client ? getClientBrandColor(client.id) : '#3B82F6';
+
+  const selectedWorkspaceObj = useMemo(() => {
+    if (selectedWorkspace === 'all') {
+      return workspaces[0];
+    }
+    return workspaces.find((w) => w.id === selectedWorkspace);
+  }, [selectedWorkspace, workspaces]);
+
+  const billingRange = useMemo(() => {
+    if (!selectedWorkspaceObj) return null;
+    const { start, end } = getCurrentUsagePeriod(selectedWorkspaceObj);
+    const toIso = (d: Date) => d.toISOString().split('T')[0];
+    return { start: toIso(start), end: toIso(end) };
+  }, [selectedWorkspaceObj]);
 
   useEffect(() => {
     function handleClickOutside(event: PointerEvent) {
@@ -146,6 +161,11 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
           start.setHours(0, 0, 0, 0);
           end = new Date(customDateRange.end);
           end.setHours(23, 59, 59, 999);
+        } else if (dateRange === 'billing' && billingRange) {
+          start = new Date(billingRange.start);
+          start.setHours(0, 0, 0, 0);
+          end = new Date(billingRange.end);
+          end.setHours(23, 59, 59, 999);
         } else {
           const days = typeof dateRange === 'number' ? dateRange : 30;
           start = new Date(now);
@@ -164,7 +184,7 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
       }
     }
     loadMetrics();
-  }, [client, assistants, selectedWorkspace, selectedAssistants, dateRange, useCustomRange, customDateRange, clientId]);
+  }, [client, assistants, selectedWorkspace, selectedAssistants, dateRange, useCustomRange, customDateRange, clientId, billingRange]);
 
   // Reset assistant selection when workspace changes
   useEffect(() => {
@@ -226,6 +246,11 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
       startDate.setHours(0, 0, 0, 0);
       endDate = new Date(customDateRange.end);
       endDate.setHours(23, 59, 59, 999);
+    } else if (dateRange === 'billing' && billingRange) {
+      startDate = new Date(billingRange.start);
+      startDate.setHours(0, 0, 0, 0);
+      endDate = new Date(billingRange.end);
+      endDate.setHours(23, 59, 59, 999);
     } else {
       const days = typeof dateRange === 'number' ? dateRange : 30;
       startDate = new Date(now);
@@ -234,7 +259,7 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
     }
 
     return { startDate, endDate };
-  }, [customDateRange, dateRange, useCustomRange]);
+  }, [customDateRange, dateRange, useCustomRange, billingRange]);
 
   const handleExport = useCallback(
     (format: ExportFormat) => {
@@ -517,12 +542,33 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
       ? `Compare AI assistant performance for ${clientName}`
       : `${workspaces.find((w) => w.id === selectedWorkspace)?.name || 'Workspace'} - ${clientName}`;
 
+  const rangeLabel = (() => {
+    const formatDate = (value: string | Date) => new Date(value).toLocaleDateString('en-GB');
+    if (useCustomRange && customDateRange.start && customDateRange.end) {
+      return `${formatDate(customDateRange.start)} - ${formatDate(customDateRange.end)}`;
+    }
+    if (dateRange === 'billing' && billingRange) {
+      return `${formatDate(billingRange.start)} - ${formatDate(billingRange.end)}`;
+    }
+    const days = typeof dateRange === 'number' ? dateRange : 30;
+    if (days === 1) {
+      return formatDate(new Date());
+    }
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    const start = new Date(end);
+    start.setDate(end.getDate() - days + 1);
+    start.setHours(0, 0, 0, 0);
+    return `${formatDate(start)} - ${formatDate(end)}`;
+  })();
+
   return (
     <Page>
       <PageContent>
         <PageHeader
           title="Analytics Dashboard"
           description={headerDescription}
+          subtitle={rangeLabel}
         />
 
         <Card className="mb-6 p-4 space-y-4 overflow-visible">
@@ -537,17 +583,18 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
               assistantSelectionMode="multi"
               brandColor={brandColor}
             />
-            <div className="relative self-start lg:self-auto" ref={exportDropdownRef}>
-              <button
-                onClick={() => setShowExportDropdown((v) => !v)}
-                className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm font-medium text-foreground hover:bg-background-hover transition"
-              >
-                <Download size={16} />
-                Export
-                <ChevronDown size={14} className={`transition-transform ${showExportDropdown ? 'rotate-180' : ''}`} />
-              </button>
-              {showExportDropdown && (
-                <div className="absolute right-0 top-full mt-2 w-32 rounded-lg border border-border bg-surface-elevated shadow-lg z-20">
+        <div className="relative self-start lg:self-auto" ref={exportDropdownRef}>
+          <button
+            onClick={() => setShowExportDropdown((v) => !v)}
+            className="inline-flex items-center gap-2 rounded-lg border border-border bg-surface-elevated px-3 py-2 text-sm font-medium text-foreground hover:bg-background-hover transition"
+          >
+            <Download size={16} />
+            Export
+            <ChevronDown size={14} className={`transition-transform ${showExportDropdown ? 'rotate-180' : ''}`} />
+          </button>
+          <div className="mt-2 text-xs text-foreground-tertiary text-right">{rangeLabel}</div>
+          {showExportDropdown && (
+            <div className="absolute right-0 top-full mt-2 w-32 rounded-lg border border-border bg-surface-elevated shadow-lg z-20">
                   <button
                     onClick={() => handleExport('csv')}
                     className="w-full px-3 py-2 text-left text-sm text-foreground hover:bg-background-hover"
@@ -576,7 +623,9 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
             dateRange={dateRange}
             useCustomRange={useCustomRange}
             customDateRange={customDateRange}
-            presets={[1, 7, 30, 90]}
+            presets={[1, 7, 30, 'billing']}
+            billingRange={billingRange || undefined}
+            billingLabel="Current billing cycle"
             onPresetChange={(days) => {
               setUseCustomRange(false);
               setDateRange(days);

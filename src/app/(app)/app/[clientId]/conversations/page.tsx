@@ -39,7 +39,8 @@ import {
   ConversationsTab as SharedConversationsTab,
   normalizeSessions,
 } from '@/components/analytics';
-import { DateRangeBar } from '@/components/analytics/shared';
+import { DateRangeBar, type PresetValue } from '@/components/analytics/shared';
+import { getCurrentUsagePeriod } from '@/lib/billingService';
 import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
 
 // Tab Components
@@ -63,10 +64,10 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
 
   // Filter state
   const [searchTerm, setSearchTerm] = useState('');
-  const [selectedBot, setSelectedBot] = useState('all');
+  const [selectedAssistants, setSelectedAssistants] = useState<string[]>(['all']);
   const [selectedStatus, setSelectedStatus] = useState('all');
   const [selectedWorkspace, setSelectedWorkspace] = useState('all');
-  const [dateRange, setDateRange] = useState(30);
+  const [dateRange, setDateRange] = useState<PresetValue>(30);
   const [useCustomRange, setUseCustomRange] = useState(false);
   const [customDateRange, setCustomDateRange] = useState({ start: '', end: '' });
   const [showExportDropdown, setShowExportDropdown] = useState(false);
@@ -106,6 +107,18 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
     return () => document.removeEventListener('pointerdown', handleClickOutside);
   }, []);
 
+  const selectedWorkspaceObj = useMemo(() => {
+    if (selectedWorkspace === 'all') return workspaces[0];
+    return workspaces.find((w) => w.id === selectedWorkspace);
+  }, [selectedWorkspace, workspaces]);
+
+  const billingRange = useMemo(() => {
+    if (!selectedWorkspaceObj) return null;
+    const { start, end } = getCurrentUsagePeriod(selectedWorkspaceObj);
+    const toIso = (d: Date) => d.toISOString().split('T')[0];
+    return { start: toIso(start), end: toIso(end) };
+  }, [selectedWorkspaceObj]);
+
   // Get date range filter
   const getDateRangeFilter = useCallback(() => {
     const now = new Date();
@@ -120,12 +133,20 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
       return { start: customStartDate, end: customEndDate };
     }
 
+    if (dateRange === 'billing' && billingRange) {
+      const billingStart = new Date(billingRange.start);
+      billingStart.setHours(0, 0, 0, 0);
+      const billingEnd = new Date(billingRange.end);
+      billingEnd.setHours(23, 59, 59, 999);
+      return { start: billingStart, end: billingEnd };
+    }
+
     const days = typeof dateRange === 'number' ? dateRange : 30;
     start.setDate(start.getDate() - days);
     start.setHours(0, 0, 0, 0);
 
     return { start, end: now };
-  }, [customDateRange, dateRange, useCustomRange]);
+  }, [customDateRange, dateRange, useCustomRange, billingRange]);
 
   // Fetch client + assistants
   useEffect(() => {
@@ -161,7 +182,12 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
         });
         const res = await fetch(`/api/analytics/chat-sessions?${params}`);
         const json = await res.json();
-        setSessions(json.data || []);
+        const assistantSlugs = assistants.map((a) => a.id);
+        const filtered =
+          assistantSlugs.length === 0
+            ? json.data || []
+            : (json.data || []).filter((s: any) => assistantSlugs.includes(s.mascot_slug));
+        setSessions(filtered);
       } catch (error) {
         console.error('Error loading sessions:', error);
       } finally {
@@ -170,7 +196,7 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
     }
 
     loadData();
-  }, [clientId, client, dateRange, getDateRangeFilter]);
+  }, [clientId, client, dateRange, getDateRangeFilter, assistants]);
 
   // Fetch workspaces
   useEffect(() => {
@@ -217,8 +243,15 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
 
   // Filter sessions
   const filteredSessions = useMemo(() => {
+    const activeAssistantIds =
+      selectedAssistants.includes('all') && selectedAssistants.length === 1
+        ? null
+        : selectedAssistants.filter((id) => id !== 'all');
+
     return sessions.filter((session) => {
-      if (selectedBot !== 'all' && session.mascot_slug !== selectedBot) return false;
+      if (activeAssistantIds && activeAssistantIds.length > 0 && !activeAssistantIds.includes(session.mascot_slug)) {
+        return false;
+      }
 
       if (selectedStatus !== 'all') {
         const status = session.analysis?.resolution_status;
@@ -253,21 +286,26 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
 
       return true;
     });
-  }, [sessions, selectedBot, selectedStatus, selectedWorkspace, searchTerm, getAssistantInfo]);
+  }, [sessions, selectedAssistants, selectedStatus, selectedWorkspace, searchTerm, getAssistantInfo]);
 
   // Reset to page 1 when filters change
   useEffect(() => {
     setCurrentPage(1);
-  }, [selectedBot, selectedStatus, selectedWorkspace, searchTerm, activeTab, dateRange, useCustomRange, customDateRange]);
+  }, [selectedAssistants, selectedStatus, selectedWorkspace, searchTerm, activeTab, dateRange, useCustomRange, customDateRange]);
 
   // Ensure assistant selection stays in sync with workspace filter
   useEffect(() => {
     if (selectedWorkspace === 'all') return;
-    const selectedAssistant = assistants.find((a) => a.id === selectedBot);
-    if (selectedBot !== 'all' && (!selectedAssistant || selectedAssistant.workspaceSlug !== selectedWorkspace)) {
-      setSelectedBot('all');
+    const allowed = assistants.filter((a) => a.workspaceSlug === selectedWorkspace).map((a) => a.id);
+    if (!allowed.length) {
+      setSelectedAssistants(['all']);
+      return;
     }
-  }, [assistants, selectedBot, selectedWorkspace]);
+    if (!selectedAssistants.includes('all')) {
+      const filtered = selectedAssistants.filter((id) => allowed.includes(id));
+      setSelectedAssistants(filtered.length ? filtered : ['all']);
+    }
+  }, [assistants, selectedAssistants, selectedWorkspace]);
 
   // Normalize sessions for shared tabs + derive stats
   const { sessions: normalizedSessions, stats } = useMemo(
@@ -527,9 +565,12 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
               selectedWorkspace={selectedWorkspace}
               onWorkspaceChange={setSelectedWorkspace}
               assistants={assistants}
-              assistantSelectionMode="single"
-              selectedAssistants={[selectedBot]}
-            onAssistantChange={(ids) => setSelectedBot(ids[0] || 'all')}
+              assistantSelectionMode="multi"
+              selectedAssistants={selectedAssistants}
+              onAssistantChange={(ids) => {
+                const cleaned = ids.includes('all') && ids.length > 1 ? ids.filter((id) => id !== 'all') : ids;
+                setSelectedAssistants(cleaned.length ? cleaned : ['all']);
+              }}
             statusOptions={[
               { value: 'all', label: 'All Status' },
               { value: 'resolved', label: 'Resolved' },
@@ -584,7 +625,9 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
             dateRange={dateRange}
             useCustomRange={useCustomRange}
             customDateRange={customDateRange}
-            presets={[1, 7, 30, 90]}
+            presets={[1, 7, 30, 'billing']}
+            billingRange={billingRange || undefined}
+            billingLabel="Current billing cycle"
             onPresetChange={(days) => {
               setUseCustomRange(false);
               setDateRange(days);

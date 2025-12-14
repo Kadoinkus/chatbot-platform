@@ -545,6 +545,64 @@ export function getNextUsageReset(workspace: Workspace): {
 }
 
 /**
+ * Determine the current usage/billing period window (start -> today).
+ */
+export function getCurrentUsagePeriod(workspace: Workspace): {
+  start: Date;
+  end: Date;
+  resetInterval: UsageResetInterval;
+} {
+  const now = new Date();
+  now.setHours(23, 59, 59, 999);
+
+  const resetInterval: UsageResetInterval = workspace.usageResetInterval ?? 'monthly';
+  const resetDay = Math.min(Math.max(1, workspace.billingResetDay ?? 1), 28);
+
+  // Daily: just today
+  if (resetInterval === 'daily') {
+    const start = new Date(now);
+    start.setHours(0, 0, 0, 0);
+    return { start, end: now, resetInterval };
+  }
+
+  // Helper to zero time
+  const makeDate = (year: number, month: number, day: number) => {
+    const d = new Date(year, month, day);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  };
+
+  let start: Date;
+
+  if (resetInterval === 'annual') {
+    start = makeDate(now.getFullYear(), 0, resetDay);
+    if (start > now) {
+      start = makeDate(now.getFullYear() - 1, 0, resetDay);
+    }
+  } else if (resetInterval === 'quarterly') {
+    const currentQuarter = Math.floor(now.getMonth() / 3);
+    const quarterStartMonth = currentQuarter * 3;
+    start = makeDate(now.getFullYear(), quarterStartMonth, resetDay);
+    if (start > now) {
+      const prevQuarterMonth = quarterStartMonth - 3;
+      if (prevQuarterMonth >= 0) {
+        start = makeDate(now.getFullYear(), prevQuarterMonth, resetDay);
+      } else {
+        start = makeDate(now.getFullYear() - 1, 9, resetDay); // previous year's Q4
+      }
+    }
+  } else {
+    // monthly (default)
+    start = makeDate(now.getFullYear(), now.getMonth(), resetDay);
+    if (start > now) {
+      start = makeDate(now.getFullYear(), now.getMonth() - 1, resetDay);
+    }
+  }
+
+  return { start, end: now, resetInterval };
+}
+
+/**
  * Calculate the next billing/invoice date based on subscription start date
  * Uses anniversary-based billing (same day each month/quarter/year)
  */

@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { Calendar, BarChart3 } from 'lucide-react';
 import { Button, Input, Select } from '@/components/ui';
 
-type PresetValue = number;
+export type PresetValue = number | 'billing';
 
 export interface DateRangeBarProps {
   brandColor: string;
@@ -15,6 +15,8 @@ export interface DateRangeBarProps {
   onCustomApply: (range: { start: string; end: string }) => void;
   onCustomToggle: (enabled: boolean) => void;
   presets?: PresetValue[];
+  billingRange?: { start: string; end: string };
+  billingLabel?: string;
 }
 
 /**
@@ -29,40 +31,97 @@ export function DateRangeBar({
   onPresetChange,
   onCustomApply,
   onCustomToggle,
-  presets = [1, 7, 30, 90],
+  presets = [1, 7, 30, 'billing'],
+  billingRange,
+  billingLabel = 'Billing cycle',
 }: DateRangeBarProps) {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [localRange, setLocalRange] = useState(customDateRange);
 
-  // Keep local state in sync with upstream changes
+  const toIso = (date: Date) => date.toISOString().split('T')[0];
+  const computePresetRange = (days: number) => {
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    const start = new Date(end);
+    start.setDate(end.getDate() - days + 1);
+    start.setHours(0, 0, 0, 0);
+    return { start: toIso(start), end: toIso(end) };
+  };
+
+  const getRangeForPreset = (preset: PresetValue) => {
+    if (preset === 'billing') {
+      if (billingRange?.start && billingRange?.end) {
+        return billingRange;
+      }
+      return null;
+    }
+    return computePresetRange(preset);
+  };
+
+  // Keep local state in sync with selected range (preset or custom)
   useEffect(() => {
-    setLocalRange(customDateRange);
-  }, [customDateRange]);
+    if (useCustomRange && customDateRange.start && customDateRange.end) {
+      setLocalRange({
+        start: customDateRange.start,
+        end: customDateRange.end,
+      });
+    } else {
+      const presetRange = getRangeForPreset(dateRange);
+      if (presetRange) {
+        setLocalRange(presetRange);
+      } else {
+        const days = typeof dateRange === 'number' ? dateRange : 30;
+        setLocalRange(computePresetRange(days));
+      }
+    }
+  }, [useCustomRange, customDateRange.start, customDateRange.end, dateRange, billingRange]);
+
+  const formatDate = (value: string | Date) =>
+    new Date(value).toLocaleDateString('en-GB');
 
   const displayLabel = useMemo(() => {
     if (useCustomRange && customDateRange.start && customDateRange.end) {
-      return `${new Date(customDateRange.start).toLocaleDateString()} - ${new Date(customDateRange.end).toLocaleDateString()}`;
+      return `${formatDate(customDateRange.start)} - ${formatDate(customDateRange.end)}`;
     }
-    return dateRange === 1 ? 'Today' : `Showing last ${dateRange} days`;
-  }, [customDateRange.end, customDateRange.start, dateRange, useCustomRange]);
+    if (dateRange === 'billing') {
+      if (billingRange?.start && billingRange?.end) {
+        return `${formatDate(billingRange.start)} - ${formatDate(billingRange.end)}`;
+      }
+      return billingLabel;
+    }
+    const days = typeof dateRange === 'number' ? dateRange : 30;
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    const start = new Date(end);
+    start.setDate(end.getDate() - days + 1);
+    start.setHours(0, 0, 0, 0);
+    if (days === 1) {
+      return formatDate(end);
+    }
+    return `${formatDate(start)} - ${formatDate(end)}`;
+  }, [customDateRange.end, customDateRange.start, dateRange, useCustomRange, billingRange?.end, billingRange?.start, billingLabel]);
 
   const mobileDisplay = useMemo(() => {
     if (useCustomRange && customDateRange.start && customDateRange.end) {
-      return `${new Date(customDateRange.start).toLocaleDateString()} - ${new Date(customDateRange.end).toLocaleDateString()}`;
+      return `${formatDate(customDateRange.start)} - ${formatDate(customDateRange.end)}`;
     }
-    return dateRange === 1 ? 'Today' : `Last ${dateRange} days`;
-  }, [customDateRange.end, customDateRange.start, dateRange, useCustomRange]);
-
-  const ensureCustomRangePrefill = () => {
-    if (localRange.start && localRange.end) return;
-    const now = new Date();
-    const start = new Date();
-    start.setDate(now.getDate() - 7);
-    setLocalRange({
-      start: start.toISOString().split('T')[0],
-      end: now.toISOString().split('T')[0],
-    });
-  };
+    if (dateRange === 'billing') {
+      if (billingRange?.start && billingRange?.end) {
+        return `${formatDate(billingRange.start)} - ${formatDate(billingRange.end)}`;
+      }
+      return billingLabel;
+    }
+    const days = typeof dateRange === 'number' ? dateRange : 30;
+    const end = new Date();
+    end.setHours(23, 59, 59, 999);
+    const start = new Date(end);
+    start.setDate(end.getDate() - days + 1);
+    start.setHours(0, 0, 0, 0);
+    if (days === 1) {
+      return formatDate(end);
+    }
+    return `${formatDate(start)} - ${formatDate(end)}`;
+  }, [customDateRange.end, customDateRange.start, dateRange, useCustomRange, billingRange?.end, billingRange?.start, billingLabel]);
 
   return (
     <>
@@ -73,28 +132,31 @@ export function DateRangeBar({
           <span className="text-sm font-medium text-foreground-secondary">Time Period:</span>
 
           <div className="flex gap-1 bg-background-tertiary p-1 rounded-lg">
-            {presets.map((days) => (
+            {presets.map((preset) => (
               <button
-                key={days}
+                key={String(preset)}
                 onClick={() => {
                   onCustomToggle(false);
-                  onPresetChange(days);
+                  onPresetChange(preset);
                 }}
                 className={`px-4 py-2 rounded-md text-sm font-medium transition-all duration-200 ${
-                  !useCustomRange && dateRange === days
+                  !useCustomRange && dateRange === preset
                     ? 'bg-surface-elevated text-foreground shadow-sm'
                     : 'text-foreground-secondary hover:text-foreground hover:bg-background-hover'
                 }`}
-                style={!useCustomRange && dateRange === days ? { color: brandColor } : {}}
+                style={!useCustomRange && dateRange === preset ? { color: brandColor } : {}}
               >
-                {days === 1 ? 'Today' : `Last ${days} days`}
+                {preset === 'billing'
+                  ? billingLabel
+                  : preset === 1
+                    ? 'Today'
+                    : `Last ${preset} days`}
               </button>
             ))}
           </div>
 
           <button
             onClick={() => {
-              ensureCustomRangePrefill();
               setShowDatePicker(!showDatePicker);
             }}
             className={`px-4 py-2 rounded-lg text-sm font-medium border transition-all duration-200 ${
@@ -125,17 +187,16 @@ export function DateRangeBar({
               onChange={(e) => {
                 const val = e.target.value;
                 if (val === 'custom') {
-                  ensureCustomRangePrefill();
                   setShowDatePicker(true);
                 } else {
                   onCustomToggle(false);
-                  onPresetChange(Number(val));
+                  onPresetChange(val === 'billing' ? 'billing' : Number(val));
                 }
               }}
               options={[
                 ...presets.map((p) => ({
                   value: String(p),
-                  label: p === 1 ? 'Today' : `Last ${p} days`,
+                  label: p === 'billing' ? billingLabel : p === 1 ? 'Today' : `Last ${p} days`,
                 })),
                 { value: 'custom', label: 'Custom Range' },
               ]}

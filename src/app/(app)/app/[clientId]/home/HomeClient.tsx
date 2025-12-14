@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useMemo, useState } from 'react';
 import type { Assistant, Client, Workspace } from '@/types';
 import { getClientBrandColor } from '@/lib/brandColors';
-import { Plus, Building2, ChevronRight } from 'lucide-react';
+import { Plus, Building2, ChevronRight, Server, Users } from 'lucide-react';
 import { Page, PageContent, PageHeader, Button, Card, Badge, EmptyState } from '@/components/ui';
 import { FilterBar } from '@/components/analytics';
 
@@ -95,6 +95,85 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                   )}
                 </div>
 
+                {/* Usage Bars */}
+                {(() => {
+                  const bundleLoads = workspace.bundleLoads || { used: 0, limit: 1000, remaining: 1000 };
+                  const sessions = workspace.sessions || { used: 0, limit: 5000, remaining: 5000 };
+                  const bundlePercentage = bundleLoads.limit > 0 ? (bundleLoads.used / bundleLoads.limit) * 100 : 0;
+                  const sessionPercentage = sessions.limit > 0 ? (sessions.used / sessions.limit) * 100 : 0;
+
+                  return (
+                    <div className="border-t border-border px-4 py-3 space-y-3">
+                      {/* Bundle Loads */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <Server size={14} className="text-foreground-tertiary" />
+                            <span className="text-xs font-medium text-foreground-secondary">Bundle Loads</span>
+                          </div>
+                          <span className="text-xs text-foreground-tertiary">
+                            {bundleLoads.used.toLocaleString()} / {bundleLoads.limit.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="w-full bg-background-tertiary rounded-full h-2">
+                          <div
+                            className={`${
+                              bundlePercentage > 90 ? 'bg-error-500' :
+                              bundlePercentage > 70 ? 'bg-warning-500' : 'bg-success-500'
+                            } rounded-full h-2 transition-all duration-300`}
+                            style={{ width: `${Math.min(100, bundlePercentage)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Sessions */}
+                      <div>
+                        <div className="flex items-center justify-between mb-1.5">
+                          <div className="flex items-center gap-1.5">
+                            <Users size={14} className="text-foreground-tertiary" />
+                            <span className="text-xs font-medium text-foreground-secondary">Sessions</span>
+                          </div>
+                          <span className="text-xs text-foreground-tertiary">
+                            {sessions.used.toLocaleString()} / {sessions.limit.toLocaleString()}
+                          </span>
+                        </div>
+                        <div className="w-full bg-background-tertiary rounded-full h-2">
+                          <div
+                            className={`${
+                              sessionPercentage > 90 ? 'bg-error-500' :
+                              sessionPercentage > 70 ? 'bg-warning-500' : 'bg-success-500'
+                            } rounded-full h-2 transition-all duration-300`}
+                            style={{ width: `${Math.min(100, sessionPercentage)}%` }}
+                          />
+                        </div>
+                      </div>
+
+                      {/* Reset info */}
+                      {(() => {
+                        const resetInterval = workspace.usageResetInterval || workspace.billingCycle || 'monthly';
+                        const nextDate = workspace.nextUsageResetDate || workspace.nextBillingDate;
+
+                        // Calculate fallback date if not set
+                        let displayDate: string | null = null;
+                        if (nextDate) {
+                          displayDate = new Date(nextDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        } else if (resetInterval === 'monthly') {
+                          const now = new Date();
+                          const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
+                          displayDate = nextMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+                        }
+
+                        return (
+                          <p className="text-xs text-foreground-tertiary pt-1">
+                            Resets {resetInterval}
+                            {displayDate && <> · Next: {displayDate}</>}
+                          </p>
+                        );
+                      })()}
+                    </div>
+                  );
+                })()}
+
                 {/* AI Assistants Section */}
                 <div className="border-t border-border px-4 py-3">
                   {assistants.length > 0 ? (
@@ -104,7 +183,7 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                           {assistants.slice(0, 5).map(assistant => (
                             <div
                               key={assistant.id}
-                              className="relative w-8 h-8 rounded-full border-2 border-background -ml-2 first:ml-0 overflow-hidden"
+                              className="relative w-20 h-20 rounded-full border-2 border-background -ml-6 first:ml-0 overflow-hidden"
                               style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
                             >
                               {assistant.image?.trim() ? (
@@ -112,19 +191,19 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                                   src={assistant.image.trim()}
                                   alt={assistant.name}
                                   fill
-                                  sizes="32px"
+                                  sizes="80px"
                                   className="object-cover"
                                   loading="lazy"
                                 />
                               ) : (
-                                <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
+                                <div className="absolute inset-0 flex items-center justify-center text-xl font-semibold text-white">
                                   {assistant.name.charAt(0)}
                                 </div>
                               )}
                             </div>
                           ))}
                           {assistants.length > 5 && (
-                            <span className="w-8 h-8 rounded-full border-2 border-background -ml-2 bg-background-tertiary flex items-center justify-center text-xs font-medium text-foreground-secondary">
+                            <span className="w-20 h-20 rounded-full border-2 border-background -ml-6 bg-background-tertiary flex items-center justify-center text-sm font-medium text-foreground-secondary">
                               +{assistants.length - 5}
                             </span>
                           )}

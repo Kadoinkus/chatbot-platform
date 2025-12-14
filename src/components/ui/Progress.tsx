@@ -1,11 +1,36 @@
 interface ProgressProps {
   percentage: number;
   className?: string;
+  /**
+   * 'limit' - Green-to-red gradient for usage vs limits (default)
+   * 'distribution' - Simple brand color for percentage distribution
+   */
+  variant?: 'limit' | 'distribution';
+  /** Custom color for distribution variant (defaults to primary brand color) */
+  color?: string;
 }
 
-export default function Progress({ percentage, className = '' }: ProgressProps) {
+export default function Progress({ percentage, className = '', variant = 'limit', color }: ProgressProps) {
   const clampedPercentage = Math.min(100, Math.max(0, percentage));
 
+  // Distribution variant - simple solid color bar
+  if (variant === 'distribution') {
+    return (
+      <div className={`w-full ${className}`}>
+        <div className="w-full bg-background-tertiary rounded-full h-2 overflow-hidden">
+          <div
+            className="h-2 rounded-full transition-all duration-500 ease-out"
+            style={{
+              width: `${clampedPercentage}%`,
+              backgroundColor: color || 'var(--color-primary, #6366F1)'
+            }}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  // Limit variant - gradient with cap (default)
   return (
     <div className={`w-full relative ${className}`}>
       {/* Progress bar container */}

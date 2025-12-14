@@ -145,6 +145,11 @@ export function mapAssistantFromMascot(raw: any): Assistant {
       responseTime: raw.avg_response_time_ms ? raw.avg_response_time_ms / 1000 : 0,
       resolutionRate: raw.resolution_rate || 0,
     },
+    usage: {
+      bundleLoads: raw.bundle_loads_used || 0,
+      sessions: raw.sessions_used || 0,
+      messages: raw.messages_used || 0,
+    },
   };
 }
 

@@ -42,7 +42,12 @@ export const clients: Client[] = (clientsJson as DemoClient[]).map(client => {
       metrics: {
         responseTime: mascot.avg_response_time_ms ? mascot.avg_response_time_ms / 1000 : 0,
         resolutionRate: mascot.resolution_rate || 0,
-      }
+      },
+      usage: {
+        bundleLoads: mascot.bundle_loads_used || 0,
+        sessions: mascot.sessions_used || 0,
+        messages: mascot.messages_used || 0,
+      },
     }));
 
   // Build palette from client colors

@@ -39,26 +39,22 @@ export default function AssistantCard({ assistant, clientId, workspaceName, work
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  // Get usage data from workspace (real data) or fallback to defaults
-  const bundleLoads = workspace ? {
-    current: workspace.bundleLoads.used,
-    limit: workspace.bundleLoads.limit,
-    percentage: Math.round((workspace.bundleLoads.used / workspace.bundleLoads.limit) * 100)
-  } : {
-    current: 0,
-    limit: 1000,
-    percentage: 0
+  // Per-assistant usage with percentage of workspace total
+  const workspaceBundleTotal = workspace?.bundleLoads?.used || 0;
+  const workspaceSessionTotal = workspace?.sessions?.used || 0;
+
+  const bundleLoads = {
+    current: assistant.usage?.bundleLoads || 0,
+    percentage: workspaceBundleTotal > 0
+      ? Math.round((assistant.usage?.bundleLoads || 0) / workspaceBundleTotal * 100)
+      : 0,
   };
 
-  // Sessions - client-facing metric (separate from messages)
-  const sessionUsage = workspace?.sessions ? {
-    current: workspace.sessions.used,
-    limit: workspace.sessions.limit,
-    percentage: Math.round((workspace.sessions.used / workspace.sessions.limit) * 100)
-  } : {
-    current: 0,
-    limit: 5000,
-    percentage: 0
+  const sessionUsage = {
+    current: assistant.usage?.sessions || 0,
+    percentage: workspaceSessionTotal > 0
+      ? Math.round((assistant.usage?.sessions || 0) / workspaceSessionTotal * 100)
+      : 0,
   };
 
   // Get billing plan from workspace
@@ -69,9 +65,11 @@ export default function AssistantCard({ assistant, clientId, workspaceName, work
   const usageReset = workspace ? getNextUsageReset(workspace) : null;
   const daysUntilReset = usageReset?.daysUntilReset ?? 0;
 
-  // Check if widget can operate (within limits OR has credits)
-  const isOverLimit = bundleLoads.percentage >= 100 || sessionUsage.percentage >= 100;
-  const canOperate = !isOverLimit || hasWalletCredits;
+  // Check if workspace is over limit (for warning indicator)
+  const workspaceOverLimit = workspace
+    ? ((workspace.bundleLoads?.used ?? 0) >= (workspace.bundleLoads?.limit ?? 1) || (workspace.sessions?.used ?? 0) >= (workspace.sessions?.limit ?? 1))
+    : false;
+  const canOperate = !workspaceOverLimit || hasWalletCredits;
 
   const getPlanBadgeStyle = (plan: PlanType) => {
     switch (plan) {
@@ -215,7 +213,7 @@ export default function AssistantCard({ assistant, clientId, workspaceName, work
           </div>
         </div>
 
-        {/* Usage Indicators - Client-facing: Bundle Loads + Sessions */}
+        {/* Usage Indicators - Per-assistant usage with % of workspace total */}
         <div className="space-y-3">
           {/* Bundle Loads */}
           <div>
@@ -224,44 +222,34 @@ export default function AssistantCard({ assistant, clientId, workspaceName, work
                 <Server size={14} className="text-foreground-tertiary" />
                 Bundle Loads
               </span>
-              <span className="text-xs text-foreground-secondary">
-                {bundleLoads.percentage}%
+              <span className="text-xs text-foreground-tertiary">
+                {bundleLoads.percentage > 0 ? `${bundleLoads.percentage}% of total` : '—'}
               </span>
             </div>
-            <Progress percentage={bundleLoads.percentage} />
+            <Progress percentage={bundleLoads.percentage} variant="distribution" color={brandColor} />
             <div className="flex justify-between items-center mt-1">
               <span className="text-xs text-foreground-tertiary">
-                {bundleLoads.current.toLocaleString()} / {bundleLoads.limit.toLocaleString()}
+                {bundleLoads.current.toLocaleString()} loads
               </span>
-              {bundleLoads.percentage >= 100 && hasWalletCredits && (
-                <span className="text-xs text-warning-600 dark:text-warning-500 font-medium">
-                  Using credits
-                </span>
-              )}
             </div>
           </div>
 
-          {/* Sessions (Conversations) */}
+          {/* Sessions */}
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-xs font-medium text-foreground-secondary flex items-center gap-1.5">
                 <Users size={14} className="text-foreground-tertiary" />
                 Sessions
               </span>
-              <span className="text-xs text-foreground-secondary">
-                {sessionUsage.percentage}%
+              <span className="text-xs text-foreground-tertiary">
+                {sessionUsage.percentage > 0 ? `${sessionUsage.percentage}% of total` : '—'}
               </span>
             </div>
-            <Progress percentage={sessionUsage.percentage} />
+            <Progress percentage={sessionUsage.percentage} variant="distribution" color={brandColor} />
             <div className="flex justify-between items-center mt-1">
               <span className="text-xs text-foreground-tertiary">
-                {(sessionUsage.current / 1000).toFixed(1)}k / {(sessionUsage.limit / 1000).toFixed(0)}k
+                {sessionUsage.current.toLocaleString()} sessions
               </span>
-              {sessionUsage.percentage >= 100 && hasWalletCredits && (
-                <span className="text-xs text-warning-600 dark:text-warning-500 font-medium">
-                  Using credits
-                </span>
-              )}
             </div>
           </div>
         </div>

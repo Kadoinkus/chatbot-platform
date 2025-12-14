@@ -142,7 +142,13 @@ export function ConversationsTab({
         {visibleSessions.map((session) => (
           <TableRow key={session.id}>
             <SessionCell session={session} />
-            {showAssistantColumn && <AssistantCell assistantName={session.assistant?.name} image={session.assistant?.image} brandColor={brandColor} />}
+            {showAssistantColumn && (
+              <AssistantCell
+                assistantName={session.assistant?.name}
+                image={session.assistant?.image || '/images/client-mascots/m1-liza.png'}
+                brandColor={brandColor}
+              />
+            )}
             <TableCell>
               <p className="text-sm text-foreground">{session.analysis?.category || '-'}</p>
             </TableCell>
@@ -259,21 +265,30 @@ function AssistantCell({
   image?: string;
   brandColor: string;
 }) {
+  const imageSrc = image?.trim();
   return (
     <TableCell>
       <div className="flex items-center gap-2">
-        {image ? (
+        {imageSrc ? (
           <div
             className="w-6 h-6 rounded-full flex items-center justify-center"
             style={{ backgroundColor: brandColor }}
           >
             <img
-              src={image}
+              src={imageSrc}
               alt={assistantName || 'Assistant avatar'}
               className="w-5 h-5 rounded-full object-cover"
             />
           </div>
-        ) : null}
+        ) : (
+          <div
+            className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white"
+            style={{ backgroundColor: brandColor }}
+            aria-hidden
+          >
+            {assistantName?.charAt(0) || '?'}
+          </div>
+        )}
         <p className="text-sm text-foreground">{assistantName || 'Unknown'}</p>
       </div>
     </TableCell>
@@ -400,21 +415,28 @@ function MobileCardHeader({
   showAssistant: boolean;
   formatTimestamp?: (dateStr: string) => string;
 }) {
+  const imageSrc = session.assistant?.image?.trim();
   return (
     <div className="flex justify-between items-start mb-3">
       <div className="flex items-center gap-2">
-        {showAssistant && session.assistant?.image ? (
+        {showAssistant && (
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center"
             style={{ backgroundColor: brandColor }}
           >
-            <img
-              src={session.assistant.image}
-              alt={session.assistant.name || 'Assistant avatar'}
-              className="w-7 h-7 rounded-full object-cover"
-            />
+            {imageSrc ? (
+              <img
+                src={imageSrc}
+                alt={session.assistant?.name || 'Assistant avatar'}
+                className="w-7 h-7 rounded-full object-cover"
+              />
+            ) : (
+              <span className="text-sm font-semibold text-white">
+                {session.assistant?.name?.charAt(0) || '?'}
+              </span>
+            )}
           </div>
-        ) : null}
+        )}
         <div>
           <p className="font-medium text-sm text-foreground">
             {showAssistant ? session.assistant?.name || 'Unknown' : session.visitor_country || 'Unknown'}

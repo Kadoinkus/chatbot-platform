@@ -147,6 +147,12 @@ export type AssistantMetrics = {
   resolutionRate: number;
 };
 
+export type AssistantUsage = {
+  bundleLoads: number;
+  sessions: number;
+  messages: number;
+};
+
 export type Assistant = {
   id: string;
   clientId: string;
@@ -157,6 +163,7 @@ export type Assistant = {
   conversations: number;
   description: string;
   metrics: AssistantMetrics;
+  usage: AssistantUsage;
 };
 
 // Legacy aliases for backward compatibility

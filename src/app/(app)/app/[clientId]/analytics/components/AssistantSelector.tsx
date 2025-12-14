@@ -151,13 +151,21 @@ function AssistantOption({
         onChange={onToggle}
         className="rounded border-border text-interactive focus:ring-interactive"
       />
-      {assistant.image && (
+      {assistant.image?.trim() ? (
         <img
-          src={assistant.image}
+          src={assistant.image.trim()}
           alt={assistant.name}
           className="w-6 h-6 rounded-full"
           style={{ backgroundColor: brandColor }}
         />
+      ) : (
+        <div
+          className="w-6 h-6 rounded-full flex items-center justify-center text-[10px] font-semibold text-white"
+          style={{ backgroundColor: brandColor }}
+          aria-hidden
+        >
+          {assistant.name.charAt(0)}
+        </div>
       )}
       <div className="flex-1">
         <span className="text-sm font-medium text-foreground">{assistant.name}</span>

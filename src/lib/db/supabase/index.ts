@@ -13,6 +13,7 @@ import type {
   AssistantMetricsResult,
   DbOperations,
 } from '../types';
+import { mapClient, mapAssistantFromMascot, mapWorkspace, mapUser } from '../mappers';
 
 interface SupabaseDbOptions {
   adminClient: SupabaseClient | null;
@@ -43,7 +44,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const { data, error } = await supabase.from('clients').select('*').order('name');
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapClient);
     },
 
     async getById(id: string) {
@@ -55,7 +56,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const { data, error } = await supabase.from('clients').select('*').eq('id', id).single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data || null;
+      return data ? mapClient(data) : null;
     },
 
     async getBySlug(slug: string) {
@@ -63,7 +64,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const { data, error } = await supabase.from('clients').select('*').eq('slug', slug).single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data || null;
+      return data ? mapClient(data) : null;
     },
 
     async getByIdOrSlug(idOrSlug: string) {
@@ -92,19 +93,23 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const { data, error } = await supabase.from('mascots').select('*').order('name');
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapAssistantFromMascot);
     },
 
     async getById(id: string) {
-      if (!isUuid(id)) {
-        return null;
+      const supabase = requireSupabase();
+
+      // If UUID, search by id; otherwise search by mascot_slug
+      if (isUuid(id)) {
+        const { data, error } = await supabase.from('mascots').select('*').eq('id', id).single();
+        if (error && error.code !== 'PGRST116') throw error;
+        return data ? mapAssistantFromMascot(data) : null;
       }
 
-      const supabase = requireSupabase();
-      const { data, error } = await supabase.from('mascots').select('*').eq('id', id).single();
-
+      // Search by mascot_slug for non-UUID ids (mapped assistant.id uses mascot_slug)
+      const { data, error } = await supabase.from('mascots').select('*').eq('mascot_slug', id).single();
       if (error && error.code !== 'PGRST116') throw error;
-      return data || null;
+      return data ? mapAssistantFromMascot(data) : null;
     },
 
     async getByClientId(clientId: string) {
@@ -118,7 +123,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
         .order('name');
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapAssistantFromMascot);
     },
 
     async getByWorkspaceSlug(workspaceSlug: string) {
@@ -130,7 +135,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
         .order('name');
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapAssistantFromMascot);
     },
   };
 
@@ -141,7 +146,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const { data, error } = await supabase.from('workspaces').select('*').order('name');
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapWorkspace);
     },
 
     async getById(id: string) {
@@ -153,7 +158,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const { data, error } = await supabase.from('workspaces').select('*').eq('id', id).single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data || null;
+      return data ? mapWorkspace(data) : null;
     },
 
     async getBySlug(slug: string) {
@@ -161,7 +166,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const { data, error } = await supabase.from('workspaces').select('*').eq('slug', slug).single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data || null;
+      return data ? mapWorkspace(data) : null;
     },
 
     async getByClientId(clientId: string) {
@@ -175,7 +180,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
         .order('name');
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapWorkspace);
     },
   };
 
@@ -186,7 +191,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const { data, error } = await supabase.from('users').select('*').order('name');
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapUser);
     },
 
     async getById(id: string) {
@@ -198,7 +203,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const { data, error } = await supabase.from('users').select('*').eq('id', id).single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data || null;
+      return data ? mapUser(data) : null;
     },
 
     async getByClientId(clientId: string) {
@@ -212,7 +217,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
         .order('name');
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapUser);
     },
   };
 

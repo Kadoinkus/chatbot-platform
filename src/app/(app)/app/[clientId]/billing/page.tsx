@@ -355,20 +355,30 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                             <span className="text-xs text-foreground-tertiary">Click to expand</span>
                           </div>
                           <div className="flex items-center gap-2 overflow-hidden">
-                            {assistants.slice(0, 4).map(assistant => (
-                              <div key={assistant.id} className="relative flex-shrink-0">
+                          {assistants.slice(0, 4).map(assistant => (
+                            <div key={assistant.id} className="relative flex-shrink-0">
+                              {assistant.image?.trim() ? (
                                 <img
-                                  src={assistant.image}
+                                  src={assistant.image.trim()}
                                   alt={assistant.name}
                                   className="w-8 h-8 rounded-full border-2 border-surface-elevated shadow-sm"
                                   style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
                                   title={`${assistant.name} - ${assistant.status}`}
                                 />
-                                <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface-elevated ${
-                                  assistant.status === 'Active' ? 'bg-success-500' :
-                                  assistant.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
-                                }`} />
-                              </div>
+                              ) : (
+                                <div
+                                  className="w-8 h-8 rounded-full border-2 border-surface-elevated shadow-sm flex items-center justify-center text-xs font-semibold text-white"
+                                  style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
+                                  title={`${assistant.name} - ${assistant.status}`}
+                                >
+                                  {assistant.name.charAt(0)}
+                                </div>
+                              )}
+                              <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface-elevated ${
+                                assistant.status === 'Active' ? 'bg-success-500' :
+                                assistant.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
+                              }`} />
+                            </div>
                             ))}
                             {assistants.length > 4 && (
                               <div className="w-8 h-8 bg-background-tertiary rounded-full flex items-center justify-center text-xs text-foreground-secondary font-medium">
@@ -486,12 +496,21 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
 
                                   return (
                                     <div key={assistant.id} className="flex items-center gap-3 p-3 bg-surface-elevated rounded-lg border border-border">
-                                      <img
-                                        src={assistant.image}
-                                        alt={assistant.name}
-                                        className="w-10 h-10 rounded-full"
-                                        style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
-                                      />
+                                      {assistant.image?.trim() ? (
+                                        <img
+                                          src={assistant.image.trim()}
+                                          alt={assistant.name}
+                                          className="w-10 h-10 rounded-full"
+                                          style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
+                                        />
+                                      ) : (
+                                        <div
+                                          className="w-10 h-10 rounded-full flex items-center justify-center text-sm font-semibold text-white"
+                                          style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
+                                        >
+                                          {assistant.name.charAt(0)}
+                                        </div>
+                                      )}
                                       <div className="flex-1">
                                         <div className="flex items-center gap-2 mb-1">
                                           <p className="text-sm font-medium text-foreground">{assistant.name}</p>

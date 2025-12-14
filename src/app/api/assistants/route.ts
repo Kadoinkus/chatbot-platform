@@ -20,7 +20,11 @@ export async function GET(request: NextRequest) {
     let assistants;
 
     if (workspaceSlug) {
-      assistants = await db.assistants.getByWorkspaceSlug(workspaceSlug);
+      // Resolve workspaceSlug from id or slug to avoid orphaned assistants when callers pass ids.
+      const workspaces = await db.workspaces.getByClientId(clientId);
+      const match = workspaces.find((w) => w.slug === workspaceSlug || w.id === workspaceSlug);
+      const resolvedWorkspaceSlug = match?.slug || workspaceSlug;
+      assistants = await db.assistants.getByWorkspaceSlug(resolvedWorkspaceSlug);
     } else {
       assistants = await db.assistants.getByClientId(clientId);
     }

@@ -731,12 +731,20 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
           {/* Desktop: Horizontal layout */}
           <div className="hidden lg:flex items-start justify-between mb-6">
             <div className="flex items-center gap-4">
-              <img
-                src={assistant.image}
-                alt={assistant.name}
-                className="w-16 h-16 rounded-full"
+              <div
+                className="w-16 h-16 rounded-full flex items-center justify-center overflow-hidden"
                 style={{ backgroundColor: brandColor }}
-              />
+              >
+                {assistant.image?.trim() ? (
+                  <img
+                    src={assistant.image.trim()}
+                    alt={assistant.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-xl font-semibold text-white">{assistant.name.charAt(0)}</span>
+                )}
+              </div>
               <div>
                 <h1 className="text-2xl font-bold text-foreground">{assistant.name} Analytics</h1>
                 <p className="text-foreground-secondary">{assistant.description}</p>
@@ -782,12 +790,20 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
           {/* Mobile: Stacked layout */}
           <div className="lg:hidden space-y-4 mb-6">
             <div className="flex items-center gap-3">
-              <img
-                src={assistant.image}
-                alt={assistant.name}
-                className="w-12 h-12 rounded-full"
+              <div
+                className="w-12 h-12 rounded-full flex items-center justify-center overflow-hidden"
                 style={{ backgroundColor: brandColor }}
-              />
+              >
+                {assistant.image?.trim() ? (
+                  <img
+                    src={assistant.image.trim()}
+                    alt={assistant.name}
+                    className="w-full h-full object-cover"
+                  />
+                ) : (
+                  <span className="text-base font-semibold text-white">{assistant.name.charAt(0)}</span>
+                )}
+              </div>
               <div className="min-w-0 flex-1">
                 <h1 className="text-lg font-bold text-foreground truncate">{assistant.name} Analytics</h1>
                 <p className="text-sm text-foreground-secondary truncate">{assistant.description}</p>

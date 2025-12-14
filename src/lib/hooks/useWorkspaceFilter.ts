@@ -44,13 +44,23 @@ export function useWorkspaceFilter({
   selectedBot,
   onBotChange,
 }: UseWorkspaceFilterOptions): UseWorkspaceFilterReturn {
+  const selectedWorkspaceKeys = useMemo(() => {
+    if (selectedWorkspace === 'all') return ['all'];
+    const match = workspaces.find((w) => w.slug === selectedWorkspace || w.id === selectedWorkspace);
+    const keys = new Set<string>();
+    keys.add(selectedWorkspace);
+    if (match?.slug) keys.add(match.slug);
+    if (match?.id) keys.add(match.id);
+    return Array.from(keys);
+  }, [selectedWorkspace, workspaces]);
+
   // Filter assistants based on selected workspace
   const filteredAssistants = useMemo(() => {
     if (selectedWorkspace === 'all') {
       return assistants;
     }
-    return assistants.filter((assistant) => assistant.workspaceSlug === selectedWorkspace);
-  }, [assistants, selectedWorkspace]);
+    return assistants.filter((assistant) => selectedWorkspaceKeys.includes(assistant.workspaceSlug));
+  }, [assistants, selectedWorkspace, selectedWorkspaceKeys]);
 
   // Generate assistant options for dropdown
   const botOptions = useMemo(() => {
@@ -111,13 +121,23 @@ export function useMultiAssistantWorkspaceFilter({
   selectedAssistants,
   onAssistantsChange,
 }: UseMultiAssistantWorkspaceFilterOptions): UseMultiAssistantWorkspaceFilterReturn {
+  const selectedWorkspaceKeys = useMemo(() => {
+    if (selectedWorkspace === 'all') return ['all'];
+    const match = workspaces.find((w) => w.slug === selectedWorkspace || w.id === selectedWorkspace);
+    const keys = new Set<string>();
+    keys.add(selectedWorkspace);
+    if (match?.slug) keys.add(match.slug);
+    if (match?.id) keys.add(match.id);
+    return Array.from(keys);
+  }, [selectedWorkspace, workspaces]);
+
   // Filter assistants based on selected workspace
   const filteredAssistants = useMemo(() => {
     if (selectedWorkspace === 'all') {
       return assistants;
     }
-    return assistants.filter((assistant) => assistant.workspaceSlug === selectedWorkspace);
-  }, [assistants, selectedWorkspace]);
+    return assistants.filter((assistant) => selectedWorkspaceKeys.includes(assistant.workspaceSlug));
+  }, [assistants, selectedWorkspace, selectedWorkspaceKeys]);
 
   // Generate workspace options for dropdown
   const workspaceOptions = useMemo(() => {

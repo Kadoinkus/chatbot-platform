@@ -17,6 +17,7 @@ interface AssistantCardProps {
 
 export default function AssistantCard({ assistant, clientId, workspaceName, workspace }: AssistantCardProps) {
   const brandColor = getClientBrandColor(assistant.clientId);
+  const imageSrc = assistant.image?.trim();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
@@ -113,19 +114,29 @@ export default function AssistantCard({ assistant, clientId, workspaceName, work
           <div className="flex items-start justify-between mb-4">
             <div className="flex items-center gap-4">
               <div className="relative flex-shrink-0">
-                <div
-                  className="relative w-24 h-24 rounded-full overflow-hidden group-hover:scale-105 transition-transform duration-300"
-                  style={{ backgroundColor: brandColor }}
-                >
-                  <Image
-                    src={assistant.image}
-                    alt={assistant.name}
-                    fill
-                    sizes="96px"
-                    className="object-cover"
-                    loading="lazy"
-                  />
-                </div>
+                {imageSrc ? (
+                  <div
+                    className="relative w-24 h-24 rounded-full overflow-hidden group-hover:scale-105 transition-transform duration-300"
+                    style={{ backgroundColor: brandColor }}
+                  >
+                    <Image
+                      src={imageSrc}
+                      alt={assistant.name}
+                      fill
+                      sizes="96px"
+                      className="object-cover"
+                      loading="lazy"
+                    />
+                  </div>
+                ) : (
+                  <div
+                    className="relative w-24 h-24 rounded-full flex items-center justify-center text-2xl font-semibold text-white"
+                    style={{ backgroundColor: brandColor }}
+                    aria-hidden
+                  >
+                    {assistant.name?.charAt(0) || '?'}
+                  </div>
+                )}
                 {/* Status indicator - warning if cannot operate */}
                 {!canOperate && (
                   <div

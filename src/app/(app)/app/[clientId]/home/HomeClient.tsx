@@ -107,14 +107,20 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                               className="relative w-8 h-8 rounded-full border-2 border-background -ml-2 first:ml-0 overflow-hidden"
                               style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
                             >
-                              <Image
-                                src={assistant.image}
-                                alt={assistant.name}
-                                fill
-                                sizes="32px"
-                                className="object-cover"
-                                loading="lazy"
-                              />
+                              {assistant.image?.trim() ? (
+                                <Image
+                                  src={assistant.image.trim()}
+                                  alt={assistant.name}
+                                  fill
+                                  sizes="32px"
+                                  className="object-cover"
+                                  loading="lazy"
+                                />
+                              ) : (
+                                <div className="absolute inset-0 flex items-center justify-center text-xs font-semibold text-white">
+                                  {assistant.name.charAt(0)}
+                                </div>
+                              )}
                             </div>
                           ))}
                           {assistants.length > 5 && (

@@ -133,9 +133,11 @@ export function mapAssistantFromMascot(raw: any): Assistant {
   return {
     id: raw.mascot_slug,
     clientId: raw.client_slug,
-    workspaceSlug: raw.workspace_slug,
+    // Workspace may be stored as slug or id; support both to avoid orphaning assistants in UI filters.
+    workspaceSlug: raw.workspace_slug || raw.workspace_id || raw.workspace || raw.workspaceSlug,
     name: raw.name,
-    image: raw.image_url || '',
+    // Keep undefined if missing; UI components handle fallback avatars
+    image: raw.image_url || undefined,
     status: normalizeAssistantStatus(raw.status),
     conversations: raw.total_conversations || 0,
     description: raw.description || '',

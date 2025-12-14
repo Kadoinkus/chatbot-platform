@@ -1,6 +1,6 @@
 'use client';
 import { useState, useEffect, use } from 'react';
-import { getClientById, getWorkspaceById, getAssistantsByWorkspaceSlug } from '@/lib/dataService';
+import { getClientById, getWorkspaceById, getAssistantsByWorkspaceSlug, getAssistantsByClientId } from '@/lib/dataService';
 import type { Client, Workspace, Assistant } from '@/lib/dataService';
 import AssistantCard from '@/components/AssistantCard';
 import Link from 'next/link';
@@ -44,8 +44,20 @@ export default function WorkspaceDetailPage({
         ]);
 
         let assistantsData: Assistant[] = [];
-        if (workspaceData?.slug) {
-          assistantsData = await getAssistantsByWorkspaceSlug(workspaceData.slug, clientId);
+        const workspaceKeys = new Set<string>();
+        if (workspaceData?.slug) workspaceKeys.add(workspaceData.slug);
+        if (workspaceData?.id) workspaceKeys.add(workspaceData.id);
+        workspaceKeys.add(workspaceId);
+
+        // Try scoped fetch first
+        const primaryKey = workspaceData?.slug ?? workspaceId;
+        if (primaryKey) {
+          assistantsData = await getAssistantsByWorkspaceSlug(primaryKey, clientId);
+        }
+        // Fallback: fetch all assistants for the client and filter by any matching key
+        if (!assistantsData?.length) {
+          const allAssistants = await getAssistantsByClientId(clientId);
+          assistantsData = allAssistants.filter((a) => a.workspaceSlug && workspaceKeys.has(a.workspaceSlug));
         }
 
         setClient(clientData);

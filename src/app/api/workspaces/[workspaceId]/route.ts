@@ -6,8 +6,7 @@ export async function GET(
   { params }: { params: Promise<{ workspaceId: string }> }
 ) {
   try {
-    // Route param is named workspaceId but we treat it as slug only
-    const { workspaceId: workspaceSlug } = await params;
+    const { workspaceId } = await params;
     const { searchParams } = new URL(request.url);
     const clientId = searchParams.get('clientId');
 
@@ -19,13 +18,15 @@ export async function GET(
     }
 
     const db = getDbForClient(clientId);
-    const workspace = await db.workspaces.getBySlug(workspaceSlug);
+    const workspace =
+      (await db.workspaces.getBySlug(workspaceId)) ||
+      (await db.workspaces.getById(workspaceId));
 
     if (!workspace) {
       return NextResponse.json(
         {
           code: 'WORKSPACE_NOT_FOUND',
-          message: `Workspace "${workspaceSlug}" not found`,
+          message: `Workspace "${workspaceId}" not found`,
         },
         { status: 404 }
       );

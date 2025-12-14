@@ -607,34 +607,40 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
           startDate.setHours(0, 0, 0, 0);
         }
 
-        // Load basic data
-        const [clientData, assistantData] = await Promise.all([
-          getClientById(clientId),
-          getAssistantById(assistantId, clientId)
-        ]);
-
-        let workspaceData: Workspace | undefined;
-        if (assistantData?.workspaceSlug) {
-          workspaceData = await getWorkspaceById(assistantData.workspaceSlug, clientId);
-          setWorkspace(workspaceData);
-        }
+        // Load base data via bootstrap
+        const bootstrapRes = await fetch(`/api/bootstrap?clientId=${clientId}`);
+        const bootstrapJson = await bootstrapRes.json();
+        const clientData = bootstrapJson.data?.client || null;
+        const assistants = bootstrapJson.data?.assistants || [];
+        const workspaces = bootstrapJson.data?.workspaces || [];
 
         setClient(clientData);
-        setAssistant(assistantData);
 
-        if (!clientData) {
+        const assistantData =
+          assistants.find((a: any) => a.id === assistantId) ||
+          (await getAssistantById(assistantId, clientId)) ||
+          null;
+        setAssistant(assistantData || undefined);
+
+        const workspaceData =
+          workspaces.find((w: any) => w.slug === assistantData?.workspaceSlug) ||
+          (assistantData?.workspaceSlug
+            ? await getWorkspaceById(assistantData.workspaceSlug, clientData?.slug || clientId)
+            : null);
+        if (workspaceData) setWorkspace(workspaceData as Workspace);
+
+        if (!clientData || !assistantData) {
           setLoading(false);
           return;
         }
 
         // Fetch analytics via API (server-side has Supabase access)
         const params = new URLSearchParams({
-          clientId: clientData.id,
-          botId: assistantId,
+          clientId: clientData.slug || clientId,
           from: startDate.toISOString(),
           to: endDate.toISOString(),
         });
-        const res = await fetch(`/api/analytics/bot?${params}`);
+        const res = await fetch(`/api/analytics/assistant/${assistantId}?${params}`);
         const json = await res.json();
 
         if (!json.data) {

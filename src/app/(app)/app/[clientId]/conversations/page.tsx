@@ -148,17 +148,15 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
     return { start, end: now };
   }, [customDateRange, dateRange, useCustomRange, billingRange]);
 
-  // Fetch client + assistants
+  // Fetch client + assistants via bootstrap API
   useEffect(() => {
     async function loadClientData() {
       try {
         setError(null);
-        const [clientData, assistantsData] = await Promise.all([
-          getClientById(clientId),
-          getAssistantsByClientId(clientId),
-        ]);
-        setClient(clientData || null);
-        setAssistants(assistantsData || []);
+        const res = await fetch(`/api/bootstrap?clientId=${clientId}`);
+        const json = await res.json();
+        setClient(json.data?.client || null);
+        setAssistants(json.data?.assistants || []);
       } catch (err) {
         console.error('Error loading client/assistants:', err);
         setError('Failed to load client data. Please try again.');
@@ -167,6 +165,16 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
     loadClientData();
   }, [clientId]);
 
+  // Memoize date filter to avoid recreating on every render
+  const dateFilter = useMemo(() => getDateRangeFilter(), [
+    useCustomRange,
+    customDateRange.start,
+    customDateRange.end,
+    dateRange,
+    billingRange?.start,
+    billingRange?.end,
+  ]);
+
   // Fetch sessions via API (server-side has access to Supabase service key)
   useEffect(() => {
     if (!client) return;
@@ -174,20 +182,23 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
     async function loadData() {
       setLoading(true);
       try {
-        const dateFilter = getDateRangeFilter();
-        const params = new URLSearchParams({
-          clientId,
-          from: dateFilter.start.toISOString(),
-          to: dateFilter.end.toISOString(),
+        const clientSlug = client?.slug || clientId;
+        const assistantIds =
+          selectedAssistants.includes('all') && selectedAssistants.length === 1
+            ? assistants.map((a) => a.id)
+            : selectedAssistants;
+        const res = await fetch('/api/analytics/conversations', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            clientId: clientSlug,
+            from: dateFilter.start.toISOString(),
+            to: dateFilter.end.toISOString(),
+            assistantIds,
+          }),
         });
-        const res = await fetch(`/api/analytics/chat-sessions?${params}`);
         const json = await res.json();
-        const assistantSlugs = assistants.map((a) => a.id);
-        const filtered =
-          assistantSlugs.length === 0
-            ? json.data || []
-            : (json.data || []).filter((s: any) => assistantSlugs.includes(s.mascot_slug));
-        setSessions(filtered);
+        setSessions(json.data || []);
       } catch (error) {
         console.error('Error loading sessions:', error);
       } finally {
@@ -196,22 +207,20 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
     }
 
     loadData();
-  }, [clientId, client, dateRange, getDateRangeFilter, assistants]);
+  }, [clientId, client, dateFilter, assistants, selectedAssistants]);
 
-  // Fetch workspaces
+  // Fetch workspaces via bootstrap (from cached state)
   useEffect(() => {
     if (!client) return;
-
     async function loadWorkspaces() {
       try {
-        const res = await fetch(`/api/workspaces?clientId=${clientId}`);
+        const res = await fetch(`/api/bootstrap?clientId=${clientId}`);
         const json = await res.json();
-        setWorkspaces(json.data || []);
+        setWorkspaces(json.data?.workspaces || []);
       } catch (error) {
         console.error('Error loading workspaces:', error);
       }
     }
-
     loadWorkspaces();
   }, [clientId, client]);
 
@@ -294,6 +303,7 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
   }, [selectedAssistants, selectedStatus, selectedWorkspace, searchTerm, activeTab, dateRange, useCustomRange, customDateRange]);
 
   // Ensure assistant selection stays in sync with workspace filter
+  // Only runs when workspace changes - NOT when selectedAssistants changes (would cause infinite loop)
   useEffect(() => {
     if (selectedWorkspace === 'all') return;
     const allowed = assistants.filter((a) => a.workspaceSlug === selectedWorkspace).map((a) => a.id);
@@ -301,11 +311,12 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
       setSelectedAssistants(['all']);
       return;
     }
-    if (!selectedAssistants.includes('all')) {
-      const filtered = selectedAssistants.filter((id) => allowed.includes(id));
-      setSelectedAssistants(filtered.length ? filtered : ['all']);
-    }
-  }, [assistants, selectedAssistants, selectedWorkspace]);
+    setSelectedAssistants((prev) => {
+      if (prev.includes('all')) return prev;
+      const filtered = prev.filter((id) => allowed.includes(id));
+      return filtered.length ? filtered : ['all'];
+    });
+  }, [assistants, selectedWorkspace]);
 
   // Normalize sessions for shared tabs + derive stats
   const { sessions: normalizedSessions, stats } = useMemo(

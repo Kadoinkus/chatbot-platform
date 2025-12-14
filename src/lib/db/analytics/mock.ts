@@ -643,7 +643,7 @@ export const aggregations: AnalyticsAggregations = {
     }
 
     botSessions.forEach(s => {
-      const hour = new Date(s.session_started_at).getHours();
+      const hour = new Date(s.session_started_at).getUTCHours();
       hourCounts[hour] = (hourCounts[hour] || 0) + 1;
     });
 
@@ -736,12 +736,12 @@ export const aggregations: AnalyticsAggregations = {
     const topAnimations = Object.entries(animationCounts)
       .map(([animation, count]) => ({ animation, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+      .slice(0, 10);
 
     const topEasterEggs = Object.entries(easterEggCounts)
       .map(([animation, count]) => ({ animation, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+      .slice(0, 10);
 
     const waitSequences = Object.entries(waitSequenceCounts)
       .map(([sequence, count]) => ({ sequence, count }))
@@ -957,7 +957,7 @@ export const aggregations: AnalyticsAggregations = {
     }
 
     clientSessions.forEach(s => {
-      const hour = new Date(s.session_started_at).getHours();
+      const hour = new Date(s.session_started_at).getUTCHours();
       hourCounts[hour] = (hourCounts[hour] || 0) + 1;
     });
 
@@ -1050,12 +1050,12 @@ export const aggregations: AnalyticsAggregations = {
     const topAnimations = Object.entries(animationCounts)
       .map(([animation, count]) => ({ animation, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+      .slice(0, 10);
 
     const topEasterEggs = Object.entries(easterEggCounts)
       .map(([animation, count]) => ({ animation, count }))
       .sort((a, b) => b.count - a.count)
-      .slice(0, 5);
+      .slice(0, 10);
 
     const waitSequences = Object.entries(waitSequenceCounts)
       .map(([sequence, count]) => ({ sequence, count }))

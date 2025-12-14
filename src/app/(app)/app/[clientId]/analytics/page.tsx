@@ -4,7 +4,6 @@ import { useState, useMemo, useEffect, useRef, useCallback, use } from 'react';
 import dynamic from 'next/dynamic';
 import { getClientById, getAssistantsByClientId, getWorkspacesByClientId } from '@/lib/dataService';
 import {
-  fetchAssistantComparisonData,
   calculateTotals,
   type AssistantWithMetrics,
 } from '@/lib/analytics/assistantComparison';
@@ -111,19 +110,15 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
     return () => document.removeEventListener('pointerdown', handleClickOutside);
   }, []);
 
-  // Load initial data
+  // Load initial data via bootstrap API
   useEffect(() => {
     async function loadData() {
       try {
-        const [clientData, workspacesData, assistantsData] = await Promise.all([
-          getClientById(clientId),
-          getWorkspacesByClientId(clientId),
-          getAssistantsByClientId(clientId),
-        ]);
-
-        setClient(clientData || null);
-        setWorkspaces(workspacesData);
-        setAssistants(assistantsData);
+        const res = await fetch(`/api/bootstrap?clientId=${clientId}`);
+        const json = await res.json();
+        setClient(json.data?.client || null);
+        setWorkspaces(json.data?.workspaces || []);
+        setAssistants(json.data?.assistants || []);
       } catch (error) {
         console.error('Error loading data:', error);
       } finally {
@@ -173,10 +168,25 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
           start.setHours(0, 0, 0, 0);
         }
 
-        const dateRangeParam = { start, end };
+        const payload = {
+          clientId,
+          assistants: filteredAssistantList,
+          dateRange: { start: start.toISOString(), end: end.toISOString() },
+        };
 
-        const metrics = await fetchAssistantComparisonData(clientId, filteredAssistantList, dateRangeParam);
-        setAssistantMetrics(metrics);
+        const res = await fetch('/api/analytics/assistant-comparison', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload),
+        });
+
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || 'Failed to load analytics');
+        }
+
+        const json = await res.json();
+        setAssistantMetrics(json.data || []);
       } catch (error) {
         console.error('Error loading metrics:', error);
       } finally {
@@ -567,8 +577,7 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
       <PageContent>
         <PageHeader
           title="Analytics Dashboard"
-          description={headerDescription}
-          subtitle={rangeLabel}
+          description={`${headerDescription} · ${rangeLabel}`}
         />
 
         <Card className="mb-6 p-4 space-y-4 overflow-visible">

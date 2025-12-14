@@ -2,7 +2,6 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback, use } from "react";
 import { getClientById, getAssistantsByClientId } from '@/lib/dataService';
-import { getAnalyticsForClient } from '@/lib/db/analytics';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { getContrastTextColor } from '@/lib/chartColors';
 import type { ChatSessionWithAnalysis, Workspace, Client, Assistant } from '@/types';
@@ -147,19 +146,22 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
     loadClientData();
   }, [clientId]);
 
-  // Fetch sessions
+  // Fetch sessions via API (server-side has access to Supabase service key)
   useEffect(() => {
     if (!client) return;
 
     async function loadData() {
       setLoading(true);
       try {
-        const analytics = getAnalyticsForClient(clientId);
         const dateFilter = getDateRangeFilter();
-        const sessionsData = await analytics.chatSessions.getWithAnalysisByClientId(clientId, {
-          dateRange: dateFilter,
+        const params = new URLSearchParams({
+          clientId,
+          from: dateFilter.start.toISOString(),
+          to: dateFilter.end.toISOString(),
         });
-        setSessions(sessionsData);
+        const res = await fetch(`/api/analytics/chat-sessions?${params}`);
+        const json = await res.json();
+        setSessions(json.data || []);
       } catch (error) {
         console.error('Error loading sessions:', error);
       } finally {

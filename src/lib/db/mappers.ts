@@ -1,5 +1,6 @@
 import type { ChatSession } from '@/types';
-import type { Assistant, Client, Workspace, User } from '@/types';
+import type { Assistant, Client, Workspace, User, Conversation, Message, Session } from '@/types';
+import type { AssistantSession } from '@/types';
 
 /**
  * Normalize raw chat session data (mock JSON or Supabase rows) into
@@ -86,6 +87,105 @@ export function normalizeChatSession(raw: any): ChatSession {
     glb_response_end: raw.glb_response_end ?? null,
     glb_url: raw.glb_url ?? null,
     full_transcript: raw.full_transcript || null,
+  };
+}
+
+export function mapConversationFromChatSession(raw: any): Conversation {
+  const startedAt = raw.session_start || raw.session_started_at || raw.created_at;
+  const endedAt = raw.session_end || raw.session_ended_at || raw.updated_at;
+  const totalMessages = raw.total_messages ?? (raw.total_bot_messages ?? 0) + (raw.total_user_messages ?? 0);
+
+  return {
+    id: raw.id,
+    assistantId: raw.mascot_slug,
+    clientId: raw.client_slug || '',
+    userId: raw.user_id || '',
+    userName: raw.user_id || 'Visitor',
+    status: raw.is_active ? 'active' : 'resolved',
+    startedAt: startedAt || new Date().toISOString(),
+    endedAt: endedAt || undefined,
+    messages: totalMessages,
+    satisfaction: raw.csat_score || undefined,
+    intent: raw.intent || 'general',
+    channel: 'webchat',
+    preview:
+      (raw.full_transcript && Array.isArray(raw.full_transcript)
+        ? raw.full_transcript[0]?.message || ''
+        : raw.page_url || '') || '',
+  };
+}
+
+export function mapMessageFromChatMessage(raw: any): Message {
+  const author = (raw.author || '').toLowerCase();
+  const sender: Message['sender'] =
+    author === 'user' ? 'user' : author === 'assistant' ? 'assistant' : 'agent';
+
+  return {
+    id: raw.id,
+    conversationId: raw.session_id,
+    sender,
+    senderName: raw.author || sender,
+    content: raw.message || '',
+    timestamp: raw.timestamp || raw.created_at || new Date().toISOString(),
+  };
+}
+
+export function mapSessionFromChatSession(raw: any): Session {
+  const startedAt = raw.session_start || raw.session_started_at || raw.created_at;
+  const endedAt = raw.session_end || raw.session_ended_at || raw.updated_at;
+
+  return {
+    id: raw.id,
+    userId: raw.user_id || '',
+    userName: raw.user_id || 'Visitor',
+    clientId: raw.client_slug || '',
+    startedAt: startedAt || new Date().toISOString(),
+    endedAt: endedAt || undefined,
+    lastActivity: raw.last_activity || endedAt || startedAt || new Date().toISOString(),
+    device: raw.device_type || 'unknown',
+    browser: raw.browser || 'unknown',
+    location: raw.country || 'unknown',
+    ip: raw.ip_address || '',
+    status: raw.is_active ? 'active' : 'ended',
+    actions: [],
+  };
+}
+
+export function mapAssistantSessionFromChatSession(raw: any): AssistantSession {
+  return {
+    session_id: raw.id,
+    assistant_id: raw.mascot_slug,
+    client_slug: raw.client_slug || '',
+    start_time: raw.session_start || raw.created_at || new Date().toISOString(),
+    end_time: raw.session_end || raw.updated_at || null,
+    ip_address: raw.ip_address || '',
+    country: raw.country || '',
+    language: raw.language || '',
+    messages_sent: raw.total_messages ?? (raw.total_bot_messages ?? 0) + (raw.total_user_messages ?? 0),
+    sentiment: 'neutral',
+    escalated: raw.escalated ? 'Yes' : 'No',
+    forwarded_hr: 'No',
+    full_transcript: raw.full_transcript ? JSON.stringify(raw.full_transcript) : '',
+    avg_response_time: raw.average_response_time_ms ?? 0,
+    tokens: raw.total_tokens ?? 0,
+    tokens_eur: raw.total_cost_eur ?? 0,
+    category: raw.category || 'general',
+    questions: raw.questions || [],
+    user_rating: raw.csat_score ?? 0,
+    summary: raw.summary || '',
+    assistant_handoff: !!raw.escalated,
+    human_cost_equivalent: 0,
+    automation_saving: 0,
+    intent_confidence: 0,
+    resolution_type: 'unresolved',
+    completion_status: 'incomplete',
+    user_type: 'new',
+    channel: 'webchat',
+    device_type: raw.device_type || 'desktop',
+    browser: raw.browser || '',
+    session_steps: 0,
+    goal_achieved: false,
+    error_occurred: false,
   };
 }
 

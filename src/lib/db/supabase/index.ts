@@ -13,7 +13,16 @@ import type {
   AssistantMetricsResult,
   DbOperations,
 } from '../types';
-import { mapClient, mapAssistantFromMascot, mapWorkspace, mapUser } from '../mappers';
+import {
+  mapClient,
+  mapAssistantFromMascot,
+  mapWorkspace,
+  mapUser,
+  mapConversationFromChatSession,
+  mapMessageFromChatMessage,
+  mapSessionFromChatSession,
+  mapAssistantSessionFromChatSession,
+} from '../mappers';
 
 interface SupabaseDbOptions {
   adminClient: SupabaseClient | null;
@@ -225,10 +234,13 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
   const conversations: ConversationOperations = {
     async getAll() {
       const supabase = requireSupabase();
-      const { data, error } = await supabase.from('conversations').select('*').order('started_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('chat_sessions')
+        .select('*')
+        .order('session_start', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapConversationFromChatSession);
     },
 
     async getById(id: string) {
@@ -237,10 +249,10 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       }
 
       const supabase = requireSupabase();
-      const { data, error } = await supabase.from('conversations').select('*').eq('id', id).single();
+      const { data, error } = await supabase.from('chat_sessions').select('*').eq('id', id).single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data || null;
+      return data ? mapConversationFromChatSession(data) : null;
     },
 
     async getByClientId(clientId: string) {
@@ -248,25 +260,25 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const resolvedSlug = (await clients.resolveSlug(clientId)) || clientId;
 
       const { data, error } = await supabase
-        .from('conversations')
+        .from('chat_sessions')
         .select('*')
         .eq('client_slug', resolvedSlug)
-        .order('started_at', { ascending: false });
+        .order('session_start', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapConversationFromChatSession);
     },
 
     async getByAssistantId(assistantId: string) {
       const supabase = requireSupabase();
       const { data, error } = await supabase
-        .from('conversations')
+        .from('chat_sessions')
         .select('*')
-        .eq('bot_id', assistantId)
-        .order('started_at', { ascending: false });
+        .eq('mascot_slug', assistantId)
+        .order('session_start', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapConversationFromChatSession);
     },
   };
 
@@ -275,13 +287,13 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
     async getByConversationId(conversationId: string) {
       const supabase = requireSupabase();
       const { data, error } = await supabase
-        .from('messages')
+        .from('chat_messages')
         .select('*')
-        .eq('conversation_id', conversationId)
+        .eq('session_id', conversationId)
         .order('timestamp', { ascending: true });
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapMessageFromChatMessage);
     },
   };
 
@@ -292,13 +304,13 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const resolvedSlug = (await clients.resolveSlug(clientId)) || clientId;
 
       const { data, error } = await supabase
-        .from('sessions')
+        .from('chat_sessions')
         .select('*')
         .eq('client_slug', resolvedSlug)
-        .order('created_at', { ascending: false });
+        .order('session_start', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapSessionFromChatSession);
     },
 
     async getActiveByClientId(clientId: string) {
@@ -306,44 +318,48 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const resolvedSlug = (await clients.resolveSlug(clientId)) || clientId;
 
       const { data, error } = await supabase
-        .from('sessions')
+        .from('chat_sessions')
         .select('*')
         .eq('client_slug', resolvedSlug)
-        .eq('status', 'active')
-        .order('created_at', { ascending: false });
+        .eq('is_active', true)
+        .order('session_start', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapSessionFromChatSession);
     },
 
     async getAssistantSessions(assistantId: string, dateRange?: DateRange) {
       const supabase = requireSupabase();
-      let query = supabase.from('bot_sessions').select('*').eq('bot_id', assistantId);
+      let query = supabase.from('chat_sessions').select('*').eq('mascot_slug', assistantId);
 
       if (dateRange) {
-        query = query.gte('start_time', dateRange.start.toISOString()).lte('start_time', dateRange.end.toISOString());
+        query = query
+          .gte('session_start', dateRange.start.toISOString())
+          .lte('session_start', dateRange.end.toISOString());
       }
 
-      const { data, error } = await query.order('start_time', { ascending: false });
+      const { data, error } = await query.order('session_start', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapAssistantSessionFromChatSession);
     },
 
     async getAssistantSessionsByClientId(clientId: string, dateRange?: DateRange) {
       const supabase = requireSupabase();
       const resolvedSlug = (await clients.resolveSlug(clientId)) || clientId;
 
-      let query = supabase.from('bot_sessions').select('*').eq('client_slug', resolvedSlug);
+      let query = supabase.from('chat_sessions').select('*').eq('client_slug', resolvedSlug);
 
       if (dateRange) {
-        query = query.gte('start_time', dateRange.start.toISOString()).lte('start_time', dateRange.end.toISOString());
+        query = query
+          .gte('session_start', dateRange.start.toISOString())
+          .lte('session_start', dateRange.end.toISOString());
       }
 
-      const { data, error } = await query.order('start_time', { ascending: false });
+      const { data, error } = await query.order('session_start', { ascending: false });
 
       if (error) throw error;
-      return data || [];
+      return (data || []).map(mapAssistantSessionFromChatSession);
     },
   };
 

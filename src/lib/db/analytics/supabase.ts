@@ -192,7 +192,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       let query = supabase
         .from('chat_sessions')
-        .select('*, chat_session_analysis(*)')
+        .select('*, chat_session_analyses(*)')
         .eq('mascot_slug', botId)
         .order('session_start', { ascending: false });
 
@@ -201,11 +201,23 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
       }
 
       const { data, error } = await query;
+
+      // Debug logging
+      console.log(`[Analytics:${label}] getWithAnalysisByBotId:`, {
+        botId,
+        dateRange: filters?.dateRange ? {
+          start: filters.dateRange.start.toISOString(),
+          end: filters.dateRange.end.toISOString()
+        } : null,
+        resultCount: data?.length || 0,
+        error: error?.message || null,
+      });
+
       if (error) throw error;
 
       return (data || []).map((row: any) => ({
         ...mapChatSession(row),
-        analysis: row.chat_session_analysis ? mapChatSessionAnalysis(row.chat_session_analysis) : null,
+        analysis: row.chat_session_analyses ? mapChatSessionAnalysis(row.chat_session_analyses) : null,
       }));
     },
 
@@ -214,7 +226,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       let query = supabase
         .from('chat_sessions')
-        .select('*, chat_session_analysis(*)')
+        .select('*, chat_session_analyses(*)')
         .eq('client_slug', clientId)
         .order('session_start', { ascending: false });
 
@@ -223,11 +235,23 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
       }
 
       const { data, error } = await query;
+
+      // Debug logging
+      console.log(`[Analytics:${label}] getWithAnalysisByClientId:`, {
+        clientId,
+        dateRange: filters?.dateRange ? {
+          start: filters.dateRange.start.toISOString(),
+          end: filters.dateRange.end.toISOString()
+        } : null,
+        resultCount: data?.length || 0,
+        error: error?.message || null,
+      });
+
       if (error) throw error;
 
       return (data || []).map((row: any) => ({
         ...mapChatSession(row),
-        analysis: row.chat_session_analysis ? mapChatSessionAnalysis(row.chat_session_analysis) : null,
+        analysis: row.chat_session_analyses ? mapChatSessionAnalysis(row.chat_session_analyses) : null,
       }));
     },
 

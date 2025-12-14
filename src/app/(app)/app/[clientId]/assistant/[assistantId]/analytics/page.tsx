@@ -33,7 +33,6 @@ import {
 } from 'lucide-react';
 
 import { getClientById, getAssistantById } from '@/lib/dataService';
-import { getAnalyticsForClient } from '@/lib/db/analytics';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { getChartColors, ensureReadableColor } from '@/lib/chartColors';
 import { tooltipStyle } from '@/lib/chartTooltip';
@@ -542,7 +541,7 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
     setConversationPage(1);
   }, [assistant?.id, dateRange, useCustomRange, customDateRange, sessions.length]);
 
-  // Load data
+  // Load data via API (server-side has access to Supabase service key)
   useEffect(() => {
     async function loadData() {
       const shouldShowPageSpinner = !hasLoaded;
@@ -570,8 +569,6 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
           startDate.setHours(0, 0, 0, 0);
         }
 
-        const dateRangeFilter = { start: startDate, end: endDate };
-
         // Load basic data
         const [clientData, assistantData] = await Promise.all([
           getClientById(clientId),
@@ -586,39 +583,36 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
           return;
         }
 
-        // Get analytics for this client (hybrid routing)
-        const analytics = getAnalyticsForClient(clientData.id);
+        // Fetch analytics via API (server-side has Supabase access)
+        const params = new URLSearchParams({
+          clientId: clientData.id,
+          botId: assistantId,
+          from: startDate.toISOString(),
+          to: endDate.toISOString(),
+        });
+        const res = await fetch(`/api/analytics/bot?${params}`);
+        const json = await res.json();
 
-        // Load all analytics data in parallel
-        const [
-          overviewData,
-          sentimentData,
-          categoriesData,
-          languagesData,
-          countriesData,
-          devicesData,
-          timeSeriesData,
-          questionsData,
-          unansweredData,
-          sessionsData,
-          sentimentTimeSeriesData,
-          hourlyBreakdownData,
-          animationStatsData
-        ] = await Promise.all([
-          analytics.aggregations.getOverviewByBotId(assistantId, dateRangeFilter),
-          analytics.aggregations.getSentimentByBotId(assistantId, dateRangeFilter),
-          analytics.aggregations.getCategoriesByBotId(assistantId, dateRangeFilter),
-          analytics.aggregations.getLanguagesByBotId(assistantId, dateRangeFilter),
-          analytics.aggregations.getCountriesByBotId(assistantId, dateRangeFilter),
-          analytics.aggregations.getDevicesByBotId(assistantId, dateRangeFilter),
-          analytics.aggregations.getTimeSeriesByBotId(assistantId, dateRangeFilter),
-          analytics.aggregations.getQuestionsByBotId(assistantId, dateRangeFilter),
-          analytics.aggregations.getUnansweredQuestionsByBotId(assistantId, dateRangeFilter),
-          analytics.chatSessions.getWithAnalysisByBotId(assistantId, { dateRange: dateRangeFilter }),
-          analytics.aggregations.getSentimentTimeSeriesByBotId(assistantId, dateRangeFilter),
-          analytics.aggregations.getHourlyBreakdownByBotId(assistantId, dateRangeFilter),
-          analytics.aggregations.getAnimationStatsByBotId(assistantId, dateRangeFilter)
-        ]);
+        if (!json.data) {
+          console.error('No analytics data returned');
+          return;
+        }
+
+        const {
+          overview: overviewData,
+          sentiment: sentimentData,
+          categories: categoriesData,
+          languages: languagesData,
+          countries: countriesData,
+          devices: devicesData,
+          timeSeries: timeSeriesData,
+          questions: questionsData,
+          unansweredQuestions: unansweredData,
+          sessions: sessionsData,
+          sentimentTimeSeries: sentimentTimeSeriesData,
+          hourlyBreakdown: hourlyBreakdownData,
+          animationStats: animationStatsData,
+        } = json.data;
 
         setOverview(overviewData);
         setSentiment(sentimentData);

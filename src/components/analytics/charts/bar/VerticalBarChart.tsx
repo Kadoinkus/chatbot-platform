@@ -1,7 +1,7 @@
 'use client';
 
 import { BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { tooltipStyle } from '@/lib/chartStyles';
+import { tooltipStyle } from '@/lib/chartTooltip';
 import { ChartWrapper, safeString } from '../common';
 import type { BaseChartProps } from '../common';
 

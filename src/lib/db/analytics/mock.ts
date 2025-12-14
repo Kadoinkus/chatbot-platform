@@ -310,7 +310,7 @@ export const analyses: ChatSessionAnalysisOperations = {
   },
 
   async getByBotId(botId: string, filters?: ChatSessionFilters): Promise<ChatSessionAnalysis[]> {
-    let result = getChatSessionAnalyses().filter(a => a.mascot_slug === botId);
+    const result = getChatSessionAnalyses().filter(a => a.mascot_slug === botId);
     return applyAnalysisFilters(result, filters);
   },
 
@@ -318,7 +318,7 @@ export const analyses: ChatSessionAnalysisOperations = {
     // Get analyses for all sessions belonging to this client
     const sessions = getChatSessions().filter(s => s.client_slug === clientId);
     const sessionIds = new Set(sessions.map(s => s.id));
-    let result = getChatSessionAnalyses().filter(a => sessionIds.has(a.session_id));
+    const result = getChatSessionAnalyses().filter(a => sessionIds.has(a.session_id));
     return applyAnalysisFilters(result, filters);
   },
 };

@@ -80,7 +80,7 @@ export function AssistantComparisonTable({
 
   // Sort and paginate assistants
   const { sortedAssistants, displayAssistants, totalPages } = useMemo(() => {
-    let sorted = [...assistants];
+    const sorted = [...assistants];
 
     if (sortKey && sortDirection) {
       const column = columns.find(c => c.key === sortKey);

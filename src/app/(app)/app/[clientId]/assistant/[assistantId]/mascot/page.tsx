@@ -770,12 +770,10 @@ export default function MascotStudioPage({ params }: { params: { clientId: strin
 
                       <div>
                         <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2">
-                          {/* eslint-disable-next-line jsx-a11y/alt-text */}
                           <Image size={18} />
                           Logo & Branding
                         </h3>
                         <div className="border-2 border-dashed border-border rounded-lg p-8 text-center">
-                          {/* eslint-disable-next-line jsx-a11y/alt-text */}
                           <Image size={32} className="mx-auto mb-2 text-foreground-tertiary" />
                           <p className="text-sm text-foreground-secondary mb-2">Drop your logo here or click to browse</p>
                           <Button variant="secondary" size="sm">

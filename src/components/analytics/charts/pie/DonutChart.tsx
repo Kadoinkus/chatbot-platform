@@ -1,7 +1,7 @@
 'use client';
 
 import { PieChart, Pie, Cell, Tooltip, Legend } from 'recharts';
-import { tooltipStyle } from '@/lib/chartStyles';
+import { tooltipStyle } from '@/lib/chartTooltip';
 import { getChartColors } from '@/lib/chartColors';
 import { ChartWrapper } from '../common';
 import type { BaseChartProps, CategoryDataPoint } from '../common';

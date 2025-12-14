@@ -1,10 +1,9 @@
+'use client';
+
 // ============================================
 // Formatting Utilities
 // ============================================
 
-/**
- * Format a number with thousands separators
- */
 export function formatNumber(value: number, decimals: number = 0): string {
   if (value === null || value === undefined || isNaN(value)) return '-';
   return value.toLocaleString('en-US', {
@@ -13,9 +12,6 @@ export function formatNumber(value: number, decimals: number = 0): string {
   });
 }
 
-/**
- * Format a number as currency (EUR)
- */
 export function formatCurrency(value: number, decimals: number = 2): string {
   if (value === null || value === undefined || isNaN(value)) return '-';
   return new Intl.NumberFormat('en-US', {
@@ -26,17 +22,11 @@ export function formatCurrency(value: number, decimals: number = 2): string {
   }).format(value);
 }
 
-/**
- * Format a number as percentage
- */
 export function formatPercentage(value: number, decimals: number = 1): string {
   if (value === null || value === undefined || isNaN(value)) return '-';
   return `${value.toFixed(decimals)}%`;
 }
 
-/**
- * Format milliseconds as duration string
- */
 export function formatDuration(ms: number): string {
   if (ms === null || ms === undefined || isNaN(ms)) return '-';
 
@@ -44,21 +34,12 @@ export function formatDuration(ms: number): string {
   const minutes = Math.floor(seconds / 60);
   const hours = Math.floor(minutes / 60);
 
-  if (hours > 0) {
-    return `${hours}h ${minutes % 60}m`;
-  }
-  if (minutes > 0) {
-    return `${minutes}m ${seconds % 60}s`;
-  }
-  if (seconds > 0) {
-    return `${seconds}s`;
-  }
+  if (hours > 0) return `${hours}h ${minutes % 60}m`;
+  if (minutes > 0) return `${minutes}m ${seconds % 60}s`;
+  if (seconds > 0) return `${seconds}s`;
   return `${ms}ms`;
 }
 
-/**
- * Format a date as readable string (Dec 5, 2025)
- */
 export function formatDate(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   if (isNaN(d.getTime())) return '-';
@@ -69,9 +50,6 @@ export function formatDate(date: Date | string): string {
   });
 }
 
-/**
- * Format a datetime as readable string (Dec 5, 2025 14:30)
- */
 export function formatDateTime(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   if (isNaN(d.getTime())) return '-';
@@ -84,9 +62,6 @@ export function formatDateTime(date: Date | string): string {
   });
 }
 
-/**
- * Format a date as relative time (2 hours ago)
- */
 export function formatRelativeTime(date: Date | string): string {
   const d = typeof date === 'string' ? new Date(date) : date;
   if (isNaN(d.getTime())) return '-';
@@ -104,21 +79,15 @@ export function formatRelativeTime(date: Date | string): string {
   return formatDate(d);
 }
 
-/**
- * Truncate text with ellipsis
- */
 export function truncateText(text: string, maxLength: number): string {
   if (!text) return '';
   if (text.length <= maxLength) return text;
-  return text.slice(0, maxLength - 3) + '...';
+  return `${text.slice(0, maxLength - 3)}...`;
 }
 
-/**
- * Format a value based on format type
- */
 export function formatValue(
   value: unknown,
-  format: 'text' | 'number' | 'currency' | 'percentage' | 'date' | 'datetime' | 'relative' | 'duration' | 'badge' = 'text',
+  format: 'text' | 'number' | 'currency' | 'percentage' | 'date' | 'datetime' | 'relative' | 'duration' = 'text',
   options?: { decimals?: number; truncate?: number }
 ): string {
   if (value === null || value === undefined) return '-';
@@ -138,12 +107,11 @@ export function formatValue(
       return formatRelativeTime(value as Date | string);
     case 'duration':
       return formatDuration(Number(value));
-    case 'badge':
-      return String(value);
     case 'text':
-    default:
+    default: {
       const str = String(value);
       return options?.truncate ? truncateText(str, options.truncate) : str;
+    }
   }
 }
 
@@ -151,9 +119,6 @@ export function formatValue(
 // Calculation Utilities
 // ============================================
 
-/**
- * Calculate percentage change between two values
- */
 export function calculateChange(current: number, previous: number): {
   change: number;
   changePercent: number;
@@ -177,32 +142,20 @@ export function calculateChange(current: number, previous: number): {
   };
 }
 
-/**
- * Calculate percentage of a value against total
- */
 export function calculatePercentage(value: number, total: number): number {
   if (total === 0) return 0;
   return (value / total) * 100;
 }
 
-/**
- * Sum array of numbers
- */
 export function sum(values: number[]): number {
   return values.reduce((acc, val) => acc + (val || 0), 0);
 }
 
-/**
- * Calculate average
- */
 export function average(values: number[]): number {
   if (values.length === 0) return 0;
   return sum(values) / values.length;
 }
 
-/**
- * Group data by a key
- */
 export function groupBy<T>(data: T[], key: keyof T): Record<string, T[]> {
   return data.reduce((acc, item) => {
     const groupKey = String(item[key]);
@@ -212,9 +165,6 @@ export function groupBy<T>(data: T[], key: keyof T): Record<string, T[]> {
   }, {} as Record<string, T[]>);
 }
 
-/**
- * Count occurrences by a key
- */
 export function countBy<T>(data: T[], key: keyof T): Record<string, number> {
   const grouped = groupBy(data, key);
   return Object.fromEntries(

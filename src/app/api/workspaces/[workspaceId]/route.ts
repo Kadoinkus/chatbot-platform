@@ -3,11 +3,11 @@ import { getDbForClient } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { workspaceId: string } }
+  { params }: { params: Promise<{ workspaceId: string }> }
 ) {
   try {
     // Route param is named workspaceId but we treat it as slug only
-    const workspaceSlug = params.workspaceId;
+    const { workspaceId: workspaceSlug } = await params;
     const { searchParams } = new URL(request.url);
     const clientId = searchParams.get('clientId');
 

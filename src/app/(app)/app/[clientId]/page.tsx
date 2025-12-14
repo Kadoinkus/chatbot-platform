@@ -29,10 +29,11 @@ async function fetchData(clientId: string) {
   return { client, workspaces, assistants: assistantsEnriched };
 }
 
-export default async function AllAssistantsPage({ params }: { params: { clientId: string } }) {
+export default async function AllAssistantsPage({ params }: { params: Promise<{ clientId: string }> }) {
+  const { clientId } = await params;
   return (
     <Suspense fallback={<div className="p-6 flex justify-center"><Spinner size="lg" /></div>}>
-      <AllAssistantsContent clientId={params.clientId} />
+      <AllAssistantsContent clientId={clientId} />
     </Suspense>
   );
 }

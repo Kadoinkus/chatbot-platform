@@ -1,6 +1,5 @@
-@tailwind base;
-@tailwind components;
-@tailwind utilities;
+@import "tailwindcss";
+@config "../../tailwind.config.js";
 
 /* ============================================================================
    CSS VARIABLES - LIGHT THEME (DEFAULT)
@@ -233,426 +232,449 @@ body {
 }
 
 /* ============================================================================
-   UTILITY CLASSES
+   COMPONENT CLASSES (Tailwind v4 compatible - no @layer for custom classes)
    ============================================================================ */
-@layer components {
-  /* Container */
-  .container {
-    @apply mx-auto px-4 sm:px-6 lg:px-8;
-  }
-
-  /* Card - Now theme-aware */
-  .card {
-    @apply rounded-2xl border border-border bg-surface-elevated shadow-sm;
-    transition: background-color 0.2s ease, border-color 0.2s ease;
-  }
-
-  .card-hover {
-    @apply card hover:shadow-md hover:border-border-secondary;
-    transition: all 0.2s ease;
-  }
-
-  /* Badge */
-  .badge {
-    @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
-  }
-
-  /* Status dot */
-  .status-dot {
-    @apply inline-block h-2 w-2 rounded-full mr-1;
-  }
-
-  /* Plan badges */
-  .badge-plan-starter {
-    background-color: var(--plan-starter-bg);
-    color: var(--plan-starter-text);
-    border: 1px solid var(--plan-starter-border);
-  }
-
-  .badge-plan-basic {
-    background-color: var(--plan-basic-bg);
-    color: var(--plan-basic-text);
-    border: 1px solid var(--plan-basic-border);
-  }
-
-  .badge-plan-premium {
-    background-color: var(--plan-premium-bg);
-    color: var(--plan-premium-text);
-    border: 1px solid var(--plan-premium-border);
-  }
-
-  .badge-plan-enterprise {
-    background-color: var(--plan-enterprise-bg);
-    color: var(--plan-enterprise-text);
-    border: 1px solid var(--plan-enterprise-border);
-  }
-
-  .badge-plan-custom {
-    background-color: var(--plan-custom-bg, var(--plan-enterprise-bg));
-    color: var(--plan-custom-text, var(--plan-enterprise-text));
-    border: 1px solid var(--plan-custom-border, var(--plan-enterprise-border));
-  }
-
-  /* Role badges */
-  .badge-role-owner {
-    background-color: var(--role-owner-bg);
-    color: var(--role-owner-text);
-    border: 1px solid var(--role-owner-border);
-  }
-
-  .badge-role-admin {
-    background-color: var(--role-admin-bg);
-    color: var(--role-admin-text);
-    border: 1px solid var(--role-admin-border);
-  }
-
-  .badge-role-agent {
-    background-color: var(--role-agent-bg);
-    color: var(--role-agent-text);
-    border: 1px solid var(--role-agent-border);
-  }
-
-  .badge-role-viewer {
-    background-color: var(--role-viewer-bg);
-    color: var(--role-viewer-text);
-    border: 1px solid var(--role-viewer-border);
-  }
-
-  /* Button base */
-  .btn {
-    @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors duration-fast;
-    @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
-    @apply h-11 px-4;
-  }
-
-  .btn-primary {
-    @apply btn bg-interactive text-foreground-inverse;
-    @apply hover:bg-interactive-primary-hover;
-    @apply focus:ring-interactive;
-  }
-
-  .btn-secondary {
-    @apply btn bg-interactive-secondary text-foreground border border-border;
-    @apply hover:bg-interactive-secondary-hover;
-    @apply focus:ring-border-focus;
-  }
-
-  .btn-ghost {
-    @apply btn bg-transparent text-foreground-secondary;
-    @apply hover:bg-background-hover hover:text-foreground;
-  }
-
-  .btn-danger {
-    @apply btn bg-error-600 text-white;
-    @apply hover:bg-error-700;
-    @apply focus:ring-error-500;
-  }
-
-  /* Link styles */
-  .link {
-    @apply text-accent hover:text-accent-hover transition-colors duration-fast;
-  }
-
-  .link-subtle {
-    @apply text-foreground-secondary hover:text-foreground transition-colors duration-fast;
-  }
-
-  /* Input base - full width by default for forms */
-  .input {
-    @apply w-full h-11 rounded-xl border border-border bg-background px-4;
-    @apply text-foreground placeholder:text-foreground-tertiary;
-    @apply focus:ring-2 focus:ring-interactive focus:border-transparent;
-    @apply transition-all duration-fast;
-  }
-
-  /* Select base - full width by default, matching Input */
-  .select {
-    @apply h-11 w-full rounded-xl border border-border bg-background px-4;
-    @apply text-foreground appearance-none cursor-pointer;
-    @apply focus:ring-2 focus:ring-interactive focus:border-transparent;
-    @apply transition-all duration-fast;
-    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
-    background-position: right 0.5rem center;
-    background-repeat: no-repeat;
-    background-size: 1.5em 1.5em;
-    padding-right: 2.5rem;
-  }
-
-  /* Textarea */
-  .textarea {
-    @apply input resize-none;
-    min-height: 100px;
-  }
-
-  /* Tab styles */
-  .tab {
-    @apply pb-2 px-1 font-medium transition-colors relative;
-    @apply text-foreground-secondary hover:text-foreground;
-  }
-
-  .tab-active {
-    @apply tab text-foreground border-b-2 border-foreground;
-  }
-
-  /* Alert/Banner styles */
-  .alert {
-    @apply p-4 rounded-lg flex items-start gap-3;
-  }
-
-  .alert-info {
-    @apply alert border;
-    background-color: rgb(239 246 255); /* blue-50 */
-    border-color: rgb(191 219 254); /* blue-200 */
-  }
-  .dark .alert-info {
-    background-color: rgb(30 58 138 / 0.2); /* blue-900/20 */
-    border-color: rgb(30 64 175); /* blue-800 */
-  }
-
-  .alert-info .alert-icon { @apply text-info-600; }
-  .dark .alert-info .alert-icon { @apply text-info-500; }
-
-  .alert-info .alert-title { @apply font-medium text-info-700; }
-  .dark .alert-info .alert-title { @apply text-info-500; }
-
-  .alert-info .alert-message { @apply text-sm text-info-600; }
-  .dark .alert-info .alert-message { @apply text-info-500; }
-
-  .alert-success {
-    @apply alert bg-success-50 border border-success-100;
-  }
-  .dark .alert-success {
-    @apply bg-success-700/20 border-success-700;
-  }
-
-  .alert-success .alert-icon { @apply text-success-600; }
-  .dark .alert-success .alert-icon { @apply text-success-500; }
-
-  .alert-success .alert-title { @apply font-medium text-success-700; }
-  .dark .alert-success .alert-title { @apply text-success-500; }
-
-  .alert-success .alert-message { @apply text-sm text-success-600; }
-  .dark .alert-success .alert-message { @apply text-success-500; }
-
-  .alert-warning {
-    @apply alert bg-warning-50 border border-warning-100;
-  }
-  .dark .alert-warning {
-    @apply bg-warning-700/20 border-warning-700;
-  }
-
-  .alert-warning .alert-icon { @apply text-warning-600; }
-  .dark .alert-warning .alert-icon { @apply text-warning-500; }
-
-  .alert-warning .alert-title { @apply font-medium text-warning-700; }
-  .dark .alert-warning .alert-title { @apply text-warning-500; }
-
-  .alert-warning .alert-message { @apply text-sm text-warning-600; }
-  .dark .alert-warning .alert-message { @apply text-warning-500; }
-
-  .alert-error {
-    @apply alert bg-error-50 border border-error-100;
-  }
-  .dark .alert-error {
-    @apply bg-error-700/20 border-error-700;
-  }
-
-  .alert-error .alert-icon { @apply text-error-600; }
-  .dark .alert-error .alert-icon { @apply text-error-500; }
-
-  .alert-error .alert-title { @apply font-medium text-error-700; }
-  .dark .alert-error .alert-title { @apply text-error-500; }
-
-  .alert-error .alert-message { @apply text-sm text-error-600; }
-  .dark .alert-error .alert-message { @apply text-error-500; }
-
-  /* Table styles */
-  .table-header {
-    @apply bg-background-secondary text-foreground-secondary text-sm font-medium;
-  }
-
-  .table-row {
-    @apply border-b border-border hover:bg-background-hover transition-colors;
-  }
-
-  .table-cell {
-    @apply px-6 py-4 text-foreground;
-  }
-
-  /* Label styles */
-  .label {
-    @apply block text-sm font-medium text-foreground mb-2;
-  }
-
-  /* Section heading */
-  .section-title {
-    @apply text-lg font-semibold text-foreground mb-4;
-  }
-
-  /* Empty state */
-  .empty-state {
-    @apply text-center py-12;
-  }
-
-  .empty-state-icon {
-    @apply w-16 h-16 mx-auto mb-4 bg-background-tertiary rounded-full flex items-center justify-center;
-  }
-
-  .empty-state-title {
-    @apply text-lg font-semibold text-foreground mb-2;
-  }
-
-  .empty-state-message {
-    @apply text-foreground-secondary mb-4;
-  }
-
-  /* Toggle/Switch component */
-  .toggle {
-    @apply relative inline-flex h-6 w-11 items-center rounded-full transition-colors cursor-pointer;
-    @apply bg-background-tertiary;
-  }
-
-  .toggle[data-state="checked"],
-  .toggle.toggle-active {
-    @apply bg-success-500;
-  }
-
-  .toggle-thumb {
-    @apply inline-block h-4 w-4 transform rounded-full bg-white transition-transform;
-    @apply translate-x-1;
-    box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.1);
-  }
-
-  .toggle[data-state="checked"] .toggle-thumb,
-  .toggle.toggle-active .toggle-thumb {
-    @apply translate-x-6;
-  }
-
-  /* Checkbox styling */
-  .checkbox {
-    @apply w-5 h-5 rounded border-border text-interactive focus:ring-interactive;
-  }
-
-  /* Settings panel */
-  .settings-panel {
-    @apply card p-4 lg:p-6;
-  }
-
-  .settings-title {
-    @apply text-lg lg:text-xl font-semibold text-foreground mb-4 lg:mb-6;
-  }
-
-  .settings-section {
-    @apply text-base font-medium text-foreground mb-4;
-  }
-
-  /* Form group with description */
-  .form-group {
-    @apply flex items-start gap-3;
-  }
-
-  .form-group-content {
-    @apply flex-1;
-  }
-
-  .form-group-label {
-    @apply font-medium text-foreground;
-  }
-
-  .form-group-desc {
-    @apply text-sm text-foreground-secondary;
-  }
-
-  /* Settings row (for toggles/switches) */
-  .settings-row {
-    @apply p-4 border border-border rounded-lg flex items-center justify-between;
-  }
-
-  .settings-row-content {
-    @apply flex-1;
-  }
-
-  .settings-row-title {
-    @apply font-medium text-foreground;
-  }
-
-  .settings-row-desc {
-    @apply text-sm text-foreground-secondary;
-  }
-
-  /* Nav list item (for sidebar navigation) */
-  .nav-item {
-    @apply w-full flex items-center justify-between px-4 py-3 rounded-lg text-left transition-colors;
-    @apply text-foreground-secondary hover:bg-background-hover;
-  }
-
-  .nav-item-active {
-    @apply nav-item bg-interactive text-foreground-inverse;
-  }
-
-  .nav-item-active:hover {
-    @apply bg-interactive-primary-hover;
-  }
-
-  /* Pagination */
-  .pagination {
-    @apply flex items-center gap-2;
-  }
-
-  .pagination-btn {
-    @apply px-3 py-1 border border-border rounded-lg text-sm transition-colors;
-    @apply text-foreground-secondary hover:bg-background-hover;
-  }
-
-  .pagination-btn-active {
-    @apply px-3 py-1 rounded-lg text-sm;
-    @apply bg-interactive text-foreground-inverse;
-  }
-
-  .pagination-btn:disabled {
-    @apply opacity-50 cursor-not-allowed;
-  }
-
-  /* Filter bar */
-  .filter-bar {
-    @apply card p-4 mb-6;
-  }
-
-  /* Data table */
-  .data-table {
-    @apply w-full;
-  }
-
-  .data-table thead {
-    @apply bg-background-secondary border-b border-border;
-  }
-
-  .data-table th {
-    @apply text-left px-6 py-3 text-sm font-medium text-foreground-secondary;
-  }
-
-  .data-table tbody tr {
-    @apply border-b border-border hover:bg-background-hover transition-colors;
-  }
-
-  .data-table td {
-    @apply px-6 py-4 text-foreground;
-  }
-
-  /* Tag/chip */
-  .tag {
-    @apply inline-flex items-center text-xs px-2 py-0.5 rounded;
-    @apply bg-background-tertiary text-foreground-secondary;
-  }
-
-  /* Avatar placeholder */
-  .avatar-placeholder {
-    @apply w-8 h-8 bg-background-tertiary rounded-full flex items-center justify-center;
-  }
-
-  .avatar-placeholder-icon {
-    @apply text-foreground-tertiary;
-  }
+
+/* Container */
+.container {
+  @apply mx-auto px-4 sm:px-6 lg:px-8;
+}
+
+/* Card - Now theme-aware */
+.card {
+  @apply rounded-2xl border border-border bg-surface-elevated shadow-sm;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.card-hover {
+  @apply rounded-2xl border border-border bg-surface-elevated shadow-sm hover:shadow-md hover:border-border-secondary;
+  transition: all 0.2s ease;
+}
+
+/* Badge */
+.badge {
+  @apply inline-flex items-center rounded-full px-2.5 py-1 text-xs font-medium;
+}
+
+/* Status dot */
+.status-dot {
+  @apply inline-block h-2 w-2 rounded-full mr-1;
+}
+
+/* Plan badges */
+.badge-plan-starter {
+  background-color: var(--plan-starter-bg);
+  color: var(--plan-starter-text);
+  border: 1px solid var(--plan-starter-border);
+}
+
+.badge-plan-basic {
+  background-color: var(--plan-basic-bg);
+  color: var(--plan-basic-text);
+  border: 1px solid var(--plan-basic-border);
+}
+
+.badge-plan-premium {
+  background-color: var(--plan-premium-bg);
+  color: var(--plan-premium-text);
+  border: 1px solid var(--plan-premium-border);
+}
+
+.badge-plan-enterprise {
+  background-color: var(--plan-enterprise-bg);
+  color: var(--plan-enterprise-text);
+  border: 1px solid var(--plan-enterprise-border);
+}
+
+.badge-plan-custom {
+  background-color: var(--plan-custom-bg, var(--plan-enterprise-bg));
+  color: var(--plan-custom-text, var(--plan-enterprise-text));
+  border: 1px solid var(--plan-custom-border, var(--plan-enterprise-border));
+}
+
+/* Role badges */
+.badge-role-owner {
+  background-color: var(--role-owner-bg);
+  color: var(--role-owner-text);
+  border: 1px solid var(--role-owner-border);
+}
+
+.badge-role-admin {
+  background-color: var(--role-admin-bg);
+  color: var(--role-admin-text);
+  border: 1px solid var(--role-admin-border);
+}
+
+.badge-role-agent {
+  background-color: var(--role-agent-bg);
+  color: var(--role-agent-text);
+  border: 1px solid var(--role-agent-border);
+}
+
+.badge-role-viewer {
+  background-color: var(--role-viewer-bg);
+  color: var(--role-viewer-text);
+  border: 1px solid var(--role-viewer-border);
+}
+
+/* Button base */
+.btn {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium transition-colors;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  @apply h-11 px-4;
+  transition-duration: 150ms;
+}
+
+.btn-primary {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium h-11 px-4;
+  @apply bg-interactive text-foreground-inverse;
+  @apply hover:bg-interactive-primary-hover;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-interactive;
+  transition-duration: 150ms;
+}
+
+.btn-secondary {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium h-11 px-4;
+  @apply bg-interactive-secondary text-foreground border border-border;
+  @apply hover:bg-interactive-secondary-hover;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-border-focus;
+  transition-duration: 150ms;
+}
+
+.btn-ghost {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium h-11 px-4;
+  @apply bg-transparent text-foreground-secondary;
+  @apply hover:bg-background-hover hover:text-foreground;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2;
+  transition-duration: 150ms;
+}
+
+.btn-danger {
+  @apply inline-flex items-center justify-center gap-2 rounded-lg font-medium h-11 px-4;
+  @apply bg-error-600 text-white;
+  @apply hover:bg-error-700;
+  @apply focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-error-500;
+  transition-duration: 150ms;
+}
+
+/* Link styles */
+.link {
+  @apply text-accent hover:text-accent-hover;
+  transition-duration: 150ms;
+}
+
+.link-subtle {
+  @apply text-foreground-secondary hover:text-foreground;
+  transition-duration: 150ms;
+}
+
+/* Input base - full width by default for forms */
+.input {
+  @apply w-full h-11 rounded-xl border border-border bg-background px-4;
+  @apply text-foreground placeholder:text-foreground-tertiary;
+  @apply focus:ring-2 focus:ring-interactive focus:border-transparent;
+  transition-duration: 150ms;
+}
+
+/* Select base - full width by default, matching Input */
+.select {
+  @apply h-11 w-full rounded-xl border border-border bg-background px-4;
+  @apply text-foreground appearance-none cursor-pointer;
+  @apply focus:ring-2 focus:ring-interactive focus:border-transparent;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+  background-position: right 0.5rem center;
+  background-repeat: no-repeat;
+  background-size: 1.5em 1.5em;
+  padding-right: 2.5rem;
+  transition-duration: 150ms;
+}
+
+/* Textarea */
+.textarea {
+  @apply w-full rounded-xl border border-border bg-background px-4;
+  @apply text-foreground placeholder:text-foreground-tertiary;
+  @apply focus:ring-2 focus:ring-interactive focus:border-transparent resize-none;
+  min-height: 100px;
+  transition-duration: 150ms;
+}
+
+/* Tab styles */
+.tab {
+  @apply pb-2 px-1 font-medium relative;
+  @apply text-foreground-secondary hover:text-foreground;
+  transition-duration: 150ms;
+}
+
+.tab-active {
+  @apply pb-2 px-1 font-medium relative text-foreground border-b-2 border-foreground;
+}
+
+/* Alert/Banner styles */
+.alert {
+  @apply p-4 rounded-lg flex items-start gap-3;
+}
+
+.alert-info {
+  @apply p-4 rounded-lg flex items-start gap-3 border;
+  background-color: rgb(239 246 255);
+  border-color: rgb(191 219 254);
+}
+.dark .alert-info {
+  background-color: rgb(30 58 138 / 0.2);
+  border-color: rgb(30 64 175);
+}
+
+.alert-info .alert-icon { @apply text-info-600; }
+.dark .alert-info .alert-icon { @apply text-info-500; }
+
+.alert-info .alert-title { @apply font-medium text-info-700; }
+.dark .alert-info .alert-title { @apply text-info-500; }
+
+.alert-info .alert-message { @apply text-sm text-info-600; }
+.dark .alert-info .alert-message { @apply text-info-500; }
+
+.alert-success {
+  @apply p-4 rounded-lg flex items-start gap-3 bg-success-50 border border-success-100;
+}
+.dark .alert-success {
+  @apply bg-success-700/20 border-success-700;
+}
+
+.alert-success .alert-icon { @apply text-success-600; }
+.dark .alert-success .alert-icon { @apply text-success-500; }
+
+.alert-success .alert-title { @apply font-medium text-success-700; }
+.dark .alert-success .alert-title { @apply text-success-500; }
+
+.alert-success .alert-message { @apply text-sm text-success-600; }
+.dark .alert-success .alert-message { @apply text-success-500; }
+
+.alert-warning {
+  @apply p-4 rounded-lg flex items-start gap-3 bg-warning-50 border border-warning-100;
+}
+.dark .alert-warning {
+  @apply bg-warning-700/20 border-warning-700;
+}
+
+.alert-warning .alert-icon { @apply text-warning-600; }
+.dark .alert-warning .alert-icon { @apply text-warning-500; }
+
+.alert-warning .alert-title { @apply font-medium text-warning-700; }
+.dark .alert-warning .alert-title { @apply text-warning-500; }
+
+.alert-warning .alert-message { @apply text-sm text-warning-600; }
+.dark .alert-warning .alert-message { @apply text-warning-500; }
+
+.alert-error {
+  @apply p-4 rounded-lg flex items-start gap-3 bg-error-50 border border-error-100;
+}
+.dark .alert-error {
+  @apply bg-error-700/20 border-error-700;
+}
+
+.alert-error .alert-icon { @apply text-error-600; }
+.dark .alert-error .alert-icon { @apply text-error-500; }
+
+.alert-error .alert-title { @apply font-medium text-error-700; }
+.dark .alert-error .alert-title { @apply text-error-500; }
+
+.alert-error .alert-message { @apply text-sm text-error-600; }
+.dark .alert-error .alert-message { @apply text-error-500; }
+
+/* Table styles */
+.table-header {
+  @apply bg-background-secondary text-foreground-secondary text-sm font-medium;
+}
+
+.table-row {
+  @apply border-b border-border hover:bg-background-hover;
+  transition-duration: 150ms;
+}
+
+.table-cell {
+  @apply px-6 py-4 text-foreground;
+}
+
+/* Label styles */
+.label {
+  @apply block text-sm font-medium text-foreground mb-2;
+}
+
+/* Section heading */
+.section-title {
+  @apply text-lg font-semibold text-foreground mb-4;
+}
+
+/* Empty state */
+.empty-state {
+  @apply text-center py-12;
+}
+
+.empty-state-icon {
+  @apply w-16 h-16 mx-auto mb-4 bg-background-tertiary rounded-full flex items-center justify-center;
+}
+
+.empty-state-title {
+  @apply text-lg font-semibold text-foreground mb-2;
+}
+
+.empty-state-message {
+  @apply text-foreground-secondary mb-4;
+}
+
+/* Toggle/Switch component */
+.toggle {
+  @apply relative inline-flex h-6 w-11 items-center rounded-full cursor-pointer;
+  @apply bg-background-tertiary;
+  transition-duration: 150ms;
+}
+
+.toggle[data-state="checked"],
+.toggle.toggle-active {
+  @apply bg-success-500;
+}
+
+.toggle-thumb {
+  @apply inline-block h-4 w-4 transform rounded-full bg-white;
+  @apply translate-x-1;
+  box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.3), 0 0 0 1px rgba(0, 0, 0, 0.1);
+  transition-duration: 150ms;
+}
+
+.toggle[data-state="checked"] .toggle-thumb,
+.toggle.toggle-active .toggle-thumb {
+  @apply translate-x-6;
+}
+
+/* Checkbox styling */
+.checkbox {
+  @apply w-5 h-5 rounded border-border text-interactive focus:ring-interactive;
+}
+
+/* Settings panel */
+.settings-panel {
+  @apply rounded-2xl border border-border bg-surface-elevated shadow-sm p-4 lg:p-6;
+}
+
+.settings-title {
+  @apply text-lg lg:text-xl font-semibold text-foreground mb-4 lg:mb-6;
+}
+
+.settings-section {
+  @apply text-base font-medium text-foreground mb-4;
+}
+
+/* Form group with description */
+.form-group {
+  @apply flex items-start gap-3;
+}
+
+.form-group-content {
+  @apply flex-1;
+}
+
+.form-group-label {
+  @apply font-medium text-foreground;
+}
+
+.form-group-desc {
+  @apply text-sm text-foreground-secondary;
+}
+
+/* Settings row (for toggles/switches) */
+.settings-row {
+  @apply p-4 border border-border rounded-lg flex items-center justify-between;
+}
+
+.settings-row-content {
+  @apply flex-1;
+}
+
+.settings-row-title {
+  @apply font-medium text-foreground;
+}
+
+.settings-row-desc {
+  @apply text-sm text-foreground-secondary;
+}
+
+/* Nav list item (for sidebar navigation) */
+.nav-item {
+  @apply w-full flex items-center justify-between px-4 py-3 rounded-lg text-left;
+  @apply text-foreground-secondary hover:bg-background-hover;
+  transition-duration: 150ms;
+}
+
+.nav-item-active {
+  @apply w-full flex items-center justify-between px-4 py-3 rounded-lg text-left;
+  @apply bg-interactive text-foreground-inverse;
+  transition-duration: 150ms;
+}
+
+.nav-item-active:hover {
+  @apply bg-interactive-primary-hover;
+}
+
+/* Pagination */
+.pagination {
+  @apply flex items-center gap-2;
+}
+
+.pagination-btn {
+  @apply px-3 py-1 border border-border rounded-lg text-sm;
+  @apply text-foreground-secondary hover:bg-background-hover;
+  transition-duration: 150ms;
+}
+
+.pagination-btn-active {
+  @apply px-3 py-1 rounded-lg text-sm;
+  @apply bg-interactive text-foreground-inverse;
+}
+
+.pagination-btn:disabled {
+  @apply opacity-50 cursor-not-allowed;
+}
+
+/* Filter bar */
+.filter-bar {
+  @apply rounded-2xl border border-border bg-surface-elevated shadow-sm p-4 mb-6;
+}
+
+/* Data table */
+.data-table {
+  @apply w-full;
+}
+
+.data-table thead {
+  @apply bg-background-secondary border-b border-border;
+}
+
+.data-table th {
+  @apply text-left px-6 py-3 text-sm font-medium text-foreground-secondary;
+}
+
+.data-table tbody tr {
+  @apply border-b border-border hover:bg-background-hover;
+  transition-duration: 150ms;
+}
+
+.data-table td {
+  @apply px-6 py-4 text-foreground;
+}
+
+/* Tag/chip */
+.tag {
+  @apply inline-flex items-center text-xs px-2 py-0.5 rounded;
+  @apply bg-background-tertiary text-foreground-secondary;
+}
+
+/* Avatar placeholder */
+.avatar-placeholder {
+  @apply w-8 h-8 bg-background-tertiary rounded-full flex items-center justify-center;
+}
+
+.avatar-placeholder-icon {
+  @apply text-foreground-tertiary;
 }
 
 /* ============================================================================

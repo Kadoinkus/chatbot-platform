@@ -1,13 +1,13 @@
 'use client';
 
-import { ReactNode } from 'react';
+import { ReactNode, use } from 'react';
 import AuthGuard from '@/components/AuthGuard';
 import Sidebar from '@/components/Sidebar';
 import BrandWrapper from '@/components/BrandWrapper';
 
 interface ClientLayoutProps {
   children: ReactNode;
-  params: { clientId: string };
+  params: Promise<{ clientId: string }>;
 }
 
 /**
@@ -20,11 +20,13 @@ interface ClientLayoutProps {
  * - Consistent page structure
  */
 export default function ClientLayout({ children, params }: ClientLayoutProps) {
+  const { clientId } = use(params);
+
   return (
-    <AuthGuard clientId={params.clientId}>
-      <BrandWrapper clientId={params.clientId}>
+    <AuthGuard clientId={clientId}>
+      <BrandWrapper clientId={clientId}>
         <div className="flex min-h-screen bg-background">
-          <Sidebar clientId={params.clientId} />
+          <Sidebar clientId={clientId} />
           {children}
         </div>
       </BrandWrapper>

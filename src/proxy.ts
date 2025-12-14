@@ -1,5 +1,5 @@
 /**
- * @fileoverview Next.js Middleware for Route Protection
+ * @fileoverview Next.js Proxy (formerly Middleware) for Route Protection
  *
  * ⚠️  SECURITY WARNING - MOCK IMPLEMENTATION ONLY ⚠️
  *
@@ -29,7 +29,7 @@ const PROTECTED_ROUTES = ['/app', '/profile'];
 // Routes that should redirect to app if already authenticated
 const AUTH_ROUTES = ['/login'];
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Get session from cookie using centralized auth
@@ -93,3 +93,6 @@ export const config = {
     '/login',
   ],
 };
+
+// Ensure Next.js picks up the proxy as the default entry
+export default proxy;

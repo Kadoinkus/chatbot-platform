@@ -1,7 +1,7 @@
 'use client';
 
 import { AreaChart, Area, XAxis, YAxis, Tooltip, CartesianGrid } from 'recharts';
-import { tooltipStyle } from '@/lib/chartStyles';
+import { tooltipStyle } from '@/lib/chartTooltip';
 import { ChartWrapper, formatAxisDate } from '../common';
 import type { BaseChartProps } from '../common';
 

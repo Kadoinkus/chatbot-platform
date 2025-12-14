@@ -525,7 +525,7 @@ export function getNextUsageReset(workspace: Workspace): {
   const completePeriods = Math.floor(monthsSinceStart / periodMonths);
 
   // Calculate next reset date
-  let nextReset = new Date(startDate);
+  const nextReset = new Date(startDate);
   nextReset.setMonth(startDate.getMonth() + (completePeriods + 1) * periodMonths);
   nextReset.setDate(safeResetDay);
 
@@ -575,7 +575,7 @@ export function calculateNextResetDate(
   const completePeriods = Math.floor(monthsSinceStart / periodMonths);
 
   // Calculate the next reset date
-  let nextReset = new Date(startDate);
+  const nextReset = new Date(startDate);
   nextReset.setMonth(startDate.getMonth() + (completePeriods + 1) * periodMonths);
   nextReset.setDate(safeResetDay);
 

@@ -60,7 +60,7 @@ export function RankedTable({
       return <StatusBadge value={String(value)} />;
     }
 
-    let formatted = formatValue(value, col.format || 'text', { truncate: col.truncate });
+    const formatted = formatValue(value, col.format || 'text', { truncate: col.truncate });
 
     if (col.truncate && String(value).length > col.truncate) {
       return (
@@ -153,7 +153,7 @@ export function FeedTable({
       return <StatusBadge value={String(value)} />;
     }
 
-    let formatted = formatValue(value, col.format || 'text', { truncate: col.truncate });
+    const formatted = formatValue(value, col.format || 'text', { truncate: col.truncate });
 
     if (col.truncate && String(value).length > col.truncate) {
       return (

@@ -29,10 +29,11 @@ async function fetchData(clientId: string) {
   return { client, workspaces: workspaceList };
 }
 
-export default async function HomePage({ params }: { params: { clientId: string } }) {
+export default async function HomePage({ params }: { params: Promise<{ clientId: string }> }) {
+  const { clientId } = await params;
   return (
     <Suspense fallback={<div className="p-6 flex justify-center"><Spinner size="lg" /></div>}>
-      <HomePageContent clientId={params.clientId} />
+      <HomePageContent clientId={clientId} />
     </Suspense>
   );
 }

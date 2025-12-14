@@ -20,7 +20,8 @@
       "Bash(xargs sed:*)",
       "Bash(pnpm run build:*)",
       "Bash(npx tsc:*)",
-      "Bash(git diff:*)"
+      "Bash(git diff:*)",
+      "Bash(pnpm build:*)"
     ],
     "deny": [],
     "ask": []

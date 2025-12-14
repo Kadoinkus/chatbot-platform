@@ -36,7 +36,7 @@ import { getClientById, getAssistantById } from '@/lib/dataService';
 import { getAnalyticsForClient } from '@/lib/db/analytics';
 import { getClientBrandColor } from '@/lib/brandColors';
 import { getChartColors, ensureReadableColor } from '@/lib/chartColors';
-import { tooltipStyle } from '@/lib/chartStyles';
+import { tooltipStyle } from '@/lib/chartTooltip';
 import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
 import type { Client, Assistant, ChatSessionWithAnalysis } from '@/types';
 import type { OverviewMetrics, SentimentBreakdown, CategoryBreakdown, LanguageBreakdown, CountryBreakdown, TimeSeriesDataPoint, QuestionAnalytics, DeviceBreakdown, SentimentTimeSeriesDataPoint, HourlyBreakdown, AnimationStats } from '@/lib/db/analytics';

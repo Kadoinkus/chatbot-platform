@@ -34,36 +34,24 @@ export function getAnalyticsForClient(clientId: string): AnalyticsOperations {
   const prodConfigured = isSupabaseConfigured('prod');
   const demoConfigured = isSupabaseConfigured('demo');
 
-  console.log('[Analytics] getAnalyticsForClient:', {
-    clientId,
-    isDemo,
-    prodConfigured,
-    demoConfigured,
-  });
-
   if (isDemo) {
     if (demoConfigured) {
-      console.log('[Analytics] Using DEMO Supabase for demo client:', clientId);
       return supabaseDemoAnalytics;
     }
-    console.warn('[Analytics] Demo client but DEMO Supabase not configured, falling back to mock');
     return mockAnalytics;
   }
 
   // For real clients, prefer prod Supabase
   if (prodConfigured) {
-    console.log('[Analytics] Using PROD Supabase for client:', clientId);
     return supabaseProdAnalytics;
   }
 
   // Fall back to demo Supabase if prod not configured (matches core DB behavior)
   if (demoConfigured) {
-    console.log('[Analytics] PROD not configured, using DEMO Supabase for client:', clientId);
     return supabaseDemoAnalytics;
   }
 
   // Fall back to mock if no Supabase configured
-  console.warn('[Analytics] No Supabase configured, falling back to mock data');
   return mockAnalytics;
 }
 

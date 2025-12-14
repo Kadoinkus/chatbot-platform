@@ -38,10 +38,10 @@ function applyDateRange<T extends { gte: (col: string, val: string) => T; lte: (
 
 // Map chat_sessions row (session_start/session_end naming) to ChatSession type expected by the app
 function mapChatSession(row: any): ChatSession {
-  const sessionStartedAt = row.session_start || row.session_started_at || row.created_at;
-  const sessionEndedAt = row.session_end ?? row.session_ended_at ?? null;
-  const totalUserMessages = row.total_user_messages ?? row.user_messages ?? 0;
-  const totalAssistantMessages = row.total_bot_messages ?? row.assistant_messages ?? 0;
+  const sessionStartedAt = row.session_start || row.created_at;
+  const sessionEndedAt = row.session_end ?? null;
+  const totalUserMessages = row.total_user_messages ?? 0;
+  const totalAssistantMessages = row.total_bot_messages ?? 0;
   const totalMessages =
     row.total_messages ??
     (Number.isFinite(totalUserMessages) && Number.isFinite(totalAssistantMessages)
@@ -202,17 +202,6 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       const { data, error } = await query;
 
-      // Debug logging
-      console.log(`[Analytics:${label}] getWithAnalysisByBotId:`, {
-        botId,
-        dateRange: filters?.dateRange ? {
-          start: filters.dateRange.start.toISOString(),
-          end: filters.dateRange.end.toISOString()
-        } : null,
-        resultCount: data?.length || 0,
-        error: error?.message || null,
-      });
-
       if (error) throw error;
 
       return (data || []).map((row: any) => ({
@@ -235,17 +224,6 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
       }
 
       const { data, error } = await query;
-
-      // Debug logging
-      console.log(`[Analytics:${label}] getWithAnalysisByClientId:`, {
-        clientId,
-        dateRange: filters?.dateRange ? {
-          start: filters.dateRange.start.toISOString(),
-          end: filters.dateRange.end.toISOString()
-        } : null,
-        resultCount: data?.length || 0,
-        error: error?.message || null,
-      });
 
       if (error) throw error;
 

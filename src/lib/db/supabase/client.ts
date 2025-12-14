@@ -12,9 +12,14 @@ import { createClient, type SupabaseClient } from '@supabase/supabase-js';
 
 type ClientLabel = 'PROD' | 'DEMO';
 
+// Only log on server to avoid noisy browser console warnings
+const isServer = typeof window === 'undefined';
+
 function createAdminClient(url: string | undefined, serviceKey: string | undefined, label: ClientLabel) {
   if (!url || !serviceKey) {
-    console.warn(`[Supabase:${label}] not configured - falling back to mock`);
+    if (isServer && process.env.NODE_ENV === 'development') {
+      console.warn(`[Supabase:${label}] not configured - falling back to mock`);
+    }
     return null;
   }
 
@@ -28,7 +33,9 @@ function createAdminClient(url: string | undefined, serviceKey: string | undefin
 
 function createAnonClient(url: string | undefined, anonKey: string | undefined, label: ClientLabel) {
   if (!url || !anonKey) {
-    console.warn(`[Supabase:${label}] anon client not configured`);
+    if (isServer && process.env.NODE_ENV === 'development') {
+      console.warn(`[Supabase:${label}] anon client not configured`);
+    }
     return null;
   }
 

@@ -106,8 +106,8 @@ interface RawChatSession {
 
 // Map raw JSON to Supabase-aligned type
 function mapToChatSession(raw: RawChatSession): ChatSession {
-  const sessionStartedAt = raw.session_started_at || raw.session_start || raw.created_at;
-  const sessionEndedAt = raw.session_ended_at ?? raw.session_end ?? null;
+  const sessionStartedAt = raw.session_start || raw.created_at;
+  const sessionEndedAt = raw.session_end ?? null;
   const sessionStart = sessionStartedAt ? new Date(sessionStartedAt) : null;
   const sessionEnd = sessionEndedAt ? new Date(sessionEndedAt) : null;
   const durationSeconds =
@@ -115,8 +115,8 @@ function mapToChatSession(raw: RawChatSession): ChatSession {
 
   return {
     id: raw.id,
-    mascot_slug: raw.mascot_slug || raw.mascot_id || '',
-    client_slug: raw.client_slug || raw.client_id || '',
+    mascot_slug: raw.mascot_slug || '',
+    client_slug: raw.client_slug || '',
     domain: raw.domain || null,
     session_started_at: sessionStartedAt,
     session_ended_at: sessionEndedAt,
@@ -187,7 +187,7 @@ function getChatSessionAnalyses(): ChatSessionAnalysis[] {
   if (!cachedAnalyses) {
     cachedAnalyses = (chatSessionAnalysesData as RawChatSessionAnalysis[]).map(a => ({
       ...a,
-      mascot_slug: a.mascot_slug || a.mascot_id || '',
+      mascot_slug: a.mascot_slug || '',
     })) as ChatSessionAnalysis[];
   }
   return cachedAnalyses;
@@ -197,7 +197,7 @@ function getChatMessages(): ChatMessage[] {
   if (!cachedMessages) {
     cachedMessages = (chatMessagesData as RawChatMessage[]).map(m => ({
       ...m,
-      mascot_slug: m.mascot_slug || m.mascot_id || '',
+      mascot_slug: m.mascot_slug || '',
     })) as ChatMessage[];
   }
   return cachedMessages;

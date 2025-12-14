@@ -34,7 +34,6 @@ function getBaseDb(): DbOperations {
   if (useMockData) return mockDb;
   if (prodSupabaseConfigured) return supabaseProdDb;
   if (demoSupabaseConfigured) return supabaseDemoDb;
-  console.warn('[DB] Supabase not configured, falling back to mock data');
   return mockDb;
 }
 
@@ -50,7 +49,6 @@ export function getDbForClient(clientId: string): DbOperations {
     if (demoSupabaseConfigured) {
       return supabaseDemoDb;
     }
-    console.warn('[DB] Demo client requested but demo Supabase not configured, using MOCK data');
     return mockDb;
   }
   return getBaseDb();

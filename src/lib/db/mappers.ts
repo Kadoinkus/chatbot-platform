@@ -7,8 +7,8 @@ import type { AssistantSession } from '@/types';
  * the domain ChatSession shape expected by the app.
  */
 export function normalizeChatSession(raw: any): ChatSession {
-  const sessionStartedAt = raw.session_started_at || raw.session_start || raw.created_at;
-  const sessionEndedAt = raw.session_ended_at ?? raw.session_end ?? null;
+  const sessionStartedAt = raw.session_start || raw.created_at;
+  const sessionEndedAt = raw.session_end ?? null;
   const sessionStartDate = sessionStartedAt ? new Date(sessionStartedAt) : null;
   const sessionEndDate = sessionEndedAt ? new Date(sessionEndedAt) : null;
   const sessionDurationSeconds =
@@ -16,8 +16,8 @@ export function normalizeChatSession(raw: any): ChatSession {
       ? Math.round((sessionEndDate.getTime() - sessionStartDate.getTime()) / 1000)
       : null;
 
-  const totalUserMessages = raw.total_user_messages ?? raw.user_messages ?? 0;
-  const totalAssistantMessages = raw.total_bot_messages ?? raw.assistant_messages ?? 0;
+  const totalUserMessages = raw.total_user_messages ?? 0;
+  const totalAssistantMessages = raw.total_bot_messages ?? 0;
   const totalMessages = raw.total_messages ?? totalUserMessages + totalAssistantMessages;
 
   const browserParts = (raw.browser || '').split(' ');
@@ -34,8 +34,8 @@ export function normalizeChatSession(raw: any): ChatSession {
 
   return {
     id: raw.id,
-    mascot_slug: raw.mascot_slug || raw.mascot_id,
-    client_slug: raw.client_slug || raw.client_id,
+    mascot_slug: raw.mascot_slug,
+    client_slug: raw.client_slug,
     domain: raw.domain || null,
     user_id: raw.user_id || null,
     session_started_at: sessionStartedAt,
@@ -91,8 +91,8 @@ export function normalizeChatSession(raw: any): ChatSession {
 }
 
 export function mapConversationFromChatSession(raw: any): Conversation {
-  const startedAt = raw.session_start || raw.session_started_at || raw.created_at;
-  const endedAt = raw.session_end || raw.session_ended_at || raw.updated_at;
+  const startedAt = raw.session_start || raw.created_at;
+  const endedAt = raw.session_end || raw.updated_at;
   const totalMessages = raw.total_messages ?? (raw.total_bot_messages ?? 0) + (raw.total_user_messages ?? 0);
 
   return {
@@ -131,8 +131,8 @@ export function mapMessageFromChatMessage(raw: any): Message {
 }
 
 export function mapSessionFromChatSession(raw: any): Session {
-  const startedAt = raw.session_start || raw.session_started_at || raw.created_at;
-  const endedAt = raw.session_end || raw.session_ended_at || raw.updated_at;
+  const startedAt = raw.session_start || raw.created_at;
+  const endedAt = raw.session_end || raw.updated_at;
 
   return {
     id: raw.id,
@@ -155,8 +155,8 @@ export function mapAssistantSessionFromChatSession(raw: any): AssistantSession {
   return {
     session_id: raw.id,
     assistant_id: raw.mascot_slug,
-    client_slug: raw.client_slug || '',
-    start_time: raw.session_start || raw.created_at || new Date().toISOString(),
+    client_slug: raw.client_slug,
+    start_time: raw.session_start || raw.created_at,
     end_time: raw.session_end || raw.updated_at || null,
     ip_address: raw.ip_address || '',
     country: raw.country || '',
@@ -233,8 +233,7 @@ export function mapAssistantFromMascot(raw: any): Assistant {
   return {
     id: raw.mascot_slug,
     clientId: raw.client_slug,
-    // Workspace may be stored as slug or id; support both to avoid orphaning assistants in UI filters.
-    workspaceSlug: raw.workspace_slug || raw.workspace_id || raw.workspace || raw.workspaceSlug,
+    workspaceSlug: raw.workspace_slug,
     name: raw.name,
     // Keep undefined if missing; UI components handle fallback avatars
     image: raw.image_url || undefined,

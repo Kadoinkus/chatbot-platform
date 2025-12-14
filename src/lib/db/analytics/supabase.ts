@@ -230,6 +230,56 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
         analysis: row.chat_session_analysis ? mapChatSessionAnalysis(row.chat_session_analysis) : null,
       }));
     },
+
+    async getTodayCountByBotId(botId: string): Promise<number> {
+      const supabase = requireSupabase();
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const { count, error } = await supabase
+        .from('chat_sessions')
+        .select('*', { count: 'exact', head: true })
+        .eq('mascot_slug', botId)
+        .gte('session_start', today.toISOString())
+        .lt('session_start', tomorrow.toISOString());
+
+      if (error) throw error;
+      return count || 0;
+    },
+
+    async getTodayCountsByBotIds(botIds: string[]): Promise<Record<string, number>> {
+      const supabase = requireSupabase();
+
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const tomorrow = new Date(today);
+      tomorrow.setDate(tomorrow.getDate() + 1);
+
+      const result: Record<string, number> = {};
+      for (const botId of botIds) {
+        result[botId] = 0;
+      }
+
+      if (botIds.length === 0) return result;
+
+      const { data, error } = await supabase
+        .from('chat_sessions')
+        .select('mascot_slug')
+        .in('mascot_slug', botIds)
+        .gte('session_start', today.toISOString())
+        .lt('session_start', tomorrow.toISOString());
+
+      if (error) throw error;
+
+      for (const row of data || []) {
+        result[row.mascot_slug] = (result[row.mascot_slug] || 0) + 1;
+      }
+
+      return result;
+    },
   };
 
   // Chat session analysis operations

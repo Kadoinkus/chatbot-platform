@@ -2,9 +2,9 @@
 
 import Image from 'next/image';
 import Link from 'next/link';
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import type { Assistant, Client, Workspace } from '@/types';
-import { getClientBrandColor } from '@/lib/brandColors';
+import { getClientBrandColor, registerClientPalette } from '@/lib/brandColors';
 import { Plus, Building2, ChevronRight, Server, Users } from 'lucide-react';
 import { Page, PageContent, PageHeader, Button, Card, Badge, EmptyState } from '@/components/ui';
 import { FilterBar } from '@/components/analytics';
@@ -13,6 +13,14 @@ type WorkspaceWithAssistants = Workspace & { assistants: Assistant[] };
 
 export default function HomeClient({ client, workspaces }: { client: Client | null; workspaces: WorkspaceWithAssistants[] }) {
   const [searchTerm, setSearchTerm] = useState('');
+
+  // Register client palette for brand color lookups
+  useEffect(() => {
+    if (client?.palette?.primary) {
+      registerClientPalette(client.id, client.palette.primary);
+      registerClientPalette(client.slug, client.palette.primary);
+    }
+  }, [client]);
 
   const filteredWorkspaces = useMemo(() => {
     const query = searchTerm.toLowerCase();
@@ -184,7 +192,7 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                             <div
                               key={assistant.id}
                               className="relative w-20 h-20 rounded-full border-2 border-background -ml-6 first:ml-0 overflow-hidden"
-                              style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
+                              style={{ backgroundColor: client?.palette?.primary || getClientBrandColor(assistant.clientId) }}
                             >
                               {assistant.image?.trim() ? (
                                 <Image

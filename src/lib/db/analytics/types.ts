@@ -169,6 +169,16 @@ export interface ChatSessionOperations {
    * Get chat sessions with their analyses for a client
    */
   getWithAnalysisByClientId(clientId: string, filters?: ChatSessionFilters): Promise<ChatSessionWithAnalysis[]>;
+
+  /**
+   * Get today's session count for a bot
+   */
+  getTodayCountByBotId(botId: string): Promise<number>;
+
+  /**
+   * Get today's session counts for multiple bots (batch)
+   */
+  getTodayCountsByBotIds(botIds: string[]): Promise<Record<string, number>>;
 }
 
 // Chat session analysis operations

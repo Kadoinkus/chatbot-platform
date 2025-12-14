@@ -161,6 +161,8 @@ export type Assistant = {
   image: string;
   status: AgentStatus;
   conversations: number;
+  /** Today's conversation count (calculated from chat_sessions) */
+  conversationsToday?: number;
   description: string;
   metrics: AssistantMetrics;
   usage: AssistantUsage;

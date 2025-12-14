@@ -13,10 +13,12 @@ interface AssistantCardProps {
   clientId: string;
   workspaceName?: string;
   workspace?: Workspace;
+  /** Override brand color (uses client palette lookup if not provided) */
+  brandColor?: string;
 }
 
-export default function AssistantCard({ assistant, clientId, workspaceName, workspace }: AssistantCardProps) {
-  const brandColor = getClientBrandColor(assistant.clientId);
+export default function AssistantCard({ assistant, clientId, workspaceName, workspace, brandColor: brandColorProp }: AssistantCardProps) {
+  const brandColor = brandColorProp || getClientBrandColor(assistant.clientId);
   const imageSrc = assistant.image?.trim();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
@@ -257,7 +259,7 @@ export default function AssistantCard({ assistant, clientId, workspaceName, work
         {/* Additional Info */}
         <div className="mt-4 pt-3 border-t border-border flex justify-between items-center">
           <span className="text-xs text-foreground-tertiary">
-            {assistant.conversations} conversations today
+            {assistant.conversationsToday ?? 0} conversations today
           </span>
           {workspace && daysUntilReset > 0 && (
             <span className="text-xs text-foreground-tertiary flex items-center gap-1">

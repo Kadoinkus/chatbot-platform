@@ -301,6 +301,44 @@ export const chatSessions: ChatSessionOperations = {
       analysis: analyses.find(a => a.session_id === session.id) || null,
     }));
   },
+
+  async getTodayCountByBotId(botId: string): Promise<number> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const sessions = getChatSessions().filter(s => {
+      if (s.mascot_slug !== botId) return false;
+      const sessionDate = new Date(s.session_started_at);
+      return sessionDate >= today && sessionDate < tomorrow;
+    });
+
+    return sessions.length;
+  },
+
+  async getTodayCountsByBotIds(botIds: string[]): Promise<Record<string, number>> {
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+
+    const result: Record<string, number> = {};
+    for (const botId of botIds) {
+      result[botId] = 0;
+    }
+
+    const allSessions = getChatSessions();
+    for (const session of allSessions) {
+      if (!botIds.includes(session.mascot_slug)) continue;
+      const sessionDate = new Date(session.session_started_at);
+      if (sessionDate >= today && sessionDate < tomorrow) {
+        result[session.mascot_slug] = (result[session.mascot_slug] || 0) + 1;
+      }
+    }
+
+    return result;
+  },
 };
 
 // Chat session analysis operations

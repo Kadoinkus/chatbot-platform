@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbForClient } from '@/lib/db';
+import { getAnalyticsForClient } from '@/lib/db/analytics';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,6 +28,24 @@ export async function GET(request: NextRequest) {
       assistants = await db.assistants.getByWorkspaceSlug(resolvedWorkspaceSlug);
     } else {
       assistants = await db.assistants.getByClientId(clientId);
+    }
+
+    // Fetch today's conversation counts for all assistants
+    if (assistants.length > 0) {
+      try {
+        const analytics = getAnalyticsForClient(clientId);
+        const botIds = assistants.map(a => a.id);
+        const todayCounts = await analytics.chatSessions.getTodayCountsByBotIds(botIds);
+
+        // Attach conversationsToday to each assistant
+        assistants = assistants.map(assistant => ({
+          ...assistant,
+          conversationsToday: todayCounts[assistant.id] || 0,
+        }));
+      } catch (analyticsError) {
+        // Log but don't fail the request if analytics fails
+        console.warn('Failed to fetch today conversation counts:', analyticsError);
+      }
     }
 
     return NextResponse.json({ data: assistants });

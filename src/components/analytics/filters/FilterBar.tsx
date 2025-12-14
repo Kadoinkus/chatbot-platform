@@ -96,7 +96,13 @@ export function FilterBar({
   extraActions,
 }: FilterBarProps) {
   const workspaceOptions = useMemo(
-    () => [{ value: 'all', label: 'All Workspaces' }, ...workspaces.map((ws) => ({ value: ws.id, label: ws.name }))],
+    () => [
+      { value: 'all', label: 'All Workspaces' },
+      ...workspaces.map((ws) => ({
+        value: ws.slug || ws.id,
+        label: ws.name,
+      })),
+    ],
     [workspaces]
   );
 

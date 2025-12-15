@@ -6,7 +6,7 @@ import { useEffect, useMemo, useState } from 'react';
 import type { Assistant, Client, Workspace } from '@/types';
 import { getClientBrandColor, registerClientPalette } from '@/lib/brandColors';
 import { Plus, Building2, ChevronRight, Server, Users } from 'lucide-react';
-import { Page, PageContent, PageHeader, Button, Card, Badge, EmptyState } from '@/components/ui';
+import { Page, PageContent, PageHeader, Button, Card, Badge, EmptyState, UsageLimitBar } from '@/components/ui';
 import { FilterBar } from '@/components/analytics';
 
 type WorkspaceWithAssistants = Workspace & { assistants: Assistant[] };
@@ -107,8 +107,6 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                 {(() => {
                   const bundleLoads = workspace.bundleLoads || { used: 0, limit: 1000, remaining: 1000 };
                   const sessions = workspace.sessions || { used: 0, limit: 5000, remaining: 5000 };
-                  const bundlePercentage = bundleLoads.limit > 0 ? (bundleLoads.used / bundleLoads.limit) * 100 : 0;
-                  const sessionPercentage = sessions.limit > 0 ? (sessions.used / sessions.limit) * 100 : 0;
 
                   return (
                     <div className="border-t border-border px-4 py-3 space-y-3">
@@ -123,15 +121,7 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                             {bundleLoads.used.toLocaleString()} / {bundleLoads.limit.toLocaleString()}
                           </span>
                         </div>
-                        <div className="w-full bg-background-tertiary rounded-full h-2">
-                          <div
-                            className={`${
-                              bundlePercentage > 90 ? 'bg-error-500' :
-                              bundlePercentage > 70 ? 'bg-warning-500' : 'bg-success-500'
-                            } rounded-full h-2 transition-all duration-300`}
-                            style={{ width: `${Math.min(100, bundlePercentage)}%` }}
-                          />
-                        </div>
+                        <UsageLimitBar used={bundleLoads.used} limit={bundleLoads.limit} />
                       </div>
 
                       {/* Sessions */}
@@ -145,15 +135,7 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                             {sessions.used.toLocaleString()} / {sessions.limit.toLocaleString()}
                           </span>
                         </div>
-                        <div className="w-full bg-background-tertiary rounded-full h-2">
-                          <div
-                            className={`${
-                              sessionPercentage > 90 ? 'bg-error-500' :
-                              sessionPercentage > 70 ? 'bg-warning-500' : 'bg-success-500'
-                            } rounded-full h-2 transition-all duration-300`}
-                            style={{ width: `${Math.min(100, sessionPercentage)}%` }}
-                          />
-                        </div>
+                        <UsageLimitBar used={sessions.used} limit={sessions.limit} />
                       </div>
 
                       {/* Reset info */}
@@ -191,7 +173,7 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                           {assistants.slice(0, 5).map(assistant => (
                             <div
                               key={assistant.id}
-                              className="relative w-20 h-20 rounded-full border-2 border-background -ml-6 first:ml-0 overflow-hidden"
+                              className="relative w-14 h-14 rounded-full border-2 border-background -ml-4 first:ml-0 overflow-hidden"
                               style={{ backgroundColor: client?.palette?.primary || getClientBrandColor(assistant.clientId) }}
                             >
                               {assistant.image?.trim() ? (
@@ -211,7 +193,7 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                             </div>
                           ))}
                           {assistants.length > 5 && (
-                            <span className="w-20 h-20 rounded-full border-2 border-background -ml-6 bg-background-tertiary flex items-center justify-center text-sm font-medium text-foreground-secondary">
+                            <span className="w-14 h-14 rounded-full border-2 border-background -ml-4 bg-background-tertiary flex items-center justify-center text-sm font-medium text-foreground-secondary">
                               +{assistants.length - 5}
                             </span>
                           )}

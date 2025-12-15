@@ -3,7 +3,7 @@ import { useState, useEffect, use } from 'react';
 import { getClientById, getWorkspaceById, getAssistantsByWorkspaceSlug, getAssistantsByClientId } from '@/lib/dataService';
 import type { Client, Workspace, Assistant } from '@/lib/dataService';
 import AssistantCard from '@/components/AssistantCard';
-import { registerClientPalette } from '@/lib/brandColors';
+import { getClientBrandColor, registerClientPalette } from '@/lib/brandColors';
 import Link from 'next/link';
 import {
   ArrowLeft, Plus, Settings, CreditCard, Activity,
@@ -101,6 +101,8 @@ export default function WorkspaceDetailPage({
       </Page>
     );
   }
+
+  const brandColor = client.palette?.primary || getClientBrandColor(client.id) || getClientBrandColor(client.slug);
 
   const planDetails: Record<string, { features: string[] }> = {
     starter: {
@@ -210,11 +212,11 @@ export default function WorkspaceDetailPage({
                   </div>
                   <div className="w-full bg-background-tertiary rounded-full h-2">
                     <div
-                      className={`${
-                        usagePercentage > 90 ? 'bg-error-500' :
-                        usagePercentage > 70 ? 'bg-warning-500' : 'bg-success-500'
-                      } rounded-full h-2 transition-all duration-300`}
-                      style={{ width: `${Math.min(100, usagePercentage)}%` }}
+                      className="rounded-full h-2 transition-all duration-300"
+                      style={{
+                        width: `${Math.min(100, usagePercentage)}%`,
+                        backgroundColor: brandColor
+                      }}
                     />
                   </div>
                 </div>

@@ -9,18 +9,20 @@ interface AuthGuardProps {
 }
 
 /**
- * AuthGuard component that protects routes from unauthenticated access.
+ * AuthGuard component - minimal client-side safety net for authenticated routes.
  *
- * This component works in conjunction with the middleware:
- * - Middleware handles server-side redirects for unauthenticated requests
- * - AuthGuard handles client-side loading states and session validation
+ * Middleware (src/middleware.ts) owns all redirects:
+ * - Unauthenticated users -> /login
+ * - Superadmins without selected client -> /select-client
  *
- * The layout.tsx provides Sidebar, so AuthGuard only handles auth state.
+ * AuthGuard handles:
+ * - Loading states while auth context initializes
+ * - Client-side navigation to wrong client (SPA navigation edge case)
  */
 export default function AuthGuard({ children, clientId }: AuthGuardProps) {
-  const { session, isLoading, redirectToLogin } = useAuth();
+  const { session, isLoading } = useAuth();
 
-  // Show loading spinner while checking session
+  // Gate on isLoading first - prevents hydration mismatch
   if (isLoading) {
     return (
       <div className="flex-1 flex items-center justify-center">
@@ -29,10 +31,8 @@ export default function AuthGuard({ children, clientId }: AuthGuardProps) {
     );
   }
 
-  // If no session, redirect to login
-  // Note: Middleware should catch this first, but this is a fallback
+  // Middleware handles redirect, just show spinner until it happens
   if (!session) {
-    redirectToLogin();
     return (
       <div className="flex-1 flex items-center justify-center">
         <Spinner size="lg" />
@@ -40,25 +40,11 @@ export default function AuthGuard({ children, clientId }: AuthGuardProps) {
     );
   }
 
-  // If superadmin without selected client, redirect to client picker
-  if (session.isSuperadmin && !session.clientSlug) {
+  // Minimal client-side mismatch check for SPA navigation
+  // (e.g., user manually changes URL in browser without full page load)
+  if (clientId && session.clientSlug !== clientId && session.clientId !== clientId) {
     if (typeof window !== 'undefined') {
-      window.location.replace('/select-client');
-    }
-    return (
-      <div className="flex-1 flex items-center justify-center">
-        <Spinner size="lg" />
-      </div>
-    );
-  }
-
-  // Validate clientId matches session if provided
-  // For superadmins, allow access to any client they're currently switched to
-  if (clientId && session.clientId !== clientId && session.clientSlug !== clientId) {
-    // Redirect to correct client URL
-    if (typeof window !== 'undefined') {
-      const currentPath = window.location.pathname;
-      const correctedPath = currentPath.replace(
+      const correctedPath = window.location.pathname.replace(
         `/app/${clientId}`,
         `/app/${session.clientSlug}`
       );

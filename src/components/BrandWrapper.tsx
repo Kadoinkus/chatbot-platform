@@ -18,10 +18,15 @@ interface BrandCSSProperties extends React.CSSProperties {
 const fallbackPalette: Palette = { primary: '#0EA5E9', primaryDark: '#0284C7', accent: '#111827' };
 
 export default function BrandWrapper({ clientId, children }: { clientId: string; children: React.ReactNode }) {
-  const { client: authClient } = useAuth();
+  const { client: authClient, isLoading } = useAuth();
   const [palette, setPalette] = useState<Palette>(fallbackPalette);
 
   useEffect(() => {
+    // Wait for auth to finish loading before deciding on palette source
+    if (isLoading) {
+      return;
+    }
+
     // Prefer the palette from the authenticated client if it matches
     if (authClient && (authClient.id === clientId || authClient.slug === clientId) && authClient.palette) {
       setPalette(authClient.palette as Palette);
@@ -40,7 +45,7 @@ export default function BrandWrapper({ clientId, children }: { clientId: string;
     return () => {
       cancelled = true;
     };
-  }, [authClient, clientId]);
+  }, [authClient, clientId, isLoading]);
 
   return (
     <div style={{ '--brand': palette.primary, '--brandDark': palette.primaryDark } as BrandCSSProperties}>

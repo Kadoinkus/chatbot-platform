@@ -17,7 +17,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { totalItems, toggleCart } = useCart();
   const { theme, setTheme } = useTheme();
-  const { session, signOut } = useAuth();
+  const { session, signOut, isLoading } = useAuth();
 
   const handleLogout = () => {
     signOut();
@@ -60,7 +60,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
       </div>
 
       {/* Client Switcher for Superadmins */}
-      {session?.isSuperadmin && (
+      {!isLoading && session?.isSuperadmin && (
         <div className="mb-4">
           <ClientSwitcher compact />
         </div>
@@ -155,7 +155,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
             </div>
 
             {/* Client Switcher for Superadmins (Mobile) */}
-            {session?.isSuperadmin && (
+            {!isLoading && session?.isSuperadmin && (
               <div className="mb-4 px-4">
                 <ClientSwitcher />
               </div>

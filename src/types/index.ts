@@ -197,6 +197,8 @@ export type User = {
   name: string;
   email: string;
   role: TeamRole;
+  /** For superadmins: NULL = all clients; [] = none; array = specific slugs */
+  accessibleClientSlugs?: string[] | null;
   status: UserStatus;
   avatar?: string;                     // @deprecated - use avatarUrl
   avatarUrl?: string;

@@ -321,6 +321,9 @@ export function mapUser(raw: any): User {
     avatarUrl: raw.avatar_url || undefined,
     phone: raw.phone || undefined,
     role: raw.role,
+    accessibleClientSlugs: Object.prototype.hasOwnProperty.call(raw, 'accessible_client_slugs')
+      ? raw.accessible_client_slugs
+      : undefined,
     status: raw.status,
     emailVerified: raw.email_verified,
     lastLoginAt: raw.last_login_at || undefined,

@@ -12,6 +12,7 @@ import type {
   ClientMetrics,
   AssistantMetricsResult,
   DbOperations,
+  UserWithAuth,
 } from '../types';
 import {
   mapClient,
@@ -82,6 +83,20 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
         if (byId) return byId;
       }
       return this.getBySlug(idOrSlug);
+    },
+
+    async getBySlugs(slugs: string[]) {
+      if (slugs.length === 0) return [];
+
+      const supabase = requireSupabase();
+      const { data, error } = await supabase
+        .from('clients')
+        .select('*')
+        .in('slug', slugs)
+        .order('name');
+
+      if (error) throw error;
+      return (data || []).map(mapClient);
     },
 
     async resolveId(idOrSlug: string) {
@@ -215,6 +230,24 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       return data ? mapUser(data) : null;
     },
 
+    async getByIdWithAuth(id: string): Promise<UserWithAuth | null> {
+      if (!isUuid(id)) {
+        return null;
+      }
+
+      const supabase = requireSupabase();
+      const { data, error } = await supabase.from('users').select('*').eq('id', id).single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (!data) return null;
+
+      const user = mapUser(data);
+      return {
+        ...user,
+        accessibleClientSlugs: data.accessible_client_slugs ?? null,
+      };
+    },
+
     async getByClientId(clientId: string) {
       const supabase = requireSupabase();
       const resolvedSlug = (await clients.resolveSlug(clientId)) || clientId;
@@ -227,6 +260,24 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
 
       if (error) throw error;
       return (data || []).map(mapUser);
+    },
+
+    async getByEmail(email: string): Promise<UserWithAuth | null> {
+      const supabase = requireSupabase();
+      const { data, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('email', email.toLowerCase())
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      if (!data) return null;
+
+      const user = mapUser(data);
+      return {
+        ...user,
+        accessibleClientSlugs: data.accessible_client_slugs ?? null,
+      };
     },
   };
 

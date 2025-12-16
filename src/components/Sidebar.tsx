@@ -6,6 +6,7 @@ import { usePathname } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/hooks/useAuth';
+import ClientSwitcher from '@/components/ClientSwitcher';
 
 interface SidebarProps {
   clientId?: string;
@@ -16,7 +17,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
   const [isMobileOpen, setIsMobileOpen] = useState(false);
   const { totalItems, toggleCart } = useCart();
   const { theme, setTheme } = useTheme();
-  const { signOut } = useAuth();
+  const { session, signOut } = useAuth();
 
   const handleLogout = () => {
     signOut();
@@ -50,14 +51,21 @@ export default function Sidebar({ clientId }: SidebarProps) {
 
       {/* Desktop Sidebar */}
       <div className="hidden lg:flex fixed left-0 top-0 h-full w-16 bg-sidebar-bg flex-col items-center py-4 z-40 border-r border-sidebar-border">
-      <div className="mb-8">
+      <div className="mb-4">
         <div className="w-10 h-10 bg-sidebar-text-active rounded-lg flex items-center justify-center">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 282.65 250.44" width="22" height="20" className="text-sidebar-bg">
             <path d="M63.45,249.56H0V89.52C0,40.16,32.93,0,85.7,0c4.14,0,8.23.25,12.27.75,40.79,4.99,73.08,34.79,80.26,72.68l11.65,52.86c1,4.52,7.53,4.22,8.11-.37l15.3-121.86,69.37.15-37.75,245.41-80.68.81-44.81-177.17c-2.47-9.75-9.13-18.25-18.64-22.87-5.12-2.49-10.88-3.87-16.86-3.87-20.24,0-26.7,15.4-26.7,34.33l6.23,168.7Z" fill="currentColor"/>
           </svg>
         </div>
       </div>
-      
+
+      {/* Client Switcher for Superadmins */}
+      {session?.isSuperadmin && (
+        <div className="mb-4">
+          <ClientSwitcher compact />
+        </div>
+      )}
+
       <nav className="flex-1 flex flex-col gap-2">
         {navItems.map((item) => {
           const Icon = item.icon;
@@ -145,6 +153,13 @@ export default function Sidebar({ clientId }: SidebarProps) {
                 <X size={20} />
               </button>
             </div>
+
+            {/* Client Switcher for Superadmins (Mobile) */}
+            {session?.isSuperadmin && (
+              <div className="mb-4 px-4">
+                <ClientSwitcher />
+              </div>
+            )}
 
             <nav className="flex-1 space-y-2">
               {navItems.map((item) => {

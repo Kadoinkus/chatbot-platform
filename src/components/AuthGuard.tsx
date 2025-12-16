@@ -40,7 +40,20 @@ export default function AuthGuard({ children, clientId }: AuthGuardProps) {
     );
   }
 
+  // If superadmin without selected client, redirect to client picker
+  if (session.isSuperadmin && !session.clientSlug) {
+    if (typeof window !== 'undefined') {
+      window.location.replace('/select-client');
+    }
+    return (
+      <div className="flex-1 flex items-center justify-center">
+        <Spinner size="lg" />
+      </div>
+    );
+  }
+
   // Validate clientId matches session if provided
+  // For superadmins, allow access to any client they're currently switched to
   if (clientId && session.clientId !== clientId && session.clientSlug !== clientId) {
     // Redirect to correct client URL
     if (typeof window !== 'undefined') {

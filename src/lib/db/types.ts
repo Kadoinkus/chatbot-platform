@@ -41,6 +41,7 @@ export interface ClientOperations {
   getById(id: string): Promise<Client | null>;
   getBySlug(slug: string): Promise<Client | null>;
   getByIdOrSlug(idOrSlug: string): Promise<Client | null>;
+  getBySlugs(slugs: string[]): Promise<Client[]>;
   resolveId(idOrSlug: string): Promise<string | null>;
   resolveSlug(idOrSlug: string): Promise<string | null>;
 }
@@ -61,11 +62,20 @@ export interface WorkspaceOperations {
   getByClientId(clientId: string): Promise<Workspace[]>;
 }
 
+// User with superadmin fields (for auth lookup)
+// Role includes 'superadmin' in addition to standard TeamRole values
+export interface UserWithAuth extends Omit<User, 'role'> {
+  role: User['role'] | 'superadmin';
+  accessibleClientSlugs: string[] | null;
+}
+
 // User operations
 export interface UserOperations {
   getAll(): Promise<User[]>;
   getById(id: string): Promise<User | null>;
+  getByIdWithAuth(id: string): Promise<UserWithAuth | null>;
   getByClientId(clientId: string): Promise<User[]>;
+  getByEmail(email: string): Promise<UserWithAuth | null>;
 }
 
 // Conversation operations

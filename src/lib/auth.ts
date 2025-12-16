@@ -5,6 +5,9 @@ export type Session = AuthSession | null;
 export interface AuthResponse {
   session: AuthSession | null;
   client: Omit<Client, 'login'> | null;
+  redirectUrl?: string;
+  requiresClientSelection?: boolean;
+  accessibleClients?: Omit<Client, 'login'>[];
 }
 
 /**

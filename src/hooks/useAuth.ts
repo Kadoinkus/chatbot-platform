@@ -6,6 +6,7 @@ import type { AuthSession, Client } from '@/types';
 interface UseAuthReturn {
   session: AuthSession | null;
   client: Omit<Client, 'login'> | null;
+  accessibleClients: Omit<Client, 'login'>[] | null;
   isLoading: boolean;
   isAuthenticated: boolean;
   redirectToLogin: () => void;
@@ -51,6 +52,7 @@ export function useAuth(): UseAuthReturn {
   return {
     session: authData?.session ?? null,
     client: authData?.client ?? null,
+    accessibleClients: authData?.accessibleClients ?? null,
     isLoading,
     isAuthenticated: !!authData?.session,
     redirectToLogin,

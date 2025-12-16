@@ -9,7 +9,7 @@
 // Authentication & Session
 // =============================================================================
 
-export type UserRole = 'owner' | 'admin' | 'member' | 'viewer';
+export type UserRole = 'owner' | 'admin' | 'member' | 'viewer' | 'superadmin';
 
 /**
  * Authentication session stored in cookie/localStorage
@@ -19,9 +19,13 @@ export type AuthSession = {
   clientId: string;
   clientSlug: string;
   userId: string;
+  /** Platform user ID from users table (for looking up accessible_client_slugs) */
+  platformUserId?: string;
   role: UserRole;
   defaultWorkspaceId?: string;
   authSource?: 'prod' | null; // Which Supabase instance authenticated the user (single instance)
+  /** True if user is a superadmin with multi-client access */
+  isSuperadmin?: boolean;
 };
 
 // =============================================================================

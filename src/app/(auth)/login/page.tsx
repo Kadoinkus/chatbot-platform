@@ -27,8 +27,9 @@ export default function LoginPage() {
         return;
       }
 
-      // Redirect to the requested page or the default app page
-      const redirectUrl = redirectTo || `/app/${authData.session.clientSlug}/home`;
+      // Use the redirect URL from the server response, or fallback to default
+      // For superadmins with multiple clients, this will redirect to /select-client
+      const redirectUrl = authData.redirectUrl || redirectTo || `/app/${authData.session.clientSlug}/home`;
       window.location.href = redirectUrl;
     } catch (error) {
       console.error('Login error:', error);

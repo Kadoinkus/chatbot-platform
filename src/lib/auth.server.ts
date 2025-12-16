@@ -58,8 +58,11 @@ export async function getSession(): Promise<SessionResult> {
     // const { payload } = await jwtVerify(sessionCookie.value, secret);
     const session = JSON.parse(sessionCookie.value) as AuthSession;
 
-    // Basic validation
-    if (!session.clientId || !session.userId) {
+    // Basic validation (allow superadmin without selected client)
+    if (!session.userId) {
+      return { isValid: false, reason: 'invalid' };
+    }
+    if (!session.isSuperadmin && !session.clientId) {
       return { isValid: false, reason: 'invalid' };
     }
 
@@ -91,7 +94,13 @@ export function getSessionFromRequest(request: NextRequest): SessionResult {
 
     const session = JSON.parse(sessionCookie.value) as AuthSession;
 
-    if (!session.clientId || !session.userId) {
+    // Superadmins can have empty clientId/clientSlug before selecting a client
+    if (!session.userId) {
+      return { isValid: false, reason: 'invalid' };
+    }
+
+    // Non-superadmins must have a clientId
+    if (!session.isSuperadmin && !session.clientId) {
       return { isValid: false, reason: 'invalid' };
     }
 
@@ -141,6 +150,42 @@ export async function requireTenantAccess(clientIdOrSlug: string): Promise<Valid
 }
 
 /**
+ * Require access to a specific client (superadmin-aware)
+ *
+ * For superadmins: validates they have access via accessible_client_slugs
+ * For regular users: validates their session client matches the requested client
+ */
+export async function requireClientAccess(routeClientSlug: string): Promise<ValidatedSession> {
+  const session = await requireSession();
+
+  if (session.isSuperadmin) {
+    // Superadmins: must have the correct client selected in their session
+    // The actual accessible_client_slugs validation happens during client selection
+    if (session.clientSlug !== routeClientSlug) {
+      logger.audit('Superadmin client access mismatch', {
+        userId: session.userId,
+        sessionClientSlug: session.clientSlug,
+        requestedClientSlug: routeClientSlug,
+      });
+      throw new Error('Forbidden: Switch to this client first');
+    }
+    return session;
+  }
+
+  // Regular users: session client must match the route client
+  if (session.clientSlug !== routeClientSlug && session.clientId !== routeClientSlug) {
+    logger.audit('Client access denied', {
+      userId: session.userId,
+      sessionClientSlug: session.clientSlug,
+      requestedClientSlug: routeClientSlug,
+    });
+    throw new Error('Forbidden: Access to this client is not allowed');
+  }
+
+  return session;
+}
+
+/**
  * Require a specific role or higher
  */
 const roleHierarchy: Record<string, number> = {
@@ -148,6 +193,7 @@ const roleHierarchy: Record<string, number> = {
   member: 2,
   admin: 3,
   owner: 4,
+  superadmin: 5,
 };
 
 export async function requireRole(

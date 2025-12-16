@@ -22,11 +22,6 @@ export default function ClientSwitcher({ compact = false }: ClientSwitcherProps)
   const [pinnedSlugs, setPinnedSlugs] = useState<string[]>([]);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Only show for superadmins
-  if (!session?.isSuperadmin) {
-    return null;
-  }
-
   // Load pinned clients from localStorage
   useEffect(() => {
     const savedPinned = localStorage.getItem(PINNED_CLIENTS_KEY);
@@ -83,6 +78,11 @@ export default function ClientSwitcher({ compact = false }: ClientSwitcherProps)
       return a.name.localeCompare(b.name);
     });
   }, [accessibleClients, search, pinnedSlugs, session?.clientSlug]);
+
+  // Only show for superadmins - must be after all hooks
+  if (!session?.isSuperadmin) {
+    return null;
+  }
 
   // Handle client selection
   async function handleSelectClient(clientSlug: string) {

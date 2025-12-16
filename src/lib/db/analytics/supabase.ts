@@ -137,7 +137,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
   const requireSupabase = () => {
     if (!adminClient) {
       throw new Error(
-        `[Analytics:${label}] Supabase not configured. Set ${label === 'DEMO' ? 'DEMO_SUPABASE_URL/DEMO_SUPABASE_SERVICE_ROLE_KEY' : 'SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY'}.`
+        `[Analytics:${label}] Supabase not configured. Set SUPABASE_URL/SUPABASE_SERVICE_ROLE_KEY.`
       );
     }
     // Cast to any to avoid Postgrest type frictions in analytics queries

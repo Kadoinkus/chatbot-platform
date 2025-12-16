@@ -1,6 +1,6 @@
 {
   "usageByDay": {
-    "demo-jumbo": [
+    "jumboDemo": [
       {
         "date": "2025-10-29",
         "conversations": 95,
@@ -152,7 +152,7 @@
         "resolved": 145
       }
     ],
-    "demo-hitapes": [
+    "hitapesDemo": [
       {
         "date": "2025-10-29",
         "conversations": 48,
@@ -306,7 +306,7 @@
     ]
   },
   "assistantUsageByDay": {
-    "demo-jumbo-ma-001": [
+    "jumboDemo-ma-001": [
       {
         "date": "2025-10-29",
         "conversations": 62,
@@ -458,7 +458,7 @@
         "resolved": 104
       }
     ],
-    "demo-jumbo-ma-002": [
+    "jumboDemo-ma-002": [
       {
         "date": "2025-10-29",
         "conversations": 33,
@@ -610,7 +610,7 @@
         "resolved": 41
       }
     ],
-    "demo-jumbo-ma-003": [
+    "jumboDemo-ma-003": [
       {
         "date": "2025-10-29",
         "conversations": 62,
@@ -762,7 +762,7 @@
         "resolved": 104
       }
     ],
-    "demo-jumbo-ma-004": [
+    "jumboDemo-ma-004": [
       {
         "date": "2025-10-29",
         "conversations": 33,
@@ -914,7 +914,7 @@
         "resolved": 41
       }
     ],
-    "demo-hitapes-ma-001": [
+    "hitapesDemo-ma-001": [
       {
         "date": "2025-10-29",
         "conversations": 48,
@@ -1066,7 +1066,7 @@
         "resolved": 84
       }
     ],
-    "demo-hitapes-ma-002": [
+    "hitapesDemo-ma-002": [
       {
         "date": "2025-10-29",
         "conversations": 48,
@@ -1220,7 +1220,7 @@
     ]
   },
   "topIntents": {
-    "demo-jumbo": [
+    "jumboDemo": [
       {
         "intent": "Opening hours",
         "count": 420
@@ -1262,7 +1262,7 @@
         "count": 65
       }
     ],
-    "demo-hitapes": [
+    "hitapesDemo": [
       {
         "intent": "Pricing",
         "count": 185
@@ -1290,7 +1290,7 @@
     ]
   },
   "assistantIntents": {
-    "demo-jumbo-ma-001": [
+    "jumboDemo-ma-001": [
       {
         "intent": "Opening hours",
         "count": 380
@@ -1324,7 +1324,7 @@
         "count": 125
       }
     ],
-    "demo-jumbo-ma-002": [
+    "jumboDemo-ma-002": [
       {
         "intent": "Returns",
         "count": 95
@@ -1350,7 +1350,7 @@
         "count": 45
       }
     ],
-    "demo-jumbo-ma-003": [
+    "jumboDemo-ma-003": [
       {
         "intent": "Opening hours",
         "count": 380
@@ -1384,7 +1384,7 @@
         "count": 125
       }
     ],
-    "demo-jumbo-ma-004": [
+    "jumboDemo-ma-004": [
       {
         "intent": "Returns",
         "count": 95
@@ -1410,7 +1410,7 @@
         "count": 45
       }
     ],
-    "demo-hitapes-ma-001": [
+    "hitapesDemo-ma-001": [
       {
         "intent": "Pricing",
         "count": 185
@@ -1436,7 +1436,7 @@
         "count": 48
       }
     ],
-    "demo-hitapes-ma-002": [
+    "hitapesDemo-ma-002": [
       {
         "intent": "Pricing",
         "count": 185
@@ -1464,8 +1464,8 @@
     ]
   },
   "csat": {
-    "demo-jumbo": 4.6,
-    "demo-hitapes": 4.8
+    "jumboDemo": 4.6,
+    "hitapesDemo": 4.8
   },
   "assistantCsat": {
     "m1": 4.5,
@@ -1473,8 +1473,8 @@
     "m5": 4.8
   },
   "responseTimeAvg": {
-    "demo-jumbo": 1.8,
-    "demo-hitapes": 2.1
+    "jumboDemo": 1.8,
+    "hitapesDemo": 2.1
   },
   "assistantResponseTimeAvg": {
     "m1": 1.6,
@@ -1482,8 +1482,8 @@
     "m5": 1.1
   },
   "resolutionRate": {
-    "demo-jumbo": 84.2,
-    "demo-hitapes": 82.5
+    "jumboDemo": 84.2,
+    "hitapesDemo": 82.5
   },
   "assistantResolutionRate": {
     "m1": 85.0,

@@ -12,9 +12,6 @@ const envSchema = z.object({
   // Node environment
   NODE_ENV: z.enum(['development', 'production', 'test']).default('development'),
 
-  // Data source
-  USE_MOCK_DATA: z.string().optional().transform(v => v === 'true'),
-
   // Supabase (optional in development)
   NEXT_PUBLIC_SUPABASE_URL: z.string().url().optional(),
   NEXT_PUBLIC_SUPABASE_ANON_KEY: z.string().optional(),
@@ -52,9 +49,6 @@ function getConfig() {
     isDevelopment: env.NODE_ENV === 'development',
     isProduction: env.NODE_ENV === 'production',
     isTest: env.NODE_ENV === 'test',
-
-    // Data source
-    useMockData: env.USE_MOCK_DATA ?? (env.NODE_ENV === 'development' && !env.NEXT_PUBLIC_SUPABASE_URL),
 
     // Supabase
     supabase: {
@@ -103,9 +97,6 @@ export function validateProductionConfig(): string[] {
     }
     if (!config.session.secret) {
       errors.push('SESSION_SECRET is required in production');
-    }
-    if (config.useMockData) {
-      errors.push('USE_MOCK_DATA should not be true in production');
     }
   }
 

@@ -40,7 +40,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
   const requireSupabase = () => {
     if (!adminClient) {
       throw new Error(
-        `[Supabase:${label}] not configured. Set ${label === 'DEMO' ? 'DEMO_SUPABASE_URL and DEMO_SUPABASE_SERVICE_ROLE_KEY' : 'SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY'} environment variables.`
+        `[Supabase:${label}] not configured. Set SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY environment variables.`
       );
     }
     return adminClient;
@@ -410,6 +410,5 @@ export type SupabaseDb = ReturnType<typeof createSupabaseDb>;
 import { supabaseAdminProd, supabaseAdminDemo } from './client';
 
 export const supabaseProdDb = createSupabaseDb({ adminClient: supabaseAdminProd, label: 'PROD' });
-export const supabaseDemoDb = createSupabaseDb({ adminClient: supabaseAdminDemo, label: 'DEMO' });
 // Default export keeps backward compatibility for prod usage
 export const supabaseDb = supabaseProdDb;

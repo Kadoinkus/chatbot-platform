@@ -21,6 +21,7 @@ export type AuthSession = {
   userId: string;
   role: UserRole;
   defaultWorkspaceId?: string;
+  authSource?: 'prod' | null; // Which Supabase instance authenticated the user (single instance)
 };
 
 // =============================================================================

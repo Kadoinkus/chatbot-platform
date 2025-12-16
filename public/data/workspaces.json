@@ -1,9 +1,9 @@
 [
   {
     "id": "a1b2c3d4-e5f6-4a7b-8c9d-0e1f2a3b4c5d",
-    "slug": "demo-jumbo-wp-001",
+    "slug": "jumboDemo-wp-001",
     "workspace_number": 1,
-    "client_slug": "demo-jumbo",
+    "client_slug": "jumboDemo",
     "name": "Customer Service",
     "description": "Main customer support workspace",
     "plan": "premium",
@@ -39,9 +39,9 @@
   },
   {
     "id": "b2c3d4e5-f6a7-4b8c-9d0e-1f2a3b4c5d6e",
-    "slug": "demo-jumbo-wp-002",
+    "slug": "jumboDemo-wp-002",
     "workspace_number": 2,
-    "client_slug": "demo-jumbo",
+    "client_slug": "jumboDemo",
     "name": "HR Support",
     "description": "Internal employee assistance",
     "plan": "basic",
@@ -77,9 +77,9 @@
   },
   {
     "id": "c3d4e5f6-a7b8-4c9d-0e1f-2a3b4c5d6e7f",
-    "slug": "demo-jumbo-wp-003",
+    "slug": "jumboDemo-wp-003",
     "workspace_number": 3,
-    "client_slug": "demo-jumbo",
+    "client_slug": "jumboDemo",
     "name": "Store Locator",
     "description": "Simple store information bot",
     "plan": "starter",
@@ -115,9 +115,9 @@
   },
   {
     "id": "d4e5f6a7-b8c9-4d0e-1f2a-3b4c5d6e7f8a",
-    "slug": "demo-hitapes-wp-001",
+    "slug": "hitapesDemo-wp-001",
     "workspace_number": 1,
-    "client_slug": "demo-hitapes",
+    "client_slug": "hitapesDemo",
     "name": "Main Workspace",
     "description": "All company operations",
     "plan": "basic",

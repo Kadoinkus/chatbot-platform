@@ -18,7 +18,7 @@ const isServer = typeof window === 'undefined';
 function createAdminClient(url: string | undefined, serviceKey: string | undefined, label: ClientLabel) {
   if (!url || !serviceKey) {
     if (isServer && process.env.NODE_ENV === 'development') {
-      console.warn(`[Supabase:${label}] not configured - falling back to mock`);
+    console.warn(`[Supabase:${label}] not configured`);
     }
     return null;
   }
@@ -50,13 +50,6 @@ const supabaseProdAnonKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 export const supabaseAdminProd = createAdminClient(supabaseProdUrl, supabaseProdServiceKey, 'PROD');
 export const supabaseClientProd = createAnonClient(supabaseProdUrl, supabaseProdAnonKey, 'PROD');
 
-// Demo Supabase (demo customers)
-const supabaseDemoUrl = process.env.DEMO_SUPABASE_URL || process.env.NEXT_PUBLIC_DEMO_SUPABASE_URL;
-const supabaseDemoServiceKey = process.env.DEMO_SUPABASE_SERVICE_ROLE_KEY;
-const supabaseDemoAnonKey = process.env.DEMO_SUPABASE_ANON_KEY || process.env.NEXT_PUBLIC_DEMO_SUPABASE_ANON_KEY;
-
-export const supabaseAdminDemo = createAdminClient(supabaseDemoUrl, supabaseDemoServiceKey, 'DEMO');
-export const supabaseClientDemo = createAnonClient(supabaseDemoUrl, supabaseDemoAnonKey, 'DEMO');
 
 /**
  * Get a client for a specific user session

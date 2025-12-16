@@ -743,7 +743,7 @@ CREATE INDEX IF NOT EXISTS idx_chat_session_analyses_mascot_slug ON chat_session
 CREATE OR REPLACE VIEW daily_mascot_analytics AS
 SELECT
   date(session_start) AS date,
-  COALESCE(mascot_slug, mascot_shortcut) AS mascot_slug,
+  mascot_slug,
   count(*) AS total_sessions,
   sum(total_bot_messages) AS total_bot_messages,
   sum(total_user_messages) AS total_user_messages,
@@ -755,7 +755,7 @@ SELECT
   avg((total_bot_messages + total_user_messages)) AS avg_messages_per_session,
   avg(average_response_time_ms) AS avg_response_time_ms
 FROM chat_sessions
-GROUP BY date(session_start), COALESCE(mascot_slug, mascot_shortcut);
+GROUP BY date(session_start), mascot_slug;
 
 -- -----------------------------------------------------------------------------
 -- VIEW: active_sessions

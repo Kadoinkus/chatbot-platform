@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbForClient } from '@/lib/db';
-import * as mockDb from '@/lib/db/mock';
 
 export const dynamic = 'force-dynamic';
 
@@ -20,22 +19,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    let data;
-    if (botId) {
-      const db = getDbForClient(clientId);
-      let metrics = await db.metrics.getAssistantMetrics(botId);
-      if (!metrics.topIntents?.length) {
-        metrics = await mockDb.metrics.getAssistantMetrics(botId);
-      }
-      data = metrics.topIntents;
-    } else {
-      const db = getDbForClient(clientId);
-      let metrics = await db.metrics.getClientMetrics(clientId);
-      if (!metrics.topIntents?.length) {
-        metrics = await mockDb.metrics.getClientMetrics(clientId);
-      }
-      data = metrics.topIntents;
-    }
+    const db = getDbForClient(clientId);
+    const metrics = botId
+      ? await db.metrics.getAssistantMetrics(botId)
+      : await db.metrics.getClientMetrics(clientId);
+    const data = metrics.topIntents;
 
     // Calculate total
     const total = data.reduce((sum, intent) => sum + intent.count, 0);

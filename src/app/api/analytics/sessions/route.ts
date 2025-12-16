@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbForClient } from '@/lib/db';
 import type { AssistantSession } from '@/types';
-import * as mockDb from '@/lib/db/mock';
+// Mock removed in simplified architecture
 
 export const dynamic = 'force-dynamic';
 
@@ -30,19 +30,10 @@ export async function GET(request: NextRequest) {
 
     const db = getDbForClient(clientId);
 
-    // Get sessions
-    let sessions: AssistantSession[];
-    if (botId) {
-      sessions = await db.sessions.getAssistantSessions(botId, dateRange);
-      if (!sessions || sessions.length === 0) {
-        sessions = await mockDb.sessions.getAssistantSessions(botId, dateRange);
-      }
-    } else {
-      sessions = await db.sessions.getAssistantSessionsByClientId(clientId, dateRange);
-      if (!sessions || sessions.length === 0) {
-        sessions = await mockDb.sessions.getAssistantSessionsByClientId(clientId, dateRange);
-      }
-    }
+    // Get sessions (single data source)
+    const sessions: AssistantSession[] = botId
+      ? await db.sessions.getAssistantSessions(botId, dateRange)
+      : await db.sessions.getAssistantSessionsByClientId(clientId, dateRange);
 
     // Calculate summary statistics
     const total = sessions.length;

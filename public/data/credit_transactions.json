@@ -1,7 +1,7 @@
 [
   {
     "id": "ffff1111-1111-4111-8111-111111111111",
-    "workspace_slug": "demo-jumbo-wp-001",
+    "workspace_slug": "jumboDemo-wp-001",
     "type": "purchase",
     "amount_eur": 100.00,
     "balance_after_eur": 100.00,
@@ -12,7 +12,7 @@
   },
   {
     "id": "ffff2222-2222-4222-8222-222222222222",
-    "workspace_slug": "demo-jumbo-wp-001",
+    "workspace_slug": "jumboDemo-wp-001",
     "type": "overage_deduction",
     "amount_eur": -50.00,
     "balance_after_eur": 50.00,
@@ -23,7 +23,7 @@
   },
   {
     "id": "ffff3333-3333-4333-8333-333333333333",
-    "workspace_slug": "demo-jumbo-wp-002",
+    "workspace_slug": "jumboDemo-wp-002",
     "type": "purchase",
     "amount_eur": 50.00,
     "balance_after_eur": 50.00,
@@ -34,7 +34,7 @@
   },
   {
     "id": "ffff4444-4444-4444-8444-444444444444",
-    "workspace_slug": "demo-jumbo-wp-002",
+    "workspace_slug": "jumboDemo-wp-002",
     "type": "bonus",
     "amount_eur": 25.00,
     "balance_after_eur": 75.00,
@@ -45,7 +45,7 @@
   },
   {
     "id": "ffff5555-5555-4555-8555-555555555555",
-    "workspace_slug": "demo-jumbo-wp-002",
+    "workspace_slug": "jumboDemo-wp-002",
     "type": "overage_deduction",
     "amount_eur": -50.00,
     "balance_after_eur": 25.00,
@@ -56,7 +56,7 @@
   },
   {
     "id": "ffff6666-6666-4666-8666-666666666666",
-    "workspace_slug": "demo-hitapes-wp-001",
+    "workspace_slug": "hitapesDemo-wp-001",
     "type": "purchase",
     "amount_eur": 100.00,
     "balance_after_eur": 100.00,
@@ -67,7 +67,7 @@
   },
   {
     "id": "ffff7777-7777-4777-8777-777777777777",
-    "workspace_slug": "demo-hitapes-wp-001",
+    "workspace_slug": "hitapesDemo-wp-001",
     "type": "overage_deduction",
     "amount_eur": -57.00,
     "balance_after_eur": 43.00,
@@ -78,7 +78,7 @@
   },
   {
     "id": "ffff8888-8888-4888-8888-888888888888",
-    "workspace_slug": "demo-jumbo-wp-003",
+    "workspace_slug": "jumboDemo-wp-003",
     "type": "purchase",
     "amount_eur": 20.00,
     "balance_after_eur": 20.00,
@@ -89,7 +89,7 @@
   },
   {
     "id": "ffff9999-9999-4999-8999-999999999999",
-    "workspace_slug": "demo-jumbo-wp-003",
+    "workspace_slug": "jumboDemo-wp-003",
     "type": "overage_deduction",
     "amount_eur": -20.00,
     "balance_after_eur": 0.00,

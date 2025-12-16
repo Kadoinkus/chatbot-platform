@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbForClient } from '@/lib/db';
-import * as mockDb from '@/lib/db/mock';
 
 export const dynamic = 'force-dynamic';
 
@@ -27,10 +26,9 @@ export async function GET(request: NextRequest) {
       db.conversations.getByClientId(clientId),
     ]);
 
-    // Fall back to mock data when Supabase path lacks demo records
-    const workspaces = workspacesBase.length > 0 ? workspacesBase : await mockDb.workspaces.getByClientId(clientId);
-    const bots = assistantsBase.length > 0 ? assistantsBase : await mockDb.assistants.getByClientId(clientId);
-    const conversations = conversationsBase.length > 0 ? conversationsBase : await mockDb.conversations.getByClientId(clientId);
+    const workspaces = workspacesBase;
+    const bots = assistantsBase;
+    const conversations = conversationsBase;
 
     // Calculate totals
     const activeConversations = conversations.filter(c => c.status === 'active').length;

@@ -1,7 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbForClient } from '@/lib/db';
-import * as mockDb from '@/lib/db/mock';
-
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
@@ -26,18 +24,9 @@ export async function GET(request: NextRequest) {
     const db = getDbForClient(clientId);
 
     // Get conversations
-    let conversations;
-    if (botId) {
-      conversations = await db.conversations.getByAssistantId(botId);
-      if (!conversations || conversations.length === 0) {
-        conversations = await mockDb.conversations.getByAssistantId(botId);
-      }
-    } else {
-      conversations = await db.conversations.getByClientId(clientId);
-      if (!conversations || conversations.length === 0) {
-        conversations = await mockDb.conversations.getByClientId(clientId);
-      }
-    }
+    const conversations = botId
+      ? await db.conversations.getByAssistantId(botId)
+      : await db.conversations.getByClientId(clientId);
 
     // Filter by status if provided
     if (status && ['active', 'resolved', 'escalated'].includes(status)) {

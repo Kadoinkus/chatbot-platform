@@ -1,7 +1,7 @@
 [
   {
     "id": "aaaa1111-1111-4111-8111-111111111111",
-    "workspace_slug": "demo-jumbo-wp-001",
+    "workspace_slug": "jumboDemo-wp-001",
     "date": "2024-12-09",
     "bundle_loads": 620,
     "messages": 7800,
@@ -13,7 +13,7 @@
   },
   {
     "id": "aaaa2222-2222-4222-8222-222222222222",
-    "workspace_slug": "demo-jumbo-wp-001",
+    "workspace_slug": "jumboDemo-wp-001",
     "date": "2024-12-08",
     "bundle_loads": 580,
     "messages": 7200,
@@ -25,7 +25,7 @@
   },
   {
     "id": "aaaa3333-3333-4333-8333-333333333333",
-    "workspace_slug": "demo-jumbo-wp-001",
+    "workspace_slug": "jumboDemo-wp-001",
     "date": "2024-12-07",
     "bundle_loads": 610,
     "messages": 7600,
@@ -37,7 +37,7 @@
   },
   {
     "id": "aaaa4444-4444-4444-8444-444444444444",
-    "workspace_slug": "demo-jumbo-wp-001",
+    "workspace_slug": "jumboDemo-wp-001",
     "date": "2024-12-06",
     "bundle_loads": 595,
     "messages": 7400,
@@ -49,7 +49,7 @@
   },
   {
     "id": "aaaa5555-5555-4555-8555-555555555555",
-    "workspace_slug": "demo-jumbo-wp-001",
+    "workspace_slug": "jumboDemo-wp-001",
     "date": "2024-12-05",
     "bundle_loads": 605,
     "messages": 7500,
@@ -61,7 +61,7 @@
   },
   {
     "id": "bbbb1111-1111-4111-8111-111111111111",
-    "workspace_slug": "demo-jumbo-wp-002",
+    "workspace_slug": "jumboDemo-wp-002",
     "date": "2024-12-09",
     "bundle_loads": 42,
     "messages": 950,
@@ -73,7 +73,7 @@
   },
   {
     "id": "bbbb2222-2222-4222-8222-222222222222",
-    "workspace_slug": "demo-jumbo-wp-002",
+    "workspace_slug": "jumboDemo-wp-002",
     "date": "2024-12-08",
     "bundle_loads": 38,
     "messages": 880,
@@ -85,7 +85,7 @@
   },
   {
     "id": "bbbb3333-3333-4333-8333-333333333333",
-    "workspace_slug": "demo-jumbo-wp-002",
+    "workspace_slug": "jumboDemo-wp-002",
     "date": "2024-12-07",
     "bundle_loads": 40,
     "messages": 920,
@@ -97,7 +97,7 @@
   },
   {
     "id": "bbbb4444-4444-4444-8444-444444444444",
-    "workspace_slug": "demo-jumbo-wp-002",
+    "workspace_slug": "jumboDemo-wp-002",
     "date": "2024-12-06",
     "bundle_loads": 36,
     "messages": 850,
@@ -109,7 +109,7 @@
   },
   {
     "id": "bbbb5555-5555-4555-8555-555555555555",
-    "workspace_slug": "demo-jumbo-wp-002",
+    "workspace_slug": "jumboDemo-wp-002",
     "date": "2024-12-05",
     "bundle_loads": 44,
     "messages": 980,
@@ -121,7 +121,7 @@
   },
   {
     "id": "cccc1111-1111-4111-8111-111111111111",
-    "workspace_slug": "demo-jumbo-wp-003",
+    "workspace_slug": "jumboDemo-wp-003",
     "date": "2024-12-09",
     "bundle_loads": 32,
     "messages": 420,
@@ -133,7 +133,7 @@
   },
   {
     "id": "cccc2222-2222-4222-8222-222222222222",
-    "workspace_slug": "demo-jumbo-wp-003",
+    "workspace_slug": "jumboDemo-wp-003",
     "date": "2024-12-08",
     "bundle_loads": 28,
     "messages": 380,
@@ -145,7 +145,7 @@
   },
   {
     "id": "cccc3333-3333-4333-8333-333333333333",
-    "workspace_slug": "demo-jumbo-wp-003",
+    "workspace_slug": "jumboDemo-wp-003",
     "date": "2024-12-07",
     "bundle_loads": 30,
     "messages": 400,
@@ -157,7 +157,7 @@
   },
   {
     "id": "cccc4444-4444-4444-8444-444444444444",
-    "workspace_slug": "demo-jumbo-wp-003",
+    "workspace_slug": "jumboDemo-wp-003",
     "date": "2024-12-06",
     "bundle_loads": 26,
     "messages": 360,
@@ -169,7 +169,7 @@
   },
   {
     "id": "cccc5555-5555-4555-8555-555555555555",
-    "workspace_slug": "demo-jumbo-wp-003",
+    "workspace_slug": "jumboDemo-wp-003",
     "date": "2024-12-05",
     "bundle_loads": 34,
     "messages": 440,
@@ -181,7 +181,7 @@
   },
   {
     "id": "dddd1111-1111-4111-8111-111111111111",
-    "workspace_slug": "demo-hitapes-wp-001",
+    "workspace_slug": "hitapesDemo-wp-001",
     "date": "2024-12-09",
     "bundle_loads": 175,
     "messages": 1900,
@@ -193,7 +193,7 @@
   },
   {
     "id": "dddd2222-2222-4222-8222-222222222222",
-    "workspace_slug": "demo-hitapes-wp-001",
+    "workspace_slug": "hitapesDemo-wp-001",
     "date": "2024-12-08",
     "bundle_loads": 168,
     "messages": 1820,
@@ -205,7 +205,7 @@
   },
   {
     "id": "dddd3333-3333-4333-8333-333333333333",
-    "workspace_slug": "demo-hitapes-wp-001",
+    "workspace_slug": "hitapesDemo-wp-001",
     "date": "2024-12-07",
     "bundle_loads": 172,
     "messages": 1860,
@@ -217,7 +217,7 @@
   },
   {
     "id": "dddd4444-4444-4444-8444-444444444444",
-    "workspace_slug": "demo-hitapes-wp-001",
+    "workspace_slug": "hitapesDemo-wp-001",
     "date": "2024-12-06",
     "bundle_loads": 165,
     "messages": 1780,
@@ -229,7 +229,7 @@
   },
   {
     "id": "dddd5555-5555-4555-8555-555555555555",
-    "workspace_slug": "demo-hitapes-wp-001",
+    "workspace_slug": "hitapesDemo-wp-001",
     "date": "2024-12-05",
     "bundle_loads": 180,
     "messages": 1950,

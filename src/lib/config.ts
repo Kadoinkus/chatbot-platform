@@ -109,7 +109,6 @@ export function validateProductionConfig(): string[] {
 export function logConfig(): void {
   console.log('[Config]', {
     environment: config.isDevelopment ? 'development' : config.isProduction ? 'production' : 'test',
-    useMockData: config.useMockData,
     supabaseConfigured: config.supabase.isConfigured,
     rateLimitingConfigured: config.rateLimiting.isConfigured,
     sessionSecretSet: !!config.session.secret,

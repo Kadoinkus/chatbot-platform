@@ -458,7 +458,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
 export type SupabaseDb = ReturnType<typeof createSupabaseDb>;
 
 // Pre-built instances for convenience
-import { supabaseAdminProd, supabaseAdminDemo } from './client';
+import { supabaseAdminProd } from './client';
 
 export const supabaseProdDb = createSupabaseDb({ adminClient: supabaseAdminProd, label: 'PROD' });
 // Default export keeps backward compatibility for prod usage

@@ -7,7 +7,7 @@ import { getClientBrandColor, registerClientPalette } from '@/lib/brandColors';
 import Link from 'next/link';
 import {
   ArrowLeft, Plus, Settings, CreditCard, Activity,
-  Bot as BotIcon, Calendar, AlertCircle
+  Bot as BotIcon, Calendar, AlertCircle, Package
 } from 'lucide-react';
 import {
   Page,
@@ -104,7 +104,10 @@ export default function WorkspaceDetailPage({
 
   const brandColor = client.palette?.primary || getClientBrandColor(client.id) || getClientBrandColor(client.slug);
 
-  const planType = (workspace.plan as keyof typeof PLAN_CONFIG) in PLAN_CONFIG ? (workspace.plan as keyof typeof PLAN_CONFIG) : 'starter';
+  const validBadgePlans = ['starter', 'basic', 'premium', 'enterprise'] as const;
+  const planType = validBadgePlans.includes(workspace.plan as typeof validBadgePlans[number])
+    ? (workspace.plan as typeof validBadgePlans[number])
+    : 'starter';
   const planConfig = PLAN_CONFIG[planType];
 
   // Sessions is the client-facing usage metric

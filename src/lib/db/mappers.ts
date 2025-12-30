@@ -1,5 +1,5 @@
 import type { ChatSession } from '@/types';
-import type { Assistant, Client, Workspace, User, Conversation, Message, Session } from '@/types';
+import type { Assistant, Client, Workspace, User, Conversation, Message, Session, PlanType } from '@/types';
 import type { AssistantSession } from '@/types';
 import { PLAN_CONFIG } from '@/lib/billingService';
 
@@ -275,7 +275,7 @@ export function mapWorkspace(raw: any): Workspace {
   // Supabase join alias: plan: billing_plans(*)
   const plan = subscription?.plan || subscription?.billing_plans;
 
-  const planSlug = subscription?.plan_slug ?? raw.plan ?? 'starter';
+  const planSlug = (subscription?.plan_slug ?? raw.plan ?? 'starter') as PlanType;
   const planConfig = PLAN_CONFIG[planSlug] ?? PLAN_CONFIG.starter;
 
   // Effective limits (override -> plan -> config fallback)

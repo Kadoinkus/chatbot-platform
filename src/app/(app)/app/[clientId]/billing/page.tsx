@@ -136,10 +136,10 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
     };
   }, []);
 
-  const formatDate = (value?: string | number | null) => {
+  const formatDate = (value?: string | number | null): string => {
     if (value === null || value === undefined || value === '') return '-';
     const d = new Date(value);
-    return isNaN(d.getTime()) ? value : d.toLocaleDateString();
+    return isNaN(d.getTime()) ? String(value) : d.toLocaleDateString();
   };
 
   const formatMoney = (value: number, currency: string | null = 'EUR') => {

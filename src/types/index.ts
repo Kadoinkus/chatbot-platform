@@ -124,6 +124,8 @@ export type Workspace = {
   // Billing (invoice frequency - when customer is charged)
   billingCycle: BillingCycle;           // 'annual' = prepaid yearly invoice
   monthlyFee: number;                   // Base fee per period
+  annualDiscountPct?: number;           // e.g., 10 = 10% off annual prepay
+  isAnnualPrepaid?: boolean;            // True if paying annually upfront
   nextBillingDate: string;              // Next invoice date
   // Usage reset (separate from billing - when counters reset)
   usageResetInterval?: UsageResetInterval;  // Defaults to 'monthly' - daily, monthly, quarterly, annual

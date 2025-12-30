@@ -35,7 +35,8 @@ export const clients: Client[] = (clientsJson as DemoClient[]).map(client => {
       clientId: mascot.client_slug,
       workspaceSlug: mascot.workspace_slug,
       name: mascot.name,
-      image: mascot.image_url || '',
+      // Prefer asset-based avatar, fall back to legacy image_url for mocks
+      image: mascot.avatar_asset_url || mascot.image_url || '',
       status: mascot.status as AgentStatus,
       conversations: mascot.total_conversations,
       description: mascot.description || '',
@@ -64,7 +65,8 @@ export const clients: Client[] = (clientsJson as DemoClient[]).map(client => {
     email: client.email || undefined,
     phone: client.phone || undefined,
     website: client.website || undefined,
-    logoUrl: client.logo_url || undefined,
+    // Prefer asset-based logo, fall back to legacy logo_url in mock JSON
+    logoUrl: client.logo_asset_url || client.logo_url || undefined,
     industry: client.industry || undefined,
     companySize: client.company_size || undefined,
     country: client.country || undefined,

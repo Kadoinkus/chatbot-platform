@@ -99,9 +99,9 @@ export default function PlansPage({ params }: { params: Promise<{ clientId: stri
                   currency: 'EUR',
                   mascotSlots: 1,
                   sharedLimits: {
-                    bundleLoads: 1000,
-                    chatMessages: 25000,
-                    apiCalls: 50000,
+                    bundleLoads: 100,
+                    chatMessages: 1000,
+                    apiCalls: 1000,
                     storage: '50MB'
                   },
                   features: [
@@ -118,13 +118,13 @@ export default function PlansPage({ params }: { params: Promise<{ clientId: stri
                 {
                   tier: 'basic',
                   name: 'Basic',
-                  price: 299,
+                  price: 399,
                   currency: 'EUR',
                   mascotSlots: 2,
                   sharedLimits: {
-                    bundleLoads: 5000,
-                    chatMessages: 100000,
-                    apiCalls: 250000,
+                    bundleLoads: 1000,
+                    chatMessages: 15000,
+                    apiCalls: 15000,
                     storage: '200MB'
                   },
                   features: [
@@ -141,13 +141,13 @@ export default function PlansPage({ params }: { params: Promise<{ clientId: stri
                 {
                   tier: 'premium',
                   name: 'Premium',
-                  price: 2499,
+                  price: 699,
                   currency: 'EUR',
                   mascotSlots: 5,
                   sharedLimits: {
-                    bundleLoads: 25000,
-                    chatMessages: 500000,
-                    apiCalls: 1000000,
+                    bundleLoads: 2000,
+                    chatMessages: 30000,
+                    apiCalls: 30000,
                     storage: '2GB'
                   },
                   features: [
@@ -164,13 +164,13 @@ export default function PlansPage({ params }: { params: Promise<{ clientId: stri
                 {
                   tier: 'enterprise',
                   name: 'Enterprise',
-                  price: 0,
+                  price: 2499,
                   currency: 'EUR',
                   mascotSlots: 10,
                   sharedLimits: {
-                    bundleLoads: 100000,
-                    chatMessages: 2000000,
-                    apiCalls: 5000000,
+                    bundleLoads: 5000,
+                    chatMessages: 50000,
+                    apiCalls: 50000,
                     storage: '10GB'
                   },
                   features: [
@@ -317,28 +317,28 @@ export default function PlansPage({ params }: { params: Promise<{ clientId: stri
                         <div className="flex flex-col items-center gap-1">
                           <Package size={16} className="text-success-600 dark:text-success-500" />
                           <span>Starter</span>
-                          <span className="text-xs font-normal text-foreground-tertiary">$99/mo</span>
+                          <span className="text-xs font-normal text-foreground-tertiary">€99/mo</span>
                         </div>
                       </TableHead>
                       <TableHead className="text-center w-36">
                         <div className="flex flex-col items-center gap-1">
                           <Zap size={16} className="text-info-600 dark:text-info-500" />
                           <span>Basic</span>
-                          <span className="text-xs font-normal text-foreground-tertiary">$299/mo</span>
+                          <span className="text-xs font-normal text-foreground-tertiary">€399/mo</span>
                         </div>
                       </TableHead>
                       <TableHead className="text-center w-36">
                         <div className="flex flex-col items-center gap-1">
                           <Crown size={16} className="text-plan-premium-text" />
                           <span>Premium</span>
-                          <span className="text-xs font-normal text-foreground-tertiary">€2499/mo</span>
+                          <span className="text-xs font-normal text-foreground-tertiary">€699/mo</span>
                         </div>
                       </TableHead>
                       <TableHead className="text-center w-36">
                         <div className="flex flex-col items-center gap-1">
                           <Shield size={16} className="text-foreground-secondary" />
                           <span>Enterprise</span>
-                          <span className="text-xs font-normal text-foreground-tertiary">Custom</span>
+                          <span className="text-xs font-normal text-foreground-tertiary">€2499/mo</span>
                         </div>
                       </TableHead>
                     </TableRow>
@@ -353,24 +353,24 @@ export default function PlansPage({ params }: { params: Promise<{ clientId: stri
                     </TableRow>
                     <TableRow>
                       <TableCell className="font-medium text-foreground-secondary">Bundle Loads (Shared)</TableCell>
+                      <TableCell className="text-center text-foreground-secondary">100</TableCell>
                       <TableCell className="text-center text-foreground-secondary">1,000</TableCell>
+                      <TableCell className="text-center text-foreground-secondary">2,000</TableCell>
                       <TableCell className="text-center text-foreground-secondary">5,000</TableCell>
-                      <TableCell className="text-center text-foreground-secondary">25,000</TableCell>
-                      <TableCell className="text-center text-foreground-secondary">100,000</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell className="font-medium text-foreground-secondary">Chat Messages (Shared)</TableCell>
-                      <TableCell className="text-center text-foreground-secondary">25,000</TableCell>
-                      <TableCell className="text-center text-foreground-secondary">100,000</TableCell>
-                      <TableCell className="text-center text-foreground-secondary">500,000</TableCell>
-                      <TableCell className="text-center text-foreground-secondary">2,000,000</TableCell>
+                      <TableCell className="text-center text-foreground-secondary">1,000</TableCell>
+                      <TableCell className="text-center text-foreground-secondary">15,000</TableCell>
+                      <TableCell className="text-center text-foreground-secondary">30,000</TableCell>
+                      <TableCell className="text-center text-foreground-secondary">50,000</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell className="font-medium text-foreground-secondary">API Calls (Shared)</TableCell>
+                      <TableCell className="text-center text-foreground-secondary">1,000</TableCell>
+                      <TableCell className="text-center text-foreground-secondary">15,000</TableCell>
+                      <TableCell className="text-center text-foreground-secondary">30,000</TableCell>
                       <TableCell className="text-center text-foreground-secondary">50,000</TableCell>
-                      <TableCell className="text-center text-foreground-secondary">250,000</TableCell>
-                      <TableCell className="text-center text-foreground-secondary">1,000,000</TableCell>
-                      <TableCell className="text-center text-foreground-secondary">5,000,000</TableCell>
                     </TableRow>
                     <TableRow>
                       <TableCell className="font-medium text-foreground-secondary">Storage</TableCell>

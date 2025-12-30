@@ -1,6 +1,7 @@
 import type { ChatSession } from '@/types';
 import type { Assistant, Client, Workspace, User, Conversation, Message, Session } from '@/types';
 import type { AssistantSession } from '@/types';
+import { PLAN_CONFIG } from '@/lib/billingService';
 
 /**
  * Normalize raw chat session data (mock JSON or Supabase rows) into
@@ -202,6 +203,14 @@ function normalizeAssistantStatus(status: string | undefined): Assistant['status
 }
 
 export function mapClient(raw: any): Client {
+  const logoUrl =
+    raw.logo_asset_url ||
+    (raw.assets
+      ? raw.assets.find((a: any) => a?.asset_type === 'logo' && a?.is_active)?.asset_url
+      : undefined) ||
+    raw.logo_url || // legacy fallback (mock/demo)
+    undefined;
+
   return {
     id: raw.id,
     slug: raw.slug || raw.id,
@@ -209,7 +218,7 @@ export function mapClient(raw: any): Client {
     email: raw.email || undefined,
     phone: raw.phone || undefined,
     website: raw.website || undefined,
-    logoUrl: raw.logo_url || undefined,
+    logoUrl,
     industry: raw.industry || undefined,
     companySize: raw.company_size || undefined,
     country: raw.country || undefined,
@@ -230,13 +239,21 @@ export function mapClient(raw: any): Client {
 }
 
 export function mapAssistantFromMascot(raw: any): Assistant {
+  const avatarUrl =
+    raw.avatar_asset_url ||
+    (raw.assets
+      ? raw.assets.find((a: any) => a?.asset_type === 'avatar' && a?.is_active)?.asset_url
+      : undefined) ||
+    raw.image_url || // legacy fallback (mock/demo)
+    undefined;
+
   return {
     id: raw.mascot_slug,
     clientId: raw.client_slug,
     workspaceSlug: raw.workspace_slug,
     name: raw.name,
     // Keep undefined if missing; UI components handle fallback avatars
-    image: raw.image_url || undefined,
+    image: avatarUrl,
     status: normalizeAssistantStatus(raw.status),
     conversations: raw.total_conversations || 0,
     description: raw.description || '',
@@ -253,6 +270,74 @@ export function mapAssistantFromMascot(raw: any): Assistant {
 }
 
 export function mapWorkspace(raw: any): Workspace {
+  // Prefer subscription + plan data; fall back to workspace fields only for counters/identity
+  const subscription = Array.isArray(raw.subscriptions) ? raw.subscriptions[0] : raw.subscriptions;
+  // Supabase join alias: plan: billing_plans(*)
+  const plan = subscription?.plan || subscription?.billing_plans;
+
+  const planSlug = subscription?.plan_slug ?? raw.plan ?? 'starter';
+  const planConfig = PLAN_CONFIG[planSlug] ?? PLAN_CONFIG.starter;
+
+  // Effective limits (override -> plan -> config fallback)
+  const bundleLimit =
+    subscription?.effective_bundle_limit ??
+    subscription?.custom_bundle_limit ??
+    plan?.bundle_load_limit ??
+    planConfig.limits.bundleLoads;
+  const bundleUsed = raw.bundle_loads_used ?? 0;
+
+  const sessionsLimit =
+    subscription?.effective_conversations_limit ??
+    subscription?.custom_conversations_limit ??
+    plan?.conversations_limit ??
+    planConfig.limits.sessions;
+  const sessionsUsed = raw.sessions_used ?? 0;
+
+  const messagesLimit =
+    subscription?.effective_messages_limit ??
+    subscription?.custom_messages_limit ??
+    plan?.messages_limit ??
+    planConfig.limits.messages;
+  const messagesUsed = raw.messages_used ?? 0;
+
+  // Overage rates (override -> plan -> 0)
+  const overageBundle =
+    subscription?.effective_overage_rate_bundle_loads ??
+    subscription?.custom_overage_rate_bundle_loads ??
+    plan?.overage_rate_bundle_loads ??
+    0;
+  const overageConversations =
+    subscription?.effective_overage_rate_conversations ??
+    subscription?.custom_overage_rate_conversations ??
+    plan?.overage_rate_conversations ??
+    0;
+
+  // Price and credits
+  const monthlyFee =
+    subscription?.effective_monthly_fee ??
+    subscription?.custom_monthly_fee ??
+    plan?.monthly_fee_ex_vat ??
+    raw.monthly_fee ??
+    0;
+
+  const walletCredits = subscription?.wallet_credits ?? raw.wallet_credits ?? 0;
+
+  // Cadence
+  const billingFrequency = subscription?.billing_frequency ?? raw.billing_cycle ?? 'monthly';
+  const billingCycle = billingFrequency === 'yearly' ? 'annual' : billingFrequency;
+
+  const usageResetInterval = subscription?.usage_reset_interval ?? raw.usage_reset_interval ?? undefined;
+  const billingResetDay = subscription?.billing_reset_day ?? raw.billing_reset_day ?? undefined;
+  const nextUsageResetDate = subscription?.next_usage_reset_date ?? raw.next_usage_reset_date ?? undefined;
+  const nextBillingDate = subscription?.next_billing_date ?? raw.next_billing_date ?? undefined;
+  const subscriptionStartDate = subscription?.contract_start ?? raw.subscription_start_date ?? undefined;
+
+  const status =
+    subscription?.status ??
+    raw.subscription_status ??
+    raw.status ??
+    'active';
+
   return {
     id: raw.id,
     slug: raw.slug || raw.id,
@@ -261,42 +346,44 @@ export function mapWorkspace(raw: any): Workspace {
     clientSlug: raw.client_slug,
     name: raw.name,
     description: raw.description || undefined,
-    plan: raw.plan,
-    status: raw.status,
+    plan: planSlug,
+    status,
     bundleLoads: {
-      limit: raw.bundle_loads_limit || 0,
-      used: raw.bundle_loads_used || 0,
-      remaining: (raw.bundle_loads_limit || 0) - (raw.bundle_loads_used || 0),
+      limit: bundleLimit,
+      used: bundleUsed,
+      remaining: bundleLimit - bundleUsed,
     },
     messages: {
-      limit: raw.messages_limit || 0,
-      used: raw.messages_used || 0,
-      remaining: (raw.messages_limit || 0) - (raw.messages_used || 0),
+      limit: messagesLimit,
+      used: messagesUsed,
+      remaining: messagesLimit - messagesUsed,
     },
     apiCalls: {
-      limit: raw.api_calls_limit || 0,
-      used: raw.api_calls_used || 0,
-      remaining: (raw.api_calls_limit || 0) - (raw.api_calls_used || 0),
+      limit: 0,
+      used: 0,
+      remaining: 0,
     },
     sessions: {
-      limit: raw.sessions_limit || 0,
-      used: raw.sessions_used || 0,
-      remaining: (raw.sessions_limit || 0) - (raw.sessions_used || 0),
+      limit: sessionsLimit,
+      used: sessionsUsed,
+      remaining: sessionsLimit - sessionsUsed,
     },
-    walletCredits: raw.wallet_credits || 0,
+    walletCredits,
     overageRates: {
-      bundleLoads: raw.overage_rate_bundle_loads || 0,
-      messages: raw.overage_rate_messages || 0,
-      apiCalls: raw.overage_rate_api_calls || 0,
-      sessions: raw.overage_rate_sessions || 0,
+      bundleLoads: overageBundle,
+      messages: overageConversations, // mapped to conversations overage
+      apiCalls: 0,
+      sessions: overageConversations,
     },
-    billingCycle: raw.billing_cycle || 'monthly',
-    monthlyFee: raw.monthly_fee || 0,
-    nextBillingDate: raw.next_billing_date || '',
-    usageResetInterval: raw.usage_reset_interval || undefined,
-    subscriptionStartDate: raw.subscription_start_date || undefined,
-    billingResetDay: raw.billing_reset_day || undefined,
-    nextUsageResetDate: raw.next_usage_reset_date || undefined,
+    billingCycle,
+    monthlyFee,
+    annualDiscountPct: undefined,
+    isAnnualPrepaid: undefined,
+    nextBillingDate: nextBillingDate || '',
+    usageResetInterval,
+    subscriptionStartDate,
+    billingResetDay,
+    nextUsageResetDate,
     overageTracking: {
       bundleOverageUsed: raw.bundle_overage_used || 0,
       sessionOverageUsed: raw.session_overage_used || 0,

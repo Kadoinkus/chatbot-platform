@@ -67,7 +67,9 @@ export interface DB_Client {
   email: string | null;
   phone: string | null;
   website: string | null;
-  logo_url: string | null;
+  // Media is resolved via client_assets (type 'logo'); legacy field kept optional for JSON mocks
+  logo_url?: string | null;
+  logo_asset_url?: string | null;
   industry: string | null;
   company_size: DB_CompanySize | null;
   country: string | null;
@@ -174,7 +176,9 @@ export interface DB_Mascot {
   workspace_slug: string;              // FK to workspaces.slug
   name: string;
   description: string | null;
-  image_url: string | null;
+  // Media is resolved via client_assets (type 'avatar'); legacy field kept optional for JSON mocks
+  image_url?: string | null;
+  avatar_asset_url?: string | null;
   status: DB_AgentStatus;              // default: 'draft'
   // Lifetime stats
   total_conversations: number;         // default: 0

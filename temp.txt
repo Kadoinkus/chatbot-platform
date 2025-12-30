@@ -5,10 +5,10 @@ import type { Client, Workspace, Assistant } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
 import {
   CreditCard, ChevronDown, ChevronUp,
-  Plus, Wallet,
+  Plus, Wallet, Activity,
   Euro, Bot as BotIcon, BarChart3,
-  Server, AlertTriangle,
-  Shield, Zap, Crown, Layers, ArrowLeft, Package
+  MessageCircle, Server, AlertTriangle,
+  Shield, Zap, Crown, Building2, ArrowLeft, Package
 } from 'lucide-react';
 import Link from 'next/link';
 import {
@@ -97,14 +97,15 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
   // Calculate totals across all workspaces
   const getTotalMonthlyFee = () => {
     return workspaces.reduce((total, ws) => {
-      const planCost = ws.monthlyFee || 0;
+      const planConfig = getPlanConfig(ws.plan);
+      const planCost = planConfig.price === 0 ? 0 : planConfig.price;
       const mascotCost = getWorkspaceMascotTotal(ws.slug, ws.plan);
       return total + planCost + mascotCost;
     }, 0);
   };
 
   const getTotalCredits = () => {
-    return workspaces.reduce((total, ws) => total + (ws.walletCredits || 0), 0);
+    return workspaces.reduce((total, ws) => total + ws.walletCredits, 0);
   };
 
   const getTotalAssistants = () => {
@@ -112,11 +113,10 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
   };
 
   const getUsageWarnings = () => {
-    return workspaces.filter(ws => {
-      const bundlePct = ws.bundleLoads.limit ? ws.bundleLoads.used / ws.bundleLoads.limit : 0;
-      const sessionsPct = ws.sessions?.limit ? (ws.sessions.used / ws.sessions.limit) : 0;
-      return bundlePct > 0.8 || sessionsPct > 0.8;
-    });
+    return workspaces.filter(ws =>
+      (ws.bundleLoads.used / ws.bundleLoads.limit) > 0.8 ||
+      (ws.messages.used / ws.messages.limit) > 0.9
+    );
   };
 
   const getPlanBadgeType = (plan: string): 'starter' | 'basic' | 'premium' | 'enterprise' => {
@@ -131,11 +131,10 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
 
   const getPlanConfig = (plan: string) => {
     const configs = {
-      starter: { name: 'Starter', icon: Package, color: 'text-foreground-tertiary' },
-      basic: { name: 'Basic', icon: Zap, color: 'text-foreground-tertiary' },
-      premium: { name: 'Premium', icon: Crown, color: 'text-foreground-tertiary' },
-      enterprise: { name: 'Enterprise', icon: Shield, color: 'text-foreground-tertiary' },
-      custom: { name: 'Custom', icon: Shield, color: 'text-foreground-tertiary' },
+      starter: { name: 'Starter', icon: Package, color: 'text-foreground-secondary', price: 99, currency: 'EUR' },
+      basic: { name: 'Basic', icon: Zap, color: 'text-info-600 dark:text-info-500', price: 299, currency: 'EUR' },
+      premium: { name: 'Premium', icon: Crown, color: 'text-plan-premium-text', price: 2499, currency: 'EUR' },
+      enterprise: { name: 'Enterprise', icon: Shield, color: 'text-warning-600 dark:text-warning-500', price: 0, currency: 'EUR' }
     };
     return configs[plan as keyof typeof configs] || configs.starter;
   };
@@ -161,7 +160,7 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
     if (mascot.type === 'notso-standard') return 0;
 
     if (mascot.type === 'notso-pro') {
-      return workspacePlan === 'starter' ? 30 : 0; // Included for Basic+
+      return workspacePlan === 'starter' ? 30 : 0; // Free for Basic+
     }
 
     return mascot.studioPrice; // Third-party price
@@ -201,9 +200,7 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                   <span className="text-sm text-foreground-secondary">Monthly Total</span>
                   <Euro size={16} className="text-foreground-tertiary" />
                 </div>
-                <p className="text-2xl font-bold text-foreground">
-                  €{getTotalMonthlyFee().toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}
-                </p>
+                <p className="text-2xl font-bold text-foreground">€{getTotalMonthlyFee().toLocaleString()}</p>
                 <p className="text-xs text-foreground-tertiary mt-1">
                   Across {workspaces.length} workspaces
                 </p>
@@ -212,7 +209,7 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
               <Card padding="sm">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-foreground-secondary">Total Credits</span>
-                  <Wallet size={16} className="text-foreground-tertiary" />
+                  <Wallet size={16} className="text-warning-500" />
                 </div>
                 <p className="text-2xl font-bold text-foreground">€{getTotalCredits().toFixed(2)}</p>
                 <p className="text-xs text-foreground-tertiary mt-1">Available for overages</p>
@@ -221,7 +218,7 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
               <Card padding="sm">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-foreground-secondary">Active Workspaces</span>
-                  <Layers size={16} className="text-foreground-tertiary" />
+                  <Building2 size={16} className="text-info-500" />
                 </div>
                 <p className="text-2xl font-bold text-foreground">
                   {workspaces.filter(ws => ws.status === 'active').length}
@@ -232,7 +229,7 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
               <Card padding="sm">
                 <div className="flex items-center justify-between mb-2">
                   <span className="text-sm text-foreground-secondary">Usage Warnings</span>
-                  <AlertTriangle size={16} className="text-foreground-tertiary" />
+                  <AlertTriangle size={16} className="text-error-500" />
                 </div>
                 <p className="text-2xl font-bold text-foreground">{getUsageWarnings().length}</p>
                 <p className="text-xs text-foreground-tertiary mt-1">Near limits</p>
@@ -247,10 +244,10 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                     {getUsageWarnings().map(workspace => (
                       <li key={workspace.id}>
                         <strong>{workspace.name}</strong> is approaching limits
-                        {(workspace.bundleLoads.limit && (workspace.bundleLoads.used / workspace.bundleLoads.limit) > 0.8) &&
+                        {(workspace.bundleLoads.used / workspace.bundleLoads.limit) > 0.8 &&
                           ` - Bundle loads: ${Math.round((workspace.bundleLoads.used / workspace.bundleLoads.limit) * 100)}%`}
-                        {(workspace.sessions?.limit && (workspace.sessions.used / workspace.sessions.limit) > 0.8) &&
-                          ` - Sessions: ${Math.round((workspace.sessions.used / workspace.sessions.limit) * 100)}%`}
+                        {(workspace.messages.used / workspace.messages.limit) > 0.9 &&
+                          ` - Messages: ${Math.round((workspace.messages.used / workspace.messages.limit) * 100)}%`}
                       </li>
                     ))}
                   </ul>
@@ -261,7 +258,7 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
             {/* Action Bar */}
             <div className="flex items-center justify-between mb-6">
               <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-                <Layers size={24} />
+                <Building2 size={24} />
                 Your Workspaces
               </h2>
               <Button
@@ -289,11 +286,10 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
               {workspaces.map(workspace => {
                 const isExpanded = expandedWorkspaces.has(workspace.id);
                 const assistants = workspaceAssistants[workspace.slug] || [];
-                const bundleUsagePercent = workspace.bundleLoads.limit ? (workspace.bundleLoads.used / workspace.bundleLoads.limit) * 100 : 0;
-                const sessionsUsagePercent = workspace.sessions?.limit ? (workspace.sessions.used / workspace.sessions.limit) * 100 : 0;
+                const bundleUsagePercent = (workspace.bundleLoads.used / workspace.bundleLoads.limit) * 100;
+                const messageUsagePercent = (workspace.messages.used / workspace.messages.limit) * 100;
+                const apiUsagePercent = (workspace.apiCalls.used / workspace.apiCalls.limit) * 100;
                 const planConfig = getPlanConfig(workspace.plan);
-                const mascotTotal = getWorkspaceMascotTotal(workspace.slug, workspace.plan);
-                const totalCost = (workspace.monthlyFee || 0) + mascotTotal;
 
                 return (
                   <Card key={workspace.id} padding="none">
@@ -301,14 +297,15 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                       className="p-6 cursor-pointer hover:bg-background-hover transition-colors"
                       onClick={() => toggleWorkspaceExpansion(workspace.id)}
                     >
-                    {/* Compact Summary View */}
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="flex items-center gap-3">
-                        <div>
-                          <div className="flex items-center gap-3 mb-1">
-                            <h3 className="text-lg font-semibold text-foreground">{workspace.name}</h3>
-                            <Badge plan={getPlanBadgeType(workspace.plan)}>
-                              {planConfig.name}
+                      {/* Compact Summary View */}
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="flex items-center gap-4">
+                          <planConfig.icon size={28} className={planConfig.color} />
+                          <div>
+                            <div className="flex items-center gap-3 mb-1">
+                              <h3 className="text-lg font-semibold text-foreground">{workspace.name}</h3>
+                              <Badge plan={getPlanBadgeType(workspace.plan)}>
+                                {planConfig.name}
                               </Badge>
                               {workspace.status !== 'active' && (
                                 <Badge variant="error">
@@ -324,16 +321,20 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                         <div className="flex items-center gap-6">
                           <div className="text-right">
                             <p className="text-sm text-foreground-tertiary">Monthly Cost</p>
-                            <div>
-                              <p className="text-lg font-semibold text-foreground">
-                                {totalCost === 0 ? 'Included' : `€${totalCost.toLocaleString()}`}
-                              </p>
-                              {mascotTotal > 0 && (
-                                <p className="text-xs text-foreground-tertiary">
-                                  Plan: €{workspace.monthlyFee.toLocaleString()} + Mascots: €{mascotTotal}
+                            {getPlanConfig(workspace.plan).price === 0 ? (
+                              <p className="text-lg font-semibold text-foreground">On Request</p>
+                            ) : (
+                              <div>
+                                <p className="text-lg font-semibold text-foreground">
+                                  €{(getPlanConfig(workspace.plan).price + getWorkspaceMascotTotal(workspace.slug, workspace.plan)).toLocaleString()}
                                 </p>
-                              )}
-                            </div>
+                                {getWorkspaceMascotTotal(workspace.slug, workspace.plan) > 0 && (
+                                  <p className="text-xs text-foreground-tertiary">
+                                    Plan: €{getPlanConfig(workspace.plan).price.toLocaleString()} + Mascots: €{getWorkspaceMascotTotal(workspace.slug, workspace.plan)}
+                                  </p>
+                                )}
+                              </div>
+                            )}
                           </div>
                           <div className="text-right">
                             <p className="text-sm text-foreground-tertiary">Credits</p>
@@ -426,31 +427,55 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                                   />
                                 </div>
                                 <p className="text-xs text-foreground-tertiary">
-                                  €{workspace.overageRates.bundleLoads}/load overage · {workspace.bundleLoads.remaining.toLocaleString()} remaining
+                                  €{workspace.overageRates.bundleLoads}/load overage • {workspace.bundleLoads.remaining.toLocaleString()} remaining
                                 </p>
                               </div>
 
                               <div className="bg-surface-elevated rounded-lg p-4 border border-border">
                                 <div className="flex justify-between items-center mb-2">
                                   <span className="text-sm font-medium text-foreground flex items-center gap-2">
-                                    <Server size={14} className="text-plan-premium-text" />
-                                    Sessions (Conversations)
+                                    <MessageCircle size={14} className="text-plan-premium-text" />
+                                    Messages (OpenAI Processing)
                                   </span>
                                   <span className="text-sm text-foreground-secondary">
-                                    {workspace.sessions?.used.toLocaleString()} / {workspace.sessions?.limit.toLocaleString()}
+                                    {workspace.messages.used.toLocaleString()} / {workspace.messages.limit.toLocaleString()}
                                   </span>
                                 </div>
                                 <div className="h-3 bg-background-tertiary rounded-full overflow-hidden mb-2">
                                   <div
                                     className={`h-full transition-all ${
-                                      sessionsUsagePercent > 90 ? 'bg-error-500' :
-                                      sessionsUsagePercent > 70 ? 'bg-warning-500' : 'bg-plan-premium-text'
+                                      messageUsagePercent > 90 ? 'bg-error-500' :
+                                      messageUsagePercent > 70 ? 'bg-warning-500' : 'bg-plan-premium-text'
                                     }`}
-                                    style={{ width: `${Math.min(100, sessionsUsagePercent)}%` }}
+                                    style={{ width: `${Math.min(100, messageUsagePercent)}%` }}
                                   />
                                 </div>
                                 <p className="text-xs text-foreground-tertiary">
-                                  €{workspace.overageRates.sessions}/session overage · {workspace.sessions?.remaining.toLocaleString()} remaining
+                                  €{workspace.overageRates.messages}/message overage • {workspace.messages.remaining.toLocaleString()} remaining
+                                </p>
+                              </div>
+
+                              <div className="bg-surface-elevated rounded-lg p-4 border border-border">
+                                <div className="flex justify-between items-center mb-2">
+                                  <span className="text-sm font-medium text-foreground flex items-center gap-2">
+                                    <Activity size={14} className="text-success-600 dark:text-success-500" />
+                                    API Calls
+                                  </span>
+                                  <span className="text-sm text-foreground-secondary">
+                                    {workspace.apiCalls.used.toLocaleString()} / {workspace.apiCalls.limit.toLocaleString()}
+                                  </span>
+                                </div>
+                                <div className="h-3 bg-background-tertiary rounded-full overflow-hidden mb-2">
+                                  <div
+                                    className={`h-full transition-all ${
+                                      apiUsagePercent > 90 ? 'bg-error-500' :
+                                      apiUsagePercent > 70 ? 'bg-warning-500' : 'bg-success-500'
+                                    }`}
+                                    style={{ width: `${Math.min(100, apiUsagePercent)}%` }}
+                                  />
+                                </div>
+                                <p className="text-xs text-foreground-tertiary">
+                                  €{workspace.overageRates.apiCalls}/call overage • {workspace.apiCalls.remaining.toLocaleString()} remaining
                                 </p>
                               </div>
                             </div>
@@ -501,19 +526,19 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                                             <Badge variant="info" className="text-xs">Pro</Badge>
                                           )}
                                           {mascotInfo.type === 'third-party' && (
-                                    <Badge variant="warning" className="text-xs">3rd Party</Badge>
-                                  )}
-                                </div>
-                              </div>
-                              <div className="text-right">
-                                {mascotCost === 0 ? (
-                                  <span className="text-sm font-medium text-success-600 dark:text-success-500">
-                                    {isIncluded ? 'Included' : 'Included'}
-                                  </span>
-                                ) : (
-                                  <span className="text-sm font-medium text-foreground">€{mascotCost}/mo</span>
-                                )}
-                              </div>
+                                            <Badge variant="warning" className="text-xs">3rd Party</Badge>
+                                          )}
+                                        </div>
+                                      </div>
+                                      <div className="text-right">
+                                        {mascotCost === 0 ? (
+                                          <span className="text-sm font-medium text-success-600 dark:text-success-500">
+                                            {isIncluded ? 'Included' : 'Free'}
+                                          </span>
+                                        ) : (
+                                          <span className="text-sm font-medium text-foreground">€{mascotCost}/mo</span>
+                                        )}
+                                      </div>
                                     </div>
                                   );
                                 })}
@@ -586,25 +611,25 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                 {workspaces.map(workspace => {
                   const planConfig = getPlanConfig(workspace.plan);
                   const mascotCost = getWorkspaceMascotTotal(workspace.slug, workspace.plan);
-                  const totalCost = (workspace.monthlyFee || 0) + mascotCost;
+                  const totalCost = planConfig.price + mascotCost;
 
                   return (
-                        <div key={workspace.id} className="py-3 border-b border-border last:border-b-0">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                              <planConfig.icon size={16} className="text-foreground-tertiary" />
-                              <span className="font-medium text-foreground">{workspace.name}</span>
-                              <Badge plan={getPlanBadgeType(workspace.plan)}>
-                                {planConfig.name}
-                              </Badge>
-                            </div>
+                    <div key={workspace.id} className="py-3 border-b border-border last:border-b-0">
+                      <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
+                          <planConfig.icon size={16} className={planConfig.color} />
+                          <span className="font-medium text-foreground">{workspace.name}</span>
+                          <Badge plan={getPlanBadgeType(workspace.plan)}>
+                            {planConfig.name}
+                          </Badge>
+                        </div>
                         <span className="font-semibold text-foreground">
-                          {workspace.monthlyFee === 0 ? 'On Request' : `€${totalCost.toLocaleString()}`}
+                          {planConfig.price === 0 ? 'On Request' : `€${totalCost.toLocaleString()}`}
                         </span>
                       </div>
-                      {workspace.monthlyFee > 0 && mascotCost > 0 && (
+                      {planConfig.price > 0 && mascotCost > 0 && (
                         <div className="flex justify-between items-center text-xs text-foreground-tertiary mt-1 pl-8">
-                          <span>Plan: €{workspace.monthlyFee.toLocaleString()} + Mascots: €{mascotCost}</span>
+                          <span>Plan: €{planConfig.price.toLocaleString()} + Mascots: €{mascotCost}</span>
                         </div>
                       )}
                     </div>
@@ -622,24 +647,3 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
     </Page>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-

@@ -634,7 +634,7 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
             customDateRange={customDateRange}
             presets={[1, 7, 30, 'billing']}
             billingRange={billingRange || undefined}
-            billingLabel="Current billing cycle"
+            billingLabel="Current usage period"
             onPresetChange={(days) => {
               setUseCustomRange(false);
               setDateRange(days);

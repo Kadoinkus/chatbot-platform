@@ -41,17 +41,17 @@ export const PLAN_CONFIG: Record<PlanType, PlanConfig> = {
     currency: 'EUR',
     botSlots: 1,
     limits: {
-      bundleLoads: 1000,
-      messages: 25000,
-      apiCalls: 50000,
-      sessions: 5000,           // 5x bundle limit (caching benefit)
+      bundleLoads: 100,
+      messages: 1000,
+      apiCalls: 1000,
+      sessions: 200,
       storage: '50MB',
       knowledgebaseSize: '0.1MB'
     },
     features: [
       '1 bot slot',
-      '5,000 sessions/month',
-      '1,000 bundle loads',
+      '200 sessions/month',
+      '100 bundle loads',
       'Basic Q&A chatflow',
       '0.1MB knowledgebase',
       'Basic templates only',
@@ -70,21 +70,21 @@ export const PLAN_CONFIG: Record<PlanType, PlanConfig> = {
   basic: {
     tier: 'basic',
     name: 'Basic',
-    price: 299,
+    price: 399,
     currency: 'EUR',
     botSlots: 2,
     limits: {
-      bundleLoads: 5000,
-      messages: 100000,
-      apiCalls: 250000,
-      sessions: 25000,          // 5x bundle limit
+      bundleLoads: 1000,
+      messages: 15000,
+      apiCalls: 15000,
+      sessions: 3000,
       storage: '200MB',
       knowledgebaseSize: '0.5MB'
     },
     features: [
       '2 bot slots',
-      '25,000 sessions/month',
-      '5,000 bundle loads',
+      '3,000 sessions/month',
+      '1,000 bundle loads',
       'Basic chatflow templates',
       '0.5MB knowledgebase',
       'Basic + Pro templates',
@@ -103,21 +103,21 @@ export const PLAN_CONFIG: Record<PlanType, PlanConfig> = {
   premium: {
     tier: 'premium',
     name: 'Premium',
-    price: 2499,
+    price: 699,
     currency: 'EUR',
     botSlots: 5,
     limits: {
-      bundleLoads: 25000,
-      messages: 500000,
-      apiCalls: 1000000,
-      sessions: 125000,         // 5x bundle limit
+      bundleLoads: 2000,
+      messages: 30000,
+      apiCalls: 30000,
+      sessions: 6000,
       storage: '2GB',
       knowledgebaseSize: '5MB'
     },
     features: [
       'Up to 5 bot slots',
-      '125,000 sessions/month',
-      '25,000 bundle loads',
+      '6,000 sessions/month',
+      '2,000 bundle loads',
       'Advanced chatflows',
       '5MB knowledgebase',
       'All templates included',
@@ -136,21 +136,21 @@ export const PLAN_CONFIG: Record<PlanType, PlanConfig> = {
   enterprise: {
     tier: 'enterprise',
     name: 'Enterprise',
-    price: 0, // Custom pricing
+    price: 2499,
     currency: 'EUR',
     botSlots: 10,
     limits: {
-      bundleLoads: 100000,
-      messages: 2000000,
-      apiCalls: 5000000,
-      sessions: 500000,         // 5x bundle limit
+      bundleLoads: 5000,
+      messages: 50000,
+      apiCalls: 50000,
+      sessions: 10000,
       storage: '10GB',
       knowledgebaseSize: '20MB'
     },
     features: [
       'Up to 10 bot slots',
-      '500,000 sessions/month',
-      '100,000 bundle loads',
+      '10,000 sessions/month',
+      '5,000 bundle loads',
       'Custom chatflows',
       '20MB knowledgebase',
       'All templates + custom design',
@@ -169,16 +169,17 @@ export const PLAN_CONFIG: Record<PlanType, PlanConfig> = {
   custom: {
     tier: 'custom',
     name: 'Custom',
-    price: 0, // Negotiated pricing
+    price: 2499, // Default; override per contract
     currency: 'EUR',
     botSlots: 999,  // Unlimited effectively
     limits: {
-      bundleLoads: 1000000,
-      messages: 10000000,
-      apiCalls: 50000000,
-      sessions: 5000000,
-      storage: 'Unlimited',
-      knowledgebaseSize: 'Unlimited'
+      // Default to starter-like limits; real limits come from workspace records (Supabase)
+      bundleLoads: 100,
+      messages: 1000,
+      apiCalls: 1000,
+      sessions: 200,
+      storage: '50MB',
+      knowledgebaseSize: '0.1MB'
     },
     features: [
       'Unlimited bot slots',

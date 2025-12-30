@@ -114,7 +114,10 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
   const assistants: AssistantOperations = {
     async getAll() {
       const supabase = requireSupabase();
-      const { data, error } = await supabase.from('mascots').select('*').order('name');
+      const { data, error } = await supabase
+        .from('mascots')
+        .select('*, assets:client_assets(*)')
+        .order('name');
 
       if (error) throw error;
       return (data || []).map(mapAssistantFromMascot);
@@ -131,7 +134,11 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       }
 
       // Search by mascot_slug for non-UUID ids (mapped assistant.id uses mascot_slug)
-      const { data, error } = await supabase.from('mascots').select('*').eq('mascot_slug', id).single();
+      const { data, error } = await supabase
+        .from('mascots')
+        .select('*, assets:client_assets(*)')
+        .eq('mascot_slug', id)
+        .single();
       if (error && error.code !== 'PGRST116') throw error;
       return data ? mapAssistantFromMascot(data) : null;
     },
@@ -142,7 +149,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
 
       const { data, error } = await supabase
         .from('mascots')
-        .select('*')
+        .select('*, assets:client_assets(*)')
         .eq('client_slug', resolvedSlug)
         .order('name');
 
@@ -154,7 +161,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const supabase = requireSupabase();
       const { data, error } = await supabase
         .from('mascots')
-        .select('*')
+        .select('*, assets:client_assets(*)')
         .eq('workspace_slug', workspaceSlug)
         .order('name');
 
@@ -167,7 +174,10 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
   const workspaces: WorkspaceOperations = {
     async getAll() {
       const supabase = requireSupabase();
-      const { data, error } = await supabase.from('workspaces').select('*').order('name');
+      const { data, error } = await supabase
+        .from('workspaces')
+        .select('*, subscriptions:subscriptions(*, plan:billing_plans(*))')
+        .order('name');
 
       if (error) throw error;
       return (data || []).map(mapWorkspace);
@@ -179,7 +189,11 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       }
 
       const supabase = requireSupabase();
-      const { data, error } = await supabase.from('workspaces').select('*').eq('id', id).single();
+      const { data, error } = await supabase
+        .from('workspaces')
+        .select('*, subscriptions:subscriptions(*, plan:billing_plans(*))')
+        .eq('id', id)
+        .single();
 
       if (error && error.code !== 'PGRST116') throw error;
       return data ? mapWorkspace(data) : null;
@@ -187,7 +201,11 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
 
     async getBySlug(slug: string) {
       const supabase = requireSupabase();
-      const { data, error } = await supabase.from('workspaces').select('*').eq('slug', slug).single();
+      const { data, error } = await supabase
+        .from('workspaces')
+        .select('*, subscriptions:subscriptions(*, plan:billing_plans(*))')
+        .eq('slug', slug)
+        .single();
 
       if (error && error.code !== 'PGRST116') throw error;
       return data ? mapWorkspace(data) : null;
@@ -199,7 +217,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
 
       const { data, error } = await supabase
         .from('workspaces')
-        .select('*')
+        .select('*, subscriptions:subscriptions(*, plan:billing_plans(*))')
         .eq('client_slug', resolvedSlug)
         .order('name');
 

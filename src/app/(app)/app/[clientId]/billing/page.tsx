@@ -131,6 +131,66 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
     return `${prefix}${value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
   };
 
+  const computeBillingSummary = () => {
+    let monthlyTotal = 0;
+    let annualTotal = 0;
+    let monthlyCount = 0;
+    let annualCount = 0;
+    let earliestBilling: string | null = null;
+    let earliestRenewal: string | null = null;
+    let setupTotal = 0;
+    let baseDueThisPeriod = 0;
+    const overageDueThisPeriod = 0; // placeholder until overage calc is added here
+
+    workspaces.forEach(ws => {
+      const total = (ws.monthlyFee || 0) + getWorkspaceMascotTotal(ws.slug, ws.plan);
+      const isAnnual = (ws as Record<string, unknown>).billingCycle === 'annual' ||
+        (ws as Record<string, unknown>).billing_frequency === 'yearly';
+      const setupFee =
+        Number((ws as Record<string, unknown>).setup_fee_ex_vat ?? (ws as Record<string, unknown>).setupFee ?? 0) || 0;
+      setupTotal += setupFee;
+      if (isAnnual) {
+        annualTotal += total * 12;
+        annualCount += 1;
+        const renewal = (ws as Record<string, unknown>).next_billing_date ||
+          (ws as Record<string, unknown>).contract_end ||
+          (ws as Record<string, unknown>).contractEnd ||
+          null;
+        if (renewal) {
+          if (!earliestRenewal || new Date(renewal) < new Date(earliestRenewal)) {
+            earliestRenewal = renewal as string;
+          }
+        }
+        // Base prepaid; only overage would be due (placeholder 0 here)
+      } else {
+        monthlyTotal += total;
+        monthlyCount += 1;
+        const billing = (ws as Record<string, unknown>).next_billing_date || null;
+        if (billing) {
+          if (!earliestBilling || new Date(billing) < new Date(earliestBilling)) {
+            earliestBilling = billing as string;
+          }
+        }
+        baseDueThisPeriod += total;
+      }
+    });
+
+    const projectedOverage = 0; // placeholder until overage calc is added here
+
+    return {
+      monthlyTotal,
+      annualTotal,
+      monthlyCount,
+      annualCount,
+      earliestBilling,
+      earliestRenewal,
+      projectedOverage,
+      setupTotal,
+      baseDueThisPeriod,
+      overageDueThisPeriod,
+    };
+  };
+
   const fetchInvoices = useCallback(async (client: string) => {
     setInvoicesLoading(true);
     setInvoiceError(null);
@@ -606,31 +666,36 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                             <span className="text-xs text-foreground-tertiary">Click to expand</span>
                           </div>
                           <div className="flex items-center gap-2 overflow-hidden">
-                          {assistants.slice(0, 4).map(assistant => (
-                            <div key={assistant.id} className="relative flex-shrink-0">
-                              {assistant.image?.trim() ? (
-                                <img
-                                  src={assistant.image.trim()}
-                                  alt={assistant.name}
-                                  className="w-8 h-8 rounded-full border-2 border-surface-elevated shadow-sm"
-                                  style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
-                                  title={`${assistant.name} - ${assistant.status}`}
-                                />
-                              ) : (
-                                <div
-                                  className="w-8 h-8 rounded-full border-2 border-surface-elevated shadow-sm flex items-center justify-center text-xs font-semibold text-white"
-                                  style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
-                                  title={`${assistant.name} - ${assistant.status}`}
-                                >
-                                  {assistant.name.charAt(0)}
-                                </div>
-                              )}
-                              <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface-elevated ${
-                                assistant.status === 'Active' ? 'bg-success-500' :
-                                assistant.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
-                              }`} />
-                            </div>
-                            ))}
+                          {assistants.slice(0, 4).map(assistant => {
+                            const brandBg = getClientBrandColor(assistant.clientId);
+                            return (
+                              <div
+                                key={assistant.id}
+                                className="relative flex-shrink-0 w-8 h-8 rounded-full border-2 border-surface-elevated shadow-sm overflow-hidden flex items-center justify-center"
+                                style={{ backgroundColor: brandBg }}
+                              >
+                                {assistant.image?.trim() ? (
+                                  <img
+                                    src={assistant.image.trim()}
+                                    alt={assistant.name}
+                                    className="w-full h-full object-cover"
+                                    title={`${assistant.name} - ${assistant.status}`}
+                                  />
+                                ) : (
+                                  <span
+                                    className="text-xs font-semibold text-white"
+                                    title={`${assistant.name} - ${assistant.status}`}
+                                  >
+                                    {assistant.name.charAt(0)}
+                                  </span>
+                                )}
+                                <span className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface-elevated ${
+                                  assistant.status === 'Active' ? 'bg-success-500' :
+                                  assistant.status === 'Paused' ? 'bg-warning-500' : 'bg-error-500'
+                                }`} />
+                              </div>
+                            );
+                          })}
                             {assistants.length > 4 && (
                               <div className="w-8 h-8 bg-background-tertiary rounded-full flex items-center justify-center text-xs text-foreground-secondary font-medium">
                                 +{assistants.length - 4}
@@ -831,43 +896,123 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
             {/* Monthly Cost Breakdown */}
             <Card>
               <h3 className="text-lg font-semibold text-foreground mb-4">
-                Monthly Cost Breakdown
+                Billing Summary
               </h3>
               <div className="space-y-3">
-                {workspaces.map(workspace => {
-                  const planConfig = getPlanConfig(workspace.plan);
-                  const mascotCost = getWorkspaceMascotTotal(workspace.slug, workspace.plan);
-                  const totalCost = (workspace.monthlyFee || 0) + mascotCost;
+                {(() => {
+                  const summary = computeBillingSummary();
+                  const totalDue = summary.baseDueThisPeriod + summary.projectedOverage;
+                  const lines: { label: string; value: string; muted?: boolean }[] = [];
+
+                  // Amount due (base + projected overage placeholder)
+                  lines.push({
+                    label: 'Amount due this period',
+                    value: totalDue === 0 && summary.annualCount > 0 && summary.monthlyCount === 0
+                      ? '€0 (base already paid)'
+                      : `€${totalDue.toLocaleString()}`,
+                  });
+
+                  // Monthly
+                  if (summary.monthlyCount > 0) {
+                    lines.push({ label: 'Monthly charge', value: `€${summary.monthlyTotal.toLocaleString()}` });
+                    if (summary.earliestBilling) {
+                      lines.push({ label: 'Next billing', value: formatDate(summary.earliestBilling) });
+                    }
+                  }
+
+                  // Annual
+                  if (summary.annualCount > 0) {
+                    lines.push({ label: 'Prepaid annual', value: `€${summary.annualTotal.toLocaleString()}` });
+                    lines.push({
+                      label: 'Monthly equivalent',
+                      value: `€${(summary.annualTotal / 12).toLocaleString()}`,
+                      muted: true,
+                    });
+                    if (summary.earliestRenewal) {
+                      lines.push({ label: 'Next renewal', value: formatDate(summary.earliestRenewal) });
+                    }
+                  }
+
+                  // Setup and overages
+                  if (summary.setupTotal > 0) {
+                    lines.push({ label: 'One-time setup fees', value: `€${summary.setupTotal.toLocaleString()}` });
+                  }
+                  if (summary.projectedOverage > 0) {
+                    lines.push({
+                      label: 'Projected overages',
+                      value: `€${summary.projectedOverage.toLocaleString()}`,
+                    });
+                  }
 
                   return (
-                        <div key={workspace.id} className="py-3 border-b border-border last:border-b-0">
-                        <div className="flex justify-between items-center">
-                        <div className="flex items-center gap-3">
+                    <div className="text-sm text-foreground space-y-1">
+                      {lines.map((line, idx) => (
+                        <div key={idx} className={line.muted ? 'text-foreground-tertiary' : ''}>
+                          <span className="text-foreground-secondary">{line.label}: </span>
+                          <span>{line.value}</span>
+                        </div>
+                      ))}
+                    </div>
+                  );
+                })()}
+
+                <div className="border-t border-border pt-3 mt-4 text-sm text-foreground">
+                  <div className="font-semibold mb-2">Per Workspace</div>
+                  <div className="rounded-lg border border-border divide-y divide-border bg-transparent">
+                    {workspaces.map(workspace => {
+                      const planConfig = getPlanConfig(workspace.plan);
+                      const mascotCost = getWorkspaceMascotTotal(workspace.slug, workspace.plan);
+                      const totalCost = (workspace.monthlyFee || 0) + mascotCost;
+                      const isAnnual =
+                        (workspace as Record<string, unknown>).billingCycle === 'annual' ||
+                        (workspace as Record<string, unknown>).billing_frequency === 'yearly';
+                      const nextBilling =
+                        (workspace as Record<string, unknown>).next_billing_date ||
+                        (workspace as Record<string, unknown>).contract_end ||
+                        (workspace as Record<string, unknown>).contractEnd ||
+                        '';
+                      const annualTotal = totalCost * 12;
+                      const setupFee =
+                        Number((workspace as Record<string, unknown>).setup_fee_ex_vat ?? (workspace as Record<string, unknown>).setupFee ?? 0) || 0;
+
+                      return (
+                        <div key={workspace.id} className="p-3">
+                          <div className="flex justify-between items-center">
+                            <div className="flex items-center gap-2">
                               <span className="font-medium text-foreground">{workspace.name}</span>
                               <Badge plan={getPlanBadgeType(workspace.plan)}>
                                 {planConfig.name}
                               </Badge>
                             </div>
-                        <span className="font-semibold text-foreground">
-                          {totalCost === 0 ? 'Included' : `€${totalCost.toLocaleString()}`}
-                        </span>
-                      </div>
-                      {workspace.monthlyFee > 0 && mascotCost > 0 && (
-                        <div className="flex justify-between items-center text-xs text-foreground-tertiary mt-1 pl-8">
-                          <span>Plan: €{workspace.monthlyFee.toLocaleString()} + Mascots: €{mascotCost}</span>
+                            <span className="font-semibold text-foreground">
+                              {totalCost === 0
+                                ? 'Included'
+                                : isAnnual
+                                  ? `Prepaid: €${annualTotal.toLocaleString()}`
+                                  : `€${totalCost.toLocaleString()}/month`}
+                            </span>
+                          </div>
+                          <div className="flex flex-col gap-1 text-xs text-foreground-tertiary mt-2">
+                            {workspace.monthlyFee > 0 && mascotCost > 0 && (
+                              <span>Plan: €{workspace.monthlyFee.toLocaleString()} + Mascots: €{mascotCost}</span>
+                            )}
+                            {setupFee > 0 && (
+                              <span>Setup fee: €{setupFee.toLocaleString()}</span>
+                            )}
+                            {isAnnual && totalCost > 0 && (
+                              <span className="text-foreground-tertiary">≈ €{totalCost.toLocaleString()} / month (info only)</span>
+                            )}
+                            {nextBilling && (
+                              <span>{isAnnual ? 'Renews' : 'Next billing'}: {formatDate(nextBilling)}</span>
+                            )}
+                          </div>
                         </div>
-                      )}
-                    </div>
-                  );
-                })}
-              <div className="border-t border-border pt-3 mt-4 flex justify-between items-center font-semibold text-lg">
-                <span className="text-foreground">Total Monthly Cost</span>
-                <span className="text-success-600 dark:text-success-500">
-                  €{getTotalMonthlyFee().toLocaleString()}
-                </span>
+                      );
+                    })}
+                  </div>
+                </div>
               </div>
-            </div>
-          </Card>
+            </Card>
 
           {/* Invoice Detail Modal */}
           <Modal
@@ -1007,22 +1152,4 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
     </Page>
   );
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

@@ -3,10 +3,10 @@ import { getDbForClient } from '@/lib/db';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: Promise<{ workspaceId: string }> }
+  context: { params: Promise<{ workspaceId: string }> }
 ) {
   try {
-    const { workspaceId } = await params;
+    const { workspaceId } = await context.params;
     const { searchParams } = new URL(request.url);
     const clientId = searchParams.get('clientId');
 

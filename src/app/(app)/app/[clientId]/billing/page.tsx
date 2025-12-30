@@ -125,8 +125,11 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
     const lineNr = raw['line_nr'];
 
     return {
-      ...(raw as InvoiceLine),
+      id: String(raw['id'] ?? ''),
+      invoice_id: String(raw['invoice_id'] ?? ''),
       line_nr: typeof lineNr === 'number' || typeof lineNr === 'string' ? Number(lineNr) : 0,
+      line_type: String(raw['line_type'] ?? ''),
+      description: String(raw['description'] ?? ''),
       quantity: typeof quantity === 'number' || typeof quantity === 'string' ? Number(quantity) : 0,
       unit_price_ex_vat: typeof unitPrice === 'number' || typeof unitPrice === 'string' ? Number(unitPrice) : 0,
       amount_ex_vat: typeof amountEx === 'number' || typeof amountEx === 'string' ? Number(amountEx) : 0,

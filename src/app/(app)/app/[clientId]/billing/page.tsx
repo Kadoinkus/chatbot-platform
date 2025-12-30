@@ -1,5 +1,5 @@
 "use client";
-import { useState, useEffect, use } from "react";
+import { useState, useEffect, use, useCallback } from "react";
 import { getClientById, getWorkspacesByClientId, getAssistantsByWorkspaceSlug } from '@/lib/dataService';
 import type { Client, Workspace, Assistant } from '@/lib/dataService';
 import { getClientBrandColor } from '@/lib/brandColors';
@@ -21,7 +21,50 @@ import {
   Alert,
   Spinner,
   EmptyState,
+  Table,
+  TableHeader,
+  TableBody,
+  TableRow,
+  TableHead,
+  TableCell,
+  Modal,
 } from '@/components/ui';
+
+type InvoiceStatus = 'paid' | 'unpaid' | 'overdue' | string;
+
+interface Invoice {
+  id: string;
+  invoice_nr: string;
+  invoice_slug: string;
+  client_slug: string;
+  workspace_slug: string | null;
+  invoice_type: string;
+  invoice_date: string;
+  due_date: string;
+  period_start: string | null;
+  period_end: string | null;
+  status: InvoiceStatus;
+  currency: string | null;
+  vat_rate: number | null;
+  vat_scheme: string | null;
+  amount_ex_vat: number;
+  amount_vat: number;
+  amount_inc_vat: number;
+  notes?: string | null;
+  invoice_url?: string | null;
+  supporting_doc_url?: string | null;
+}
+
+interface InvoiceLine {
+  id: string;
+  invoice_id: string;
+  line_nr: number;
+  line_type: string;
+  description: string;
+  quantity: number;
+  unit_price_ex_vat: number;
+  amount_ex_vat: number;
+}
 
 export default function WorkspaceBillingPage({ params }: { params: Promise<{ clientId: string }> }) {
   const { clientId } = use(params);
@@ -31,6 +74,109 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
   const [loading, setLoading] = useState(true);
   const [showInvoices, setShowInvoices] = useState(false);
   const [expandedWorkspaces, setExpandedWorkspaces] = useState<Set<string>>(new Set());
+  const [invoices, setInvoices] = useState<Invoice[]>([]);
+  const [invoicesLoading, setInvoicesLoading] = useState<boolean>(false);
+  const [invoiceError, setInvoiceError] = useState<string | null>(null);
+  const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
+  const [invoiceLines, setInvoiceLines] = useState<Record<string, InvoiceLine[]>>({});
+  const [loadingInvoiceLines, setLoadingInvoiceLines] = useState<string | null>(null);
+
+  const getWorkspaceName = (slug: string | null) => {
+    if (!slug) return '—';
+    const match = workspaces.find(ws => ws.slug === slug);
+    return match?.name || slug;
+  };
+
+  const normalizeInvoice = useCallback((raw: Record<string, unknown>): Invoice => {
+    const workspaceSlug = typeof raw['workspace_slug'] === 'string' ? (raw['workspace_slug'] as string) : null;
+    const vatRaw = raw['vat_rate'];
+    const amountEx = raw['amount_ex_vat'];
+    const amountVat = raw['amount_vat'];
+    const amountInc = raw['amount_inc_vat'];
+
+    return {
+      ...(raw as Invoice),
+      workspace_slug: workspaceSlug,
+      vat_rate: vatRaw !== null && vatRaw !== undefined ? Number(vatRaw) : null,
+      amount_ex_vat: typeof amountEx === 'number' || typeof amountEx === 'string' ? Number(amountEx) : 0,
+      amount_vat: typeof amountVat === 'number' || typeof amountVat === 'string' ? Number(amountVat) : 0,
+      amount_inc_vat: typeof amountInc === 'number' || typeof amountInc === 'string' ? Number(amountInc) : 0,
+    };
+  }, []);
+
+  const normalizeInvoiceLine = useCallback((raw: Record<string, unknown>): InvoiceLine => {
+    const quantity = raw['quantity'];
+    const unitPrice = raw['unit_price_ex_vat'];
+    const amountEx = raw['amount_ex_vat'];
+    const lineNr = raw['line_nr'];
+
+    return {
+      ...(raw as InvoiceLine),
+      line_nr: typeof lineNr === 'number' || typeof lineNr === 'string' ? Number(lineNr) : 0,
+      quantity: typeof quantity === 'number' || typeof quantity === 'string' ? Number(quantity) : 0,
+      unit_price_ex_vat: typeof unitPrice === 'number' || typeof unitPrice === 'string' ? Number(unitPrice) : 0,
+      amount_ex_vat: typeof amountEx === 'number' || typeof amountEx === 'string' ? Number(amountEx) : 0,
+    };
+  }, []);
+
+  const formatDate = (value?: string | null) => {
+    if (!value) return '—';
+    const d = new Date(value);
+    return isNaN(d.getTime()) ? value : d.toLocaleDateString();
+  };
+
+  const formatMoney = (value: number, currency: string | null = 'EUR') => {
+    const code = (currency || 'EUR').toUpperCase();
+    const prefix = code === 'EUR' ? '€' : code === 'USD' ? '$' : `${code} `;
+    return `${prefix}${value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
+  };
+
+  const fetchInvoices = useCallback(async (client: string) => {
+    setInvoicesLoading(true);
+    setInvoiceError(null);
+    try {
+      const res = await fetch(`/api/invoices?clientId=${encodeURIComponent(client)}`, { cache: 'no-store' });
+      if (!res.ok) throw new Error('Failed to fetch invoices');
+      const json = await res.json();
+      setInvoices((json.data || []).map(normalizeInvoice));
+    } catch (error) {
+      console.error('Error fetching invoices:', error);
+      setInvoiceError('Failed to load invoices');
+    } finally {
+      setInvoicesLoading(false);
+    }
+  }, [normalizeInvoice]);
+
+  const fetchInvoiceLines = async (invoiceKey: string, fallbackKeys: string[] = []) => {
+    setLoadingInvoiceLines(invoiceKey);
+    const keysToTry = [invoiceKey, ...fallbackKeys].filter(Boolean);
+
+    let fetched = false;
+    for (const key of keysToTry) {
+      try {
+        const res = await fetch(`/api/invoices/${encodeURIComponent(key)}/lines`, { cache: 'no-store' });
+        if (!res.ok) {
+          const errText = await res.text();
+          console.error(`Invoice lines fetch failed for key ${key}: ${res.status} ${errText}`);
+          continue;
+        }
+        const json = await res.json();
+        setInvoiceLines(prev => ({
+          ...prev,
+          [invoiceKey]: (json.data || []).map(normalizeInvoiceLine),
+        }));
+        fetched = true;
+        break;
+      } catch (error) {
+        console.error('Error fetching invoice lines:', error);
+      }
+    }
+
+    if (!fetched) {
+      console.error('Failed to fetch invoice lines after trying all identifiers');
+    }
+    setLoadingInvoiceLines(null);
+  };
 
   useEffect(() => {
     async function loadData() {
@@ -50,6 +196,7 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
           assistantsData[workspace.slug] = assistants || [];
         }
         setWorkspaceAssistants(assistantsData);
+        await fetchInvoices(clientId);
 
       } catch (error) {
         console.error('Error loading data:', error);
@@ -58,7 +205,7 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
       }
     }
     loadData();
-  }, [clientId]);
+  }, [clientId, fetchInvoices]);
 
   const toggleWorkspaceExpansion = (workspaceId: string) => {
     setExpandedWorkspaces(prev => {
@@ -70,6 +217,22 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
       }
       return newSet;
     });
+  };
+
+  const openInvoice = async (invoice: Invoice) => {
+    setSelectedInvoice(invoice);
+    const lookupKey = invoice.id;
+    if (!invoiceLines[lookupKey]) {
+      const fallbacks = [invoice.invoice_slug || '', invoice.invoice_nr || ''].filter(Boolean);
+      await fetchInvoiceLines(lookupKey, fallbacks);
+    }
+  };
+
+  const statusBadgeProps = (status: InvoiceStatus) => {
+    const normalized = (status || '').toLowerCase();
+    if (normalized === 'paid') return { variant: 'success' as const };
+    if (normalized === 'overdue') return { variant: 'error' as const };
+    return { variant: 'warning' as const };
   };
 
   if (loading) {
@@ -276,10 +439,99 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
             {/* Invoices Section */}
             {showInvoices && (
               <Card className="mb-6">
-                <div className="text-center py-12">
-                  <CreditCard size={48} className="text-foreground-tertiary mx-auto mb-4" />
-                  <h3 className="text-lg font-semibold text-foreground mb-2">Invoices Coming Soon</h3>
-                  <p className="text-foreground-secondary">Workspace-based invoicing will be available shortly.</p>
+                    <div className="flex items-center justify-between mb-4">
+                      <div>
+                        <h3 className="text-lg font-semibold text-foreground">Invoices</h3>
+                        <p className="text-sm text-foreground-tertiary">Latest invoices for this client</p>
+                      </div>
+                </div>
+
+                {invoiceError && (
+                  <Alert variant="error" title="Unable to load invoices" className="mb-4">
+                    {invoiceError}
+                  </Alert>
+                )}
+
+                <div className="overflow-x-auto">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead>Invoice #</TableHead>
+                        <TableHead>Status</TableHead>
+                        <TableHead>Invoice Date</TableHead>
+                        <TableHead>Period</TableHead>
+                        <TableHead>Total</TableHead>
+                        <TableHead>Workspace</TableHead>
+                        <TableHead>Actions</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {invoicesLoading && (
+                        <TableRow>
+                          <TableCell colSpan={9}>
+                            <div className="flex items-center justify-center py-6 gap-2 text-foreground-tertiary">
+                              <Spinner size="sm" />
+                              <span>Loading invoices…</span>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+
+                      {!invoicesLoading && invoices.length === 0 && (
+                        <TableRow>
+                          <TableCell colSpan={9}>
+                            <div className="py-6 text-center text-foreground-tertiary text-sm">
+                              No invoices found.
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      )}
+
+                      {!invoicesLoading && invoices.map(invoice => (
+                        <TableRow key={invoice.id} className="cursor-pointer hover:bg-background-hover" onClick={() => openInvoice(invoice)}>
+                          <TableCell className="font-medium text-foreground">{invoice.invoice_nr}</TableCell>
+                          <TableCell>
+                            <Badge {...statusBadgeProps(invoice.status)}>{invoice.status || '—'}</Badge>
+                          </TableCell>
+                          <TableCell>{formatDate(invoice.invoice_date)}</TableCell>
+                          <TableCell className="text-foreground-secondary">
+                            {invoice.period_start && invoice.period_end
+                              ? `${formatDate(invoice.period_start)} – ${formatDate(invoice.period_end)}`
+                              : '—'}
+                          </TableCell>
+                          <TableCell className="text-right font-semibold text-foreground">
+                            {formatMoney(invoice.amount_inc_vat, invoice.currency)}
+                          </TableCell>
+                          <TableCell className="text-foreground-secondary">{getWorkspaceName(invoice.workspace_slug)}</TableCell>
+                          <TableCell>
+                            <div className="flex gap-2 justify-end">
+                              <Button
+                                variant="secondary"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  if (invoice.invoice_url) window.open(invoice.invoice_url, '_blank');
+                                }}
+                                disabled={!invoice.invoice_url}
+                              >
+                                Download
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  openInvoice(invoice);
+                                }}
+                              >
+                                View
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
                 </div>
               </Card>
             )}
@@ -610,14 +862,149 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                     </div>
                   );
                 })}
-                <div className="border-t border-border pt-3 mt-4 flex justify-between items-center font-semibold text-lg">
-                  <span className="text-foreground">Total Monthly Cost</span>
-                  <span className="text-success-600 dark:text-success-500">
-                    €{getTotalMonthlyFee().toLocaleString()}
-                  </span>
+              <div className="border-t border-border pt-3 mt-4 flex justify-between items-center font-semibold text-lg">
+                <span className="text-foreground">Total Monthly Cost</span>
+                <span className="text-success-600 dark:text-success-500">
+                  €{getTotalMonthlyFee().toLocaleString()}
+                </span>
+              </div>
+            </div>
+          </Card>
+
+          {/* Invoice Detail Modal */}
+          <Modal
+            isOpen={!!selectedInvoice}
+            onClose={() => setSelectedInvoice(null)}
+            title={selectedInvoice ? `Invoice ${selectedInvoice.invoice_nr}` : 'Invoice'}
+            size="xl"
+            className="max-h-[90vh]"
+          >
+            {selectedInvoice && (
+              <div className="space-y-4 max-h-[75vh] overflow-y-auto pr-2 text-sm">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="space-y-1">
+                    <p className="text-xs text-foreground-secondary">{selectedInvoice.invoice_type}</p>
+                    <div className="flex items-center gap-2">
+                      <Badge {...statusBadgeProps(selectedInvoice.status)}>{selectedInvoice.status || '—'}</Badge>
+                      <span className="text-xs text-foreground-tertiary">
+                        {selectedInvoice.currency || 'EUR'} • VAT {selectedInvoice.vat_rate ?? '—'}%
+                      </span>
+                    </div>
+                  </div>
+                  <div className="flex gap-2">
+                    <Button
+                      variant="secondary"
+                      size="sm"
+                      onClick={() => selectedInvoice.invoice_url && window.open(selectedInvoice.invoice_url, '_blank')}
+                      disabled={!selectedInvoice.invoice_url}
+                    >
+                      Download PDF
+                    </Button>
+                    {selectedInvoice.supporting_doc_url && (
+                      <Button variant="ghost" size="sm" onClick={() => window.open(selectedInvoice.supporting_doc_url!, '_blank')}>
+                        Supporting Doc
+                      </Button>
+                    )}
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                  <div className="p-3 bg-background-tertiary rounded-lg">
+                    <p className="text-xs text-foreground-secondary">Invoice Date</p>
+                    <p className="font-semibold text-foreground">{formatDate(selectedInvoice.invoice_date)}</p>
+                  </div>
+                  <div className="p-3 bg-background-tertiary rounded-lg">
+                    <p className="text-xs text-foreground-secondary">Due Date</p>
+                    <p className="font-semibold text-foreground">{formatDate(selectedInvoice.due_date)}</p>
+                  </div>
+                  <div className="p-3 bg-background-tertiary rounded-lg">
+                    <p className="text-xs text-foreground-secondary">Period</p>
+                    <p className="font-semibold text-foreground">
+                      {selectedInvoice.period_start && selectedInvoice.period_end
+                        ? `${formatDate(selectedInvoice.period_start)} – ${formatDate(selectedInvoice.period_end)}`
+                        : '—'}
+                    </p>
+                  </div>
+                  <div className="p-3 bg-background-tertiary rounded-lg">
+                    <p className="text-xs text-foreground-secondary">Workspace</p>
+                    <p className="font-semibold text-foreground">{getWorkspaceName(selectedInvoice.workspace_slug)}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+                  <div className="p-3 bg-background-secondary rounded-lg">
+                    <p className="text-xs text-foreground-secondary">Amount ex VAT</p>
+                    <p className="font-semibold text-foreground">{formatMoney(selectedInvoice.amount_ex_vat, selectedInvoice.currency)}</p>
+                  </div>
+                  <div className="p-3 bg-background-secondary rounded-lg">
+                    <p className="text-xs text-foreground-secondary">VAT</p>
+                    <p className="font-semibold text-foreground">{formatMoney(selectedInvoice.amount_vat, selectedInvoice.currency)}</p>
+                  </div>
+                  <div className="p-3 bg-background-secondary rounded-lg">
+                    <p className="text-xs text-foreground-secondary">Total (inc VAT)</p>
+                    <p className="font-semibold text-foreground">{formatMoney(selectedInvoice.amount_inc_vat, selectedInvoice.currency)}</p>
+                  </div>
+                </div>
+
+                {selectedInvoice.notes && (
+                  <div className="p-3 bg-background-tertiary rounded-lg text-foreground">
+                    <p className="text-xs text-foreground-secondary mb-1">Notes</p>
+                    <p className="text-sm">{selectedInvoice.notes}</p>
+                  </div>
+                )}
+
+                <div>
+                  <h4 className="text-sm font-semibold text-foreground mb-2">Invoice Lines</h4>
+                  <div className="border border-border rounded-lg overflow-hidden">
+                    <table className="text-xs w-full table-fixed">
+                      <thead className="bg-background-secondary text-foreground-secondary text-[10px]">
+                        <tr>
+                          <th className="py-2 px-2 text-center font-medium w-[5%]">#</th>
+                          <th className="py-2 px-2 text-left font-medium">Description</th>
+                          <th className="py-2 px-2 text-left font-medium w-[12%]">Type</th>
+                          <th className="py-2 px-2 text-right font-medium w-[8%]">Qty</th>
+                          <th className="py-2 px-2 text-right font-medium w-[15%]">Unit ex VAT</th>
+                          <th className="py-2 px-2 text-right font-medium w-[18%]">Amount ex VAT</th>
+                        </tr>
+                      </thead>
+                      <tbody className="divide-y divide-border">
+                        {loadingInvoiceLines === selectedInvoice.id && (
+                          <tr>
+                            <td colSpan={6}>
+                              <div className="flex items-center justify-center py-4 gap-2 text-foreground-tertiary text-sm">
+                                <Spinner size="sm" />
+                                <span>Loading lines…</span>
+                              </div>
+                            </td>
+                          </tr>
+                        )}
+
+                        {loadingInvoiceLines !== selectedInvoice.id &&
+                          (!invoiceLines[selectedInvoice.id] || invoiceLines[selectedInvoice.id].length === 0) && (
+                          <tr>
+                            <td colSpan={6}>
+                              <div className="py-4 text-center text-foreground-tertiary text-sm">No lines found.</div>
+                            </td>
+                          </tr>
+                        )}
+
+                        {invoiceLines[selectedInvoice.id]?.map(line => (
+                          <tr key={line.id}>
+                            <td className="py-2 px-2 text-center text-foreground-secondary">{line.line_nr}</td>
+                            <td className="py-2 px-2 text-foreground break-words">{line.description}</td>
+                            <td className="py-2 px-2 text-foreground-secondary capitalize">{line.line_type}</td>
+                            <td className="py-2 px-2 text-right">{line.quantity}</td>
+                            <td className="py-2 px-2 text-right">{formatMoney(line.unit_price_ex_vat, selectedInvoice.currency)}</td>
+                            <td className="py-2 px-2 text-right font-semibold">{formatMoney(line.amount_ex_vat, selectedInvoice.currency)}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
                 </div>
               </div>
-            </Card>
+            )}
+          </Modal>
       </PageContent>
     </Page>
   );

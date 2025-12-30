@@ -9,17 +9,19 @@ function isUuid(value: string) {
 
 export async function GET(
   _request: NextRequest,
-  { params }: { params: { invoiceId: string } }
+  context: { params: Promise<{ invoiceId: string }> }
 ) {
   try {
     if (!supabaseAdminProd) {
       return NextResponse.json({ code: 'NO_DB', message: 'Supabase not configured' }, { status: 500 });
     }
 
+    const resolvedParams = await context.params;
+
     // Prefer route param; fallback to parsing from pathname for robustness
     const pathSegments = _request.nextUrl.pathname.split('/').filter(Boolean);
     const fallbackId = pathSegments.length >= 3 ? pathSegments[pathSegments.length - 2] : null;
-    const invoiceIdOrSlug = params?.invoiceId || fallbackId;
+    const invoiceIdOrSlug = resolvedParams?.invoiceId || fallbackId;
 
     if (!invoiceIdOrSlug) {
       return NextResponse.json({ code: 'MISSING_PARAM', message: 'invoiceId is required' }, { status: 400 });

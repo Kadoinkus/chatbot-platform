@@ -148,7 +148,20 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
     return `${prefix}${value.toLocaleString(undefined, { minimumFractionDigits: 0, maximumFractionDigits: 2 })}`;
   };
 
-  const computeBillingSummary = () => {
+  type BillingSummary = {
+    monthlyTotal: number;
+    annualTotal: number;
+    monthlyCount: number;
+    annualCount: number;
+    earliestBilling: string | null;
+    earliestRenewal: string | null;
+    projectedOverage: number;
+    setupTotal: number;
+    baseDueThisPeriod: number;
+    overageDueThisPeriod: number;
+  };
+
+  const computeBillingSummary = (): BillingSummary => {
     let monthlyTotal = 0;
     let annualTotal = 0;
     let monthlyCount = 0;

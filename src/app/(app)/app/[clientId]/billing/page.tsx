@@ -136,8 +136,8 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
     };
   }, []);
 
-  const formatDate = (value?: string | null) => {
-    if (!value) return '—';
+  const formatDate = (value?: string | number | null) => {
+    if (value === null || value === undefined || value === '') return '-';
     const d = new Date(value);
     return isNaN(d.getTime()) ? value : d.toLocaleDateString();
   };
@@ -985,11 +985,15 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                       const isAnnual =
                         (workspace as Record<string, unknown>).billingCycle === 'annual' ||
                         (workspace as Record<string, unknown>).billing_frequency === 'yearly';
-                      const nextBilling =
+                      const nextBillingRaw =
                         (workspace as Record<string, unknown>).next_billing_date ||
                         (workspace as Record<string, unknown>).contract_end ||
                         (workspace as Record<string, unknown>).contractEnd ||
                         '';
+                      const nextBilling =
+                        typeof nextBillingRaw === 'string' || typeof nextBillingRaw === 'number'
+                          ? String(nextBillingRaw)
+                          : '';
                       const annualTotal = totalCost * 12;
                       const setupFee =
                         Number((workspace as Record<string, unknown>).setup_fee_ex_vat ?? (workspace as Record<string, unknown>).setupFee ?? 0) || 0;

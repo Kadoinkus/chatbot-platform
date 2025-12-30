@@ -169,23 +169,25 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
       if (isAnnual) {
         annualTotal += total * 12;
         annualCount += 1;
-        const renewal = (ws as Record<string, unknown>).next_billing_date ||
+        const renewalRaw = (ws as Record<string, unknown>).next_billing_date ||
           (ws as Record<string, unknown>).contract_end ||
           (ws as Record<string, unknown>).contractEnd ||
           null;
+        const renewal = typeof renewalRaw === 'string' || typeof renewalRaw === 'number' ? renewalRaw : null;
         if (renewal) {
           if (!earliestRenewal || new Date(renewal) < new Date(earliestRenewal)) {
-            earliestRenewal = renewal as string;
+            earliestRenewal = String(renewal);
           }
         }
         // Base prepaid; only overage would be due (placeholder 0 here)
       } else {
         monthlyTotal += total;
         monthlyCount += 1;
-        const billing = (ws as Record<string, unknown>).next_billing_date || null;
+        const billingRaw = (ws as Record<string, unknown>).next_billing_date || null;
+        const billing = typeof billingRaw === 'string' || typeof billingRaw === 'number' ? billingRaw : null;
         if (billing) {
           if (!earliestBilling || new Date(billing) < new Date(earliestBilling)) {
-            earliestBilling = billing as string;
+            earliestBilling = String(billing);
           }
         }
         baseDueThisPeriod += total;

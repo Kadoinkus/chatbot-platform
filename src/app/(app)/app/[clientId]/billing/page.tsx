@@ -935,7 +935,7 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                   if (summary.monthlyCount > 0) {
                     lines.push({ label: 'Monthly charge', value: `€${summary.monthlyTotal.toLocaleString()}` });
                     if (summary.earliestBilling) {
-                      lines.push({ label: 'Next billing', value: formatDate(summary.earliestBilling) });
+                      lines.push({ label: 'Next billing', value: formatDate(String(summary.earliestBilling)) });
                     }
                   }
 
@@ -948,7 +948,7 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
                       muted: true,
                     });
                     if (summary.earliestRenewal) {
-                      lines.push({ label: 'Next renewal', value: formatDate(summary.earliestRenewal) });
+                      lines.push({ label: 'Next renewal', value: formatDate(String(summary.earliestRenewal)) });
                     }
                   }
 

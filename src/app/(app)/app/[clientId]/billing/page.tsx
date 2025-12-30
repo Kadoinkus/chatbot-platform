@@ -830,8 +830,7 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
 
             {/* Monthly Cost Breakdown */}
             <Card>
-              <h3 className="text-lg font-semibold text-foreground mb-4 flex items-center gap-2">
-                <BarChart3 size={20} />
+              <h3 className="text-lg font-semibold text-foreground mb-4">
                 Monthly Cost Breakdown
               </h3>
               <div className="space-y-3">
@@ -842,16 +841,15 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
 
                   return (
                         <div key={workspace.id} className="py-3 border-b border-border last:border-b-0">
-                          <div className="flex justify-between items-center">
-                            <div className="flex items-center gap-3">
-                              <planConfig.icon size={16} className="text-foreground-tertiary" />
+                        <div className="flex justify-between items-center">
+                        <div className="flex items-center gap-3">
                               <span className="font-medium text-foreground">{workspace.name}</span>
                               <Badge plan={getPlanBadgeType(workspace.plan)}>
                                 {planConfig.name}
                               </Badge>
                             </div>
                         <span className="font-semibold text-foreground">
-                          {workspace.monthlyFee === 0 ? 'On Request' : `€${totalCost.toLocaleString()}`}
+                          {totalCost === 0 ? 'Included' : `€${totalCost.toLocaleString()}`}
                         </span>
                       </div>
                       {workspace.monthlyFee > 0 && mascotCost > 0 && (
@@ -1009,8 +1007,6 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
     </Page>
   );
 }
-
-
 
 
 

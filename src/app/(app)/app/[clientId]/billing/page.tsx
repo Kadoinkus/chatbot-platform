@@ -95,12 +95,26 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
     const amountInc = raw['amount_inc_vat'];
 
     return {
-      ...(raw as Invoice),
+      id: String(raw['id'] ?? ''),
+      invoice_nr: String(raw['invoice_nr'] ?? ''),
+      invoice_slug: String(raw['invoice_slug'] ?? ''),
+      client_slug: String(raw['client_slug'] ?? ''),
       workspace_slug: workspaceSlug,
+      invoice_type: String(raw['invoice_type'] ?? ''),
+      invoice_date: String(raw['invoice_date'] ?? ''),
+      due_date: String(raw['due_date'] ?? ''),
+      period_start: (raw['period_start'] as string | null) ?? null,
+      period_end: (raw['period_end'] as string | null) ?? null,
+      status: (raw['status'] as InvoiceStatus) ?? 'paid',
+      currency: (raw['currency'] as string | null) ?? null,
       vat_rate: vatRaw !== null && vatRaw !== undefined ? Number(vatRaw) : null,
+      vat_scheme: (raw['vat_scheme'] as string | null) ?? null,
       amount_ex_vat: typeof amountEx === 'number' || typeof amountEx === 'string' ? Number(amountEx) : 0,
       amount_vat: typeof amountVat === 'number' || typeof amountVat === 'string' ? Number(amountVat) : 0,
       amount_inc_vat: typeof amountInc === 'number' || typeof amountInc === 'string' ? Number(amountInc) : 0,
+      notes: (raw['notes'] as string | null) ?? null,
+      invoice_url: (raw['invoice_url'] as string | null) ?? null,
+      supporting_doc_url: (raw['supporting_doc_url'] as string | null) ?? null,
     };
   }, []);
 
@@ -1152,4 +1166,3 @@ export default function WorkspaceBillingPage({ params }: { params: Promise<{ cli
     </Page>
   );
 }
-

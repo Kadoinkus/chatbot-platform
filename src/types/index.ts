@@ -560,6 +560,53 @@ export type InvoiceWithLines = Invoice & {
 };
 
 // =============================================================================
+// Billing Plans
+// =============================================================================
+
+export type FlowAccessLevel =
+  | 'single_basic_flow'
+  | 'basic_flows'
+  | 'basic_and_advanced_flows'
+  | 'custom_flows';
+
+export type AnalyticsTier = 'standard' | 'advanced' | 'custom';
+export type CustomizationTier = 'basic' | 'advanced' | 'white_label';
+export type SecurityTier = 'standard' | 'enhanced' | 'enterprise';
+
+/**
+ * Billing plan from Supabase billing_plans table
+ * Contains all plan capabilities and limits
+ */
+export type BillingPlan = {
+  planSlug: PlanType;
+  planName: string;
+  monthlyFeeExVat: number | null;
+  bundleLoadLimit: number | null;         // "unique users"
+  conversationsLimit: number | null;
+  messagesLimit: number | null;
+  isCustom: boolean;
+  mascotsLimit: number | null;
+  knowledgePagesPerMascot: number | null;
+  flowAccessLevel: FlowAccessLevel | null;
+  analyticsTier: AnalyticsTier | null;
+  customizationTier: CustomizationTier | null;
+  supportSlaHours: number | null;
+  supportChannels: string[] | null;
+  securityTier: SecurityTier | null;
+  whiteLabel: boolean;
+  // Overage rates
+  overageRateBundleLoads: number | null;
+  overageRateConversations: number | null;
+  // Mascot design inclusions
+  includedMascotReskins: number | null;    // DB: included_custom_mascot_designs
+  allowedMascotRigCatalogs: string[] | null;
+  includedCustomRigCount: number | null;
+  // Timestamps
+  createdAt?: string;
+  updatedAt?: string;
+};
+
+// =============================================================================
 // Workspace Members (RBAC)
 // =============================================================================
 

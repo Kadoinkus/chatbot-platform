@@ -8,12 +8,14 @@ import type {
   MessageOperations,
   SessionOperations,
   MetricsOperations,
+  BillingPlanOperations,
   DateRange,
   ClientMetrics,
   AssistantMetricsResult,
   DbOperations,
   UserWithAuth,
 } from '../types';
+import type { PlanType } from '@/types';
 import {
   mapClient,
   mapAssistantFromMascot,
@@ -23,6 +25,7 @@ import {
   mapMessageFromChatMessage,
   mapSessionFromChatSession,
   mapAssistantSessionFromChatSession,
+  mapBillingPlan,
 } from '../mappers';
 
 interface SupabaseDbOptions {
@@ -461,6 +464,51 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
     },
   };
 
+  // Billing plan operations
+  const DISPLAY_PLAN_ORDER: PlanType[] = ['starter', 'basic', 'premium', 'enterprise'];
+
+  const billingPlans: BillingPlanOperations = {
+    async getAll() {
+      const supabase = requireSupabase();
+      const { data, error } = await supabase
+        .from('billing_plans')
+        .select('*')
+        .order('monthly_fee_ex_vat');
+
+      if (error) throw error;
+      return (data || []).map(mapBillingPlan);
+    },
+
+    async getBySlug(slug: PlanType) {
+      const supabase = requireSupabase();
+      const { data, error } = await supabase
+        .from('billing_plans')
+        .select('*')
+        .eq('plan_slug', slug)
+        .single();
+
+      if (error && error.code !== 'PGRST116') throw error;
+      return data ? mapBillingPlan(data) : null;
+    },
+
+    async getDisplayPlans() {
+      const supabase = requireSupabase();
+      const { data, error } = await supabase
+        .from('billing_plans')
+        .select('*')
+        .in('plan_slug', DISPLAY_PLAN_ORDER);
+
+      if (error) throw error;
+
+      // Sort by defined tier order (not price)
+      const mapped = (data || []).map(mapBillingPlan);
+      return mapped.sort(
+        (a, b) =>
+          DISPLAY_PLAN_ORDER.indexOf(a.planSlug) - DISPLAY_PLAN_ORDER.indexOf(b.planSlug)
+      );
+    },
+  };
+
   return {
     clients,
     assistants,
@@ -470,6 +518,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
     messages,
     sessions,
     metrics,
+    billingPlans,
   };
 }
 

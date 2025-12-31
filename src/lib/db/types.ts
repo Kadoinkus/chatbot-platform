@@ -16,6 +16,8 @@ import type {
   AssistantSession,
   UsageData,
   IntentData,
+  BillingPlan,
+  PlanType,
 } from '@/types';
 
 // Date range filter used by multiple queries
@@ -105,6 +107,14 @@ export interface MetricsOperations {
   getAssistantMetrics(assistantId: string): Promise<AssistantMetricsResult>;
 }
 
+// Billing plan operations
+export interface BillingPlanOperations {
+  getAll(): Promise<BillingPlan[]>;
+  getBySlug(slug: PlanType): Promise<BillingPlan | null>;
+  /** Get plans for public display (excludes 'custom', ordered by tier) */
+  getDisplayPlans(): Promise<BillingPlan[]>;
+}
+
 // Complete database client interface
 export interface DbClient {
   clients: ClientOperations;
@@ -115,6 +125,7 @@ export interface DbClient {
   messages: MessageOperations;
   sessions: SessionOperations;
   metrics: MetricsOperations;
+  billingPlans: BillingPlanOperations;
 }
 
 // Type for the full database operations export
@@ -127,4 +138,5 @@ export interface DbOperations {
   messages: MessageOperations;
   sessions: SessionOperations;
   metrics: MetricsOperations;
+  billingPlans: BillingPlanOperations;
 }

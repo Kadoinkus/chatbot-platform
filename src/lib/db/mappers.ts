@@ -1,5 +1,5 @@
 import type { ChatSession } from '@/types';
-import type { Assistant, Client, Workspace, User, Conversation, Message, Session, PlanType } from '@/types';
+import type { Assistant, Client, Workspace, User, Conversation, Message, Session, PlanType, BillingPlan } from '@/types';
 import type { AssistantSession } from '@/types';
 import { PLAN_CONFIG } from '@/lib/billingService';
 
@@ -421,5 +421,53 @@ export function mapUser(raw: any): User {
     conversationsHandled: raw.conversations_handled || 0,
     createdAt: raw.created_at,
     updatedAt: raw.updated_at || undefined,
+  };
+}
+
+// =============================================================================
+// Billing Plans
+// =============================================================================
+
+/**
+ * Helper for safe Postgres NUMERIC → number parsing
+ * Handles null, undefined, and string representations of numbers
+ */
+function parseNumeric(value: unknown): number | null {
+  if (value === null || value === undefined) return null;
+  const num = Number(value);
+  return isNaN(num) ? null : num;
+}
+
+/**
+ * Map raw billing_plans row to BillingPlan domain type
+ */
+export function mapBillingPlan(raw: any): BillingPlan {
+  return {
+    planSlug: raw.plan_slug as PlanType,
+    planName: raw.plan_name ?? '',
+    monthlyFeeExVat: parseNumeric(raw.monthly_fee_ex_vat),
+    bundleLoadLimit: parseNumeric(raw.bundle_load_limit),
+    conversationsLimit: parseNumeric(raw.conversations_limit),
+    messagesLimit: parseNumeric(raw.messages_limit),
+    isCustom: raw.is_custom ?? false,
+    mascotsLimit: parseNumeric(raw.mascots_limit),
+    knowledgePagesPerMascot: parseNumeric(raw.knowledge_pages_per_mascot),
+    flowAccessLevel: raw.flow_access_level ?? null,
+    analyticsTier: raw.analytics_tier ?? null,
+    customizationTier: raw.customization_tier ?? null,
+    supportSlaHours: parseNumeric(raw.support_sla_hours),
+    supportChannels: raw.support_channels ?? null,
+    securityTier: raw.security_tier ?? null,
+    whiteLabel: raw.white_label ?? false,
+    // Overage rates
+    overageRateBundleLoads: parseNumeric(raw.overage_rate_bundle_loads),
+    overageRateConversations: parseNumeric(raw.overage_rate_conversations),
+    // Mascot design columns
+    includedMascotReskins: parseNumeric(raw.included_custom_mascot_designs),
+    allowedMascotRigCatalogs: raw.allowed_mascot_rig_catalogs ?? null,
+    includedCustomRigCount: parseNumeric(raw.included_custom_rig_count),
+    // Timestamps
+    createdAt: raw.created_at,
+    updatedAt: raw.updated_at,
   };
 }

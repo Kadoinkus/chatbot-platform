@@ -44,6 +44,7 @@ export const {
   messages,
   sessions,
   metrics,
+  billingPlans,
 } = db;
 
 // Analytics data layer

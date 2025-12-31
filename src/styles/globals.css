@@ -662,6 +662,27 @@ body {
   @apply px-6 py-4 text-foreground;
 }
 
+/* Compact table variant - for dense data like invoice lines */
+.data-table-compact {
+  @apply w-full table-fixed text-xs;
+}
+
+.data-table-compact thead {
+  @apply bg-background-secondary border-b border-border;
+}
+
+.data-table-compact th {
+  @apply text-left px-2 py-2 text-[10px] font-medium text-foreground-secondary;
+}
+
+.data-table-compact tbody tr {
+  @apply border-b border-border;
+}
+
+.data-table-compact td {
+  @apply px-2 py-2 text-foreground;
+}
+
 /* Tag/chip */
 .tag {
   @apply inline-flex items-center text-xs px-2 py-0.5 rounded;

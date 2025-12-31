@@ -502,6 +502,64 @@ export type CreditTransaction = {
 };
 
 // =============================================================================
+// Invoices & Billing
+// =============================================================================
+
+export type InvoiceStatus = 'paid' | 'unpaid' | 'overdue' | 'draft' | 'cancelled';
+export type InvoiceType = 'subscription' | 'overage' | 'one_time' | 'credit' | 'adjustment';
+
+/**
+ * Invoice record (normalized from Supabase invoices table)
+ */
+export type Invoice = {
+  id: string;
+  invoiceNr: string;
+  invoiceSlug: string;
+  clientSlug: string;
+  workspaceSlug: string | null;
+  invoiceType: InvoiceType;
+  invoiceDate: string;
+  dueDate: string;
+  periodStart: string | null;
+  periodEnd: string | null;
+  status: InvoiceStatus;
+  currency: string;
+  vatRate: number | null;
+  vatScheme: string | null;
+  amountExVat: number;
+  amountVat: number;
+  amountIncVat: number;
+  notes: string | null;
+  invoiceUrl: string | null;
+  supportingDocUrl: string | null;
+  createdAt: string;
+  updatedAt: string;
+};
+
+export type InvoiceLineType = 'subscription' | 'overage' | 'setup' | 'credit' | 'discount' | 'adjustment';
+
+/**
+ * Invoice line item (normalized from Supabase invoice_lines table)
+ */
+export type InvoiceLine = {
+  id: string;
+  invoiceId: string;
+  lineNr: number;
+  lineType: InvoiceLineType;
+  description: string;
+  quantity: number;
+  unitPriceExVat: number;
+  amountExVat: number;
+};
+
+/**
+ * Invoice with its line items included
+ */
+export type InvoiceWithLines = Invoice & {
+  lines: InvoiceLine[];
+};
+
+// =============================================================================
 // Workspace Members (RBAC)
 // =============================================================================
 

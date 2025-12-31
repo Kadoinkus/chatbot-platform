@@ -3,7 +3,10 @@
 import { forwardRef, type HTMLAttributes, type TdHTMLAttributes, type ThHTMLAttributes } from 'react';
 import { cn } from '@/lib/utils';
 
-export interface TableProps extends HTMLAttributes<HTMLTableElement> {}
+export interface TableProps extends HTMLAttributes<HTMLTableElement> {
+  /** Table variant - compact for dense data like invoice lines */
+  variant?: 'default' | 'compact';
+}
 
 export interface TableHeaderProps extends HTMLAttributes<HTMLTableSectionElement> {}
 
@@ -42,11 +45,21 @@ export interface TableCellProps extends TdHTMLAttributes<HTMLTableCellElement> {
  * </Table>
  */
 export const Table = forwardRef<HTMLTableElement, TableProps>(
-  ({ className, ...props }, ref) => (
-    <div className="w-full overflow-auto">
-      <table ref={ref} className={cn('data-table', className)} {...props} />
-    </div>
-  )
+  ({ className, variant = 'default', ...props }, ref) => {
+    const tableClass = variant === 'compact' ? 'data-table-compact' : 'data-table';
+
+    // Compact variant: no wrapper div (prevents overflow-auto scroll)
+    if (variant === 'compact') {
+      return <table ref={ref} className={cn(tableClass, className)} {...props} />;
+    }
+
+    // Default: wrapped with overflow-auto for wide tables
+    return (
+      <div className="w-full overflow-auto">
+        <table ref={ref} className={cn(tableClass, className)} {...props} />
+      </div>
+    );
+  }
 );
 Table.displayName = 'Table';
 

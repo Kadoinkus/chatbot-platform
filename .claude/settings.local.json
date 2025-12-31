@@ -20,7 +20,9 @@
       "Bash(pnpm run build:*)",
       "Bash(npx tsc:*)",
       "Bash(git diff:*)",
-      "Bash(pnpm build:*)"
+      "Bash(pnpm build:*)",
+      "Bash(git mv:*)",
+      "Bash(git status:*)"
     ],
     "deny": [],
     "ask": []

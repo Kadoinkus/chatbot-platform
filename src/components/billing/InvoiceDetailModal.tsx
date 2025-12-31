@@ -79,50 +79,50 @@ export function InvoiceDetailModal({
         </div>
 
         {/* Date info */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-          <div className="p-3 bg-background-tertiary rounded-lg">
-            <p className="text-xs text-foreground-secondary">Invoice Date</p>
-            <p className="font-semibold text-foreground">
+        <div className="grid grid-cols-2 gap-2">
+          <div className="p-2 sm:p-3 bg-background-tertiary rounded-lg">
+            <p className="text-[10px] sm:text-xs text-foreground-secondary">Invoice Date</p>
+            <p className="text-xs sm:text-sm font-semibold text-foreground">
               {formatDate(invoice.invoiceDate)}
             </p>
           </div>
-          <div className="p-3 bg-background-tertiary rounded-lg">
-            <p className="text-xs text-foreground-secondary">Due Date</p>
-            <p className="font-semibold text-foreground">{formatDate(invoice.dueDate)}</p>
+          <div className="p-2 sm:p-3 bg-background-tertiary rounded-lg">
+            <p className="text-[10px] sm:text-xs text-foreground-secondary">Due Date</p>
+            <p className="text-xs sm:text-sm font-semibold text-foreground">{formatDate(invoice.dueDate)}</p>
           </div>
-          <div className="p-3 bg-background-tertiary rounded-lg">
-            <p className="text-xs text-foreground-secondary">Period</p>
-            <p className="font-semibold text-foreground">
+          <div className="p-2 sm:p-3 bg-background-tertiary rounded-lg">
+            <p className="text-[10px] sm:text-xs text-foreground-secondary">Period</p>
+            <p className="text-xs sm:text-sm font-semibold text-foreground">
               {invoice.periodStart && invoice.periodEnd
                 ? `${formatDate(invoice.periodStart)} - ${formatDate(invoice.periodEnd)}`
                 : '-'}
             </p>
           </div>
-          <div className="p-3 bg-background-tertiary rounded-lg">
-            <p className="text-xs text-foreground-secondary">Workspace</p>
-            <p className="font-semibold text-foreground">
+          <div className="p-2 sm:p-3 bg-background-tertiary rounded-lg">
+            <p className="text-[10px] sm:text-xs text-foreground-secondary">Workspace</p>
+            <p className="text-xs sm:text-sm font-semibold text-foreground truncate">
               {workspaceName || invoice.workspaceSlug || '-'}
             </p>
           </div>
         </div>
 
         {/* Amount breakdown */}
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
-          <div className="p-3 bg-background-secondary rounded-lg">
-            <p className="text-xs text-foreground-secondary">Amount ex VAT</p>
-            <p className="font-semibold text-foreground">
+        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+          <div className="p-2 sm:p-3 bg-background-secondary rounded-lg">
+            <p className="text-[10px] sm:text-xs text-foreground-secondary">Amount ex VAT</p>
+            <p className="text-xs sm:text-sm font-semibold text-foreground">
               {formatMoney(invoice.amountExVat, invoice.currency)}
             </p>
           </div>
-          <div className="p-3 bg-background-secondary rounded-lg">
-            <p className="text-xs text-foreground-secondary">VAT</p>
-            <p className="font-semibold text-foreground">
+          <div className="p-2 sm:p-3 bg-background-secondary rounded-lg">
+            <p className="text-[10px] sm:text-xs text-foreground-secondary">VAT</p>
+            <p className="text-xs sm:text-sm font-semibold text-foreground">
               {formatMoney(invoice.amountVat, invoice.currency)}
             </p>
           </div>
-          <div className="p-3 bg-background-secondary rounded-lg">
-            <p className="text-xs text-foreground-secondary">Total (inc VAT)</p>
-            <p className="font-semibold text-foreground">
+          <div className="col-span-2 sm:col-span-1 p-2 sm:p-3 bg-background-secondary rounded-lg">
+            <p className="text-[10px] sm:text-xs text-foreground-secondary">Total (inc VAT)</p>
+            <p className="text-xs sm:text-sm font-semibold text-foreground">
               {formatMoney(invoice.amountIncVat, invoice.currency)}
             </p>
           </div>

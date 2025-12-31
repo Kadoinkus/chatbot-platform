@@ -93,7 +93,7 @@ export default async function PlansPage({
         />
 
         {/* Plan Cards */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 items-start mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4 items-start mb-8">
           {plans.map((plan) => {
             const Icon = PLAN_ICONS[plan.tier];
             const iconColor = PLAN_ICON_COLORS[plan.tier];
@@ -102,24 +102,19 @@ export default async function PlansPage({
             return (
               <div
                 key={plan.tier}
-                className={`relative rounded-xl border-2 p-6 bg-surface-elevated ${cardStyle.borderClass}`}
-                style={{
-                  display: 'grid',
-                  gridTemplateRows: 'auto auto 1fr auto',
-                  height: '640px',
-                }}
+                className={`relative rounded-xl border-2 p-4 sm:p-6 bg-surface-elevated grid grid-rows-[auto_auto_1fr_auto] min-h-0 sm:min-h-[580px] ${cardStyle.borderClass}`}
               >
                 {/* Header Section */}
                 <div className="text-center">
                   <div className="flex items-center justify-center mb-2">
                     <Icon size={24} className={iconColor} />
                   </div>
-                  <h4 className="text-xl font-bold text-foreground mb-1">
+                  <h4 className="text-lg sm:text-xl font-bold text-foreground mb-1">
                     {plan.name}
                   </h4>
-                  <div className="text-3xl font-bold text-foreground mb-1">
+                  <div className="text-2xl sm:text-3xl font-bold text-foreground mb-1">
                     {plan.isCustom || plan.price === null || plan.price === 0 ? (
-                      <span className="text-2xl">Contact Sales</span>
+                      <span className="text-xl sm:text-2xl">Contact Sales</span>
                     ) : (
                       <>
                         {formatPrice(plan.price)}
@@ -196,19 +191,18 @@ export default async function PlansPage({
                 </div>
 
                 {/* Buttons Section */}
-                <div className="mt-6">
+                <div className="mt-6 flex justify-center sm:block">
                   {plan.tier === 'enterprise' ? (
-                    <Button fullWidth>Contact Sales</Button>
+                    <Button className="w-auto sm:w-full">Contact Sales</Button>
                   ) : (
                     <Button
-                      fullWidth
-                      className={
+                      className={`w-auto sm:w-full ${
                         plan.tier === 'basic'
                           ? 'bg-info-600 hover:bg-info-700'
                           : plan.tier === 'premium'
                             ? 'bg-plan-premium-text hover:opacity-90'
                             : ''
-                      }
+                      }`}
                     >
                       Assign to Workspace
                     </Button>
@@ -219,9 +213,9 @@ export default async function PlansPage({
           })}
         </div>
 
-        {/* Detailed Comparison Table */}
-        <Card className="mb-8">
-          <h4 className="font-semibold mb-6 flex items-center gap-2 text-lg text-foreground">
+        {/* Detailed Comparison Table - Hidden on mobile */}
+        <Card className="mb-8 hidden sm:block">
+          <h4 className="font-semibold mb-6 flex items-center gap-2 text-base sm:text-lg text-foreground">
             <Info size={20} className="text-info-600 dark:text-info-500" />
             Detailed Plan Comparison
           </h4>
@@ -301,6 +295,52 @@ export default async function PlansPage({
             </Table>
           </div>
         </Card>
+
+        {/* Mobile Comparison Cards - Visible only on mobile */}
+        <div className="sm:hidden space-y-3 mb-8">
+          <h4 className="font-semibold flex items-center gap-2 text-base text-foreground mb-4">
+            <Info size={18} className="text-info-600 dark:text-info-500" />
+            Plan Comparison
+          </h4>
+          {COMPARISON_ROWS.map((row) => (
+            <Card key={row.key} className="p-3">
+              <h5 className="font-medium text-xs text-foreground-secondary mb-2">
+                {row.label}
+              </h5>
+              <div className="grid grid-cols-2 gap-2">
+                {billingPlans.map((plan) => {
+                  const value = getComparisonValue(plan, row.key);
+                  const displayPlan = plans.find((p) => p.tier === plan.planSlug);
+
+                  return (
+                    <div
+                      key={plan.planSlug}
+                      className="text-center p-2 bg-background-secondary rounded-lg"
+                    >
+                      <span className="text-xs text-foreground-tertiary block mb-1">
+                        {displayPlan?.name || plan.planName}
+                      </span>
+                      {typeof value === 'boolean' ? (
+                        value ? (
+                          <Check
+                            size={14}
+                            className="mx-auto text-success-600 dark:text-success-500"
+                          />
+                        ) : (
+                          <X size={14} className="mx-auto text-error-500" />
+                        )
+                      ) : (
+                        <span className="text-xs font-medium text-foreground">
+                          {value}
+                        </span>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            </Card>
+          ))}
+        </div>
 
         {/* Credit Pricing Info */}
         <Alert variant="info" title="Need More Flexibility?">

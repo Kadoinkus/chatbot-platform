@@ -122,18 +122,7 @@ export function generateFeaturesList(plan: BillingPlan): string[] {
     features.push(`Up to ${plan.mascotsLimit} mascot slots`);
   }
 
-  // 2. Mascot reskins (from includedMascotReskins)
-  if (plan.isCustom) {
-    features.push('Unlimited mascot reskins');
-  } else if (plan.includedMascotReskins !== null && plan.includedMascotReskins > 0) {
-    features.push(
-      `${plan.includedMascotReskins} mascot reskin${plan.includedMascotReskins !== 1 ? 's' : ''} included`
-    );
-  } else {
-    features.push('No mascot reskins');
-  }
-
-  // 3. Mascot templates (from customizationTier)
+  // 2. Mascot templates (from customizationTier)
   if (plan.isCustom || plan.planSlug === 'enterprise') {
     features.push('Custom mascot design');
   } else if (plan.customizationTier === 'basic') {

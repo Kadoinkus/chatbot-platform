@@ -106,7 +106,7 @@ export default async function PlansPage({
                 style={{
                   display: 'grid',
                   gridTemplateRows: 'auto auto 1fr auto',
-                  height: '750px',
+                  height: '640px',
                 }}
               >
                 {/* Header Section */}
@@ -196,7 +196,7 @@ export default async function PlansPage({
                 </div>
 
                 {/* Buttons Section */}
-                <div className="mt-6 space-y-2">
+                <div className="mt-6">
                   {plan.tier === 'enterprise' ? (
                     <Button fullWidth>Contact Sales</Button>
                   ) : (
@@ -213,10 +213,6 @@ export default async function PlansPage({
                       Assign to Workspace
                     </Button>
                   )}
-
-                  <button className="w-full py-1 px-4 text-sm text-foreground-secondary hover:text-foreground transition-colors">
-                    Learn More
-                  </button>
                 </div>
               </div>
             );

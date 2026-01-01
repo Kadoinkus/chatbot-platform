@@ -50,6 +50,8 @@ export function TabNavigation({ tabs, activeTab, onTabChange, brandColor }: TabN
                 <button
                   key={tab.id}
                   onClick={() => onTabChange(tab.id)}
+                  id={`tab-${tab.id}`}
+                  aria-controls={`tabpanel-${tab.id}`}
                   className={`whitespace-nowrap py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
                     activeTab === tab.id
                       ? 'border-interactive text-foreground'

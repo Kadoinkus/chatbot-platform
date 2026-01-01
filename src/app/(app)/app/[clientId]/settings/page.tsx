@@ -579,72 +579,63 @@ export default function SettingsPage({ params }: { params: Promise<{ clientId: s
                   </Card>
                 )}
 
-                {/* Billing Settings */}
+                {/* Billing Settings - Quick Link */}
                 {activeTab === 'billing' && (
                   <Card>
                     <h2 className="text-xl font-semibold text-foreground mb-6">Billing & Subscription</h2>
 
                     <div className="space-y-6">
-                      <div className="p-4 bg-background-secondary rounded-lg">
-                        <div className="flex items-center justify-between mb-2">
+                      {/* Plan Overview */}
+                      <div className="p-6 bg-gradient-to-r from-info-50 to-info-100 dark:from-info-900/30 dark:to-info-800/20 rounded-lg border border-info-200 dark:border-info-800">
+                        <div className="flex items-center gap-4 mb-4">
+                          <div className="p-3 bg-info-200/50 dark:bg-info-800/50 rounded-lg">
+                            <CreditCard size={24} className="text-info-600 dark:text-info-400" />
+                          </div>
                           <div>
-                            <h3 className="font-medium text-lg text-foreground">Current Plan: {billing.plan}</h3>
-                            <p className="text-sm text-foreground-secondary">Next billing date: {billing.nextBilling}</p>
-                          </div>
-                          <div className="flex gap-2">
-                            <Link href={`/app/${clientId}/plans`}>
-                              <Button variant="secondary">View Plans</Button>
-                            </Link>
-                            <Link href={`/app/${clientId}/plans`}>
-                              <Button>Upgrade Plan</Button>
-                            </Link>
+                            <h3 className="font-semibold text-lg text-foreground">Current Plan: {billing.plan}</h3>
+                            <p className="text-sm text-foreground-secondary">
+                              Manage your subscription, invoices, and payment methods
+                            </p>
                           </div>
                         </div>
-                      </div>
-
-                      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                        <Input
-                          label="Billing Email"
-                          type="email"
-                          value={billing.billingEmail}
-                          onChange={(e) => handleChange('billing', 'billingEmail', e.target.value)}
-                        />
-                        <Select
-                          label="Billing Cycle"
-                          options={billingCycleOptions}
-                          value={billing.billingCycle}
-                          onChange={(e) => handleChange('billing', 'billingCycle', e.target.value)}
-                        />
-                      </div>
-
-                      <div>
-                        <h3 className="font-medium text-foreground mb-3">Payment Method</h3>
-                        <div className="flex items-center justify-between p-4 bg-background-secondary rounded-lg">
-                          <div className="flex items-center gap-3">
-                            <CreditCard size={24} className="text-foreground-tertiary" />
-                            <div>
-                              <p className="font-medium text-foreground">•••• •••• •••• {billing.cardLast4}</p>
-                              <p className="text-sm text-foreground-secondary">Expires 12/2025</p>
-                            </div>
-                          </div>
-                          <Button variant="secondary">Update Card</Button>
-                        </div>
-                      </div>
-
-                      <Toggle
-                        label="Auto-Renew"
-                        description="Automatically renew subscription"
-                        checked={billing.autoRenew}
-                        onChange={(checked) => handleChange('billing', 'autoRenew', checked)}
-                      />
-
-                      <div className="flex flex-wrap gap-3">
                         <Link href={`/app/${clientId}/billing`}>
-                          <Button icon={<CreditCard size={16} />}>Billing & Workspaces</Button>
+                          <Button icon={<CreditCard size={18} />} className="w-full sm:w-auto">
+                            Go to Billing Hub
+                          </Button>
                         </Link>
-                        <Button variant="secondary" icon={<Download size={16} />}>Download Invoice</Button>
-                        <Button variant="secondary" icon={<FileText size={16} />}>Billing History</Button>
                       </div>
+
+                      {/* Quick Info */}
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div className="p-4 bg-background-secondary rounded-lg">
+                          <p className="text-sm text-foreground-secondary mb-1">Billing Email</p>
+                          <p className="font-medium text-foreground">{billing.billingEmail}</p>
+                        </div>
+                        <div className="p-4 bg-background-secondary rounded-lg">
+                          <p className="text-sm text-foreground-secondary mb-1">Next Billing Date</p>
+                          <p className="font-medium text-foreground">{billing.nextBilling}</p>
+                        </div>
+                      </div>
+
+                      {/* Quick Links */}
+                      <div className="flex flex-wrap gap-3">
+                        <Link href={`/app/${clientId}/billing?tab=invoices`}>
+                          <Button variant="secondary" icon={<FileText size={16} />}>View Invoices</Button>
+                        </Link>
+                        <Link href={`/app/${clientId}/billing?tab=payment-methods`}>
+                          <Button variant="secondary" icon={<CreditCard size={16} />}>Payment Methods</Button>
+                        </Link>
+                        <Link href={`/app/${clientId}/billing?tab=credits`}>
+                          <Button variant="secondary">Add Credits</Button>
+                        </Link>
+                      </div>
+
+                      <p className="text-sm text-foreground-tertiary">
+                        For detailed billing information, workspace management, usage analytics, and invoice history, visit the{' '}
+                        <Link href={`/app/${clientId}/billing`} className="text-info-600 dark:text-info-400 hover:underline">
+                          Billing Hub
+                        </Link>.
+                      </p>
                     </div>
                   </Card>
                 )}

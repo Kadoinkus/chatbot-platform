@@ -86,6 +86,7 @@ export default function AssistantsClient({
               clientId={client.slug}
               workspaceName={assistant.workspaceName}
               workspace={assistant.workspace}
+              clientBrandColors={client.brandColors}
             />
           ))}
         </div>

@@ -211,6 +211,15 @@ export function mapClient(raw: any): Client {
     raw.logo_url || // legacy fallback (mock/demo)
     undefined;
 
+  // Color fallback chain: new columns → legacy columns → defaults
+  // For palette (legacy), we always need values for backwards compat
+  const primaryColor = raw.brand_color_primary || raw.palette_primary || '#6366F1';
+  const secondaryColor = raw.brand_color_secondary || raw.palette_primary_dark || '#4F46E5';
+
+  // For brandColors, only include values actually present in the database
+  const hasBrandPrimary = !!raw.brand_color_primary;
+  const hasBrandSecondary = !!raw.brand_color_secondary;
+
   return {
     id: raw.id,
     slug: raw.slug || raw.id,
@@ -223,10 +232,19 @@ export function mapClient(raw: any): Client {
     companySize: raw.company_size || undefined,
     country: raw.country || undefined,
     timezone: raw.timezone || undefined,
+    // Legacy palette (kept for migration compatibility)
     palette: {
-      primary: raw.palette_primary || '#6366F1',
-      primaryDark: raw.palette_primary_dark || '#4F46E5',
+      primary: raw.palette_primary || raw.brand_color_primary || '#6366F1',
+      primaryDark: raw.palette_primary_dark || raw.brand_color_secondary || '#4F46E5',
       accent: raw.palette_accent || '#111827',
+    },
+    // New brand colors - only include values actually in database
+    // (fallback to legacy palette_primary if no brand_color_primary)
+    brandColors: {
+      primary: hasBrandPrimary ? raw.brand_color_primary : (raw.palette_primary || '#6366F1'),
+      secondary: hasBrandSecondary ? raw.brand_color_secondary : undefined,
+      background: raw.brand_color_background || undefined,
+      mode: raw.brand_color_mode || undefined,
     },
     login: raw.login || { email: '', password: '' }, // legacy demo login; keep empty for real clients
     defaultWorkspaceId: raw.default_workspace_id || undefined,
@@ -247,6 +265,22 @@ export function mapAssistantFromMascot(raw: any): Assistant {
     raw.image_url || // legacy fallback (mock/demo)
     undefined;
 
+  // Build colors object only if any color override field is present
+  const hasColorOverrides =
+    raw.mascot_color_primary ||
+    raw.mascot_color_secondary ||
+    raw.mascot_color_background ||
+    raw.mascot_color_mode;
+
+  const colors = hasColorOverrides
+    ? {
+        primary: raw.mascot_color_primary || undefined,
+        secondary: raw.mascot_color_secondary || undefined,
+        background: raw.mascot_color_background || undefined,
+        mode: raw.mascot_color_mode || undefined,
+      }
+    : undefined;
+
   return {
     id: raw.mascot_slug,
     clientId: raw.client_slug,
@@ -266,6 +300,7 @@ export function mapAssistantFromMascot(raw: any): Assistant {
       sessions: raw.sessions_used || 0,
       messages: raw.messages_used || 0,
     },
+    colors,
   };
 }
 

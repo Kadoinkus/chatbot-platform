@@ -4,8 +4,8 @@ import Link from 'next/link';
 import StatusBadge from '@/components/StatusBadge';
 import Progress from '@/components/ui/Progress';
 import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, Users, Calendar, MoreVertical, Settings, Trash2, Copy } from 'lucide-react';
-import type { Assistant, Workspace, PlanType } from '@/types';
-import { getClientBrandColor } from '@/lib/brandColors';
+import type { Assistant, Workspace, PlanType, BrandColors } from '@/types';
+import { getMascotColor } from '@/lib/brandColors';
 import { getNextUsageReset } from '@/lib/billingService';
 
 interface AssistantCardProps {
@@ -13,12 +13,23 @@ interface AssistantCardProps {
   clientId: string;
   workspaceName?: string;
   workspace?: Workspace;
-  /** Override brand color (uses client palette lookup if not provided) */
+  /** Override brand color (uses mascot/client color lookup if not provided) */
   brandColor?: string;
+  /** Optional client brand colors (bypasses cache lookup when provided) */
+  clientBrandColors?: BrandColors;
 }
 
-export default function AssistantCard({ assistant, clientId, workspaceName, workspace, brandColor: brandColorProp }: AssistantCardProps) {
-  const brandColor = brandColorProp || getClientBrandColor(assistant.clientId);
+export default function AssistantCard({
+  assistant,
+  clientId,
+  workspaceName,
+  workspace,
+  brandColor: brandColorProp,
+  clientBrandColors,
+}: AssistantCardProps) {
+  // Use mascot color override if available, fallback to client brand color
+  const brandColor =
+    brandColorProp || getMascotColor(assistant.id, assistant.clientId, 'primary', assistant.colors, clientBrandColors);
   const imageSrc = assistant.image?.trim();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);

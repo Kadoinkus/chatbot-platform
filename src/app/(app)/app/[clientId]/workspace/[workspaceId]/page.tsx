@@ -3,7 +3,7 @@ import { useState, useEffect, use } from 'react';
 import { getClientById, getWorkspaceById, getAssistantsByWorkspaceSlug, getAssistantsByClientId } from '@/lib/dataService';
 import type { Client, Workspace, Assistant } from '@/lib/dataService';
 import AssistantCard from '@/components/AssistantCard';
-import { getClientBrandColor, registerClientPalette } from '@/lib/brandColors';
+import { registerClientColors, getClientBrandColor } from '@/lib/brandColors';
 import Link from 'next/link';
 import {
   ArrowLeft, Plus, Settings, CreditCard, Activity,
@@ -62,10 +62,14 @@ export default function WorkspaceDetailPage({
           assistantsData = allAssistants.filter((a) => a.workspaceSlug && workspaceKeys.has(a.workspaceSlug));
         }
 
-        // Register client palette for brand color lookups
-        if (clientData?.palette?.primary) {
-          registerClientPalette(clientData.id, clientData.palette.primary);
-          registerClientPalette(clientData.slug, clientData.palette.primary);
+        // Register client colors for brand color lookups
+        if (clientData?.brandColors?.primary) {
+          registerClientColors(clientData.id, clientData.brandColors);
+          registerClientColors(clientData.slug, clientData.brandColors);
+        } else if (clientData?.palette?.primary) {
+          // Legacy fallback
+          registerClientColors(clientData.id, { primary: clientData.palette.primary });
+          registerClientColors(clientData.slug, { primary: clientData.palette.primary });
         }
 
         setClient(clientData);
@@ -269,7 +273,14 @@ export default function WorkspaceDetailPage({
                 {assistants.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                     {assistants.map((assistant) => (
-                      <AssistantCard key={assistant.id} assistant={assistant} clientId={client.id} workspace={workspace} workspaceName={workspace.name} brandColor={client.palette?.primary} />
+                      <AssistantCard
+                        key={assistant.id}
+                        assistant={assistant}
+                        clientId={client.id}
+                        workspace={workspace}
+                        workspaceName={workspace.name}
+                        clientBrandColors={client.brandColors}
+                      />
                     ))}
                   </div>
                 ) : (
@@ -393,7 +404,6 @@ export default function WorkspaceDetailPage({
     </Page>
   );
 }
-
 
 
 

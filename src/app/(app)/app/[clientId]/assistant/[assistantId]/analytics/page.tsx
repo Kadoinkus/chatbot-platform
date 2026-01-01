@@ -33,7 +33,7 @@ import {
 } from 'lucide-react';
 
 import { getClientById, getAssistantById, getWorkspaceById } from '@/lib/dataService';
-import { getClientBrandColor } from '@/lib/brandColors';
+import { getMascotColor } from '@/lib/brandColors';
 import { getChartColors, ensureReadableColor } from '@/lib/chartColors';
 import { tooltipStyle } from '@/lib/chartTooltip';
 import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
@@ -485,8 +485,15 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
   }, [activeTab, sessions, timeSeries, questions, unansweredQuestions, countries, languages, devices, animationStats, assistantId, getExportDateRange]);
 
   const brandColor = useMemo(() => {
-    return client ? getClientBrandColor(client.id) : '#6B7280';
-  }, [client]);
+    // Use mascot color if available, fallback to client brand color
+    return getMascotColor(
+      assistant?.id || '',
+      client?.id || '',
+      'primary',
+      assistant?.colors,
+      client?.brandColors
+    );
+  }, [assistant?.id, client?.id, assistant?.colors, client?.brandColors]);
 
   // Readable brand color for text on light backgrounds
   const readableBrandColor = useMemo(() => {

@@ -38,6 +38,35 @@ export type Palette = {
   accent: string;
 };
 
+// =============================================================================
+// Brand & Mascot Colors (Two-level color system)
+// =============================================================================
+
+export type ColorMode = 'light' | 'dark';
+
+/**
+ * Brand-level colors (on Client)
+ * Stored in clients.brand_color_* columns
+ */
+export type BrandColors = {
+  primary: string;           // Required (brand_color_primary)
+  secondary?: string;        // Optional (brand_color_secondary)
+  background?: string;       // Stored only, not used by UI (brand_color_background)
+  mode?: ColorMode;          // Stored only, not used by UI (brand_color_mode)
+};
+
+/**
+ * Mascot-level color overrides (on Assistant)
+ * Stored in mascots.mascot_color_* columns
+ * Resolution: mascot_color_primary → brand_color_primary → default
+ */
+export type AssistantColors = {
+  primary?: string;          // Override (mascot_color_primary)
+  secondary?: string;        // Override (mascot_color_secondary)
+  background?: string;       // Stored only (mascot_color_background)
+  mode?: ColorMode;          // Stored only (mascot_color_mode)
+};
+
 export type ClientLogin = {
   email: string;
   password: string;
@@ -58,7 +87,10 @@ export type Client = {
   companySize?: CompanySize;
   country?: string;
   timezone?: string;
+  /** @deprecated Use brandColors instead. Kept for migration compatibility. */
   palette: Palette;
+  /** Brand colors from brand_color_* columns. Takes precedence over palette. */
+  brandColors?: BrandColors;
   login?: ClientLogin;
   defaultWorkspaceId?: string;
   /** Demo accounts have read-only access and display a demo badge */
@@ -173,6 +205,8 @@ export type Assistant = {
   description: string;
   metrics: AssistantMetrics;
   usage: AssistantUsage;
+  /** Color overrides from mascot_color_* columns. Takes precedence over client brandColors. */
+  colors?: AssistantColors;
 };
 
 // Legacy aliases for backward compatibility

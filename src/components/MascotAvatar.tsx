@@ -1,9 +1,14 @@
-import { getClientBrandColor } from '@/lib/brandColors';
+import { getMascotColor } from '@/lib/brandColors';
+import type { AssistantColors } from '@/types';
 
 interface MascotAvatarProps {
   image: string;
   name: string;
   clientId: string;
+  /** Mascot/assistant ID for color override lookup */
+  mascotId?: string;
+  /** Direct mascot colors object (bypasses cache lookup) */
+  mascotColors?: AssistantColors;
   size?: 'xs' | 'sm' | 'md' | 'lg' | 'xl';
   className?: string;
 }
@@ -16,8 +21,9 @@ const sizeMap = {
   xl: { container: 'w-24 h-24', image: 'w-20 h-20', padding: 'p-2' },
 };
 
-export default function MascotAvatar({ image, name, clientId, size = 'md', className = '' }: MascotAvatarProps) {
-  const brandColor = getClientBrandColor(clientId);
+export default function MascotAvatar({ image, name, clientId, mascotId, mascotColors, size = 'md', className = '' }: MascotAvatarProps) {
+  // Use mascot color if available, with fallback to client brand color
+  const brandColor = getMascotColor(mascotId || '', clientId, 'primary', mascotColors);
   const sizeClasses = sizeMap[size];
 
   return (

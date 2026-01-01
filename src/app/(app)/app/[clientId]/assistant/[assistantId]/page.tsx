@@ -6,7 +6,7 @@ import { UsageLine, IntentBars } from '@/components/Charts';
 import { ArrowLeft, MessageSquare, Clock, TrendingUp, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, Assistant } from '@/lib/dataService';
-import { getClientBrandColor } from '@/lib/brandColors';
+import { getMascotColor } from '@/lib/brandColors';
 import {
   Page,
   PageContent,
@@ -66,7 +66,8 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
     );
   }
 
-  const brandColor = getClientBrandColor(assistant.clientId);
+  // Use mascot color if available, fallback to client brand color
+  const brandColor = getMascotColor(assistant.id, assistant.clientId, 'primary', assistant.colors, client.brandColors);
 
   return (
     <Page>

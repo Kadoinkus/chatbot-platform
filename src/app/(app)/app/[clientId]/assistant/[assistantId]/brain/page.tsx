@@ -4,7 +4,7 @@ import { useState, useEffect, useMemo, use } from "react";
 import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Brain, Sliders, BookOpen, MessageSquare, Zap, Shield, Sparkles, GitBranch, Plus, Play, Users, ShoppingCart, GraduationCap, Briefcase, User, ChevronRight, Settings, Copy, Trash2, Edit2, Link2, ExternalLink, CheckCircle, AlertCircle, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
-import { getClientBrandColor } from '@/lib/brandColors';
+import { getMascotColor } from '@/lib/brandColors';
 import type { Client, Assistant } from '@/lib/dataService';
 import { Page, PageContent, PageHeader, Card, Button, Input, Select, Textarea, Modal, Spinner, EmptyState } from '@/components/ui';
 
@@ -111,8 +111,9 @@ export default function BrainStudioPage({ params }: { params: Promise<{ clientId
   ]);
 
   const brandColor = useMemo(() => {
-    return assistant ? getClientBrandColor(assistant.clientId) : '#6B7280';
-  }, [assistant]);
+    // Use mascot color if available, fallback to client brand color
+    return assistant ? getMascotColor(assistant.id, assistant.clientId, 'primary', assistant.colors, client?.brandColors) : '#6B7280';
+  }, [assistant, client?.brandColors]);
 
   useEffect(() => {
     async function loadData() {

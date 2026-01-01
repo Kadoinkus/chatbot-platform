@@ -18,7 +18,7 @@ import type {
   DateRange,
   TimeSeriesDataPoint,
 } from '@/lib/db/analytics/types';
-import type { ChatSessionWithAnalysis, Assistant } from '@/types';
+import type { ChatSessionWithAnalysis, Assistant, AssistantColors } from '@/types';
 
 /**
  * AI Assistant with all aggregated metrics for comparison
@@ -29,6 +29,8 @@ export interface AssistantWithMetrics {
   assistantImage: string;
   clientId: string;
   status: string;
+  /** Color overrides from mascot_color_* columns */
+  colors?: AssistantColors;
   overview: OverviewMetrics;
   sentiment: SentimentBreakdown;
   categories: CategoryBreakdown[];
@@ -101,6 +103,7 @@ export async function fetchAssistantComparisonData(
         assistantImage: assistant.image,
         clientId: assistant.clientId,
         status: assistant.status,
+        colors: assistant.colors,
         overview,
         sentiment,
         categories,

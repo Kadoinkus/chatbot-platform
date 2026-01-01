@@ -88,7 +88,8 @@ export async function getClientById(idOrSlug: string): Promise<Client | undefine
   const cachedList = fromCache<Client[]>('clients');
   if (cachedList) {
     const hit = cachedList.find(c => c.id === idOrSlug || c.slug === idOrSlug);
-    if (hit) return hit;
+    // Only use cached hit if it has brand colors (list endpoint omits colors)
+    if (hit && hit.brandColors?.primary) return hit;
   }
 
   const byId = await apiGet<Client>(`/api/clients/id/${idOrSlug}`);

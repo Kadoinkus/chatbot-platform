@@ -5,7 +5,7 @@ import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Palette, Sparkles, Image, Type, Monitor, Smartphone, User, Eye, Smile, ShirtIcon as Shirt, HardHat, ShoppingCart, Lock, Crown, Zap, Package, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import type { Client, Assistant } from '@/lib/dataService';
-import { getClientBrandColor } from '@/lib/brandColors';
+import { getMascotColor } from '@/lib/brandColors';
 import { useCart } from '@/contexts/CartContext';
 import { Page, PageContent, PageHeader, Card, Button, Input, Select, Modal, Spinner, EmptyState } from '@/components/ui';
 
@@ -272,7 +272,7 @@ export default function MascotStudioPage({ params }: { params: Promise<{ clientI
                   src={assistant.image}
                   alt={assistant.name}
                   className="w-16 h-16 rounded-full"
-                  style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
+                  style={{ backgroundColor: getMascotColor(assistant.id, assistant.clientId, 'primary', assistant.colors, client.brandColors) }}
                 />
                 <div>
                   <div className="flex items-center gap-3 mb-1">

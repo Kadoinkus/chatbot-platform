@@ -1,6 +1,6 @@
 'use client';
 import { useState, useRef, useEffect, use } from 'react';
-import { getClientBrandColor } from '@/lib/brandColors';
+import { getMascotColor } from '@/lib/brandColors';
 import { getClientById, getAssistantById } from '@/lib/dataService';
 import type { Client, Assistant } from '@/types';
 import { ArrowLeft, Send, Paperclip, MoreVertical, Phone, Video, Info, Smile, Mic, MessageSquare } from 'lucide-react';
@@ -147,7 +147,7 @@ export default function AssistantChatPage({ params }: { params: Promise<{ client
                   src={assistant.image}
                   alt={assistant.name}
                   className="w-10 h-10 rounded-full"
-                  style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
+                  style={{ backgroundColor: getMascotColor(assistant.id, assistant.clientId, 'primary', assistant.colors, client.brandColors) }}
                 />
                 <div>
                   <h1 className="font-semibold text-foreground">{assistant.name}</h1>
@@ -185,7 +185,7 @@ export default function AssistantChatPage({ params }: { params: Promise<{ client
                       src={assistant.image}
                       alt={assistant.name}
                       className="w-8 h-8 rounded-full flex-shrink-0"
-                      style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
+                      style={{ backgroundColor: getMascotColor(assistant.id, assistant.clientId, 'primary', assistant.colors, client.brandColors) }}
                     />
                   )}
                   {message.sender === 'agent' && (
@@ -235,7 +235,7 @@ export default function AssistantChatPage({ params }: { params: Promise<{ client
                 <div className="flex gap-3 max-w-lg">
                   <div
                     className="w-8 h-8 rounded-full flex items-center justify-center p-0.5"
-                    style={{ backgroundColor: getClientBrandColor(assistant.clientId) }}
+                    style={{ backgroundColor: getMascotColor(assistant.id, assistant.clientId, 'primary', assistant.colors, client.brandColors) }}
                   >
                     <img src={assistant.image} alt={assistant.name} className="w-7 h-7 object-contain" />
                   </div>

@@ -2,6 +2,8 @@
 import React, { useEffect, useState } from 'react';
 import { getClientById } from '@/lib/dataService';
 import { useAuth } from '@/hooks/useAuth';
+import { registerClientColors } from '@/lib/brandColors';
+import type { Client } from '@/types';
 
 type Palette = {
   primary: string;
@@ -17,6 +19,18 @@ interface BrandCSSProperties extends React.CSSProperties {
 
 const fallbackPalette: Palette = { primary: '#0EA5E9', primaryDark: '#0284C7', accent: '#111827' };
 
+/**
+ * Extract palette from client, preferring brandColors over legacy palette
+ */
+function extractPalette(client: Client): Palette {
+  // Prefer brandColors (new columns), fallback to palette (legacy)
+  const primary = client.brandColors?.primary || client.palette?.primary || fallbackPalette.primary;
+  const primaryDark = client.brandColors?.secondary || client.palette?.primaryDark || fallbackPalette.primaryDark;
+  const accent = client.palette?.accent || fallbackPalette.accent;
+
+  return { primary, primaryDark, accent };
+}
+
 export default function BrandWrapper({ clientId, children }: { clientId: string; children: React.ReactNode }) {
   const { client: authClient, isLoading } = useAuth();
   const [palette, setPalette] = useState<Palette>(fallbackPalette);
@@ -28,8 +42,15 @@ export default function BrandWrapper({ clientId, children }: { clientId: string;
     }
 
     // Prefer the palette from the authenticated client if it matches
-    if (authClient && (authClient.id === clientId || authClient.slug === clientId) && authClient.palette) {
-      setPalette(authClient.palette as Palette);
+    if (authClient && (authClient.id === clientId || authClient.slug === clientId)) {
+      const extracted = extractPalette(authClient);
+      setPalette(extracted);
+
+      // Register to color cache for other components
+      if (authClient.brandColors?.primary) {
+        registerClientColors(authClient.id, authClient.brandColors);
+        registerClientColors(authClient.slug, authClient.brandColors);
+      }
       return;
     }
 
@@ -37,8 +58,15 @@ export default function BrandWrapper({ clientId, children }: { clientId: string;
     let cancelled = false;
     (async () => {
       const client = await getClientById(clientId);
-      if (!cancelled && client?.palette) {
-        setPalette(client.palette as Palette);
+      if (!cancelled && client) {
+        const extracted = extractPalette(client);
+        setPalette(extracted);
+
+        // Register to color cache for other components
+        if (client.brandColors?.primary) {
+          registerClientColors(client.id, client.brandColors);
+          registerClientColors(client.slug, client.brandColors);
+        }
       }
     })();
 

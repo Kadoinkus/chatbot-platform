@@ -4,7 +4,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { Assistant, Client, Workspace } from '@/types';
-import { getClientBrandColor, registerClientPalette } from '@/lib/brandColors';
+import { registerClientColors, getMascotColor } from '@/lib/brandColors';
 import { Plus, Building2, ChevronRight, Server, Users } from 'lucide-react';
 import { Page, PageContent, PageHeader, Button, Card, Badge, EmptyState, UsageLimitBar } from '@/components/ui';
 import { FilterBar } from '@/components/analytics';
@@ -14,11 +14,15 @@ type WorkspaceWithAssistants = Workspace & { assistants: Assistant[] };
 export default function HomeClient({ client, workspaces }: { client: Client | null; workspaces: WorkspaceWithAssistants[] }) {
   const [searchTerm, setSearchTerm] = useState('');
 
-  // Register client palette for brand color lookups
+  // Register client colors for brand color lookups
   useEffect(() => {
-    if (client?.palette?.primary) {
-      registerClientPalette(client.id, client.palette.primary);
-      registerClientPalette(client.slug, client.palette.primary);
+    if (client?.brandColors?.primary) {
+      registerClientColors(client.id, client.brandColors);
+      registerClientColors(client.slug, client.brandColors);
+    } else if (client?.palette?.primary) {
+      // Legacy fallback
+      registerClientColors(client.id, { primary: client.palette.primary });
+      registerClientColors(client.slug, { primary: client.palette.primary });
     }
   }, [client]);
 
@@ -174,7 +178,15 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                             <div
                               key={assistant.id}
                               className="relative w-14 h-14 rounded-full border-2 border-background -ml-4 first:ml-0 overflow-hidden"
-                              style={{ backgroundColor: client?.palette?.primary || getClientBrandColor(assistant.clientId) }}
+                              style={{
+                                backgroundColor: getMascotColor(
+                                  assistant.id,
+                                  assistant.clientId,
+                                  'primary',
+                                  assistant.colors,
+                                  client?.brandColors
+                                ),
+                              }}
                             >
                               {assistant.image?.trim() ? (
                                 <Image

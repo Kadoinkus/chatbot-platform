@@ -255,9 +255,10 @@ export default function WorkspaceDetailPage({
 
         {/* Tabs */}
         <Card padding="none">
-          <Tabs tabs={tabs} defaultTab="assistants">
-            <TabPanel tabId="assistants">
-              <div className="p-6">
+          <div className="px-4">
+            <Tabs tabs={tabs} defaultTab="assistants">
+              <TabPanel tabId="assistants" className="mt-0">
+                <div className="p-3 pt-0">
                 <div className="flex items-center justify-between mb-6">
                   <div>
                     <span className="text-xs font-medium text-foreground-tertiary uppercase tracking-wider">
@@ -266,7 +267,8 @@ export default function WorkspaceDetailPage({
                     <h3 className="text-lg font-semibold text-foreground">{workspace.name} AI Assistants</h3>
                   </div>
                   <Button icon={<Plus size={16} />}>
-                    Add AI Assistant
+                    <span className="sm:hidden">Add</span>
+                    <span className="hidden sm:inline">Add AI Assistant</span>
                   </Button>
                 </div>
 
@@ -290,16 +292,17 @@ export default function WorkspaceDetailPage({
                     message="Add your first AI assistant to start handling conversations."
                     action={
                       <Button icon={<Plus size={16} />}>
-                        Create First AI Assistant
+                        <span className="sm:hidden">Create</span>
+                        <span className="hidden sm:inline">Create First AI Assistant</span>
                       </Button>
                     }
                   />
                 )}
               </div>
-            </TabPanel>
+              </TabPanel>
 
-            <TabPanel tabId="usage">
-              <div className="p-6 space-y-6">
+              <TabPanel tabId="usage" className="mt-0">
+                <div className="p-3 pt-0 space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-3">Current subscription</h3>
                   <div className="grid grid-cols-2 gap-y-2 text-sm">
@@ -365,10 +368,10 @@ export default function WorkspaceDetailPage({
                   </div>
                 </div>
               </div>
-            </TabPanel>
+              </TabPanel>
 
-            <TabPanel tabId="settings">
-              <div className="p-6 space-y-6">
+              <TabPanel tabId="settings" className="mt-0">
+                <div className="p-3 pt-0 space-y-6">
                 <div>
                   <h3 className="text-lg font-semibold text-foreground mb-4">Workspace Settings</h3>
                   <div className="space-y-4">
@@ -397,8 +400,9 @@ export default function WorkspaceDetailPage({
                   </div>
                 </div>
               </div>
-            </TabPanel>
-          </Tabs>
+              </TabPanel>
+            </Tabs>
+          </div>
         </Card>
       </PageContent>
     </Page>

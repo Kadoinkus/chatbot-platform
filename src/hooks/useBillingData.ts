@@ -339,10 +339,10 @@ export function usePaymentMethods(): UsePaymentMethodsData {
  * Credit packages available for purchase
  */
 export const CREDIT_PACKAGES: CreditPackage[] = [
-  { id: 'starter', name: 'Starter', credits: 50, price: 50 },
-  { id: 'growth', name: 'Growth', credits: 100, price: 90, bonus: 10, popular: true },
-  { id: 'business', name: 'Business', credits: 250, price: 200, bonus: 50 },
-  { id: 'enterprise', name: 'Enterprise', credits: 500, price: 350, bonus: 150 },
+  { id: 'credits-20', name: '€20', credits: 20, price: 20 },
+  { id: 'credits-50', name: '€50', credits: 50, price: 45, bonus: 5, popular: true },
+  { id: 'credits-100', name: '€100', credits: 100, price: 85, bonus: 15 },
+  { id: 'credits-250', name: '€250', credits: 250, price: 200, bonus: 50 },
 ];
 
 interface UseCreditsData {

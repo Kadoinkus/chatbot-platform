@@ -14,14 +14,9 @@ import type { Workspace, Assistant, Invoice, InvoiceLine } from './index';
 
 /**
  * Tab IDs for the billing hub - used for URL params and component lookup
+ * 2 tabs: plans, invoices
  */
-export type BillingTabId =
-  | 'overview'
-  | 'workspaces'
-  | 'invoices'
-  | 'payment-methods'
-  | 'credits'
-  | 'usage';
+export type BillingTabId = 'plans' | 'invoices';
 
 /**
  * Tab configuration for billing hub navigation
@@ -46,35 +41,19 @@ export interface BillingTabProps {
 // =============================================================================
 
 /**
- * Overview tab props
+ * Overview tab props - Visual workspace billing breakdown
  */
 export interface OverviewTabProps extends BillingTabProps {
-  metrics: BillingMetrics;
-  usageWarnings: Workspace[];
-  workspaces: Workspace[];
-  billingSummary: BillingSummary;
-  getMascotTotal: (workspaceSlug: string, plan: string) => number;
-  onNavigateToTab: (tabId: BillingTabId) => void;
-}
-
-/**
- * Workspaces tab props
- */
-export interface WorkspacesTabProps extends BillingTabProps {
   workspaces: Workspace[];
   workspaceAssistants: Record<string, Assistant[]>;
-  expandedWorkspaces: Set<string>;
-  onToggleExpand: (workspaceId: string) => void;
   getMascotTotal: (workspaceSlug: string, plan: string) => number;
-  isLoading: boolean;
-  error: string | null;
-  onRetry: () => void;
+  isLoading?: boolean;
 }
 
 /**
- * Invoices tab props
+ * History tab props - All invoices (subscriptions + one-time)
  */
-export interface InvoicesTabProps extends BillingTabProps {
+export interface HistoryTabProps extends BillingTabProps {
   invoices: Invoice[];
   workspaceNames: Record<string, string>;
   isLoading: boolean;
@@ -88,37 +67,18 @@ export interface InvoicesTabProps extends BillingTabProps {
 }
 
 /**
- * Payment methods tab props
+ * Payment tab props - Payment methods + Credits combined
  */
-export interface PaymentMethodsTabProps extends BillingTabProps {
+export interface PaymentTabProps extends BillingTabProps {
   paymentMethods: PaymentMethod[];
+  totalCredits: number;
+  workspaces: Workspace[];
+  packages: CreditPackage[];
   isLoading: boolean;
-  error: string | null;
   onAddPaymentMethod?: () => void;
   onRemovePaymentMethod?: (id: string) => void;
   onSetDefault?: (id: string) => void;
-}
-
-/**
- * Credits tab props
- */
-export interface CreditsTabProps extends BillingTabProps {
-  totalCredits: number;
-  workspaces: Workspace[];
-  isLoading: boolean;
-  error: string | null;
   onPurchaseCredits?: (packageId: string) => void;
-  onRetry: () => void;
-}
-
-/**
- * Usage tab props
- */
-export interface UsageTabProps extends BillingTabProps {
-  workspaces: Workspace[];
-  isLoading: boolean;
-  error: string | null;
-  onRetry: () => void;
 }
 
 // =============================================================================

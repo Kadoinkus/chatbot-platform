@@ -1,16 +1,23 @@
 'use client';
 
-import { useState, useEffect, use, useCallback, useMemo } from 'react';
+import { use, useCallback, useMemo } from 'react';
 import { useSearchParams, useRouter } from 'next/navigation';
-import { CreditCard, ShieldAlert, RefreshCw } from 'lucide-react';
+import {
+  CreditCard,
+  ShieldAlert,
+  RefreshCw,
+  Euro,
+  Wallet,
+  Layers,
+  Calendar,
+  AlertTriangle,
+} from 'lucide-react';
 import { useAuth } from '@/hooks/useAuth';
 import {
   useBillingCoreData,
   useInvoices,
   useBillingMetrics,
-  usePaymentMethods,
   useCredits,
-  useUsageMetrics,
 } from '@/hooks/useBillingData';
 import {
   Page,
@@ -20,8 +27,10 @@ import {
   EmptyState,
   Card,
   Button,
+  Alert,
+  Tabs,
+  TabPanel,
 } from '@/components/ui';
-import { TabNavigation } from '@/components/analytics';
 import {
   BILLING_TABS,
   DEFAULT_BILLING_TAB,
@@ -30,14 +39,11 @@ import {
 } from '@/components/billing';
 import type { BillingTabId } from '@/types/billing';
 import { canAccessBilling } from '@/types/billing';
+import { formatMoney } from '@/lib/billingDataService';
 
 import {
-  OverviewTab,
-  WorkspacesTab,
+  SubscriptionTab,
   InvoicesTab,
-  PaymentMethodsTab,
-  CreditsTab,
-  UsageTab,
   BillingErrorBoundary,
 } from './components';
 
@@ -90,32 +96,8 @@ export default function BillingHubPage({
     workspaceAssistants
   );
 
-  // Payment methods (placeholder)
-  const { paymentMethods, isLoading: paymentMethodsLoading } = usePaymentMethods();
-
   // Credits data
   const { totalCredits, packages, purchaseCredits } = useCredits(workspaces);
-
-  // Usage metrics
-  const { bundleUsage, sessionUsage, messageUsage, workspaceUsage } =
-    useUsageMetrics(workspaces);
-
-  // Workspace expansion state
-  const [expandedWorkspaces, setExpandedWorkspaces] = useState<Set<string>>(
-    new Set()
-  );
-
-  const toggleWorkspaceExpansion = useCallback((workspaceId: string) => {
-    setExpandedWorkspaces((prev) => {
-      const newSet = new Set(prev);
-      if (newSet.has(workspaceId)) {
-        newSet.delete(workspaceId);
-      } else {
-        newSet.add(workspaceId);
-      }
-      return newSet;
-    });
-  }, []);
 
   // Tab navigation
   const handleTabChange = useCallback(
@@ -125,13 +107,6 @@ export default function BillingHubPage({
       router.push(`/app/${clientId}/billing?${params.toString()}`);
     },
     [router, clientId, searchParams]
-  );
-
-  const navigateToTab = useCallback(
-    (tabId: BillingTabId) => {
-      handleTabChange(tabId);
-    },
-    [handleTabChange]
   );
 
   // Mascot cost calculator
@@ -164,9 +139,24 @@ export default function BillingHubPage({
     );
   }, [workspaceAssistants]);
 
-  // Brand color for tabs
-  const brandColor =
-    client?.brandColors?.primary || client?.palette?.primary || '#3B82F6';
+  // Tab items for UI
+  const tabItems = useMemo(
+    () =>
+      BILLING_TABS.map((tab) => ({
+        id: tab.id,
+        label: tab.label,
+        icon: tab.icon,
+      })),
+    []
+  );
+
+  // Format next billing date
+  const nextBillingDate = billingSummary.nextBillingDate
+    ? new Date(billingSummary.nextBillingDate).toLocaleDateString('en-US', {
+        month: 'short',
+        day: 'numeric',
+      })
+    : 'N/A';
 
   // Loading state
   if (authLoading || coreLoading) {
@@ -196,7 +186,7 @@ export default function BillingHubPage({
             </h2>
             <p className="text-foreground-secondary mb-4">
               Billing information is only available to account owners and
-              administrators. Please contact your administrator for access.
+              administrators.
             </p>
             <Button onClick={() => router.push(`/app/${clientId}`)}>
               Back to Dashboard
@@ -250,123 +240,162 @@ export default function BillingHubPage({
     );
   }
 
-  // Render tab content
-  const renderTabContent = () => {
-    const commonProps = {
-      clientId,
-      clientSlug: client.slug,
-    };
-
-    switch (activeTab) {
-      case 'overview':
-        return (
-          <OverviewTab
-            {...commonProps}
-            metrics={metrics}
-            usageWarnings={usageWarnings}
-            workspaces={workspaces}
-            billingSummary={billingSummary}
-            getMascotTotal={getMascotTotal}
-            onNavigateToTab={navigateToTab}
-            isLoading={coreLoading}
-          />
-        );
-      case 'workspaces':
-        return (
-          <WorkspacesTab
-            {...commonProps}
-            workspaces={workspaces}
-            workspaceAssistants={workspaceAssistants}
-            expandedWorkspaces={expandedWorkspaces}
-            onToggleExpand={toggleWorkspaceExpansion}
-            getMascotTotal={getMascotTotal}
-            isLoading={coreLoading}
-            error={coreError}
-            onRetry={refetchCore}
-          />
-        );
-      case 'invoices':
-        return (
-          <InvoicesTab
-            {...commonProps}
-            invoices={invoices}
-            workspaceNames={workspaceNames}
-            isLoading={invoicesLoading}
-            error={invoicesError}
-            selectedInvoice={selectedInvoice}
-            selectedInvoiceLines={selectedInvoiceLines}
-            linesLoading={linesLoading}
-            onSelectInvoice={selectInvoice}
-            onCloseModal={clearSelection}
-            onRetry={refetchInvoices}
-          />
-        );
-      case 'payment-methods':
-        return (
-          <PaymentMethodsTab
-            {...commonProps}
-            paymentMethods={paymentMethods}
-            isLoading={paymentMethodsLoading}
-          />
-        );
-      case 'credits':
-        return (
-          <CreditsTab
-            {...commonProps}
-            totalCredits={totalCredits}
-            workspaces={workspaces}
-            packages={packages}
-            isLoading={coreLoading}
-            error={coreError}
-            onPurchaseCredits={purchaseCredits}
-            onRetry={refetchCore}
-          />
-        );
-      case 'usage':
-        return (
-          <UsageTab
-            {...commonProps}
-            bundleUsage={bundleUsage}
-            sessionUsage={sessionUsage}
-            messageUsage={messageUsage}
-            workspaceUsage={workspaceUsage}
-            isLoading={coreLoading}
-            error={coreError}
-            onRetry={refetchCore}
-          />
-        );
-      default:
-        return null;
-    }
+  // Common props for tab components
+  const commonProps = {
+    clientId,
+    clientSlug: client.slug,
   };
 
   return (
     <Page>
       <PageContent>
+        {/* 1. Header */}
         <PageHeader
           title="Billing"
           description={`${workspaces.length} workspace${workspaces.length !== 1 ? 's' : ''} with ${getTotalAssistants()} AI assistant${getTotalAssistants() !== 1 ? 's' : ''}`}
         />
 
-        {/* Tab Navigation */}
-        <TabNavigation
-          tabs={BILLING_TABS}
-          activeTab={activeTab}
-          onTabChange={handleTabChange}
-          brandColor={brandColor}
-        />
+        {/* 2. KPI Cards Grid */}
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
+          {/* Monthly Fee */}
+          <Card padding="sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-foreground-secondary">Monthly Fee</span>
+              <Euro size={18} className="text-foreground-tertiary" />
+            </div>
+            <p className="text-2xl font-bold text-foreground">
+              {formatMoney(metrics.totalMonthlyFee, 'EUR')}
+            </p>
+            <p className="text-xs text-foreground-tertiary mt-1">
+              Total across workspaces
+            </p>
+          </Card>
 
-        {/* Tab Content with Error Boundary */}
-        <BillingErrorBoundary>
-          <div
-            role="tabpanel"
-            id={`tabpanel-${activeTab}`}
-            aria-labelledby={`tab-${activeTab}`}
-            tabIndex={0}
-          >
-            {renderTabContent()}
+          {/* Available Credits */}
+          <Card padding="sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-foreground-secondary">Credits</span>
+              <Wallet size={18} className="text-foreground-tertiary" />
+            </div>
+            <p className="text-2xl font-bold text-foreground">
+              {formatMoney(totalCredits, 'EUR')}
+            </p>
+            <p className="text-xs text-foreground-tertiary mt-1">
+              Total balance
+            </p>
+          </Card>
+
+          {/* Active Workspaces */}
+          <Card padding="sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-foreground-secondary">Workspaces</span>
+              <Layers size={18} className="text-foreground-tertiary" />
+            </div>
+            <p className="text-2xl font-bold text-foreground">
+              {metrics.activeWorkspaces}
+            </p>
+            <p className="text-xs text-foreground-tertiary mt-1">
+              of {metrics.totalWorkspaces} total
+            </p>
+          </Card>
+
+          {/* Next Billing */}
+          <Card padding="sm">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-sm text-foreground-secondary">Next Billing</span>
+              <Calendar size={18} className="text-foreground-tertiary" />
+            </div>
+            <p className="text-2xl font-bold text-foreground">{nextBillingDate}</p>
+            <p className="text-xs text-foreground-tertiary mt-1">
+              Upcoming charge
+            </p>
+          </Card>
+        </div>
+
+        {/* 3. Warning Banner (conditional) */}
+        {usageWarnings.length > 0 && (
+          <Alert variant="warning" title="Usage Warnings" className="mb-6">
+            <ul className="text-sm space-y-1 mt-2">
+              {usageWarnings.slice(0, 3).map((workspace) => {
+                const bundlePct = workspace.bundleLoads.limit
+                  ? Math.round(
+                      (workspace.bundleLoads.used / workspace.bundleLoads.limit) * 100
+                    )
+                  : 0;
+                const sessionsPct = workspace.sessions?.limit
+                  ? Math.round(
+                      (workspace.sessions.used / workspace.sessions.limit) * 100
+                    )
+                  : 0;
+
+                return (
+                  <li key={workspace.id} className="flex items-center gap-2">
+                    <AlertTriangle
+                      size={14}
+                      className="text-warning-500 flex-shrink-0"
+                    />
+                    <span>
+                      <strong>{workspace.name}</strong>
+                      {bundlePct > 80 && ` - Bundle loads at ${bundlePct}%`}
+                      {sessionsPct > 80 && ` - Sessions at ${sessionsPct}%`}
+                    </span>
+                  </li>
+                );
+              })}
+            </ul>
+            {usageWarnings.length > 3 && (
+              <p className="text-sm text-foreground-secondary mt-2">
+                +{usageWarnings.length - 3} more workspaces with warnings
+              </p>
+            )}
+          </Alert>
+        )}
+
+        {/* 4. Tabbed Canvas - 2 Tabs */}
+        <Card padding="none">
+          <div className="px-4">
+            <Tabs
+              tabs={tabItems}
+              activeTab={activeTab}
+              onTabChange={handleTabChange}
+            >
+              {/* Plans Tab */}
+              <TabPanel tabId="plans" className="mt-0">
+                <div className="p-3 pt-0">
+                  <SubscriptionTab
+                    workspaces={workspaces}
+                    workspaceAssistants={workspaceAssistants}
+                    packages={packages}
+                    getMascotTotal={getMascotTotal}
+                    onPurchaseCredits={purchaseCredits}
+                    isLoading={coreLoading}
+                  />
+                </div>
+              </TabPanel>
+
+              {/* Invoices Tab */}
+              <TabPanel tabId="invoices" className="mt-0">
+                <div className="p-3 pt-0">
+                  <BillingErrorBoundary>
+                    <InvoicesTab
+                      {...commonProps}
+                      invoices={invoices}
+                      workspaceNames={workspaceNames}
+                      isLoading={invoicesLoading}
+                      error={invoicesError}
+                      selectedInvoice={selectedInvoice}
+                      selectedInvoiceLines={selectedInvoiceLines}
+                      linesLoading={linesLoading}
+                      onSelectInvoice={selectInvoice}
+                      onCloseModal={clearSelection}
+                      onRetry={refetchInvoices}
+                    />
+                  </BillingErrorBoundary>
+                </div>
+              </TabPanel>
+            </Tabs>
           </div>
-        </BillingErrorBoundary>
+        </Card>
       </PageContent>
     </Page>
   );

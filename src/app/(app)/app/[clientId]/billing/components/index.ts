@@ -1,13 +1,9 @@
 /**
  * Billing Hub Tab Components
  *
- * Exports all tab components for the billing hub.
+ * 2 tabs: Plans, Invoices
  */
 
-export { default as OverviewTab } from './OverviewTab';
-export { default as WorkspacesTab } from './WorkspacesTab';
+export { default as SubscriptionTab } from './SubscriptionTab';
 export { default as InvoicesTab } from './InvoicesTab';
-export { default as PaymentMethodsTab } from './PaymentMethodsTab';
-export { default as CreditsTab } from './CreditsTab';
-export { default as UsageTab } from './UsageTab';
 export { default as BillingErrorBoundary } from './BillingErrorBoundary';

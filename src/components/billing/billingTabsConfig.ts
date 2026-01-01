@@ -1,18 +1,10 @@
 /**
  * Billing Hub Tab Configuration
  *
- * Centralized configuration for billing hub tabs.
- * Used for navigation, routing, and component lookup.
+ * 3 tabs: Subscription, Invoices, Payment & Credits
  */
 
-import {
-  LayoutDashboard,
-  Layers,
-  FileText,
-  CreditCard,
-  Coins,
-  BarChart3,
-} from 'lucide-react';
+import { Receipt, FileText } from 'lucide-react';
 import type { BillingTab, BillingTabId } from '@/types/billing';
 
 /**
@@ -20,47 +12,23 @@ import type { BillingTab, BillingTabId } from '@/types/billing';
  */
 export const BILLING_TABS: BillingTab[] = [
   {
-    id: 'overview',
-    label: 'Overview',
-    icon: LayoutDashboard,
-    description: 'Key metrics, warnings, and quick actions',
-  },
-  {
-    id: 'workspaces',
-    label: 'Workspaces',
-    icon: Layers,
-    description: 'Billing per workspace',
+    id: 'plans',
+    label: 'Plans',
+    icon: Receipt,
+    description: 'Your workspaces and plans',
   },
   {
     id: 'invoices',
     label: 'Invoices',
     icon: FileText,
-    description: 'Invoice history and details',
-  },
-  {
-    id: 'payment-methods',
-    label: 'Payment Methods',
-    icon: CreditCard,
-    description: 'Manage payment methods',
-  },
-  {
-    id: 'credits',
-    label: 'Credits',
-    icon: Coins,
-    description: 'Credit packages and balance',
-  },
-  {
-    id: 'usage',
-    label: 'Usage',
-    icon: BarChart3,
-    description: 'Usage breakdown and projections',
+    description: 'Billing history',
   },
 ];
 
 /**
  * Default tab when none specified in URL
  */
-export const DEFAULT_BILLING_TAB: BillingTabId = 'overview';
+export const DEFAULT_BILLING_TAB: BillingTabId = 'plans';
 
 /**
  * URL query parameter name for tab state

@@ -21,7 +21,7 @@ interface InvoicesTabProps {
 }
 
 /**
- * Invoices tab - Invoice history with detail modals
+ * Invoices tab - Billing history
  */
 export function InvoicesTab({
   invoices,
@@ -41,7 +41,7 @@ export function InvoicesTab({
 
   if (error) {
     return (
-      <Alert variant="error" title="Failed to load invoices">
+      <Alert variant="error" title="Failed to load history">
         <p className="mt-1">{error}</p>
         {onRetry && (
           <Button
@@ -62,27 +62,26 @@ export function InvoicesTab({
     return (
       <EmptyState
         icon={<FileText size={48} />}
-        title="No invoices yet"
-        message="Your invoice history will appear here once billing begins."
+        title="No billing history yet"
+        message="Your invoices and transactions will appear here."
       />
     );
   }
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header with action */}
       <div className="flex items-center justify-between">
-        <h2 className="text-xl font-semibold text-foreground flex items-center gap-2">
-          <FileText size={24} />
-          Invoice History ({invoices.length})
-        </h2>
-        <Button variant="secondary" icon={<Download size={16} />}>
+        <p className="text-sm text-foreground-secondary">
+          {invoices.length} invoice{invoices.length !== 1 ? 's' : ''}
+        </p>
+        <Button variant="secondary" size="sm" icon={<Download size={14} />}>
           Export All
         </Button>
       </div>
 
       {/* Invoice Table */}
-      <Card className="p-0 overflow-hidden">
+      <Card padding="none" className="overflow-hidden">
         <InvoiceTable
           invoices={invoices}
           onSelectInvoice={onSelectInvoice}
@@ -108,30 +107,30 @@ export function InvoicesTab({
 }
 
 /**
- * Skeleton loading state for Invoices tab
+ * Skeleton loading state
  */
 function InvoicesTabSkeleton() {
   return (
-    <div className="space-y-6">
+    <div className="space-y-4">
       {/* Header skeleton */}
       <div className="flex items-center justify-between">
-        <Skeleton height="1.75rem" width="200px" />
-        <Skeleton height="2.5rem" width="120px" rounded="lg" />
+        <Skeleton height="1rem" width="80px" />
+        <Skeleton height="2rem" width="100px" rounded="lg" />
       </div>
 
       {/* Table skeleton */}
-      <Card className="p-0 overflow-hidden">
+      <Card padding="none" className="overflow-hidden">
         <div className="p-4 border-b border-border">
-          <div className="grid grid-cols-6 gap-4">
-            {Array.from({ length: 6 }).map((_, i) => (
+          <div className="grid grid-cols-5 gap-4">
+            {Array.from({ length: 5 }).map((_, i) => (
               <Skeleton key={i} height="1rem" width="80%" />
             ))}
           </div>
         </div>
         {Array.from({ length: 5 }).map((_, i) => (
           <div key={i} className="p-4 border-b border-border last:border-b-0">
-            <div className="grid grid-cols-6 gap-4">
-              {Array.from({ length: 6 }).map((_, j) => (
+            <div className="grid grid-cols-5 gap-4">
+              {Array.from({ length: 5 }).map((_, j) => (
                 <Skeleton key={j} height="1rem" width={j === 0 ? '90%' : '70%'} />
               ))}
             </div>

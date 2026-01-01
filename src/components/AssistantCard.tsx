@@ -3,7 +3,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import StatusBadge from '@/components/StatusBadge';
 import Progress from '@/components/ui/Progress';
-import { BarChart3, Palette, Brain, Headphones, Play, Pause, Server, Users, Calendar, MoreVertical, Settings, Trash2, Copy } from 'lucide-react';
+import { BarChart3, Palette, Brain, Headphones, Play, Pause, User, MessageCircle, Calendar, MoreVertical, Settings, Trash2, Copy } from 'lucide-react';
 import type { Assistant, Workspace, PlanType, BrandColors } from '@/types';
 import { getMascotColor } from '@/lib/brandColors';
 import { getNextUsageReset } from '@/lib/billingService';
@@ -228,12 +228,12 @@ export default function AssistantCard({
 
         {/* Usage Indicators - Per-assistant usage with % of workspace total */}
         <div className="space-y-3">
-          {/* Bundle Loads */}
+          {/* Unique Users */}
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-xs font-medium text-foreground-secondary flex items-center gap-1.5">
-                <Server size={14} className="text-foreground-tertiary" />
-                Bundle Loads
+                <User size={14} className="text-foreground-tertiary" />
+                Unique Users
               </span>
               <span className="text-xs text-foreground-tertiary">
                 {bundleLoads.percentage > 0 ? `${bundleLoads.percentage}% of total` : '—'}
@@ -242,17 +242,17 @@ export default function AssistantCard({
             <Progress percentage={bundleLoads.percentage} variant="distribution" color={brandColor} />
             <div className="flex justify-between items-center mt-1">
               <span className="text-xs text-foreground-tertiary">
-                {bundleLoads.current.toLocaleString()} loads
+                {bundleLoads.current.toLocaleString()} users
               </span>
             </div>
           </div>
 
-          {/* Sessions */}
+          {/* Conversations */}
           <div>
             <div className="flex justify-between items-center mb-1.5">
               <span className="text-xs font-medium text-foreground-secondary flex items-center gap-1.5">
-                <Users size={14} className="text-foreground-tertiary" />
-                Sessions
+                <MessageCircle size={14} className="text-foreground-tertiary" />
+                Conversations
               </span>
               <span className="text-xs text-foreground-tertiary">
                 {sessionUsage.percentage > 0 ? `${sessionUsage.percentage}% of total` : '—'}
@@ -261,7 +261,7 @@ export default function AssistantCard({
             <Progress percentage={sessionUsage.percentage} variant="distribution" color={brandColor} />
             <div className="flex justify-between items-center mt-1">
               <span className="text-xs text-foreground-tertiary">
-                {sessionUsage.current.toLocaleString()} sessions
+                {sessionUsage.current.toLocaleString()} conversations
               </span>
             </div>
           </div>

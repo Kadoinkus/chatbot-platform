@@ -114,7 +114,7 @@ export default function WorkspaceDetailPage({
     : 'starter';
   const planConfig = PLAN_CONFIG[planType];
 
-  // Sessions is the client-facing usage metric
+  // Conversations is the client-facing usage metric
   const sessions = workspace.sessions || { used: 0, limit: 0, remaining: 0 };
   const usagePercentage = sessions.limit ? (sessions.used / sessions.limit) * 100 : 0;
   const formatDateSafe = (value?: string, opts?: Intl.DateTimeFormatOptions) => {
@@ -186,7 +186,7 @@ export default function WorkspaceDetailPage({
         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
           <Card padding="sm">
             <div className="flex items-center justify-between mb-2">
-              <span className="text-sm text-foreground-secondary">Sessions This Month</span>
+              <span className="text-sm text-foreground-secondary">Conversations This Month</span>
               <Activity size={18} className="text-foreground-tertiary" />
             </div>
             <p className="text-2xl font-bold text-foreground">{sessions.used.toLocaleString()}</p>
@@ -331,7 +331,7 @@ export default function WorkspaceDetailPage({
                   <div className="grid grid-cols-2 gap-y-2 text-sm">
                     {[
                       { label: 'Conversations', used: workspace.sessions?.used ?? 0, limit: workspace.sessions?.limit ?? 0 },
-                      { label: 'Bundle loads', used: workspace.bundleLoads.used, limit: workspace.bundleLoads.limit },
+                      { label: 'Unique users', used: workspace.bundleLoads.used, limit: workspace.bundleLoads.limit },
                     ].map(({ label, used, limit }) => (
                       <div className="contents" key={label}>
                         <span className="text-foreground-secondary">{label}</span>

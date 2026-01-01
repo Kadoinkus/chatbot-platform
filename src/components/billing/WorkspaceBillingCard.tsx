@@ -6,7 +6,8 @@ import {
   ChevronUp,
   Bot as BotIcon,
   BarChart3,
-  Server,
+  User,
+  MessageCircle,
 } from 'lucide-react';
 import { Card, Badge, Button } from '@/components/ui';
 import type { Workspace, Assistant } from '@/types';
@@ -176,8 +177,8 @@ export function WorkspaceBillingCard({
                 <div className="bg-surface-elevated rounded-lg p-4 border border-border">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-foreground flex items-center gap-2">
-                      <Server size={14} className="text-info-600 dark:text-info-500" />
-                      Bundle Loads (3D Rendering)
+                      <User size={14} className="text-info-600 dark:text-info-500" />
+                      Unique Users
                     </span>
                     <span className="text-sm text-foreground-secondary">
                       {workspace.bundleLoads.used.toLocaleString()} /{' '}
@@ -205,8 +206,8 @@ export function WorkspaceBillingCard({
                 <div className="bg-surface-elevated rounded-lg p-4 border border-border">
                   <div className="flex justify-between items-center mb-2">
                     <span className="text-sm font-medium text-foreground flex items-center gap-2">
-                      <Server size={14} className="text-plan-premium-text" />
-                      Sessions (Conversations)
+                      <MessageCircle size={14} className="text-plan-premium-text" />
+                      Conversations
                     </span>
                     <span className="text-sm text-foreground-secondary">
                       {workspace.sessions?.used.toLocaleString()} /{' '}

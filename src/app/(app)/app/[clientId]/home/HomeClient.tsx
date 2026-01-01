@@ -5,7 +5,7 @@ import Link from 'next/link';
 import { useEffect, useMemo, useState } from 'react';
 import type { Assistant, Client, Workspace } from '@/types';
 import { registerClientColors, getMascotColor } from '@/lib/brandColors';
-import { Plus, Building2, ChevronRight, Server, Users } from 'lucide-react';
+import { Plus, Building2, ChevronRight, User, MessageCircle } from 'lucide-react';
 import { Page, PageContent, PageHeader, Button, Card, Badge, EmptyState, UsageLimitBar } from '@/components/ui';
 import { FilterBar } from '@/components/analytics';
 
@@ -114,12 +114,12 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
 
                   return (
                     <div className="border-t border-border px-4 py-3 space-y-3">
-                      {/* Bundle Loads */}
+                      {/* Unique Users */}
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-1.5">
-                            <Server size={14} className="text-foreground-tertiary" />
-                            <span className="text-xs font-medium text-foreground-secondary">Bundle Loads</span>
+                            <User size={14} className="text-foreground-tertiary" />
+                            <span className="text-xs font-medium text-foreground-secondary">Unique Users</span>
                           </div>
                           <span className="text-xs text-foreground-tertiary">
                             {bundleLoads.used.toLocaleString()} / {bundleLoads.limit.toLocaleString()}
@@ -128,12 +128,12 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
                         <UsageLimitBar used={bundleLoads.used} limit={bundleLoads.limit} />
                       </div>
 
-                      {/* Sessions */}
+                      {/* Conversations */}
                       <div>
                         <div className="flex items-center justify-between mb-1.5">
                           <div className="flex items-center gap-1.5">
-                            <Users size={14} className="text-foreground-tertiary" />
-                            <span className="text-xs font-medium text-foreground-secondary">Sessions</span>
+                            <MessageCircle size={14} className="text-foreground-tertiary" />
+                            <span className="text-xs font-medium text-foreground-secondary">Conversations</span>
                           </div>
                           <span className="text-xs text-foreground-tertiary">
                             {sessions.used.toLocaleString()} / {sessions.limit.toLocaleString()}

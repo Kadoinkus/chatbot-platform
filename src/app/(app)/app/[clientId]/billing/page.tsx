@@ -18,6 +18,7 @@ import {
   useInvoices,
   useBillingMetrics,
   useCredits,
+  useBillingPlans,
 } from '@/hooks/useBillingData';
 import {
   Page,
@@ -43,6 +44,7 @@ import { formatMoney } from '@/lib/billingDataService';
 
 import {
   SubscriptionTab,
+  PlansTab,
   InvoicesTab,
   BillingErrorBoundary,
 } from './components';
@@ -99,6 +101,15 @@ export default function BillingHubPage({
   // Credits data
   const { totalCredits, packages, purchaseCredits } = useCredits(workspaces);
 
+  // Billing plans data (for plans comparison tab)
+  const {
+    billingPlans,
+    displayPlans,
+    isLoading: plansLoading,
+    error: plansError,
+    refetch: refetchPlans,
+  } = useBillingPlans({ enabled: billingDataEnabled });
+
   // Tab navigation
   const handleTabChange = useCallback(
     (tabId: string) => {
@@ -139,13 +150,12 @@ export default function BillingHubPage({
     );
   }, [workspaceAssistants]);
 
-  // Tab items for UI
+  // Tab items for UI (no icons - cleaner look)
   const tabItems = useMemo(
     () =>
       BILLING_TABS.map((tab) => ({
         id: tab.id,
         label: tab.label,
-        icon: tab.icon,
       })),
     []
   );
@@ -351,7 +361,7 @@ export default function BillingHubPage({
           </Alert>
         )}
 
-        {/* 4. Tabbed Canvas - 2 Tabs */}
+        {/* 4. Tabbed Canvas - 3 Tabs */}
         <Card padding="none">
           <div className="px-4">
             <Tabs
@@ -359,8 +369,8 @@ export default function BillingHubPage({
               activeTab={activeTab}
               onTabChange={handleTabChange}
             >
-              {/* Plans Tab */}
-              <TabPanel tabId="plans" className="mt-0">
+              {/* Overview Tab */}
+              <TabPanel tabId="overview" className="mt-0">
                 <div className="p-3 pt-0">
                   <SubscriptionTab
                     workspaces={workspaces}
@@ -370,6 +380,21 @@ export default function BillingHubPage({
                     onPurchaseCredits={purchaseCredits}
                     isLoading={coreLoading}
                   />
+                </div>
+              </TabPanel>
+
+              {/* Plans Tab */}
+              <TabPanel tabId="plans" className="mt-0">
+                <div className="p-3 pt-0">
+                  <BillingErrorBoundary>
+                    <PlansTab
+                      billingPlans={billingPlans}
+                      displayPlans={displayPlans}
+                      isLoading={plansLoading}
+                      error={plansError}
+                      onRetry={refetchPlans}
+                    />
+                  </BillingErrorBoundary>
                 </div>
               </TabPanel>
 

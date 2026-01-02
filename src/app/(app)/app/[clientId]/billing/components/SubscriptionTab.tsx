@@ -1,6 +1,8 @@
 'use client';
 
 import { useState } from 'react';
+import Link from 'next/link';
+import { useParams } from 'next/navigation';
 import { Receipt, Bot, Plus, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
 import { Card, Badge, Skeleton, EmptyState, Button } from '@/components/ui';
 import type { Workspace, Assistant } from '@/types';
@@ -34,6 +36,8 @@ export function SubscriptionTab({
   onPurchaseCredits,
   isLoading = false,
 }: SubscriptionTabProps) {
+  const params = useParams();
+  const clientId = params.clientId as string;
   const [expandedDetails, setExpandedDetails] = useState<string | null>(null);
   const [expandedCredits, setExpandedCredits] = useState<string | null>(null);
 
@@ -96,7 +100,15 @@ export function SubscriptionTab({
                 <div className="space-y-2 text-sm">
                   {/* Plan */}
                   <div className="flex justify-between">
-                    <span className="text-foreground-secondary">{planConfig.name} Plan</span>
+                    <span className="text-foreground-secondary">
+                      {planConfig.name} Plan
+                      <Link
+                        href={`/app/${clientId}/billing?tab=plans`}
+                        className="ml-2 text-info-600 dark:text-info-400 hover:underline"
+                      >
+                        Upgrade
+                      </Link>
+                    </span>
                     <span className="text-foreground">{planCost === 0 ? 'Free' : formatMoney(planCost, 'EUR')}</span>
                   </div>
 

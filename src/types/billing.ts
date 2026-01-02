@@ -14,9 +14,9 @@ import type { Workspace, Assistant, Invoice, InvoiceLine } from './index';
 
 /**
  * Tab IDs for the billing hub - used for URL params and component lookup
- * 2 tabs: plans, invoices
+ * 3 tabs: overview, plans, invoices
  */
-export type BillingTabId = 'plans' | 'invoices';
+export type BillingTabId = 'overview' | 'plans' | 'invoices';
 
 /**
  * Tab configuration for billing hub navigation

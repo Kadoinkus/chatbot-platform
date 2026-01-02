@@ -1,7 +1,8 @@
 'use client';
 
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import type { Invoice, InvoiceLine, Workspace, Assistant, Client } from '@/types';
+import type { Invoice, InvoiceLine, Workspace, Assistant, Client, BillingPlan } from '@/types';
+import { formatPlanForDisplay, type DisplayPlan } from '@/lib/planDisplayConfig';
 import type { BillingMetrics, BillingSummary, PaymentMethod, CreditPackage } from '@/types/billing';
 import { getInvoicesByClientId, getInvoiceLines, computeBillingSummary, getMascotCost } from '@/lib/billingDataService';
 import { getClientById, getWorkspacesByClientId, getAssistantsByWorkspaceSlug } from '@/lib/dataService';
@@ -455,5 +456,66 @@ export function useUsageMetrics(workspaces: Workspace[]): UseUsageMetricsData {
     sessionUsage,
     messageUsage,
     workspaceUsage,
+  };
+}
+
+// =============================================================================
+// Billing Plans Hook
+// =============================================================================
+
+interface UseBillingPlansData {
+  billingPlans: BillingPlan[];
+  displayPlans: DisplayPlan[];
+  isLoading: boolean;
+  error: string | null;
+  refetch: () => Promise<void>;
+}
+
+/**
+ * Hook for loading billing plans data for plan comparison
+ */
+export function useBillingPlans(options: UseBillingOptions = {}): UseBillingPlansData {
+  const enabled = options.enabled ?? true;
+  const [billingPlans, setBillingPlans] = useState<BillingPlan[]>([]);
+  const [isLoading, setIsLoading] = useState<boolean>(enabled);
+  const [error, setError] = useState<string | null>(null);
+
+  const fetchData = useCallback(async () => {
+    if (!enabled) {
+      setIsLoading(false);
+      return;
+    }
+
+    setIsLoading(true);
+    setError(null);
+
+    try {
+      const response = await fetch('/api/billing/plans', { cache: 'no-store' });
+      if (!response.ok) throw new Error('Failed to fetch plans');
+      const json = await response.json();
+      setBillingPlans(json.data || []);
+    } catch (err) {
+      console.error('Error loading billing plans:', err);
+      setError('Failed to load plans. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  }, [enabled]);
+
+  useEffect(() => {
+    fetchData();
+  }, [fetchData]);
+
+  // Memoize display plans transformation
+  const displayPlans = useMemo(() => {
+    return billingPlans.map(formatPlanForDisplay);
+  }, [billingPlans]);
+
+  return {
+    billingPlans,
+    displayPlans,
+    isLoading,
+    error,
+    refetch: fetchData,
   };
 }

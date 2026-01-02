@@ -1,10 +1,10 @@
 /**
  * Billing Hub Tab Configuration
  *
- * 3 tabs: Subscription, Invoices, Payment & Credits
+ * 3 tabs: Overview, Plans, Invoices
  */
 
-import { Receipt, FileText } from 'lucide-react';
+import { Layers, Receipt, FileText } from 'lucide-react';
 import type { BillingTab, BillingTabId } from '@/types/billing';
 
 /**
@@ -12,10 +12,16 @@ import type { BillingTab, BillingTabId } from '@/types/billing';
  */
 export const BILLING_TABS: BillingTab[] = [
   {
+    id: 'overview',
+    label: 'Overview',
+    icon: Layers,
+    description: 'Your workspaces and subscriptions',
+  },
+  {
     id: 'plans',
     label: 'Plans',
     icon: Receipt,
-    description: 'Your workspaces and plans',
+    description: 'Compare and choose plans',
   },
   {
     id: 'invoices',
@@ -28,7 +34,7 @@ export const BILLING_TABS: BillingTab[] = [
 /**
  * Default tab when none specified in URL
  */
-export const DEFAULT_BILLING_TAB: BillingTabId = 'plans';
+export const DEFAULT_BILLING_TAB: BillingTabId = 'overview';
 
 /**
  * URL query parameter name for tab state

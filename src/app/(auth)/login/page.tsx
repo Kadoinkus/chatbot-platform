@@ -1,7 +1,8 @@
 'use client';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 import { signIn } from '@/lib/auth';
+import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
 import { Card, Button, Input, Alert, Spinner } from '@/components/ui';
 
 export default function LoginPage() {
@@ -13,9 +14,60 @@ export default function LoginPage() {
   const [err, setErr] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [isLogin, setIsLogin] = useState(true);
+  const [inviteEmail, setInviteEmail] = useState('');
+  const [inviteTokens, setInviteTokens] = useState<{ accessToken: string; refreshToken: string } | null>(null);
+  const [hasParsedInvite, setHasParsedInvite] = useState(false);
+
+  const isInviteFlow = inviteTokens !== null;
+
+  // Handle invite links that redirect with access_token/refresh_token in the hash
+  useEffect(() => {
+    if (hasParsedInvite) return;
+    if (typeof window === 'undefined') return;
+    const hash = window.location.hash;
+    if (!hash) return;
+
+    const params = new URLSearchParams(hash.replace('#', ''));
+    const accessToken = params.get('access_token');
+    const refreshToken = params.get('refresh_token');
+    const type = params.get('type');
+
+    if (accessToken && refreshToken && type === 'invite') {
+      setHasParsedInvite(true);
+      setIsLogin(true);
+      setIsLoading(true);
+
+      const supabase = getSupabaseBrowserClient();
+      supabase.auth
+        .setSession({ access_token: accessToken, refresh_token: refreshToken })
+        .then(({ data, error }) => {
+          if (error || !data.session) {
+            setErr('Invite link is invalid or expired. Please request a new invite.');
+            setIsLoading(false);
+            return;
+          }
+          const userEmail = data.session.user.email ?? '';
+          setInviteEmail(userEmail);
+          setEmail(userEmail);
+          setInviteTokens({ accessToken, refreshToken });
+          setIsLoading(false);
+
+          // Clean hash so it doesn't interfere with routing
+          window.location.hash = '';
+        })
+        .catch(() => {
+          setErr('Invite link is invalid or expired. Please request a new invite.');
+          setIsLoading(false);
+        });
+    }
+  }, [hasParsedInvite]);
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    if (isInviteFlow) {
+      return finalizeInvite();
+    }
+
     setErr(null);
     setIsLoading(true);
 
@@ -38,6 +90,54 @@ export default function LoginPage() {
     }
   }
 
+  async function finalizeInvite() {
+    if (!inviteTokens) return;
+    if (!password) {
+      setErr('Please choose a password to continue.');
+      return;
+    }
+
+    setErr(null);
+    setIsLoading(true);
+
+    try {
+      const supabase = getSupabaseBrowserClient();
+
+      // Set password for the invited user
+      const { error: updateError } = await supabase.auth.updateUser({ password });
+      if (updateError) {
+        setErr(updateError.message || 'Could not set password');
+        setIsLoading(false);
+        return;
+      }
+
+      // Ask backend to issue the dashboard session cookie
+      const response = await fetch('/api/auth/accept-invite', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ accessToken: inviteTokens.accessToken }),
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => ({}));
+        setErr(payload?.message || 'Could not finalize invite. Please try again.');
+        setIsLoading(false);
+        return;
+      }
+
+      const payload = await response.json();
+      const redirectUrl =
+        payload?.data?.redirectUrl ||
+        (payload?.data?.session?.clientSlug ? `/app/${payload.data.session.clientSlug}/home` : '/');
+
+      window.location.href = redirectUrl;
+    } catch (error) {
+      console.error('Invite completion error:', error);
+      setErr('An error occurred while finishing the invite');
+      setIsLoading(false);
+    }
+  }
+
   return (
     <div className="min-h-screen flex items-start pt-8 sm:items-center sm:pt-0 justify-center bg-background p-4 transition-colors overflow-auto">
       <div className="w-full max-w-md">
@@ -45,22 +145,24 @@ export default function LoginPage() {
         <Card className="overflow-hidden p-0">
           <div className="flex border-b border-border">
             <button
+              disabled={isInviteFlow}
               onClick={() => setIsLogin(true)}
               className={`flex-1 py-4 px-6 font-semibold transition-colors ${
                 isLogin
                   ? 'bg-interactive text-foreground-inverse'
                   : 'bg-surface-elevated text-foreground-secondary hover:text-foreground'
-              }`}
+              } ${isInviteFlow ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
               Log in
             </button>
             <button
+              disabled={isInviteFlow}
               onClick={() => setIsLogin(false)}
               className={`flex-1 py-4 px-6 font-semibold transition-colors ${
                 !isLogin
                   ? 'bg-interactive text-foreground-inverse'
                   : 'bg-surface-elevated text-foreground-secondary hover:text-foreground'
-              }`}
+              } ${isInviteFlow ? 'opacity-60 cursor-not-allowed' : ''}`}
             >
               Sign up
             </button>
@@ -69,10 +171,12 @@ export default function LoginPage() {
           <form onSubmit={handleSubmit} className="p-5 sm:p-8">
             <div className="text-center mb-6">
               <h3 className="text-2xl font-bold text-foreground">
-                {isLogin ? 'Welcome back' : 'Get started'}
+                {isInviteFlow ? 'Finish setting up your account' : isLogin ? 'Welcome back' : 'Get started'}
               </h3>
               <p className="text-foreground-secondary mt-1">
-                {isLogin
+                {isInviteFlow
+                  ? `Invite for ${inviteEmail || 'your email'}. Choose a password to continue.`
+                  : isLogin
                   ? 'Log in to continue'
                   : 'Create your account to start building bots'
                 }
@@ -86,6 +190,7 @@ export default function LoginPage() {
               value={email}
               onChange={e => setEmail(e.target.value)}
               placeholder="Enter your email"
+              disabled={isInviteFlow}
             />
 
             <Input
@@ -93,17 +198,17 @@ export default function LoginPage() {
               type="password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              placeholder="Enter demo password"
+              placeholder={isInviteFlow ? 'Choose a password for your account' : 'Enter password'}
             />
 
             <Button type="submit" className="w-full py-3" disabled={isLoading}>
               {isLoading ? (
                 <span className="flex items-center justify-center gap-2">
                   <Spinner size="sm" />
-                  {isLogin ? 'Logging in...' : 'Creating account...'}
+                  {isInviteFlow ? 'Saving password...' : isLogin ? 'Logging in...' : 'Creating account...'}
                 </span>
               ) : (
-                isLogin ? 'Log in to Dashboard' : 'Create Account'
+                isInviteFlow ? 'Save password & open dashboard' : isLogin ? 'Log in to Dashboard' : 'Create Account'
               )}
             </Button>
 
@@ -112,7 +217,7 @@ export default function LoginPage() {
             )}
           </div>
 
-          {!isLogin && (
+          {!isInviteFlow && !isLogin && (
             <div className="mt-8 pt-6 border-t border-border">
               <p className="text-xs text-foreground-tertiary text-center">
                 By signing up, you agree to our Terms of Service and Privacy Policy

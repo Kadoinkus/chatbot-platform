@@ -9,6 +9,7 @@ import type { CustomTabProps } from './types';
 export function CustomTab({
   paginatedSessions,
   brandColor,
+  getBrandColorForAssistant,
   getAssistantInfo,
   onOpenTranscript,
   currentPage,
@@ -41,10 +42,11 @@ export function CustomTab({
       >
         {paginatedSessions.map((session) => {
           const assistant = getAssistantInfo(session.mascot_slug);
+          const assistantColor = getBrandColorForAssistant?.(assistant?.id) || brandColor;
           return (
             <TableRow key={session.id}>
               <SessionCell session={session} />
-              <AssistantCell assistant={assistant} brandColor={brandColor} />
+              <AssistantCell assistant={assistant} brandColor={assistantColor} getBrandColorForAssistant={getBrandColorForAssistant} />
               <TableCell>
                 <p className="text-sm text-foreground-tertiary">-</p>
               </TableCell>
@@ -68,12 +70,14 @@ export function CustomTab({
       >
         {paginatedSessions.map((session) => {
           const assistant = getAssistantInfo(session.mascot_slug);
+          const assistantColor = getBrandColorForAssistant?.(assistant?.id) || brandColor;
           return (
             <MobileCard key={session.id}>
               <MobileCardHeader
                 session={session}
                 assistant={assistant}
-                brandColor={brandColor}
+                brandColor={assistantColor}
+                getBrandColorForAssistant={getBrandColorForAssistant}
                 onView={() => onOpenTranscript(session)}
               />
               <p className="text-sm text-foreground-tertiary text-center py-4">

@@ -9,6 +9,7 @@ import type { AnimationsTabProps } from './types';
 export function AnimationsTab({
   paginatedSessions,
   brandColor,
+  getBrandColorForAssistant,
   getAssistantInfo,
   onOpenTranscript,
   currentPage,
@@ -53,12 +54,13 @@ export function AnimationsTab({
       >
         {paginatedSessions.map((session) => {
           const assistant = getAssistantInfo(session.mascot_slug);
+          const assistantColor = getBrandColorForAssistant?.(assistant?.id) || brandColor;
           const { uniqueEasterEggs, easterEggCount } = getEasterEggInfo(session);
 
           return (
             <TableRow key={session.id}>
               <SessionCell session={session} />
-              <AssistantCell assistant={assistant} brandColor={brandColor} />
+              <AssistantCell assistant={assistant} brandColor={assistantColor} getBrandColorForAssistant={getBrandColorForAssistant} />
               <TableCell>
                 {uniqueEasterEggs.length > 0 ? (
                   <p className="text-sm text-foreground">{uniqueEasterEggs.join(', ')}</p>
@@ -103,6 +105,7 @@ export function AnimationsTab({
       >
         {paginatedSessions.map((session) => {
           const assistant = getAssistantInfo(session.mascot_slug);
+          const assistantColor = getBrandColorForAssistant?.(assistant?.id) || brandColor;
           const { uniqueEasterEggs, easterEggCount } = getEasterEggInfo(session);
 
           return (
@@ -110,7 +113,8 @@ export function AnimationsTab({
               <MobileCardHeader
                 session={session}
                 assistant={assistant}
-                brandColor={brandColor}
+                brandColor={assistantColor}
+                getBrandColorForAssistant={getBrandColorForAssistant}
                 onView={() => onOpenTranscript(session)}
               />
               <div className="grid grid-cols-2 gap-3">

@@ -9,6 +9,7 @@ import type { CostsTabProps } from './types';
 export function CostsTab({
   paginatedSessions,
   brandColor,
+  getBrandColorForAssistant,
   getAssistantInfo,
   onOpenTranscript,
   formatCost,
@@ -44,6 +45,7 @@ export function CostsTab({
       >
         {paginatedSessions.map((session) => {
           const assistant = getAssistantInfo(session.mascot_slug);
+          const assistantColor = getBrandColorForAssistant?.(assistant?.id) || brandColor;
           const analysisCost = session.analysis?.analytics_total_cost_eur || 0;
           const chatCost = session.total_cost_eur || 0;
           const totalCost = chatCost + analysisCost;
@@ -51,7 +53,7 @@ export function CostsTab({
           return (
             <TableRow key={session.id}>
               <SessionCell session={session} />
-              <AssistantCell assistant={assistant} brandColor={brandColor} />
+              <AssistantCell assistant={assistant} brandColor={assistantColor} getBrandColorForAssistant={getBrandColorForAssistant} />
               <TableCell>
                 <p className="text-sm text-foreground">{session.total_tokens?.toLocaleString() || '-'}</p>
               </TableCell>
@@ -81,6 +83,7 @@ export function CostsTab({
       >
         {paginatedSessions.map((session) => {
           const assistant = getAssistantInfo(session.mascot_slug);
+          const assistantColor = getBrandColorForAssistant?.(assistant?.id) || brandColor;
           const analysisCost = session.analysis?.analytics_total_cost_eur || 0;
           const chatCost = session.total_cost_eur || 0;
           const totalCost = chatCost + analysisCost;
@@ -90,7 +93,8 @@ export function CostsTab({
               <MobileCardHeader
                 session={session}
                 assistant={assistant}
-                brandColor={brandColor}
+                brandColor={assistantColor}
+                getBrandColorForAssistant={getBrandColorForAssistant}
                 onView={() => onOpenTranscript(session)}
               />
               <div className="grid grid-cols-2 gap-3 mb-3">

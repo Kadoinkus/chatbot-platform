@@ -5,6 +5,7 @@ export interface BaseTabProps {
   sessions: ChatSessionWithAnalysis[];
   paginatedSessions: ChatSessionWithAnalysis[];
   brandColor: string;
+  getBrandColorForAssistant?: (assistantId?: string) => string;
   getAssistantInfo: (mascotId: string) => Assistant | undefined;
   onOpenTranscript: (session: ChatSessionWithAnalysis) => void;
   formatTimestamp: (dateStr: string) => string;

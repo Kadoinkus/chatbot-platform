@@ -474,6 +474,7 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
     sessions: normalizedSessions,
     paginatedSessions,
     brandColor,
+    getBrandColorForAssistant: getAssistantBrandColor,
     getAssistantInfo,
     onOpenTranscript: handleOpenTranscript,
     formatTimestamp,

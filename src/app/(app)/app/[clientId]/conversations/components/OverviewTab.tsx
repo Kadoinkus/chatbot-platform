@@ -9,6 +9,7 @@ import type { OverviewTabProps } from './types';
 export function OverviewTab({
   paginatedSessions,
   brandColor,
+  getBrandColorForAssistant,
   getAssistantInfo,
   onOpenTranscript,
   formatTimestamp,
@@ -49,10 +50,11 @@ export function OverviewTab({
       >
         {paginatedSessions.map((session) => {
           const assistant = getAssistantInfo(session.mascot_slug);
+          const assistantColor = getBrandColorForAssistant?.(assistant?.id) || brandColor;
           return (
             <TableRow key={session.id}>
               <SessionCell session={session} />
-              <AssistantCell assistant={assistant} brandColor={brandColor} />
+              <AssistantCell assistant={assistant} brandColor={assistantColor} getBrandColorForAssistant={getBrandColorForAssistant} />
               <TableCell>
                 <p className="text-sm text-foreground">{session.total_messages}</p>
               </TableCell>
@@ -98,7 +100,8 @@ export function OverviewTab({
               <MobileCardHeader
                 session={session}
                 assistant={assistant}
-                brandColor={brandColor}
+                brandColor={assistantColor}
+                getBrandColorForAssistant={getBrandColorForAssistant}
                 onView={() => onOpenTranscript(session)}
               />
               <div className="grid grid-cols-2 gap-3 mb-3">

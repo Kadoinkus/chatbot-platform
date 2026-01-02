@@ -9,6 +9,7 @@ import type { AudienceTabProps } from './types';
 export function AudienceTab({
   paginatedSessions,
   brandColor,
+  getBrandColorForAssistant,
   getAssistantInfo,
   onOpenTranscript,
   getDeviceIcon,
@@ -44,10 +45,11 @@ export function AudienceTab({
       >
         {paginatedSessions.map((session) => {
           const assistant = getAssistantInfo(session.mascot_slug);
+          const assistantColor = getBrandColorForAssistant?.(assistant?.id) || brandColor;
           return (
             <TableRow key={session.id}>
               <SessionCell session={session} />
-              <AssistantCell assistant={assistant} brandColor={brandColor} />
+              <AssistantCell assistant={assistant} brandColor={assistantColor} getBrandColorForAssistant={getBrandColorForAssistant} />
               <TableCell>
                 <p className="text-sm text-foreground">{session.visitor_country || '-'}</p>
               </TableCell>
@@ -80,12 +82,14 @@ export function AudienceTab({
       >
         {paginatedSessions.map((session) => {
           const assistant = getAssistantInfo(session.mascot_slug);
+          const assistantColor = getBrandColorForAssistant?.(assistant?.id) || brandColor;
           return (
             <MobileCard key={session.id}>
               <MobileCardHeader
                 session={session}
                 assistant={assistant}
-                brandColor={brandColor}
+                brandColor={assistantColor}
+                getBrandColorForAssistant={getBrandColorForAssistant}
                 onView={() => onOpenTranscript(session)}
               />
               <div className="grid grid-cols-2 gap-3">

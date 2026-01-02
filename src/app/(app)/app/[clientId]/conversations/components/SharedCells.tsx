@@ -48,19 +48,21 @@ export function SessionCell({ session }: SessionCellProps) {
 interface AssistantCellProps {
   assistant: Assistant | undefined;
   brandColor: string;
+  getBrandColorForAssistant?: (assistantId?: string) => string;
 }
 
 /**
  * Shared assistant cell showing avatar and name
  */
-export function AssistantCell({ assistant, brandColor }: AssistantCellProps) {
+export function AssistantCell({ assistant, brandColor, getBrandColorForAssistant }: AssistantCellProps) {
+  const resolvedColor = getBrandColorForAssistant?.(assistant?.id) || brandColor;
   return (
     <TableCell>
       <div className="flex items-center gap-2">
         {assistant?.image ? (
           <div
             className="w-6 h-6 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: brandColor }}
+            style={{ backgroundColor: resolvedColor }}
           >
             <img
               src={assistant.image}
@@ -101,19 +103,21 @@ interface MobileCardHeaderProps {
   assistant: Assistant | undefined;
   brandColor: string;
   onView: () => void;
+  getBrandColorForAssistant?: (assistantId?: string) => string;
 }
 
 /**
  * Shared mobile card header with assistant info and view button
  */
-export function MobileCardHeader({ session, assistant, brandColor, onView }: MobileCardHeaderProps) {
+export function MobileCardHeader({ session, assistant, brandColor, onView, getBrandColorForAssistant }: MobileCardHeaderProps) {
+  const resolvedColor = getBrandColorForAssistant?.(assistant?.id) || brandColor;
   return (
     <div className="flex justify-between items-start mb-3">
       <div className="flex items-center gap-2">
         {assistant?.image && (
           <div
             className="w-8 h-8 rounded-full flex items-center justify-center"
-            style={{ backgroundColor: brandColor }}
+            style={{ backgroundColor: resolvedColor }}
           >
             <img src={assistant.image} alt={assistant.name} className="w-7 h-7 rounded-full object-cover" />
           </div>

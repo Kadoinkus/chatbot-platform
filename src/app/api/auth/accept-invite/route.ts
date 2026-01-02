@@ -119,11 +119,11 @@ export async function POST(request: NextRequest) {
     }
 
     // REGULAR USER FLOW
-    let client: Client | undefined;
+    let client: Client | undefined = undefined;
 
     // Prefer explicit mapping from the users table
     if (user?.clientSlug) {
-      client = await db.clients.getBySlug(user.clientSlug);
+      client = (await db.clients.getBySlug(user.clientSlug)) || undefined;
       // Extra safety: fall back to slug match from full list if direct lookup fails
       if (!client) {
         const all = await db.clients.getAll();

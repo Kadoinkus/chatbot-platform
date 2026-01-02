@@ -26,6 +26,7 @@ export interface SharedConversationsTabProps {
   sessions: NormalizedConversationSession[];
   paginatedSessions?: NormalizedConversationSession[];
   brandColor: string;
+  getBrandColorForAssistant?: (assistantId?: string) => string;
   pagination?: {
     currentPage: number;
     totalPages: number;
@@ -57,6 +58,7 @@ export function ConversationsTab({
   sessions,
   paginatedSessions,
   brandColor,
+  getBrandColorForAssistant,
   pagination,
   showAssistantColumn = true,
   onOpenTranscript,
@@ -146,7 +148,11 @@ export function ConversationsTab({
               <AssistantCell
                 assistantName={session.assistant?.name}
                 image={session.assistant?.image || '/images/client-mascots/m1-liza.png'}
-                brandColor={brandColor}
+                brandColor={
+                  getBrandColorForAssistant
+                    ? getBrandColorForAssistant(session.assistant?.id)
+                    : brandColor
+                }
               />
             )}
             <TableCell>
@@ -187,7 +193,11 @@ export function ConversationsTab({
           >
             <MobileCardHeader
               session={session}
-              brandColor={brandColor}
+              brandColor={
+                getBrandColorForAssistant
+                  ? getBrandColorForAssistant(session.assistant?.id)
+                  : brandColor
+              }
               showAssistant={showAssistantColumn}
               formatTimestamp={defaultFormatTimestamp}
             />

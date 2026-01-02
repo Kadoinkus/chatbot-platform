@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useMemo, useRef, useCallback, use } from "react";
 import { getClientById, getAssistantsByClientId } from '@/lib/dataService';
-import { getClientBrandColor } from '@/lib/brandColors';
+import { getClientBrandColor, getMascotColor } from '@/lib/brandColors';
 import { getContrastTextColor } from '@/lib/chartColors';
 import type { ChatSessionWithAnalysis, Workspace, Client, Assistant } from '@/types';
 import {
@@ -377,10 +377,27 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
     return normalizedSessions.slice(startIndex, startIndex + ITEMS_PER_PAGE);
   }, [normalizedSessions, currentPage]);
 
-  // Brand color
+  // Brand color helpers
   const brandColor = useMemo(() => {
-    return client ? getClientBrandColor(client.id) : '#6B7280';
+    return client ? getClientBrandColor(client.id, client.brandColors) : '#6B7280';
   }, [client]);
+
+  const getAssistantBrandColor = useCallback(
+    (assistantId?: string) => {
+      if (!assistantId || !client) return brandColor;
+      const assistant = assistants.find((a) => a.id === assistantId);
+      return (
+        getMascotColor(
+          assistantId,
+          assistant?.clientId || client.slug || clientId,
+          'primary',
+          assistant?.colors,
+          client.brandColors
+        ) || brandColor
+      );
+    },
+    [assistants, brandColor, client, clientId]
+  );
 
   // Helper functions
   const formatTimestamp = (dateStr: string) => {
@@ -551,6 +568,7 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
                 sessions={normalizedSessions}
                 paginatedSessions={paginatedSessions}
                 brandColor={brandColor}
+                getBrandColorForAssistant={getAssistantBrandColor}
                 showAssistantColumn
                 onOpenTranscript={handleOpenTranscript}
                 pagination={{
@@ -716,7 +734,10 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
           {selectedSession && (
             <div className="max-h-[60vh] overflow-y-auto space-y-3">
               {selectedSession.full_transcript?.map((msg, i) => {
-                const userTextColor = getContrastTextColor(brandColor);
+                const transcriptBrandColor = getAssistantBrandColor(
+                  selectedSession.mascot_slug || selectedSession.assistant?.id
+                );
+                const userTextColor = getContrastTextColor(transcriptBrandColor);
 
                 return (
                   <div key={i} className={`flex ${msg.author === 'user' ? 'justify-end' : 'justify-start'}`}>
@@ -729,7 +750,7 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
                       style={
                         msg.author === 'user'
                           ? {
-                              backgroundColor: brandColor,
+                              backgroundColor: transcriptBrandColor,
                               color: userTextColor,
                             }
                           : undefined
@@ -774,8 +795,14 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
                         <span
                           className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
                           style={{
-                            backgroundColor: questionsType === 'asked' ? brandColor : '#F59E0B',
-                            color: questionsType === 'asked' ? getContrastTextColor(brandColor) : '#000',
+                          backgroundColor: questionsType === 'asked'
+                            ? getAssistantBrandColor(questionsSession?.mascot_slug || questionsSession?.assistant?.id)
+                            : '#F59E0B',
+                          color: questionsType === 'asked'
+                            ? getContrastTextColor(
+                                getAssistantBrandColor(questionsSession?.mascot_slug || questionsSession?.assistant?.id)
+                              )
+                            : '#000',
                           }}
                         >
                           {i + 1}

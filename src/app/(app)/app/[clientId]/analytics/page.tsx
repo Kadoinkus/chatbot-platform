@@ -8,7 +8,7 @@ import {
   type AssistantWithMetrics,
 } from '@/lib/analytics/assistantComparison';
 import type { Client, Assistant, Workspace } from '@/lib/dataService';
-import { getClientBrandColor } from '@/lib/brandColors';
+import { getClientBrandColor, getMascotColor } from '@/lib/brandColors';
 import { BarChart3, MessageSquare, CheckCircle, Clock, Download, ChevronDown } from 'lucide-react';
 import {
   Page,
@@ -99,7 +99,24 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
     title: '',
   });
 
-  const brandColor = client ? getClientBrandColor(client.id) : '#3B82F6';
+  const brandColor = client ? getClientBrandColor(client.id, client.brandColors) : '#3B82F6';
+
+  const getAssistantBrandColor = useCallback(
+    (assistantId?: string) => {
+      if (!assistantId || !client) return brandColor;
+      const assistant = assistants.find((a) => a.id === assistantId);
+      return (
+        getMascotColor(
+          assistantId,
+          assistant?.clientId || client.slug || clientId,
+          'primary',
+          assistant?.colors,
+          client.brandColors
+        ) || brandColor
+      );
+    },
+    [assistants, brandColor, client, clientId]
+  );
 
   const selectedWorkspaceObj = useMemo(() => {
     if (selectedWorkspace === 'all') {
@@ -529,6 +546,7 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
                 sessions={normalizedSessions}
                 paginatedSessions={paginatedConversations}
                 brandColor={brandColor}
+                getBrandColorForAssistant={getAssistantBrandColor}
                 showAssistantColumn
                 pagination={{
                   currentPage: conversationPage,

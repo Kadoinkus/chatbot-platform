@@ -15,9 +15,10 @@ interface ConversationsTabProps {
   assistantMetrics: AssistantWithMetrics[];
   totals: AggregatedMetrics;
   brandColor: string;
+  getBrandColorForAssistant?: (assistantId: string, clientId?: string, colors?: any) => string;
 }
 
-export function ConversationsTab({ assistantMetrics, totals, brandColor }: ConversationsTabProps) {
+export function ConversationsTab({ assistantMetrics, totals, brandColor, getBrandColorForAssistant }: ConversationsTabProps) {
   // Column definitions for conversations
   const columns: ColumnDefinition[] = [
     {
@@ -113,6 +114,7 @@ export function ConversationsTab({ assistantMetrics, totals, brandColor }: Conve
         assistants={assistantMetrics}
         columns={columns}
         brandColor={brandColor}
+        getBrandColorForAssistant={getBrandColorForAssistant}
         title="AI Assistant Comparison - Conversations"
         description={
           assistantMetrics.length === 0

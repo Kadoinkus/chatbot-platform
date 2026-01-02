@@ -11,9 +11,7 @@ import {
   Card,
   Input,
   Textarea,
-  Toggle,
   Spinner,
-  Button,
 } from '@/components/ui';
 
 export default function UserProfilePage() {
@@ -40,23 +38,6 @@ export default function UserProfilePage() {
     clientSlug,
     lastLoginAt: '',
     lastActiveAt: '',
-  });
-
-  const [notificationSettings] = useState({
-    newConversations: true,
-    escalations: true,
-    botOffline: true,
-    weeklyReports: true,
-    monthlyReports: false,
-    productUpdates: true,
-    marketing: false,
-  });
-
-  const [securitySettings] = useState({
-    twoFactorEnabled: false,
-    sessionTimeout: '8',
-    apiAccess: true,
-    loginAlerts: true,
   });
 
   // Keep company info in sync with selected client

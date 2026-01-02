@@ -40,7 +40,7 @@ import {
 } from '@/components/billing';
 import type { BillingTabId } from '@/types/billing';
 import { canAccessBilling } from '@/types/billing';
-import { formatMoney } from '@/lib/billingDataService';
+import { formatMoney, getMascotCost } from '@/lib/billingDataService';
 
 import {
   SubscriptionTab,
@@ -123,7 +123,6 @@ export default function BillingHubPage({
   // Mascot cost calculator
   const getMascotTotal = useCallback(
     (workspaceSlug: string, plan: string) => {
-      const { getMascotCost } = require('@/lib/billingDataService');
       const assistants = workspaceAssistants[workspaceSlug] || [];
       return assistants.reduce(
         (total: number, assistant: { id: string }) =>

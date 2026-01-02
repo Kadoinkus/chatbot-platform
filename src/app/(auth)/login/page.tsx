@@ -26,17 +26,23 @@ export default function LoginPage() {
     if (typeof window === 'undefined') return;
 
     // Supabase usually returns tokens in the hash; sometimes in the query string.
+    // Some email templates can forward only a token + email (for invite).
     const hash = window.location.hash;
     const search = window.location.search;
 
     const hashParams = new URLSearchParams(hash.replace('#', ''));
     const searchParamsUrl = new URLSearchParams(search.replace('?', ''));
 
+    // Full JWT tokens (preferred)
     const accessToken =
       hashParams.get('access_token') || searchParamsUrl.get('access_token');
     const refreshToken =
       hashParams.get('refresh_token') || searchParamsUrl.get('refresh_token');
     const type = hashParams.get('type') || searchParamsUrl.get('type');
+
+    // Fallback: OTP token + email (if template sends ?token=...&email=...)
+    const otpToken = hashParams.get('token') || searchParamsUrl.get('token');
+    const otpEmail = hashParams.get('email') || searchParamsUrl.get('email');
 
     if (accessToken && refreshToken && type === 'invite') {
       setHasParsedInvite(true);
@@ -59,6 +65,43 @@ export default function LoginPage() {
           setIsLoading(false);
 
           // Clean hash so it doesn't interfere with routing
+          window.location.hash = '';
+          const url = new URL(window.location.href);
+          url.search = '';
+          window.history.replaceState({}, document.title, url.toString());
+        })
+        .catch(() => {
+          setErr('Invite link is invalid or expired. Please request a new invite.');
+          setIsLoading(false);
+        });
+      return;
+    }
+
+    // If we only got an OTP token + email, verify it to obtain a session.
+    if (otpToken && otpEmail && type === 'invite') {
+      setHasParsedInvite(true);
+      setIsLogin(true);
+      setIsLoading(true);
+
+      const supabase = getSupabaseBrowserClient();
+      supabase.auth
+        .verifyOtp({ email: otpEmail, token: otpToken, type: 'invite' })
+        .then(({ data, error }) => {
+          if (error || !data.session) {
+            setErr('Invite link is invalid or expired. Please request a new invite.');
+            setIsLoading(false);
+            return;
+          }
+          const userEmail = data.session.user.email ?? otpEmail;
+          setInviteEmail(userEmail);
+          setEmail(userEmail);
+          setInviteTokens({
+            accessToken: data.session.access_token,
+            refreshToken: data.session.refresh_token ?? '',
+          });
+          setIsLoading(false);
+
+          // Clean URL
           window.location.hash = '';
           const url = new URL(window.location.href);
           url.search = '';

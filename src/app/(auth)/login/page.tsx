@@ -24,13 +24,19 @@ export default function LoginPage() {
   useEffect(() => {
     if (hasParsedInvite) return;
     if (typeof window === 'undefined') return;
-    const hash = window.location.hash;
-    if (!hash) return;
 
-    const params = new URLSearchParams(hash.replace('#', ''));
-    const accessToken = params.get('access_token');
-    const refreshToken = params.get('refresh_token');
-    const type = params.get('type');
+    // Supabase usually returns tokens in the hash; sometimes in the query string.
+    const hash = window.location.hash;
+    const search = window.location.search;
+
+    const hashParams = new URLSearchParams(hash.replace('#', ''));
+    const searchParamsUrl = new URLSearchParams(search.replace('?', ''));
+
+    const accessToken =
+      hashParams.get('access_token') || searchParamsUrl.get('access_token');
+    const refreshToken =
+      hashParams.get('refresh_token') || searchParamsUrl.get('refresh_token');
+    const type = hashParams.get('type') || searchParamsUrl.get('type');
 
     if (accessToken && refreshToken && type === 'invite') {
       setHasParsedInvite(true);
@@ -54,6 +60,9 @@ export default function LoginPage() {
 
           // Clean hash so it doesn't interfere with routing
           window.location.hash = '';
+          const url = new URL(window.location.href);
+          url.search = '';
+          window.history.replaceState({}, document.title, url.toString());
         })
         .catch(() => {
           setErr('Invite link is invalid or expired. Please request a new invite.');

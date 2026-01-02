@@ -147,11 +147,11 @@ export async function POST(request: NextRequest) {
     }
 
     // REGULAR USER: Prefer explicit client mapping from users table, then fallback to client.email match
-    let client: Client | undefined = null as any;
+    let client: Client | undefined = undefined;
 
     // Explicit mapping via users table
     if (user?.clientSlug) {
-      client = await db.clients.getBySlug(user.clientSlug);
+      client = (await db.clients.getBySlug(user.clientSlug)) || undefined;
       if (!client) {
         const all = await db.clients.getAll();
         client = all.find((c) => c.slug.toLowerCase() === user.clientSlug.toLowerCase());

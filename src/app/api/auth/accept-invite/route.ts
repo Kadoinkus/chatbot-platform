@@ -124,6 +124,11 @@ export async function POST(request: NextRequest) {
     // Prefer explicit mapping from the users table
     if (user?.clientSlug) {
       client = await db.clients.getBySlug(user.clientSlug);
+      // Extra safety: fall back to slug match from full list if direct lookup fails
+      if (!client) {
+        const all = await db.clients.getAll();
+        client = all.find((c) => c.slug.toLowerCase() === user.clientSlug.toLowerCase());
+      }
     }
 
     // Fallback: match by client email (legacy behavior)

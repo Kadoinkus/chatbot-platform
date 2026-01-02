@@ -146,12 +146,24 @@ export async function POST(request: NextRequest) {
       });
     }
 
-    // REGULAR USER: Match email to single client (original flow)
-    const allClients = await db.clients.getAll();
-    const emailLower = email.toLowerCase();
-    const client: Client | undefined = allClients.find(
-      (c) => (c.email || '').toLowerCase() === emailLower
-    );
+    // REGULAR USER: Prefer explicit client mapping from users table, then fallback to client.email match
+    let client: Client | undefined = null as any;
+
+    // Explicit mapping via users table
+    if (user?.clientSlug) {
+      client = await db.clients.getBySlug(user.clientSlug);
+      if (!client) {
+        const all = await db.clients.getAll();
+        client = all.find((c) => c.slug.toLowerCase() === user.clientSlug.toLowerCase());
+      }
+    }
+
+    // Fallback: match by client email (legacy behavior)
+    if (!client) {
+      const allClients = await db.clients.getAll();
+      const emailLower = email.toLowerCase();
+      client = allClients.find((c) => (c.email || '').toLowerCase() === emailLower);
+    }
 
     if (!client) {
       return NextResponse.json(

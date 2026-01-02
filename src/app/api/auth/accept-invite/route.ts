@@ -119,10 +119,18 @@ export async function POST(request: NextRequest) {
     }
 
     // REGULAR USER FLOW
-    const allClients = await db.clients.getAll();
-    const client: Client | undefined = allClients.find(
-      (c) => (c.email || '').toLowerCase() === email
-    );
+    let client: Client | undefined;
+
+    // Prefer explicit mapping from the users table
+    if (user?.clientSlug) {
+      client = await db.clients.getBySlug(user.clientSlug);
+    }
+
+    // Fallback: match by client email (legacy behavior)
+    if (!client) {
+      const allClients = await db.clients.getAll();
+      client = allClients.find((c) => (c.email || '').toLowerCase() === email);
+    }
 
     if (!client) {
       return NextResponse.json(

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { Receipt, Bot, Plus, ChevronUp, Sparkles } from 'lucide-react';
+import { Receipt, Bot, Plus, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
 import { Card, Badge, Skeleton, EmptyState, Button } from '@/components/ui';
 import type { Workspace, Assistant } from '@/types';
 import type { CreditPackage } from '@/types/billing';
@@ -34,7 +34,8 @@ export function SubscriptionTab({
   onPurchaseCredits,
   isLoading = false,
 }: SubscriptionTabProps) {
-  const [expandedWorkspace, setExpandedWorkspace] = useState<string | null>(null);
+  const [expandedDetails, setExpandedDetails] = useState<string | null>(null);
+  const [expandedCredits, setExpandedCredits] = useState<string | null>(null);
 
   if (isLoading) {
     return <PlansTabSkeleton />;
@@ -50,224 +51,191 @@ export function SubscriptionTab({
     );
   }
 
+  const toggleDetails = (slug: string) => {
+    setExpandedDetails(expandedDetails === slug ? null : slug);
+  };
+
   const toggleCredits = (slug: string) => {
-    setExpandedWorkspace(expandedWorkspace === slug ? null : slug);
+    setExpandedCredits(expandedCredits === slug ? null : slug);
   };
 
   return (
-    <div className="space-y-6">
+    <div className="space-y-8">
       {workspaces.map((workspace) => {
         const assistants = workspaceAssistants[workspace.slug] || [];
         const planConfig = getPlanDisplayConfig(workspace.plan);
         const mascotCost = getMascotTotal(workspace.slug, workspace.plan);
         const planCost = workspace.monthlyFee || 0;
         const totalCost = planCost + mascotCost;
-        const isExpanded = expandedWorkspace === workspace.slug;
+        const isDetailsExpanded = expandedDetails === workspace.slug;
+        const isCreditsExpanded = expandedCredits === workspace.slug;
 
         return (
-          <Card key={workspace.id} padding="none" className="overflow-hidden">
-            <div className="p-6">
-              {/* Header */}
-              <div className="flex items-start justify-between gap-4 mb-4">
-                <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-3 mb-1">
-                    <h3 className="text-lg font-semibold text-foreground truncate">
-                      {workspace.name}
-                    </h3>
-                    <Badge plan={getPlanBadgeType(workspace.plan)}>
-                      {planConfig.name}
-                    </Badge>
-                    {workspace.status !== 'active' && (
-                      <Badge variant="error">{workspace.status}</Badge>
-                    )}
-                  </div>
-                  {workspace.description && (
-                    <p className="text-sm text-foreground-secondary">
-                      {workspace.description}
-                    </p>
-                  )}
-                </div>
+          <Card key={workspace.id} padding="none" className="overflow-hidden shadow-md rounded-xl">
+            {/* Header */}
+            <div className="p-4 border-b border-border">
+              <span className="text-xs font-medium text-foreground-tertiary uppercase tracking-wider">Workspace</span>
+              <div className="flex items-center gap-2 mt-0.5">
+                <h3 className="text-2xl font-bold text-foreground">
+                  {workspace.name}
+                </h3>
+                <Badge plan={getPlanBadgeType(workspace.plan)}>
+                  {planConfig.name}
+                </Badge>
+                {workspace.status !== 'active' && (
+                  <Badge variant="error">{workspace.status}</Badge>
+                )}
               </div>
+            </div>
 
-              {/* Cost Breakdown */}
-              <div className="bg-background-secondary rounded-lg p-4 mb-4">
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-foreground">
-                    Monthly Cost
-                  </span>
-                  <span className="text-xl font-bold text-foreground">
-                    {totalCost === 0 ? 'Free' : formatMoney(totalCost, 'EUR')}
-                  </span>
-                </div>
-
+            {/* Two Column Layout */}
+            <div className="grid grid-cols-1 md:grid-cols-2 divide-y md:divide-y-0 md:divide-x divide-border">
+              {/* Left Column - Costs */}
+              <div className="p-4">
+                <h4 className="text-xs font-medium text-foreground-tertiary uppercase tracking-wider mb-3">Monthly Costs</h4>
                 <div className="space-y-2 text-sm">
-                  {/* Plan cost */}
-                  <div className="flex justify-between text-foreground-secondary">
-                    <span>{planConfig.name} Plan</span>
-                    <span>{planCost === 0 ? 'Free' : formatMoney(planCost, 'EUR')}</span>
+                  {/* Plan */}
+                  <div className="flex justify-between">
+                    <span className="text-foreground-secondary">{planConfig.name} Plan</span>
+                    <span className="text-foreground">{planCost === 0 ? 'Free' : formatMoney(planCost, 'EUR')}</span>
                   </div>
 
-                  {/* Mascot costs breakdown */}
-                  {assistants.length > 0 && (
-                    <div className="flex justify-between text-foreground-secondary">
-                      <span>AI Assistants ({assistants.length})</span>
-                      <span>{mascotCost === 0 ? 'Included' : formatMoney(mascotCost, 'EUR')}</span>
-                    </div>
-                  )}
-
-                  {/* Billing cycle */}
-                  <div className="flex justify-between text-foreground-tertiary pt-2 border-t border-border">
-                    <span>Billing cycle</span>
-                    <span className="capitalize">{workspace.billingCycle}</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* AI Assistants */}
-              <div>
-                <div className="flex items-center justify-between mb-3">
-                  <span className="text-sm font-medium text-foreground-secondary flex items-center gap-2">
-                    <Bot size={16} />
-                    AI Assistants
-                  </span>
-                  <span className="text-xs text-foreground-tertiary">
-                    {assistants.filter((a) => a.status === 'Active').length} active of{' '}
-                    {assistants.length}
-                  </span>
-                </div>
-
-                {assistants.length > 0 ? (
-                  <div className="space-y-2">
-                    {assistants.map((assistant) => {
-                      const mascotInfo = getMascotPricing(assistant.id);
-                      const cost = getMascotCost(assistant.id, workspace.plan);
-                      const brandBg = getMascotColor(assistant.id, assistant.clientId, 'primary', assistant.colors);
-
-                      return (
-                        <div
-                          key={assistant.id}
-                          className="flex items-center gap-3 p-2 rounded-lg hover:bg-background-secondary transition-colors"
-                        >
-                          {/* Avatar */}
+                  {/* Each Assistant */}
+                  {assistants.map((assistant) => {
+                    const cost = getMascotCost(assistant.id, workspace.plan);
+                    const brandBg = getMascotColor(assistant.id, assistant.clientId, 'primary', assistant.colors);
+                    return (
+                      <div key={assistant.id} className="flex justify-between items-center">
+                        <div className="flex items-center gap-2">
                           <div
-                            className="relative flex-shrink-0 w-10 h-10 rounded-full border-2 border-surface-elevated shadow-sm overflow-hidden flex items-center justify-center"
+                            className="w-5 h-5 rounded-full overflow-hidden flex items-center justify-center flex-shrink-0"
                             style={{ backgroundColor: brandBg }}
                           >
                             {assistant.image?.trim() ? (
-                              <img
-                                src={assistant.image.trim()}
-                                alt={assistant.name}
-                                className="w-full h-full object-cover"
-                              />
+                              <img src={assistant.image.trim()} alt="" className="w-full h-full object-cover" />
                             ) : (
-                              <span className="text-sm font-semibold text-white">
-                                {assistant.name.charAt(0)}
-                              </span>
-                            )}
-                            <span
-                              className={`absolute -bottom-0.5 -right-0.5 w-3 h-3 rounded-full border-2 border-surface-elevated ${
-                                assistant.status === 'Active'
-                                  ? 'bg-success-500'
-                                  : assistant.status === 'Paused'
-                                    ? 'bg-warning-500'
-                                    : 'bg-error-500'
-                              }`}
-                            />
-                          </div>
-
-                          {/* Info */}
-                          <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-foreground truncate">
-                              {assistant.name}
-                            </p>
-                            <p className="text-xs text-foreground-tertiary truncate">
-                              {mascotInfo.studioName}
-                            </p>
-                          </div>
-
-                          {/* Cost */}
-                          <div className="text-right flex-shrink-0">
-                            {cost === 0 ? (
-                              <span className="text-sm text-success-600 dark:text-success-400">
-                                Included
-                              </span>
-                            ) : (
-                              <span className="text-sm font-medium text-foreground">
-                                {formatMoney(cost, 'EUR')}/mo
-                              </span>
+                              <span className="text-[8px] font-semibold text-white">{assistant.name.charAt(0)}</span>
                             )}
                           </div>
+                          <span className="text-foreground-secondary">{assistant.name}</span>
                         </div>
-                      );
-                    })}
+                        <span className="text-foreground">
+                          {cost === 0 ? <span className="text-success-600 dark:text-success-400">Included</span> : formatMoney(cost, 'EUR')}
+                        </span>
+                      </div>
+                    );
+                  })}
+
+                  {assistants.length === 0 && (
+                    <div className="flex justify-between text-foreground-tertiary">
+                      <span>No assistants</span>
+                      <span>—</span>
+                    </div>
+                  )}
+                </div>
+
+                {/* Total */}
+                <div className="mt-4 pt-3 border-t border-border">
+                  <div className="flex justify-between items-center">
+                    <span className="font-medium text-foreground">Total</span>
+                    <span className="text-xl font-bold text-foreground">
+                      {totalCost === 0 ? 'Free' : formatMoney(totalCost, 'EUR')}
+                    </span>
                   </div>
-                ) : (
-                  <div className="text-center py-4 text-foreground-tertiary">
-                    <Bot size={24} className="mx-auto mb-2 opacity-50" />
-                    <p className="text-sm">No AI assistants in this workspace</p>
-                  </div>
-                )}
+                </div>
               </div>
 
-              {/* Credits for this workspace */}
-              <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
-                <div>
-                  <span className="text-sm text-foreground-secondary">
-                    Workspace Credits
-                  </span>
-                  <p className="text-lg font-semibold text-foreground">
-                    {formatMoney(workspace.walletCredits || 0, 'EUR')}
-                  </p>
+              {/* Right Column - Usage & Credits */}
+              <div className="p-4">
+                <h4 className="text-xs font-medium text-foreground-tertiary uppercase tracking-wider mb-3">Usage This Period</h4>
+
+                {/* Usage */}
+                {(() => {
+                  const convUsed = workspace.sessions?.used ?? 0;
+                  const convLimit = workspace.sessions?.limit ?? 0;
+                  const convPct = convLimit > 0 ? (convUsed / convLimit) * 100 : 0;
+                  const usersUsed = workspace.bundleLoads?.used ?? 0;
+                  const usersLimit = workspace.bundleLoads?.limit ?? 0;
+                  const usersPct = usersLimit > 0 ? (usersUsed / usersLimit) * 100 : 0;
+
+                  return (
+                    <div className="space-y-2 text-sm">
+                      <div className="flex justify-between">
+                        <span className={convPct > 80 ? 'text-warning-700 dark:text-warning-400' : 'text-foreground-secondary'}>
+                          Conversations
+                        </span>
+                        <span className={convPct > 80 ? 'text-warning-700 dark:text-warning-400 font-medium' : 'text-foreground'}>
+                          {convUsed.toLocaleString()} / {convLimit > 0 ? convLimit.toLocaleString() : '∞'}
+                        </span>
+                      </div>
+                      <div className="flex justify-between">
+                        <span className={usersPct > 80 ? 'text-warning-700 dark:text-warning-400' : 'text-foreground-secondary'}>
+                          Unique users
+                        </span>
+                        <span className={usersPct > 80 ? 'text-warning-700 dark:text-warning-400 font-medium' : 'text-foreground'}>
+                          {usersUsed.toLocaleString()} / {usersLimit > 0 ? usersLimit.toLocaleString() : '∞'}
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Credits */}
+                <div className="mt-4 pt-3 border-t border-border">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <span className="text-sm text-foreground-secondary">Wallet Credits</span>
+                      <p className="text-base font-semibold text-foreground">
+                        {formatMoney(workspace.walletCredits || 0, 'EUR')}
+                      </p>
+                    </div>
+                    <Button
+                      size="sm"
+                      variant={isCreditsExpanded ? 'primary' : 'secondary'}
+                      icon={isCreditsExpanded ? <ChevronUp size={14} /> : <Plus size={14} />}
+                      onClick={() => toggleCredits(workspace.slug)}
+                    >
+                      {isCreditsExpanded ? 'Close' : 'Add'}
+                    </Button>
+                  </div>
                 </div>
-                <Button
-                  size="sm"
-                  variant={isExpanded ? 'primary' : 'secondary'}
-                  icon={isExpanded ? <ChevronUp size={14} /> : <Plus size={14} />}
-                  onClick={() => toggleCredits(workspace.slug)}
-                >
-                  {isExpanded ? 'Close' : 'Add credits'}
-                </Button>
               </div>
             </div>
 
             {/* Expanded: Credit packages */}
-            {isExpanded && (
-              <div className="border-t border-border bg-background-secondary p-6 pt-8">
-                <p className="text-sm font-medium text-foreground-secondary mb-4">
-                  Select amount to add to {workspace.name}
-                </p>
-                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+            {isCreditsExpanded && (
+              <div className="border-t border-border p-4">
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {packages.map((pkg) => (
                     <div
                       key={pkg.id}
-                      className={`relative p-4 rounded-lg border transition-all ${
+                      className={`relative p-3 rounded-lg border transition-all ${
                         pkg.popular
                           ? 'border-info-500 dark:border-info-400 border-2 bg-surface-elevated'
                           : 'border-border bg-surface-elevated'
                       }`}
                     >
                       {pkg.popular && (
-                        <span className="absolute -top-2.5 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-xs font-medium flex items-center gap-1 whitespace-nowrap bg-info-500 text-white">
-                          <Sparkles size={10} />
+                        <span className="absolute -top-2 left-1/2 -translate-x-1/2 px-2 py-0.5 rounded-full text-[10px] font-medium flex items-center gap-1 whitespace-nowrap bg-info-500 text-white">
+                          <Sparkles size={8} />
                           Best value
                         </span>
                       )}
-                      <div className={`text-center ${pkg.popular ? 'mt-1' : ''}`}>
-                        <p className="text-2xl font-bold text-foreground">
+                      <div className={`text-center ${pkg.popular ? 'mt-0.5' : ''}`}>
+                        <p className="text-xl font-bold text-foreground">
                           {formatMoney(pkg.credits, 'EUR')}
                         </p>
-                        <p className="text-sm text-foreground-tertiary mt-1">in credits</p>
-                        {pkg.bonus ? (
-                          <p className="text-sm text-success-600 dark:text-success-400 font-medium mt-1">
-                            +{formatMoney(pkg.bonus, 'EUR')} bonus
-                          </p>
-                        ) : (
-                          <div className="h-5 mt-1" />
-                        )}
+                        <p className="text-xs font-medium h-4">
+                          {pkg.bonus ? (
+                            <span className="text-success-600 dark:text-success-400">+{formatMoney(pkg.bonus, 'EUR')} bonus</span>
+                          ) : (
+                            <span className="invisible">—</span>
+                          )}
+                        </p>
                         <Button
                           size="sm"
                           variant={pkg.popular ? 'primary' : 'secondary'}
-                          className="w-full mt-4"
+                          className="w-full mt-2"
                           onClick={() => onPurchaseCredits?.(pkg.id, workspace.slug)}
                         >
                           Pay {formatMoney(pkg.price, 'EUR')}

@@ -6,7 +6,7 @@ import AssistantCard from '@/components/AssistantCard';
 import { registerClientColors, getClientBrandColor } from '@/lib/brandColors';
 import Link from 'next/link';
 import {
-  ArrowLeft, Plus, Settings, CreditCard, Activity,
+  ArrowLeft, ArrowRight, Plus, Settings, CreditCard, Activity,
   Bot as BotIcon, Calendar, AlertCircle, Package
 } from 'lucide-react';
 import {
@@ -302,9 +302,7 @@ export default function WorkspaceDetailPage({
               </TabPanel>
 
               <TabPanel tabId="usage" className="mt-0">
-                <div className="p-3 pt-0 space-y-6">
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-3">Current subscription</h3>
+                <div className="p-3 pt-0">
                   <div className="grid grid-cols-2 gap-y-2 text-sm">
                     <span className="text-foreground-secondary">Plan</span>
                     <span className="font-medium">{planConfig.name} · {workspace.billingCycle}</span>
@@ -315,59 +313,39 @@ export default function WorkspaceDetailPage({
                     <span className="text-foreground-secondary">Next billing</span>
                     <span className="font-medium">{formatDateSafe(derivedNextBillingDate)}</span>
 
-                    <span className="text-foreground-secondary">Contract start</span>
-                    <span className="font-medium">{formatDateSafe(workspace.subscriptionStartDate)}</span>
-
-                    <span className="text-foreground-secondary">Reset cadence</span>
-                    <span className="font-medium capitalize">{workspace.usageResetInterval || 'Not set'}</span>
-
                     <span className="text-foreground-secondary">Next usage reset</span>
                     <span className="font-medium">{formatDateSafe(workspace.nextUsageResetDate)}</span>
-                  </div>
-                </div>
 
-                <div>
-                  <h3 className="text-lg font-semibold text-foreground mb-3">Limits</h3>
-                  <div className="grid grid-cols-2 gap-y-2 text-sm">
-                    {[
-                      { label: 'Conversations', used: workspace.sessions?.used ?? 0, limit: workspace.sessions?.limit ?? 0 },
-                      { label: 'Unique users', used: workspace.bundleLoads.used, limit: workspace.bundleLoads.limit },
-                    ].map(({ label, used, limit }) => (
-                      <div className="contents" key={label}>
-                        <span className="text-foreground-secondary">{label}</span>
-                        <span className="font-medium">{used} / {limit || 'unlimited'}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
+                    <div className="col-span-2 border-t border-border my-2" />
 
-                <div className="grid gap-4 md:grid-cols-2">
-                  <div className="bg-background-secondary rounded-lg p-4 space-y-2 text-sm">
-                    <div className="flex justify-between">
-                      <span className="text-foreground-secondary">Overage bundle</span>
-                      <span className="font-medium">€{workspace.overageRates.bundleLoads ?? 0}/bundle</span>
-                    </div>
-                        <div className="flex justify-between">
-                          <span className="text-foreground-secondary">Overage sessions</span>
-                          <span className="font-medium">€{workspace.overageRates.messages ?? 0}/session</span>
-                        </div>
-                    <p className="text-xs text-foreground-tertiary">
-                      Wallet credits are used first when you exceed limits.
-                    </p>
+                    <span className="text-foreground-secondary">Conversations</span>
+                    <span className="font-medium">{workspace.sessions?.used ?? 0} / {workspace.sessions?.limit || 'unlimited'}</span>
+
+                    <span className="text-foreground-secondary">Unique users</span>
+                    <span className="font-medium">{workspace.bundleLoads.used} / {workspace.bundleLoads.limit || 'unlimited'}</span>
+
+                    <div className="col-span-2 border-t border-border my-2" />
+
+                    <span className="text-foreground-secondary">Overage conversations</span>
+                    <span className="font-medium">€{workspace.overageRates.messages ?? 0}/conversation</span>
+
+                    <span className="text-foreground-secondary">Overage users</span>
+                    <span className="font-medium">€{workspace.overageRates.bundleLoads ?? 0}/user</span>
+
+                    <span className="text-foreground-secondary">Wallet balance</span>
+                    <span className="font-medium">€{(workspace.walletCredits ?? 0).toFixed(2)}</span>
                   </div>
-                  <div className="bg-background-secondary rounded-lg p-4 space-y-3">
-                    <div className="flex justify-between items-center">
-                      <div>
-                        <p className="text-2xl font-bold">€{(workspace.walletCredits ?? 0).toFixed(2)}</p>
-                        <p className="text-sm text-foreground-secondary">Wallet balance</p>
-                      </div>
-                      <Button>
-                        Top Up
-                      </Button>
-                    </div>
+
+                  <div className="mt-4 pt-4 border-t border-border">
+                    <Link
+                      href={`/app/${client.slug}/billing`}
+                      className="inline-flex items-center gap-2 text-sm font-medium text-info-600 dark:text-info-400 hover:text-info-700 dark:hover:text-info-300"
+                    >
+                      Manage billing
+                      <ArrowRight size={16} />
+                    </Link>
                   </div>
                 </div>
-              </div>
               </TabPanel>
 
               <TabPanel tabId="settings" className="mt-0">

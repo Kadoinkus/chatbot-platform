@@ -2,7 +2,7 @@
 import { useState, useEffect, use } from "react";
 import { getClientById } from '@/lib/dataService';
 import { useCart } from '@/contexts/CartContext';
-import { Star, Zap, MessageCircle, Heart, ShoppingCart, CheckCircle, Plus, Search } from 'lucide-react';
+import { Star, Zap, MessageCircle, Heart, ShoppingCart, CheckCircle, Plus, Search, Store } from 'lucide-react';
 import type { Client } from '@/lib/dataService';
 import {
   Page,

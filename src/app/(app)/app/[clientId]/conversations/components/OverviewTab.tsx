@@ -50,11 +50,17 @@ export function OverviewTab({
       >
         {paginatedSessions.map((session) => {
           const assistant = getAssistantInfo(session.mascot_slug);
-          const assistantColor = getBrandColorForAssistant?.(assistant?.id) || brandColor;
+          const assistantColor = getBrandColorForAssistant
+            ? getBrandColorForAssistant(assistant?.id)
+            : brandColor;
           return (
             <TableRow key={session.id}>
               <SessionCell session={session} />
-              <AssistantCell assistant={assistant} brandColor={assistantColor} getBrandColorForAssistant={getBrandColorForAssistant} />
+              <AssistantCell
+                assistant={assistant}
+                brandColor={assistantColor}
+                getBrandColorForAssistant={getBrandColorForAssistant}
+              />
               <TableCell>
                 <p className="text-sm text-foreground">{session.total_messages}</p>
               </TableCell>
@@ -95,6 +101,9 @@ export function OverviewTab({
       >
         {paginatedSessions.map((session) => {
           const assistant = getAssistantInfo(session.mascot_slug);
+          const assistantColor = getBrandColorForAssistant
+            ? getBrandColorForAssistant(assistant?.id)
+            : brandColor;
           return (
             <MobileCard key={session.id}>
               <MobileCardHeader

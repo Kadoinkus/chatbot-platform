@@ -87,6 +87,36 @@ export default function MascotStudioPage({ params }: { params: Promise<{ clientI
     );
   }
 
+  // For real clients (non-superadmin), show a coming soon placeholder
+  if (!session?.isSuperadmin) {
+    return (
+      <Page>
+        <PageContent>
+          <PageHeader
+            title="Customization coming soon"
+            description="We’re polishing customization for the first beta. Please check back soon."
+            backLink={
+              <Link
+                href={`/app/${client.slug}`}
+                className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
+              >
+                <ArrowLeft size={16} />
+                Back to AI Assistants
+              </Link>
+            }
+          />
+          <Card className="py-12">
+            <EmptyState
+              icon={<BotIcon size={48} />}
+              title="Not available yet"
+              message="This section is visible only to our team for now."
+            />
+          </Card>
+        </PageContent>
+      </Page>
+    );
+  }
+
   // Template and Studio Pack Configuration
   const mascotTemplates = {
     neo: {

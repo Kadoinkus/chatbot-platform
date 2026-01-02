@@ -5,6 +5,7 @@ import StatusBadge from '@/components/StatusBadge';
 import { ArrowLeft, Brain, Sliders, BookOpen, MessageSquare, Zap, Shield, Sparkles, GitBranch, Plus, Play, Users, ShoppingCart, GraduationCap, Briefcase, User, ChevronRight, Settings, Copy, Trash2, Edit2, Link2, ExternalLink, CheckCircle, AlertCircle, Bot as BotIcon } from 'lucide-react';
 import Link from 'next/link';
 import { getMascotColor } from '@/lib/brandColors';
+import { useAuth } from '@/hooks/useAuth';
 import type { Client, Assistant } from '@/lib/dataService';
 import { Page, PageContent, PageHeader, Card, Button, Input, Select, Textarea, Modal, Spinner, EmptyState } from '@/components/ui';
 
@@ -30,6 +31,7 @@ export default function BrainStudioPage({ params }: { params: Promise<{ clientId
   const [savePresetName, setSavePresetName] = useState('');
   const [savePresetDescription, setSavePresetDescription] = useState('');
   const [hasCustomChanges, setHasCustomChanges] = useState(false);
+  const { session } = useAuth();
 
   const ageGroups = {
     young: { label: 'Young Adult (18-25)', description: 'Energetic, uses modern language, familiar with latest trends' },
@@ -151,6 +153,36 @@ export default function BrainStudioPage({ params }: { params: Promise<{ clientId
             title="AI Assistant not found"
             message="The requested AI assistant could not be found."
           />
+        </PageContent>
+      </Page>
+    );
+  }
+
+  // For real clients (non-superadmin), show a coming soon placeholder
+  if (!session?.isSuperadmin) {
+    return (
+      <Page>
+        <PageContent>
+          <PageHeader
+            title="Persona coming soon"
+            description="We’re polishing persona controls for the first beta. Please check back soon."
+            backLink={
+              <Link
+                href={`/app/${client.slug}`}
+                className="inline-flex items-center gap-2 text-foreground-secondary hover:text-foreground"
+              >
+                <ArrowLeft size={16} />
+                Back to AI Assistants
+              </Link>
+            }
+          />
+          <Card className="py-12">
+            <EmptyState
+              icon={<BotIcon size={48} />}
+              title="Not available yet"
+              message="This section is visible only to our team for now."
+            />
+          </Card>
         </PageContent>
       </Page>
     );

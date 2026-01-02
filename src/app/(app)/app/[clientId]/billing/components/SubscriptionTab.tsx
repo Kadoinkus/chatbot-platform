@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
-import { Receipt, Bot, Plus, ChevronUp, ChevronDown, Sparkles } from 'lucide-react';
+import { Receipt, Bot, Plus, ChevronUp, ChevronDown, Sparkles, ArrowUpRight } from 'lucide-react';
 import { Card, Badge, Skeleton, EmptyState, Button } from '@/components/ui';
 import type { Workspace, Assistant } from '@/types';
 import type { CreditPackage } from '@/types/billing';
@@ -78,17 +78,28 @@ export function SubscriptionTab({
           <Card key={workspace.id} padding="none" className="overflow-hidden shadow-md rounded-xl">
             {/* Header */}
             <div className="p-4 border-b border-border">
-              <span className="text-xs font-medium text-foreground-tertiary uppercase tracking-wider">Workspace</span>
-              <div className="flex items-center gap-2 mt-0.5">
-                <h3 className="text-2xl font-bold text-foreground">
-                  {workspace.name}
-                </h3>
-                <Badge plan={getPlanBadgeType(workspace.plan)}>
-                  {planConfig.name}
-                </Badge>
-                {workspace.status !== 'active' && (
-                  <Badge variant="error">{workspace.status}</Badge>
-                )}
+              <div className="flex items-start justify-between">
+                <div>
+                  <span className="text-xs font-medium text-foreground-tertiary uppercase tracking-wider">Workspace</span>
+                  <div className="flex items-center gap-2 mt-0.5">
+                    <h3 className="text-2xl font-bold text-foreground">
+                      {workspace.name}
+                    </h3>
+                    <Badge plan={getPlanBadgeType(workspace.plan)}>
+                      {planConfig.name}
+                    </Badge>
+                    {workspace.status !== 'active' && (
+                      <Badge variant="error">{workspace.status}</Badge>
+                    )}
+                  </div>
+                </div>
+                <Link
+                  href={`/app/${clientId}/billing?tab=plans`}
+                  className="hidden sm:flex items-center gap-1 text-xs text-foreground-tertiary hover:text-foreground-secondary transition-colors mt-1"
+                >
+                  Change plan
+                  <ArrowUpRight size={12} />
+                </Link>
               </div>
             </div>
 
@@ -100,15 +111,7 @@ export function SubscriptionTab({
                 <div className="space-y-2 text-sm">
                   {/* Plan */}
                   <div className="flex justify-between">
-                    <span className="text-foreground-secondary">
-                      {planConfig.name} Plan
-                      <Link
-                        href={`/app/${clientId}/billing?tab=plans`}
-                        className="ml-2 text-info-600 dark:text-info-400 hover:underline"
-                      >
-                        Upgrade
-                      </Link>
-                    </span>
+                    <span className="text-foreground-secondary">{planConfig.name} Plan</span>
                     <span className="text-foreground">{planCost === 0 ? 'Free' : formatMoney(planCost, 'EUR')}</span>
                   </div>
 
@@ -158,57 +161,61 @@ export function SubscriptionTab({
               </div>
 
               {/* Right Column - Usage & Credits */}
-              <div className="p-4">
-                <h4 className="text-xs font-medium text-foreground-tertiary uppercase tracking-wider mb-3">Usage This Period</h4>
+              <div className="p-4 flex flex-col">
+                <div>
+                  <h4 className="text-xs font-medium text-foreground-tertiary uppercase tracking-wider mb-3">Usage This Period</h4>
 
-                {/* Usage */}
-                {(() => {
-                  const convUsed = workspace.sessions?.used ?? 0;
-                  const convLimit = workspace.sessions?.limit ?? 0;
-                  const convPct = convLimit > 0 ? (convUsed / convLimit) * 100 : 0;
-                  const usersUsed = workspace.bundleLoads?.used ?? 0;
-                  const usersLimit = workspace.bundleLoads?.limit ?? 0;
-                  const usersPct = usersLimit > 0 ? (usersUsed / usersLimit) * 100 : 0;
+                  {/* Usage */}
+                  {(() => {
+                    const convUsed = workspace.sessions?.used ?? 0;
+                    const convLimit = workspace.sessions?.limit ?? 0;
+                    const convPct = convLimit > 0 ? (convUsed / convLimit) * 100 : 0;
+                    const usersUsed = workspace.bundleLoads?.used ?? 0;
+                    const usersLimit = workspace.bundleLoads?.limit ?? 0;
+                    const usersPct = usersLimit > 0 ? (usersUsed / usersLimit) * 100 : 0;
 
-                  return (
-                    <div className="space-y-2 text-sm">
-                      <div className="flex justify-between">
-                        <span className={convPct > 80 ? 'text-warning-700 dark:text-warning-400' : 'text-foreground-secondary'}>
-                          Conversations
-                        </span>
-                        <span className={convPct > 80 ? 'text-warning-700 dark:text-warning-400 font-medium' : 'text-foreground'}>
-                          {convUsed.toLocaleString()} / {convLimit > 0 ? convLimit.toLocaleString() : '∞'}
-                        </span>
+                    return (
+                      <div className="space-y-2 text-sm">
+                        <div className="flex justify-between">
+                          <span className={convPct > 80 ? 'text-warning-700 dark:text-warning-400' : 'text-foreground-secondary'}>
+                            Conversations
+                          </span>
+                          <span className={convPct > 80 ? 'text-warning-700 dark:text-warning-400 font-medium' : 'text-foreground'}>
+                            {convUsed.toLocaleString()} / {convLimit > 0 ? convLimit.toLocaleString() : '∞'}
+                          </span>
+                        </div>
+                        <div className="flex justify-between">
+                          <span className={usersPct > 80 ? 'text-warning-700 dark:text-warning-400' : 'text-foreground-secondary'}>
+                            Unique users
+                          </span>
+                          <span className={usersPct > 80 ? 'text-warning-700 dark:text-warning-400 font-medium' : 'text-foreground'}>
+                            {usersUsed.toLocaleString()} / {usersLimit > 0 ? usersLimit.toLocaleString() : '∞'}
+                          </span>
+                        </div>
                       </div>
-                      <div className="flex justify-between">
-                        <span className={usersPct > 80 ? 'text-warning-700 dark:text-warning-400' : 'text-foreground-secondary'}>
-                          Unique users
-                        </span>
-                        <span className={usersPct > 80 ? 'text-warning-700 dark:text-warning-400 font-medium' : 'text-foreground'}>
-                          {usersUsed.toLocaleString()} / {usersLimit > 0 ? usersLimit.toLocaleString() : '∞'}
-                        </span>
-                      </div>
-                    </div>
-                  );
-                })()}
+                    );
+                  })()}
+                </div>
 
-                {/* Credits */}
-                <div className="mt-4 pt-3 border-t border-border">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <span className="text-sm text-foreground-secondary">Wallet Credits</span>
-                      <p className="text-base font-semibold text-foreground">
-                        {formatMoney(workspace.walletCredits || 0, 'EUR')}
-                      </p>
+                {/* Credits - Aligned to bottom */}
+                <div className="mt-auto pt-4">
+                  <div className="p-3 rounded-lg bg-background-secondary">
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <span className="text-xs font-medium text-foreground-tertiary uppercase tracking-wider">Wallet Credits</span>
+                        <p className="text-lg font-semibold text-foreground">
+                          {formatMoney(workspace.walletCredits || 0, 'EUR')}
+                        </p>
+                      </div>
+                      <Button
+                        size="sm"
+                        variant={isCreditsExpanded ? 'primary' : 'secondary'}
+                        icon={isCreditsExpanded ? <ChevronUp size={14} /> : <Plus size={14} />}
+                        onClick={() => toggleCredits(workspace.slug)}
+                      >
+                        {isCreditsExpanded ? 'Close' : 'Top up'}
+                      </Button>
                     </div>
-                    <Button
-                      size="sm"
-                      variant={isCreditsExpanded ? 'primary' : 'secondary'}
-                      icon={isCreditsExpanded ? <ChevronUp size={14} /> : <Plus size={14} />}
-                      onClick={() => toggleCredits(workspace.slug)}
-                    >
-                      {isCreditsExpanded ? 'Close' : 'Add'}
-                    </Button>
                   </div>
                 </div>
               </div>

@@ -28,6 +28,7 @@ interface AssistantComparisonTableProps {
   title?: string;
   description?: string;
   mobileCard?: (assistant: AssistantWithMetrics, columns: ColumnDefinition[]) => ReactNode;
+  getBrandColorForAssistant?: (assistantId: string, clientId?: string, colors?: any) => string;
 }
 
 /**
@@ -52,6 +53,7 @@ export function AssistantComparisonTable({
   title,
   description,
   mobileCard,
+  getBrandColorForAssistant,
 }: AssistantComparisonTableProps) {
   const [page, setPage] = useState(0);
   const [sortKey, setSortKey] = useState<string | null>(null);
@@ -144,7 +146,12 @@ export function AssistantComparisonTable({
       <div className="flex items-center gap-3 mb-3">
         <div
           className="w-10 h-10 rounded-full flex items-center justify-center overflow-hidden"
-          style={{ backgroundColor: brandColor || getMascotColor(assistant.assistantId, assistant.clientId, 'primary', assistant.colors) }}
+          style={{
+            backgroundColor:
+              getMascotColor(assistant.assistantId, assistant.clientId, 'primary', assistant.colors) ||
+              getBrandColorForAssistant?.(assistant.assistantId, assistant.clientId, assistant.colors) ||
+              brandColor,
+          }}
         >
           <img src={assistant.assistantImage} alt={assistant.assistantName} className="w-full h-full object-cover" />
         </div>
@@ -261,7 +268,12 @@ export function AssistantComparisonTable({
                     <div className="flex items-center gap-3">
                       <div
                         className="w-8 h-8 rounded-full flex items-center justify-center overflow-hidden"
-                        style={{ backgroundColor: brandColor || getMascotColor(assistant.assistantId, assistant.clientId, 'primary', assistant.colors) }}
+                        style={{
+                          backgroundColor:
+                            getMascotColor(assistant.assistantId, assistant.clientId, 'primary', assistant.colors) ||
+                            getBrandColorForAssistant?.(assistant.assistantId, assistant.clientId, assistant.colors) ||
+                            brandColor,
+                        }}
                       >
                         <img
                           src={assistant.assistantImage}

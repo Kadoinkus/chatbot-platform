@@ -735,7 +735,7 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
             <div className="max-h-[60vh] overflow-y-auto space-y-3">
               {selectedSession.full_transcript?.map((msg, i) => {
                 const transcriptBrandColor = getAssistantBrandColor(
-                  selectedSession.mascot_slug || selectedSession.assistant?.id
+                  selectedSession.mascot_slug
                 );
                 const userTextColor = getContrastTextColor(transcriptBrandColor);
 
@@ -796,11 +796,11 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
                           className="flex-shrink-0 w-6 h-6 rounded-full flex items-center justify-center text-xs font-medium"
                           style={{
                           backgroundColor: questionsType === 'asked'
-                            ? getAssistantBrandColor(questionsSession?.mascot_slug || questionsSession?.assistant?.id)
+                            ? getAssistantBrandColor(questionsSession?.mascot_slug)
                             : '#F59E0B',
                           color: questionsType === 'asked'
                             ? getContrastTextColor(
-                                getAssistantBrandColor(questionsSession?.mascot_slug || questionsSession?.assistant?.id)
+                                getAssistantBrandColor(questionsSession?.mascot_slug)
                               )
                             : '#000',
                           }}

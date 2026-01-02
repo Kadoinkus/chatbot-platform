@@ -65,6 +65,8 @@ import {
   normalizeAssistantSessions,
 } from '@/components/analytics';
 import { DateRangeBar, type PresetValue } from '@/components/analytics/shared';
+import { useAuth } from '@/hooks/useAuth';
+import { canAccessFeature } from '@/config/featureAccess';
 
 // Tab components
 const OverviewTab = dynamic(() => import('./components/OverviewTab'), { loading: () => <TabFallback /> });
@@ -112,6 +114,20 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
   const [useCustomRange, setUseCustomRange] = useState(false);
   const [conversationPage, setConversationPage] = useState(1);
   const CONVERSATIONS_PER_PAGE = 10;
+  const { session } = useAuth();
+  const canSeeTrueCosts = canAccessFeature('analytics.trueCosts', {
+    role: session?.role,
+    isSuperadmin: session?.isSuperadmin,
+  });
+  const availableTabs = useMemo(
+    () => (canSeeTrueCosts ? ANALYTICS_TABS : ANALYTICS_TABS.filter((tab) => tab.id !== 'costs')),
+    [canSeeTrueCosts],
+  );
+  useEffect(() => {
+    if (!canSeeTrueCosts && activeTab === 'costs') {
+      setActiveTab('overview');
+    }
+  }, [canSeeTrueCosts, activeTab]);
 
   // Analytics data state
   const [overview, setOverview] = useState<OverviewMetrics | null>(null);
@@ -917,7 +933,7 @@ export default function AssistantAnalyticsPage({ params }: { params: Promise<{ c
 
         {/* Tab Navigation - Using shared component */}
         <TabNavigation
-          tabs={ANALYTICS_TABS}
+          tabs={availableTabs}
           activeTab={activeTab}
           onTabChange={setActiveTab}
           brandColor={brandColor}

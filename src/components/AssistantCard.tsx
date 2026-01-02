@@ -7,6 +7,8 @@ import { BarChart3, Palette, Brain, Headphones, Play, Pause, User, MessageCircle
 import type { Assistant, Workspace, PlanType, BrandColors } from '@/types';
 import { getMascotColor } from '@/lib/brandColors';
 import { getNextUsageReset } from '@/lib/billingService';
+import { useAuth } from '@/hooks/useAuth';
+import { canAccessFeature } from '@/config/featureAccess';
 
 interface AssistantCardProps {
   assistant: Assistant;
@@ -27,12 +29,16 @@ export default function AssistantCard({
   brandColor: brandColorProp,
   clientBrandColors,
 }: AssistantCardProps) {
+  const { session } = useAuth();
   // Use mascot color override if available, fallback to client brand color
   const brandColor =
     brandColorProp || getMascotColor(assistant.id, assistant.clientId, 'primary', assistant.colors, clientBrandColors);
   const imageSrc = assistant.image?.trim();
   const [showDropdown, setShowDropdown] = useState(false);
   const dropdownRef = useRef<HTMLDivElement>(null);
+  const featureContext = { role: session?.role, isSuperadmin: session?.isSuperadmin };
+  const canSeeSupport = canAccessFeature('assistant.support', featureContext);
+  const canSeeOperations = canAccessFeature('assistant.operations', featureContext);
 
   const handleToggleStatus = (e: React.MouseEvent) => {
     e.preventDefault();
@@ -198,21 +204,25 @@ export default function AssistantCard({
             {/* Dropdown Menu */}
             {showDropdown && (
               <div className="absolute right-0 top-8 w-48 bg-surface-elevated border border-border rounded-lg shadow-lg z-10">
-                <Link
-                  href={`/app/${clientId}/assistant/${assistant.id}/support`}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-secondary hover:bg-background-hover"
-                >
-                  <Headphones size={14} />
-                  Support & Tickets
-                </Link>
-                <Link
-                  href={`/app/${clientId}/assistant/${assistant.id}/settings`}
-                  className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-secondary hover:bg-background-hover"
-                >
-                  <Settings size={14} />
-                  Operations
-                </Link>
-                <div className="border-t border-border my-1" />
+                {canSeeSupport && (
+                  <Link
+                    href={`/app/${clientId}/assistant/${assistant.id}/support`}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-secondary hover:bg-background-hover"
+                  >
+                    <Headphones size={14} />
+                    Support & Tickets
+                  </Link>
+                )}
+                {canSeeOperations && (
+                  <Link
+                    href={`/app/${clientId}/assistant/${assistant.id}/settings`}
+                    className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-secondary hover:bg-background-hover"
+                  >
+                    <Settings size={14} />
+                    Operations
+                  </Link>
+                )}
+                {(canSeeSupport || canSeeOperations) && <div className="border-t border-border my-1" />}
                 <button className="flex items-center gap-2 px-4 py-2 text-sm text-foreground-secondary hover:bg-background-hover w-full text-left">
                   <Copy size={14} />
                   Duplicate

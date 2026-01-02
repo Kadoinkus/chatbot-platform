@@ -42,6 +42,8 @@ import {
 import { DateRangeBar, type PresetValue } from '@/components/analytics/shared';
 import { getCurrentUsagePeriod } from '@/lib/billingService';
 import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
+import { useAuth } from '@/hooks/useAuth';
+import { canAccessFeature } from '@/config/featureAccess';
 
 // Tab Components
 import {
@@ -61,6 +63,20 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
 
   // Tab state
   const [activeTab, setActiveTab] = useState('overview');
+  const { session } = useAuth();
+  const canSeeTrueCosts = canAccessFeature('analytics.trueCosts', {
+    role: session?.role,
+    isSuperadmin: session?.isSuperadmin,
+  });
+  const availableTabs = useMemo(
+    () => (canSeeTrueCosts ? ANALYTICS_TABS : ANALYTICS_TABS.filter((tab) => tab.id !== 'costs')),
+    [canSeeTrueCosts],
+  );
+  useEffect(() => {
+    if (!canSeeTrueCosts && activeTab === 'costs') {
+      setActiveTab('overview');
+    }
+  }, [canSeeTrueCosts, activeTab]);
 
   // Filter state
   const [searchTerm, setSearchTerm] = useState('');
@@ -686,7 +702,7 @@ export default function ConversationHistoryPage({ params }: { params: Promise<{ 
 
         {/* Tab Navigation - Using shared component */}
         <TabNavigation
-          tabs={ANALYTICS_TABS}
+          tabs={availableTabs}
           activeTab={activeTab}
           onTabChange={setActiveTab}
           brandColor={brandColor}

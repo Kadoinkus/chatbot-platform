@@ -19,6 +19,8 @@ import {
   Spinner,
   EmptyState,
 } from '@/components/ui';
+import { useAuth } from '@/hooks/useAuth';
+import { canAccessFeature } from '@/config/featureAccess';
 
 type CheckoutStep = 'cart' | 'billing' | 'payment' | 'confirmation';
 type BillingMethod = 'subscription' | 'credits' | 'one-time';
@@ -43,8 +45,14 @@ export default function CheckoutPage({ params }: { params: Promise<{ clientId: s
     removeItem,
     clearCart
   } = useCart();
+  const { session, isLoading } = useAuth();
+  const canUseCart = canAccessFeature('cart', { role: session?.role, isSuperadmin: session?.isSuperadmin });
 
   useEffect(() => {
+    if (!canUseCart) {
+      setLoading(false);
+      return;
+    }
     async function loadData() {
       try {
         const clientData = await getClientById(clientId);
@@ -56,7 +64,21 @@ export default function CheckoutPage({ params }: { params: Promise<{ clientId: s
       }
     }
     loadData();
-  }, [clientId]);
+  }, [clientId, canUseCart]);
+
+  if (!isLoading && !canUseCart) {
+    return (
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<ShoppingCart size={48} />}
+            title="Checkout coming soon"
+            message="Purchases are only available to superadmins while we finish this flow."
+          />
+        </PageContent>
+      </Page>
+    );
+  }
 
   if (loading) {
     return (

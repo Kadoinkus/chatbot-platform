@@ -31,6 +31,8 @@ import {
 import { DateRangeBar, type PresetValue } from '@/components/analytics/shared';
 import { exportToCSV, exportToJSON, exportToXLSX, generateExportFilename, type ExportFormat } from '@/lib/export';
 import { getCurrentUsagePeriod } from '@/lib/billingService';
+import { useAuth } from '@/hooks/useAuth';
+import { canAccessFeature } from '@/config/featureAccess';
 
 // Lazy-loaded tab components
 const OverviewTab = dynamic(() => import('./components/OverviewTab'), { loading: () => <TabFallback /> });
@@ -71,6 +73,20 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
   const [activeTab, setActiveTab] = useState('overview');
   const [showExportDropdown, setShowExportDropdown] = useState(false);
   const exportDropdownRef = useRef<HTMLDivElement>(null);
+  const { session } = useAuth();
+  const canSeeTrueCosts = canAccessFeature('analytics.trueCosts', {
+    role: session?.role,
+    isSuperadmin: session?.isSuperadmin,
+  });
+  const availableTabs = useMemo(
+    () => (canSeeTrueCosts ? ANALYTICS_TABS : ANALYTICS_TABS.filter((tab) => tab.id !== 'costs')),
+    [canSeeTrueCosts],
+  );
+  useEffect(() => {
+    if (!canSeeTrueCosts && activeTab === 'costs') {
+      setActiveTab('overview');
+    }
+  }, [canSeeTrueCosts, activeTab]);
 
   // Modal state
   const [questionsModal, setQuestionsModal] = useState<{
@@ -646,7 +662,7 @@ export default function AnalyticsDashboardPage({ params }: { params: Promise<{ c
 
         {/* Tab Navigation - Using shared component */}
         <TabNavigation
-          tabs={ANALYTICS_TABS}
+          tabs={availableTabs}
           activeTab={activeTab}
           onTabChange={setActiveTab}
           brandColor={brandColor}

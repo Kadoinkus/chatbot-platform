@@ -8,6 +8,8 @@ import {
 import Link from 'next/link';
 import Sidebar from '@/components/Sidebar';
 import { Page, PageContent, Card, Input, EmptyState } from '@/components/ui';
+import { useAuth } from '@/hooks/useAuth';
+import { canAccessFeature } from '@/config/featureAccess';
 
 type HelpCategory = 'getting-started' | 'bots' | 'marketplace' | 'billing' | 'integrations' | 'troubleshooting';
 
@@ -111,6 +113,8 @@ export default function HelpPage() {
   const [selectedCategory, setSelectedCategory] = useState<HelpCategory>('getting-started');
   const [searchQuery, setSearchQuery] = useState('');
   const [expandedFaq, setExpandedFaq] = useState<number | null>(null);
+  const { session, isLoading } = useAuth();
+  const canViewHelp = canAccessFeature('help', { role: session?.role, isSuperadmin: session?.isSuperadmin });
 
   const currentFaqs = faqData[selectedCategory] || [];
   
@@ -120,6 +124,20 @@ export default function HelpPage() {
         faq.answer.toLowerCase().includes(searchQuery.toLowerCase())
       )
     : currentFaqs;
+  
+  if (!isLoading && !canViewHelp) {
+    return (
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<HelpCircle size={48} />}
+            title="Coming soon"
+            message="This help center is only visible to superadmins while it is under construction."
+          />
+        </PageContent>
+      </Page>
+    );
+  }
 
   return (
     <div className="flex min-h-screen bg-background">

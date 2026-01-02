@@ -14,6 +14,8 @@ import {
   Spinner,
   EmptyState,
 } from '@/components/ui';
+import { useAuth } from '@/hooks/useAuth';
+import { canAccessFeature } from '@/config/featureAccess';
 
 type BotTemplate = {
   id: string;
@@ -202,8 +204,15 @@ export default function MarketplacePage({ params }: { params: Promise<{ clientId
   const [addedItems, setAddedItems] = useState<Set<string>>(new Set());
 
   const { addItem } = useCart();
+  const { session, isLoading } = useAuth();
+  const canViewMarketplace = canAccessFeature('marketplace', { role: session?.role, isSuperadmin: session?.isSuperadmin });
+  const canUseCart = canAccessFeature('cart', { role: session?.role, isSuperadmin: session?.isSuperadmin });
 
   useEffect(() => {
+    if (!canViewMarketplace) {
+      setLoading(false);
+      return;
+    }
     async function loadData() {
       try {
         const clientData = await getClientById(clientId);
@@ -215,7 +224,7 @@ export default function MarketplacePage({ params }: { params: Promise<{ clientId
       }
     }
     loadData();
-  }, [clientId]);
+  }, [clientId, canViewMarketplace]);
 
   const filteredTemplates = botTemplates.filter(template => {
     const matchesAppearance = selectedAppearance === 'All Types' || template.appearance === selectedAppearance;
@@ -227,6 +236,20 @@ export default function MarketplacePage({ params }: { params: Promise<{ clientId
                          template.description.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesAppearance && matchesStudio && matchesPricing && matchesSearch;
   });
+
+  if (!isLoading && !canViewMarketplace) {
+    return (
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<Store size={48} />}
+            title="Marketplace coming soon"
+            message="This section is only visible to superadmins while we finish it."
+          />
+        </PageContent>
+      </Page>
+    );
+  }
 
   if (loading) {
     return (
@@ -450,6 +473,7 @@ export default function MarketplacePage({ params }: { params: Promise<{ clientId
                           size="sm"
                           icon={template.price === 'Free' ? <Plus size={14} /> : <ShoppingCart size={14} />}
                           onClick={() => {
+                            if (!canUseCart) return;
                             addItem({
                               id: template.id,
                               type: 'template',

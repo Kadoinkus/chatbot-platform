@@ -8,6 +8,8 @@ import type { Client, Assistant } from '@/lib/dataService';
 import { getMascotColor } from '@/lib/brandColors';
 import { useCart } from '@/contexts/CartContext';
 import { Page, PageContent, PageHeader, Card, Button, Input, Select, Modal, Spinner, EmptyState } from '@/components/ui';
+import { useAuth } from '@/hooks/useAuth';
+import { canAccessFeature } from '@/config/featureAccess';
 
 export default function MascotStudioPage({ params }: { params: Promise<{ clientId: string; assistantId: string }> }) {
   const { clientId, assistantId } = use(params);
@@ -42,6 +44,8 @@ export default function MascotStudioPage({ params }: { params: Promise<{ clientI
   const [showPackSelector, setShowPackSelector] = useState(false);
   const [showUpgradePrompt, setShowUpgradePrompt] = useState('');
   const { addItem, toggleCart } = useCart();
+  const { session } = useAuth();
+  const canUseCart = canAccessFeature('cart', { role: session?.role, isSuperadmin: session?.isSuperadmin });
 
   useEffect(() => {
     async function loadData() {
@@ -223,6 +227,7 @@ export default function MascotStudioPage({ params }: { params: Promise<{ clientI
   const handlePurchaseStudioPack = (packKey: string) => {
     const pack = studioPacks[packKey as keyof typeof studioPacks];
     if (!pack || pack.price === 0) return;
+    if (!canUseCart) return;
 
     // Add to cart
     addItem({

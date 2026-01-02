@@ -38,6 +38,8 @@ import {
   Alert,
   EmptyState,
 } from '@/components/ui';
+import { useAuth } from '@/hooks/useAuth';
+import { canAccessFeature } from '@/config/featureAccess';
 
 export default function SettingsPage({ params }: { params: Promise<{ clientId: string }> }) {
   const { clientId } = use(params);
@@ -49,8 +51,14 @@ export default function SettingsPage({ params }: { params: Promise<{ clientId: s
   const [saving, setSaving] = useState(false);
   const [showAlert, setShowAlert] = useState(false);
   const [mobileDropdownOpen, setMobileDropdownOpen] = useState(false);
+  const { session, isLoading } = useAuth();
+  const canViewSettings = canAccessFeature('settings', { role: session?.role, isSuperadmin: session?.isSuperadmin });
 
   useEffect(() => {
+    if (!canViewSettings) {
+      setLoading(false);
+      return;
+    }
     async function loadClient() {
       try {
         setError(null);
@@ -64,7 +72,7 @@ export default function SettingsPage({ params }: { params: Promise<{ clientId: s
       }
     }
     loadClient();
-  }, [clientId]);
+  }, [clientId, canViewSettings]);
 
   // General settings
   const [generalSettings, setGeneralSettings] = useState({
@@ -216,6 +224,20 @@ export default function SettingsPage({ params }: { params: Promise<{ clientId: s
     }
     setHasChanges(true);
   };
+
+  if (!isLoading && !canViewSettings) {
+    return (
+      <Page>
+        <PageContent>
+          <EmptyState
+            icon={<Settings size={48} />}
+            title="Settings coming soon"
+            message="This area is limited to superadmins while we finish it."
+          />
+        </PageContent>
+      </Page>
+    );
+  }
 
   if (loading) {
     return (

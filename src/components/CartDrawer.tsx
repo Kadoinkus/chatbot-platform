@@ -1,8 +1,11 @@
 'use client';
+import { useEffect } from 'react';
 import { useCart } from '@/contexts/CartContext';
 import { X, ShoppingCart, Minus, Plus, Trash2, CreditCard } from 'lucide-react';
 import Link from 'next/link';
 import { useParams } from 'next/navigation';
+import { useAuth } from '@/hooks/useAuth';
+import { canAccessFeature } from '@/config/featureAccess';
 
 export default function CartDrawer() {
   const {
@@ -14,11 +17,19 @@ export default function CartDrawer() {
     updateQuantity,
     removeItem
   } = useCart();
+  const { session } = useAuth();
 
   const params = useParams();
   const clientId = params.clientId as string;
+  const canUseCart = canAccessFeature('cart', { role: session?.role, isSuperadmin: session?.isSuperadmin });
 
-  if (!isOpen) return null;
+  useEffect(() => {
+    if (!canUseCart && isOpen) {
+      setCartOpen(false);
+    }
+  }, [canUseCart, isOpen, setCartOpen]);
+
+  if (!isOpen || !canUseCart) return null;
 
   return (
     <div className="fixed inset-0 z-50 lg:inset-y-0 lg:right-0 lg:left-auto lg:w-96">

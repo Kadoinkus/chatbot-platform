@@ -1,11 +1,13 @@
 'use client';
 import { useState } from 'react';
 import { Layers, BarChart3, Bot, Settings, HelpCircle, LogOut, Users, MessageSquare, Menu, X, Store, ShoppingCart, User, Sun, Moon, CreditCard } from 'lucide-react';
+import type { LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import { useCart } from '@/contexts/CartContext';
 import { useTheme } from '@/contexts/ThemeContext';
 import { useAuth } from '@/hooks/useAuth';
+import { canAccessFeature, type FeatureKey } from '@/config/featureAccess';
 import ClientSwitcher from '@/components/ClientSwitcher';
 
 interface SidebarProps {
@@ -23,22 +25,27 @@ export default function Sidebar({ clientId }: SidebarProps) {
     signOut();
     window.location.href = '/login';
   };
-  
-  const navItems = [
+  type NavItem = { icon: LucideIcon; label: string; href: string; feature?: FeatureKey };
+  const featureContext = { role: session?.role, isSuperadmin: session?.isSuperadmin };
+
+  const navItems: NavItem[] = [
     { icon: Layers, label: 'Workspaces', href: clientId ? `/app/${clientId}/home` : '/app' },
     { icon: Bot, label: 'AI Assistants', href: clientId ? `/app/${clientId}` : '/app' },
-    { icon: Store, label: 'Marketplace', href: clientId ? `/app/${clientId}/marketplace` : '/app' },
+    { icon: Store, label: 'Marketplace', href: clientId ? `/app/${clientId}/marketplace` : '/app', feature: 'marketplace' },
     { icon: MessageSquare, label: 'Conversations', href: clientId ? `/app/${clientId}/conversations` : '/app' },
     { icon: Users, label: 'Users', href: clientId ? `/app/${clientId}/users` : '/app' },
     { icon: BarChart3, label: 'Analytics', href: clientId ? `/app/${clientId}/analytics` : '/app' },
     { icon: CreditCard, label: 'Billing', href: clientId ? `/app/${clientId}/billing` : '/app' },
-    { icon: Settings, label: 'Settings', href: clientId ? `/app/${clientId}/settings` : '/app' },
+    { icon: Settings, label: 'Settings', href: clientId ? `/app/${clientId}/settings` : '/app', feature: 'settings' },
   ];
 
-  const bottomItems = [
+  const bottomItems: NavItem[] = [
     { icon: User, label: 'Profile', href: '/profile' },
-    { icon: HelpCircle, label: 'Help', href: '/help' },
+    { icon: HelpCircle, label: 'Help', href: '/help', feature: 'help' },
   ];
+
+  const visibleNavItems = navItems.filter((item) => !item.feature || canAccessFeature(item.feature, featureContext));
+  const visibleBottomItems = bottomItems.filter((item) => !item.feature || canAccessFeature(item.feature, featureContext));
 
   return (
     <>
@@ -68,7 +75,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
       )}
 
       <nav className="flex-1 flex flex-col gap-2">
-        {navItems.map((item) => {
+        {visibleNavItems.map((item) => {
           const Icon = item.icon;
           // Special handling for AI Assistants: only active on exact match or /assistant/ subpages
           const isActive = item.label === 'AI Assistants'
@@ -95,7 +102,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
       
       <div className="flex flex-col gap-2 mt-auto">
         {/* Cart Icon */}
-        {clientId && (
+        {clientId && canAccessFeature('cart', featureContext) && (
           <button
             onClick={toggleCart}
             className="w-12 h-12 flex items-center justify-center rounded-lg text-sidebar-text hover:text-sidebar-text-hover hover:bg-sidebar-item-hover transition-colors relative"
@@ -110,7 +117,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
           </button>
         )}
 
-        {bottomItems.map((item) => {
+        {visibleBottomItems.map((item) => {
           const Icon = item.icon;
           return (
             <Link
@@ -163,7 +170,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
             )}
 
             <nav className="flex-1 space-y-2">
-              {navItems.map((item) => {
+              {visibleNavItems.map((item) => {
                 const Icon = item.icon;
                 // Special handling for AI Assistants: only active on exact match or /assistant/ subpages
                 const isActive = item.label === 'AI Assistants'
@@ -222,7 +229,7 @@ export default function Sidebar({ clientId }: SidebarProps) {
                 </div>
               </button>
 
-              {bottomItems.map((item) => {
+              {visibleBottomItems.map((item) => {
                 const Icon = item.icon;
                 return (
                   <Link

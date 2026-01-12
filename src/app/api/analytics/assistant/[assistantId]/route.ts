@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAnalyticsForClient } from '@/lib/db/analytics';
+import { enforceClientAccess } from '@/lib/api-auth';
+import { redactChatSessions, shouldRedactRole } from '@/lib/redaction';
 
 export async function GET(
   request: NextRequest,
@@ -14,6 +16,11 @@ export async function GET(
 
     if (!clientId) {
       return NextResponse.json({ code: 'MISSING_PARAM', message: 'clientId is required' }, { status: 400 });
+    }
+
+    const access = await enforceClientAccess(clientId);
+    if ('response' in access) {
+      return access.response;
     }
 
     const analytics = getAnalyticsForClient(clientId);
@@ -52,6 +59,9 @@ export async function GET(
       analytics.aggregations.getAnimationStatsByBotId(assistantId, dateRange),
     ]);
 
+    const shouldRedact = shouldRedactRole(access.session.role);
+    const redactedSessions = shouldRedact ? redactChatSessions(sessions) : sessions;
+
     return NextResponse.json({
       data: {
         overview,
@@ -63,7 +73,7 @@ export async function GET(
         questions,
         unansweredQuestions,
         timeSeries,
-        sessions,
+        sessions: redactedSessions,
         sentimentTimeSeries,
         hourlyBreakdown,
         animationStats,

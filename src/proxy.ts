@@ -19,6 +19,7 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import type { AuthSession } from '@/types';
+import { decodeSessionCookie } from '@/lib/session-cookie';
 
 const SESSION_COOKIE_NAME = 'notsoai-session';
 
@@ -41,7 +42,10 @@ function getSessionFromCookie(request: NextRequest): AuthSession | null {
       return null;
     }
 
-    const session = JSON.parse(sessionCookie.value) as AuthSession;
+    const session = decodeSessionCookie(sessionCookie.value) as AuthSession | null;
+    if (!session) {
+      return null;
+    }
 
     if (!session.userId) {
       return null;

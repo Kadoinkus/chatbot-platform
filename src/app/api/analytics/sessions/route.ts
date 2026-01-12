@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbForClient } from '@/lib/db';
+import { enforceClientAccess } from '@/lib/api-auth';
+import { redactAssistantSessions, shouldRedactRole } from '@/lib/redaction';
 import type { AssistantSession } from '@/types';
 // Mock removed in simplified architecture
 
@@ -23,6 +25,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const access = await enforceClientAccess(clientId);
+    if ('response' in access) {
+      return access.response;
+    }
+
     // Build date range if provided
     const dateRange = from && to
       ? { start: new Date(from), end: new Date(to) }
@@ -31,7 +38,7 @@ export async function GET(request: NextRequest) {
     const db = getDbForClient(clientId);
 
     // Get sessions (single data source)
-    const sessions: AssistantSession[] = botId
+    let sessions: AssistantSession[] = botId
       ? await db.sessions.getAssistantSessions(botId, dateRange)
       : await db.sessions.getAssistantSessionsByClientId(clientId, dateRange);
 
@@ -59,6 +66,11 @@ export async function GET(request: NextRequest) {
       acc[s.resolution_type] = (acc[s.resolution_type] || 0) + 1;
       return acc;
     }, {} as Record<string, number>);
+
+    const shouldRedact = shouldRedactRole(access.session.role);
+    if (shouldRedact) {
+      sessions = redactAssistantSessions(sessions);
+    }
 
     return NextResponse.json({
       data: {

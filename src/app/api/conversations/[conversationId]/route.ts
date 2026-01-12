@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbForClient } from '@/lib/db';
+import { enforceClientAccess } from '@/lib/api-auth';
+import { redactConversations, redactMessages, shouldRedactRole } from '@/lib/redaction';
 
 export async function GET(
   request: NextRequest,
@@ -17,6 +19,11 @@ export async function GET(
       );
     }
 
+    const access = await enforceClientAccess(clientId);
+    if ('response' in access) {
+      return access.response;
+    }
+
     const db = getDbForClient(clientId);
     const conversation = await db.conversations.getById(conversationId);
 
@@ -32,10 +39,14 @@ export async function GET(
 
     const messages = await db.messages.getByConversationId(conversationId);
 
+    const shouldRedact = shouldRedactRole(access.session.role);
+    const redactedConversation = shouldRedact ? redactConversations([conversation])[0] : conversation;
+    const redactedMessages = shouldRedact ? redactMessages(messages) : messages;
+
     return NextResponse.json({
       data: {
-        ...conversation,
-        messageList: messages,
+        ...redactedConversation,
+        messageList: redactedMessages,
       },
     });
   } catch (error) {

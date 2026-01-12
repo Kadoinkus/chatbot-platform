@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getDbForClient } from '@/lib/db';
+import { enforceClientAccess } from '@/lib/api-auth';
+import { redactConversations, shouldRedactRole } from '@/lib/redaction';
 export const dynamic = 'force-dynamic';
 
 export async function GET(request: NextRequest) {
@@ -21,6 +23,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const access = await enforceClientAccess(clientId);
+    if ('response' in access) {
+      return access.response;
+    }
+
     const db = getDbForClient(clientId);
 
     // Get conversations
@@ -36,7 +43,12 @@ export async function GET(request: NextRequest) {
     // Apply pagination
     const offsetNum = parseInt(offset || '0', 10);
     const limitNum = parseInt(limit || '50', 10);
-    const paginatedConversations = conversations.slice(offsetNum, offsetNum + limitNum);
+    let paginatedConversations = conversations.slice(offsetNum, offsetNum + limitNum);
+
+    const shouldRedact = shouldRedactRole(access.session.role);
+    if (shouldRedact) {
+      paginatedConversations = redactConversations(paginatedConversations);
+    }
 
     return NextResponse.json({ data: paginatedConversations });
   } catch (error) {

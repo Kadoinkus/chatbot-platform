@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { fetchAssistantComparisonData } from '@/lib/analytics/assistantComparison';
+import { enforceClientAccess } from '@/lib/api-auth';
+import { redactChatSessions, shouldRedactRole } from '@/lib/redaction';
 import type { Assistant } from '@/types';
 
 export async function POST(request: NextRequest) {
@@ -23,8 +25,21 @@ export async function POST(request: NextRequest) {
         ? { start: new Date(dateRange.start), end: new Date(dateRange.end) }
         : undefined;
 
+    const access = await enforceClientAccess(clientId);
+    if ('response' in access) {
+      return access.response;
+    }
+
     const data = await fetchAssistantComparisonData(clientId, assistants, range);
-    return NextResponse.json({ data });
+    const shouldRedact = shouldRedactRole(access.session.role);
+    const redactedData = shouldRedact
+      ? data.map((assistant) => ({
+          ...assistant,
+          sessions: redactChatSessions(assistant.sessions),
+        }))
+      : data;
+
+    return NextResponse.json({ data: redactedData });
   } catch (error) {
     console.error('Error in assistant comparison API:', error);
     return NextResponse.json(

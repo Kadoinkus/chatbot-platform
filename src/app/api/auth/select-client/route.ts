@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
 import { getSession } from '@/lib/auth.server';
+import { encodeSessionCookie } from '@/lib/session-cookie';
 import type { AuthSession } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -122,7 +123,7 @@ export async function POST(request: NextRequest) {
 
     // Set updated session cookie
     const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE_NAME, JSON.stringify(sessionToStore), {
+    cookieStore.set(SESSION_COOKIE_NAME, encodeSessionCookie(sessionToStore), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

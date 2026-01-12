@@ -14,6 +14,7 @@ import { NextRequest } from 'next/server';
 import { config } from './config';
 import { logger } from './api-utils';
 import type { AuthSession } from '@/types';
+import { decodeSessionCookie } from '@/lib/session-cookie';
 
 const SESSION_COOKIE_NAME = 'notsoai-session';
 
@@ -54,9 +55,10 @@ export async function getSession(): Promise<SessionResult> {
       return { isValid: false, reason: 'missing' };
     }
 
-    // TODO: Replace JSON.parse with JWT verification
-    // const { payload } = await jwtVerify(sessionCookie.value, secret);
-    const session = JSON.parse(sessionCookie.value) as AuthSession;
+    const session = decodeSessionCookie(sessionCookie.value);
+    if (!session) {
+      return { isValid: false, reason: 'invalid' };
+    }
 
     // Basic validation (allow superadmin without selected client)
     if (!session.userId) {
@@ -92,7 +94,10 @@ export function getSessionFromRequest(request: NextRequest): SessionResult {
       return { isValid: false, reason: 'missing' };
     }
 
-    const session = JSON.parse(sessionCookie.value) as AuthSession;
+    const session = decodeSessionCookie(sessionCookie.value);
+    if (!session) {
+      return { isValid: false, reason: 'invalid' };
+    }
 
     // Superadmins can have empty clientId/clientSlug before selecting a client
     if (!session.userId) {

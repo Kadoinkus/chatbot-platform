@@ -11,6 +11,7 @@ import { db } from '@/lib/db';
 import { supabaseClientProd } from '@/lib/db/supabase/client';
 import { LoginRequestSchema, formatZodErrors } from '@/lib/schemas';
 import type { AuthSession, Client } from '@/types';
+import { encodeSessionCookie } from '@/lib/session-cookie';
 
 export const dynamic = 'force-dynamic';
 
@@ -127,7 +128,7 @@ export async function POST(request: NextRequest) {
 
       // Set session cookie
       const cookieStore = await cookies();
-      cookieStore.set(SESSION_COOKIE_NAME, JSON.stringify(session), {
+      cookieStore.set(SESSION_COOKIE_NAME, encodeSessionCookie(session), {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -194,7 +195,7 @@ export async function POST(request: NextRequest) {
 
     // Set session cookie
     const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE_NAME, JSON.stringify(session), {
+    cookieStore.set(SESSION_COOKIE_NAME, encodeSessionCookie(session), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

@@ -9,6 +9,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { db } from '@/lib/db';
 import { supabaseClientProd } from '@/lib/db/supabase/client';
+import { encodeSessionCookie } from '@/lib/session-cookie';
 import type { AuthSession, Client } from '@/types';
 
 export const dynamic = 'force-dynamic';
@@ -100,7 +101,7 @@ export async function POST(request: NextRequest) {
       }
 
       const cookieStore = await cookies();
-      cookieStore.set(SESSION_COOKIE_NAME, JSON.stringify(session), {
+      cookieStore.set(SESSION_COOKIE_NAME, encodeSessionCookie(session), {
         httpOnly: true,
         secure: process.env.NODE_ENV === 'production',
         sameSite: 'lax',
@@ -163,7 +164,7 @@ export async function POST(request: NextRequest) {
     };
 
     const cookieStore = await cookies();
-    cookieStore.set(SESSION_COOKIE_NAME, JSON.stringify(session), {
+    cookieStore.set(SESSION_COOKIE_NAME, encodeSessionCookie(session), {
       httpOnly: true,
       secure: process.env.NODE_ENV === 'production',
       sameSite: 'lax',

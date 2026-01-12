@@ -1,5 +1,6 @@
 'use client';
 import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
 import { signIn } from '@/lib/auth';
 import { getSupabaseBrowserClient } from '@/lib/supabase-browser';
@@ -252,6 +253,13 @@ export default function LoginPage() {
               onChange={e => setPassword(e.target.value)}
               placeholder={isInviteFlow ? 'Choose a password for your account' : 'Enter password'}
             />
+            {!isInviteFlow && isLogin && (
+              <div className="flex justify-end">
+                <Link href="/reset-password" className="text-sm text-info-600 dark:text-info-500 hover:underline">
+                  Forgot password?
+                </Link>
+              </div>
+            )}
 
             <Button type="submit" className="w-full py-3" disabled={isLoading}>
               {isLoading ? (

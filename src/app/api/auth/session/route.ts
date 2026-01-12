@@ -6,7 +6,8 @@
 import { NextResponse } from 'next/server';
 import { cookies } from 'next/headers';
 import { db, getDbForClient } from '@/lib/db';
-import type { AuthSession, Client } from '@/types';
+import type { Client } from '@/types';
+import { decodeSessionCookie } from '@/lib/session-cookie';
 
 export const dynamic = 'force-dynamic';
 
@@ -28,11 +29,8 @@ export async function GET() {
       });
     }
 
-    let session: AuthSession;
-    try {
-      session = JSON.parse(sessionCookie.value);
-    } catch {
-      // Invalid session cookie
+    const session = decodeSessionCookie(sessionCookie.value);
+    if (!session) {
       return NextResponse.json({
         data: {
           session: null,

@@ -1,5 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAnalyticsForClient } from '@/lib/db/analytics';
+import { enforceClientAccess } from '@/lib/api-auth';
+import { redactChatSessions, shouldRedactRole } from '@/lib/redaction';
 
 export const dynamic = 'force-dynamic';
 
@@ -18,6 +20,11 @@ export async function GET(request: NextRequest) {
       );
     }
 
+    const access = await enforceClientAccess(clientId);
+    if ('response' in access) {
+      return access.response;
+    }
+
     const analytics = getAnalyticsForClient(clientId);
 
     // Build date range filter
@@ -32,7 +39,10 @@ export async function GET(request: NextRequest) {
       sessions = await analytics.chatSessions.getWithAnalysisByClientId(clientId, { dateRange });
     }
 
-    return NextResponse.json({ data: sessions });
+    const shouldRedact = shouldRedactRole(access.session.role);
+    const redactedSessions = shouldRedact ? redactChatSessions(sessions) : sessions;
+
+    return NextResponse.json({ data: redactedSessions });
   } catch (error) {
     console.error('Error fetching chat sessions:', error);
     return NextResponse.json(

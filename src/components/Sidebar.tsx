@@ -21,9 +21,8 @@ export default function Sidebar({ clientId }: SidebarProps) {
   const { theme, setTheme } = useTheme();
   const { session, signOut, isLoading } = useAuth();
 
-  const handleLogout = () => {
-    signOut();
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    await signOut();
   };
   type NavItem = { icon: LucideIcon; label: string; href: string; feature?: FeatureKey };
   const featureContext = { role: session?.role, isSuperadmin: session?.isSuperadmin };

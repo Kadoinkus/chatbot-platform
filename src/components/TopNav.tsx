@@ -15,10 +15,8 @@ export default function TopNav({ clientId }: { clientId?: string }) {
     { href: `/app/${clientId}?tab=status`, label: 'Status' }
   ];
 
-  const handleLogout = () => {
-    // Call signOut but don't wait - redirect immediately
-    signOut();
-    window.location.href = '/login';
+  const handleLogout = async () => {
+    await signOut();
   };
 
   return (

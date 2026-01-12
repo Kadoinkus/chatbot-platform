@@ -1,5 +1,5 @@
 'use client';
-import { ReactNode } from 'react';
+import { ReactNode, useEffect, useRef } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { Spinner } from '@/components/ui';
 
@@ -20,7 +20,8 @@ interface AuthGuardProps {
  * - Client-side navigation to wrong client (SPA navigation edge case)
  */
 export default function AuthGuard({ children, clientId }: AuthGuardProps) {
-  const { session, isLoading } = useAuth();
+  const { session, isLoading, redirectToLogin } = useAuth();
+  const hasRedirectedRef = useRef(false);
 
   // Gate on isLoading first - prevents hydration mismatch
   if (isLoading) {
@@ -33,6 +34,10 @@ export default function AuthGuard({ children, clientId }: AuthGuardProps) {
 
   // Middleware handles redirect, just show spinner until it happens
   if (!session) {
+    if (!isLoading && typeof window !== 'undefined' && !hasRedirectedRef.current) {
+      hasRedirectedRef.current = true;
+      redirectToLogin();
+    }
     return (
       <div className="flex-1 flex items-center justify-center">
         <Spinner size="lg" />

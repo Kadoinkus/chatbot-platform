@@ -182,6 +182,7 @@ export async function POST(request: NextRequest) {
       admin: 'admin',
       manager: 'admin',
       agent: 'member',
+      member: 'member',
       viewer: 'viewer',
     };
     const session: AuthSession = {

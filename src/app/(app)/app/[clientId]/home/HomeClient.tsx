@@ -7,6 +7,7 @@ import type { Assistant, Client, Workspace } from '@/types';
 import { registerClientColors, getMascotColor } from '@/lib/brandColors';
 import { Plus, Building2, ChevronRight, User, MessageCircle } from 'lucide-react';
 import { Page, PageContent, PageHeader, Button, Card, Badge, EmptyState, UsageLimitBar } from '@/components/ui';
+import { getNextUsageReset } from '@/lib/billingService';
 import { FilterBar } from '@/components/analytics';
 
 type WorkspaceWithAssistants = Workspace & { assistants: Assistant[] };
@@ -144,18 +145,19 @@ export default function HomeClient({ client, workspaces }: { client: Client | nu
 
                       {/* Reset info */}
                       {(() => {
-                        const resetInterval = workspace.usageResetInterval || workspace.billingCycle || 'monthly';
-                        const nextDate = workspace.nextUsageResetDate || workspace.nextBillingDate;
+                        const usageReset = getNextUsageReset(workspace);
+                        const resetInterval = usageReset.resetInterval || workspace.usageResetInterval || workspace.billingCycle || 'monthly';
 
                         // Calculate fallback date if not set
-                        let displayDate: string | null = null;
-                        if (nextDate) {
-                          displayDate = new Date(nextDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                        } else if (resetInterval === 'monthly') {
-                          const now = new Date();
-                          const nextMonth = new Date(now.getFullYear(), now.getMonth() + 1, 1);
-                          displayDate = nextMonth.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
-                        }
+                        const today = new Date();
+                        today.setHours(0, 0, 0, 0);
+                        const rawNextDate = workspace.nextUsageResetDate;
+                        const rawDate = rawNextDate ? new Date(rawNextDate) : null;
+                        const useRawDate = rawDate && !isNaN(rawDate.getTime()) && rawDate >= today;
+                        const displaySource = useRawDate ? rawNextDate : usageReset.nextResetDate;
+                        const displayDate = displaySource
+                          ? new Date(displaySource).toLocaleDateString('en-US', { month: 'short', day: 'numeric' })
+                          : null;
 
                         return (
                           <p className="text-xs text-foreground-tertiary pt-1">

@@ -27,6 +27,7 @@ import {
   mapAssistantSessionFromChatSession,
   mapBillingPlan,
 } from '../mappers';
+import { filterDevSessions, shouldExcludeDevSession } from '../sessionFilters';
 
 interface SupabaseDbOptions {
   adminClient: SupabaseClient | null;
@@ -312,7 +313,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
         .order('session_start', { ascending: false });
 
       if (error) throw error;
-      return (data || []).map(mapConversationFromChatSession);
+      return filterDevSessions(data || []).map(mapConversationFromChatSession);
     },
 
     async getById(id: string) {
@@ -324,7 +325,8 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const { data, error } = await supabase.from('chat_sessions').select('*').eq('id', id).single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data ? mapConversationFromChatSession(data) : null;
+      if (!data || shouldExcludeDevSession(data)) return null;
+      return mapConversationFromChatSession(data);
     },
 
     async getByClientId(clientId: string) {
@@ -338,7 +340,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
         .order('session_start', { ascending: false });
 
       if (error) throw error;
-      return (data || []).map(mapConversationFromChatSession);
+      return filterDevSessions(data || []).map(mapConversationFromChatSession);
     },
 
     async getByAssistantId(assistantId: string) {
@@ -350,7 +352,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
         .order('session_start', { ascending: false });
 
       if (error) throw error;
-      return (data || []).map(mapConversationFromChatSession);
+      return filterDevSessions(data || []).map(mapConversationFromChatSession);
     },
   };
 
@@ -358,6 +360,15 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
   const messages: MessageOperations = {
     async getByConversationId(conversationId: string) {
       const supabase = requireSupabase();
+      const { data: session, error: sessionError } = await supabase
+        .from('chat_sessions')
+        .select('id, domain, ip_address, is_dev')
+        .eq('id', conversationId)
+        .single();
+
+      if (sessionError && sessionError.code !== 'PGRST116') throw sessionError;
+      if (!session || shouldExcludeDevSession(session)) return [];
+
       const { data, error } = await supabase
         .from('chat_messages')
         .select('*')
@@ -382,7 +393,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
         .order('session_start', { ascending: false });
 
       if (error) throw error;
-      return (data || []).map(mapSessionFromChatSession);
+      return filterDevSessions(data || []).map(mapSessionFromChatSession);
     },
 
     async getActiveByClientId(clientId: string) {
@@ -397,7 +408,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
         .order('session_start', { ascending: false });
 
       if (error) throw error;
-      return (data || []).map(mapSessionFromChatSession);
+      return filterDevSessions(data || []).map(mapSessionFromChatSession);
     },
 
     async getAssistantSessions(assistantId: string, dateRange?: DateRange) {
@@ -413,7 +424,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const { data, error } = await query.order('session_start', { ascending: false });
 
       if (error) throw error;
-      return (data || []).map(mapAssistantSessionFromChatSession);
+      return filterDevSessions(data || []).map(mapAssistantSessionFromChatSession);
     },
 
     async getAssistantSessionsByClientId(clientId: string, dateRange?: DateRange) {
@@ -431,7 +442,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const { data, error } = await query.order('session_start', { ascending: false });
 
       if (error) throw error;
-      return (data || []).map(mapAssistantSessionFromChatSession);
+      return filterDevSessions(data || []).map(mapAssistantSessionFromChatSession);
     },
   };
 

@@ -24,7 +24,7 @@ import {
   Spinner,
   EmptyState,
 } from '@/components/ui';
-import { calculateNextResetDate, PLAN_CONFIG } from '@/lib/billingService';
+import { calculateNextResetDate, getNextUsageReset, PLAN_CONFIG } from '@/lib/billingService';
 
 export default function WorkspaceDetailPage({
   params
@@ -135,6 +135,19 @@ export default function WorkspaceDetailPage({
       workspace.billingResetDay ?? 1,
       workspace.billingCycle || 'monthly'
     );
+  })();
+
+  const derivedNextUsageResetDate = (() => {
+    const raw = workspace.nextUsageResetDate;
+    if (raw && !isNaN(new Date(raw).getTime())) {
+      const rawDate = new Date(raw);
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      if (rawDate >= today) {
+        return raw;
+      }
+    }
+    return getNextUsageReset(workspace).nextResetDate;
   })();
 
   const tabs = [
@@ -314,7 +327,7 @@ export default function WorkspaceDetailPage({
                     <span className="font-medium">{formatDateSafe(derivedNextBillingDate)}</span>
 
                     <span className="text-foreground-secondary">Next usage reset</span>
-                    <span className="font-medium">{formatDateSafe(workspace.nextUsageResetDate)}</span>
+                    <span className="font-medium">{formatDateSafe(derivedNextUsageResetDate)}</span>
 
                     <div className="col-span-2 border-t border-border my-2" />
 
@@ -386,7 +399,6 @@ export default function WorkspaceDetailPage({
     </Page>
   );
 }
-
 
 
 

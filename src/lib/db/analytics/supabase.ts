@@ -26,6 +26,7 @@ import type {
   ConversationTypeBreakdown,
   AnimationStats,
 } from './types';
+import { filterDevSessions, shouldExcludeDevSession } from '../sessionFilters';
 
 function applyDateRange<T extends { gte: (col: string, val: string) => T; lte: (col: string, val: string) => T }>(
   query: T,
@@ -159,7 +160,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []).map(mapChatSession);
+      return filterDevSessions(data || []).map(mapChatSession);
     },
 
     async getByClientId(clientId: string, filters?: ChatSessionFilters): Promise<ChatSession[]> {
@@ -175,7 +176,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       const { data, error } = await query;
       if (error) throw error;
-      return (data || []).map(mapChatSession);
+      return filterDevSessions(data || []).map(mapChatSession);
     },
 
     async getById(sessionId: string): Promise<ChatSession | null> {
@@ -184,7 +185,8 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
       const { data, error } = await supabase.from('chat_sessions').select('*').eq('id', sessionId).single();
 
       if (error && error.code !== 'PGRST116') throw error;
-      return data ? mapChatSession(data) : null;
+      if (!data || shouldExcludeDevSession(data)) return null;
+      return mapChatSession(data);
     },
 
     async getWithAnalysisByBotId(botId: string, filters?: ChatSessionFilters): Promise<ChatSessionWithAnalysis[]> {
@@ -204,7 +206,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       if (error) throw error;
 
-      return (data || []).map((row: any) => ({
+      return filterDevSessions(data || []).map((row: any) => ({
         ...mapChatSession(row),
         analysis: row.chat_session_analyses ? mapChatSessionAnalysis(row.chat_session_analyses) : null,
       }));
@@ -227,7 +229,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       if (error) throw error;
 
-      return (data || []).map((row: any) => ({
+      return filterDevSessions(data || []).map((row: any) => ({
         ...mapChatSession(row),
         analysis: row.chat_session_analyses ? mapChatSessionAnalysis(row.chat_session_analyses) : null,
       }));
@@ -241,15 +243,15 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
       const tomorrow = new Date(today);
       tomorrow.setDate(tomorrow.getDate() + 1);
 
-      const { count, error } = await supabase
+      const { data, error } = await supabase
         .from('chat_sessions')
-        .select('*', { count: 'exact', head: true })
+        .select('id, domain, ip_address, is_dev')
         .eq('mascot_slug', botId)
         .gte('session_start', today.toISOString())
         .lt('session_start', tomorrow.toISOString());
 
       if (error) throw error;
-      return count || 0;
+      return filterDevSessions(data || []).length;
     },
 
     async getTodayCountsByBotIds(botIds: string[]): Promise<Record<string, number>> {
@@ -269,14 +271,14 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       const { data, error } = await supabase
         .from('chat_sessions')
-        .select('mascot_slug')
+        .select('mascot_slug, domain, ip_address, is_dev')
         .in('mascot_slug', botIds)
         .gte('session_start', today.toISOString())
         .lt('session_start', tomorrow.toISOString());
 
       if (error) throw error;
 
-      for (const row of data || []) {
+      for (const row of filterDevSessions(data || [])) {
         result[row.mascot_slug] = (result[row.mascot_slug] || 0) + 1;
       }
 
@@ -289,6 +291,15 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
     async getBySessionId(sessionId: string): Promise<ChatSessionAnalysis | null> {
       const supabase = requireSupabase();
 
+      const { data: session, error: sessionError } = await supabase
+        .from('chat_sessions')
+        .select('id, domain, ip_address, is_dev')
+        .eq('id', sessionId)
+        .single();
+
+      if (sessionError && sessionError.code !== 'PGRST116') throw sessionError;
+      if (!session || shouldExcludeDevSession(session)) return null;
+
       const { data, error } = await supabase.from('chat_session_analyses').select('*').eq('session_id', sessionId).single();
 
       if (error && error.code !== 'PGRST116') throw error;
@@ -300,6 +311,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       let query = supabase
         .from('chat_session_analyses')
+        .select('*')
         .eq('mascot_slug', botId)
         .order('session_start', { ascending: false });
 
@@ -310,7 +322,8 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
       const { data, error } = await query;
       if (error) throw error;
 
-      return (data || []).map(mapChatSessionAnalysis);
+      const analyses = await filterAnalysesBySessions(data || []);
+      return analyses.map(mapChatSessionAnalysis);
     },
 
     async getByClientId(clientId: string, filters?: ChatSessionFilters): Promise<ChatSessionAnalysis[]> {
@@ -329,7 +342,8 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
       const { data, error } = await query;
       if (error) throw error;
 
-      return (data || []).map(mapChatSessionAnalysis);
+      const analyses = await filterAnalysesBySessions(data || []);
+      return analyses.map(mapChatSessionAnalysis);
     },
   };
 
@@ -343,8 +357,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
     let query = supabase
       .from('chat_sessions')
       .select('*')
-      .eq(filterCol, filterVal)
-      .eq('is_dev', false);
+      .eq(filterCol, filterVal);
 
     if (dateRange) {
       query = query
@@ -354,7 +367,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return filterDevSessions(data || []);
   }
 
   // Helper to build analysis query with date range filter
@@ -377,7 +390,37 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
     const { data, error } = await query;
     if (error) throw error;
-    return data || [];
+    return filterAnalysesBySessions(data || []);
+  }
+
+  async function filterAnalysesBySessions(analyses: any[]): Promise<any[]> {
+    if (analyses.length === 0) return analyses;
+
+    const sessionIds = Array.from(
+      new Set(
+        analyses
+          .map((analysis: { session_id?: string | null }) => analysis.session_id)
+          .filter((sessionId): sessionId is string => !!sessionId)
+      )
+    );
+
+    if (sessionIds.length === 0) return [];
+
+    const supabase = requireSupabase();
+    const { data: sessions, error: sessionError } = await supabase
+      .from('chat_sessions')
+      .select('id, domain, ip_address, is_dev')
+      .in('id', sessionIds);
+
+    if (sessionError) throw sessionError;
+
+    const allowedSessionIds = new Set(
+      filterDevSessions(sessions || []).map((session: { id: string }) => session.id)
+    );
+
+    return analyses.filter((analysis: { session_id?: string | null }) =>
+      analysis.session_id ? allowedSessionIds.has(analysis.session_id) : false
+    );
   }
 
   // Helper to calculate overview metrics from sessions and analyses

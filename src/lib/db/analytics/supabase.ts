@@ -278,7 +278,19 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       if (error) throw error;
 
-      for (const row of filterDevSessions(data || [])) {
+      const filteredRows = filterDevSessions(
+        (data || []) as Array<{
+          mascot_slug: string;
+          domain?: string | null;
+          ip_address?: string | null;
+          is_dev?: boolean | null;
+          total_messages?: number | string | null;
+          total_bot_messages?: number | string | null;
+          total_user_messages?: number | string | null;
+        }>
+      );
+
+      for (const row of filteredRows) {
         result[row.mascot_slug] = (result[row.mascot_slug] || 0) + 1;
       }
 

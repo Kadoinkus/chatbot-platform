@@ -245,7 +245,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       const { data, error } = await supabase
         .from('chat_sessions')
-        .select('id, domain, ip_address, is_dev')
+        .select('id, domain, ip_address, is_dev, total_bot_messages, total_user_messages')
         .eq('mascot_slug', botId)
         .gte('session_start', today.toISOString())
         .lt('session_start', tomorrow.toISOString());
@@ -271,7 +271,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       const { data, error } = await supabase
         .from('chat_sessions')
-        .select('mascot_slug, domain, ip_address, is_dev')
+        .select('mascot_slug, domain, ip_address, is_dev, total_bot_messages, total_user_messages')
         .in('mascot_slug', botIds)
         .gte('session_start', today.toISOString())
         .lt('session_start', tomorrow.toISOString());
@@ -293,7 +293,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
       const { data: session, error: sessionError } = await supabase
         .from('chat_sessions')
-        .select('id, domain, ip_address, is_dev')
+        .select('id, domain, ip_address, is_dev, total_bot_messages, total_user_messages')
         .eq('id', sessionId)
         .single();
 
@@ -409,7 +409,7 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
     const supabase = requireSupabase();
     const { data: sessions, error: sessionError } = await supabase
       .from('chat_sessions')
-      .select('id, domain, ip_address, is_dev')
+      .select('id, domain, ip_address, is_dev, total_bot_messages, total_user_messages')
       .in('id', sessionIds);
 
     if (sessionError) throw sessionError;

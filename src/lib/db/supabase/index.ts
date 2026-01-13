@@ -362,7 +362,7 @@ export function createSupabaseDb(options: SupabaseDbOptions): DbOperations {
       const supabase = requireSupabase();
       const { data: session, error: sessionError } = await supabase
         .from('chat_sessions')
-        .select('id, domain, ip_address, is_dev')
+        .select('id, domain, ip_address, is_dev, total_bot_messages, total_user_messages')
         .eq('id', conversationId)
         .single();
 

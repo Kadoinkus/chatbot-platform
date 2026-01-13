@@ -426,9 +426,19 @@ export function createSupabaseAnalytics(adminClient: SupabaseClient | null, labe
 
     if (sessionError) throw sessionError;
 
-    const allowedSessionIds = new Set(
-      filterDevSessions(sessions || []).map((session: { id: string }) => session.id)
+    const filteredSessions = filterDevSessions(
+      (sessions || []) as Array<{
+        id: string;
+        domain?: string | null;
+        ip_address?: string | null;
+        is_dev?: boolean | null;
+        total_messages?: number | string | null;
+        total_bot_messages?: number | string | null;
+        total_user_messages?: number | string | null;
+      }>
     );
+
+    const allowedSessionIds = new Set(filteredSessions.map((session) => session.id));
 
     return analyses.filter((analysis: { session_id?: string | null }) =>
       analysis.session_id ? allowedSessionIds.has(analysis.session_id) : false
